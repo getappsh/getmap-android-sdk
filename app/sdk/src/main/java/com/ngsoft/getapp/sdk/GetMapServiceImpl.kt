@@ -7,41 +7,75 @@ class GetMapServiceImpl private constructor() : GetMapService {
     }
 
     override fun getCreateMapImportStatus(inputImportRequestId: String?): CreateMapImportStatus? {
-        // Implementation of getCreateMapImportStatus method can be added here.
-        return null
+
+        if(inputImportRequestId.isNullOrEmpty())
+            throw Exception("invalid inputImportRequestId")
+
+        val status = CreateMapImportStatus()
+        status.importRequestId = inputImportRequestId
+        status.statusCode = Status()
+        status.statusCode!!.statusCode = StatusCode.SUCCESS
+        status.state = MapImportState.START
+        return status
     }
 
     override fun createMapImport(inputProperties: MapProperties?): CreateMapImportStatus? {
-        // Implementation of createMapImport method can be added here.
-        return null
+        if(inputProperties == null)
+            throw Exception("invalid inputProperties")
+
+        val status = CreateMapImportStatus()
+        status.statusCode = Status()
+        status.statusCode!!.statusCode = StatusCode.SUCCESS
+        status.state = MapImportState.IN_PROGRESS
+        return status
     }
 
     override fun getMapImportDeliveryStatus(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        // Implementation of getMapImportDeliveryStatus method can be added here.
-        return null
+        if(inputImportRequestId.isNullOrEmpty())
+            throw Exception("invalid inputImportRequestId")
+
+        val status = MapImportDeliveryStatus()
+        status.state = MapDeliveryState.CONTINUE
+        return status
     }
 
     override fun setMapImportDeliveryStart(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        // Implementation of setMapImportDeliveryStart method can be added here.
-        return null
+        if(inputImportRequestId.isNullOrEmpty())
+            throw Exception("invalid inputImportRequestId")
+
+        val status = MapImportDeliveryStatus()
+        status.state = MapDeliveryState.START
+        return status
     }
 
     override fun setMapImportDeliveryPause(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        // Implementation of setMapImportDeliveryPause method can be added here.
-        return null
+        if(inputImportRequestId.isNullOrEmpty())
+            throw Exception("invalid inputImportRequestId")
+
+        val status = MapImportDeliveryStatus()
+        status.state = MapDeliveryState.PAUSE
+        return status
     }
 
     override fun setMapImportDeliveryCancel(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        // Implementation of setMapImportDeliveryCancel method can be added here.
-        return null
+        if(inputImportRequestId.isNullOrEmpty())
+            throw Exception("invalid inputImportRequestId")
+
+        val status = MapImportDeliveryStatus()
+        status.state = MapDeliveryState.CANCEL
+        return status
     }
 
     override fun setMapImportDeploy(
         inputImportRequestId: String?,
         inputState: MapDeployState?
     ): MapDeployState? {
-        // Implementation of setMapImportDeploy method can be added here.
-        return null
+
+        if(inputImportRequestId.isNullOrEmpty())
+            throw Exception("invalid inputImportRequestId")
+
+
+        return MapDeployState.DONE
     }
 
     companion object {
