@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+
 class GetMapServiceImpl private constructor() : GetMapService {
     fun init(configuration: Configuration?, statusCode: Status?): Boolean {
         // Implementation of init method can be added here.
@@ -35,6 +36,9 @@ class GetMapServiceImpl private constructor() : GetMapService {
             throw Exception("invalid inputImportRequestId")
 
         val status = MapImportDeliveryStatus()
+        status.importRequestId = inputImportRequestId
+        status.message = Status()
+        status.message!!.statusCode = StatusCode.SUCCESS
         status.state = MapDeliveryState.CONTINUE
         return status
     }
@@ -44,6 +48,9 @@ class GetMapServiceImpl private constructor() : GetMapService {
             throw Exception("invalid inputImportRequestId")
 
         val status = MapImportDeliveryStatus()
+        status.importRequestId = inputImportRequestId
+        status.message = Status()
+        status.message!!.statusCode = StatusCode.SUCCESS
         status.state = MapDeliveryState.START
         return status
     }
@@ -53,6 +60,9 @@ class GetMapServiceImpl private constructor() : GetMapService {
             throw Exception("invalid inputImportRequestId")
 
         val status = MapImportDeliveryStatus()
+        status.importRequestId = inputImportRequestId
+        status.message = Status()
+        status.message!!.statusCode = StatusCode.SUCCESS
         status.state = MapDeliveryState.PAUSE
         return status
     }
@@ -62,6 +72,9 @@ class GetMapServiceImpl private constructor() : GetMapService {
             throw Exception("invalid inputImportRequestId")
 
         val status = MapImportDeliveryStatus()
+        status.importRequestId = inputImportRequestId
+        status.message = Status()
+        status.message!!.statusCode = StatusCode.SUCCESS
         status.state = MapDeliveryState.CANCEL
         return status
     }

@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.getapp
 
 import com.ngsoft.getapp.sdk.GetMapServiceImpl
+import com.ngsoft.getapp.sdk.MapDeliveryState
 import com.ngsoft.getapp.sdk.StatusCode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -13,12 +14,7 @@ import org.junit.Test
  */
 
 
-class ExampleUnitTest {
-
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
-    }
+class GetMapServiceDataUnitTest {
 
     @Test
     fun createMapImportStatus_isCorrect() {
@@ -36,6 +32,17 @@ class ExampleUnitTest {
         ) {
             GetMapServiceImpl.instance?.getCreateMapImportStatus("")
         }
+    }
+
+    @Test
+    fun getMapImportDeliveryStatus_isCorrect() {
+        val reqId = "req-1234"
+        val ret = GetMapServiceImpl.instance?.getMapImportDeliveryStatus(reqId)
+
+        assert(ret != null)
+        assertEquals(reqId, ret?.importRequestId ?: "" )
+        assertEquals(MapDeliveryState.CONTINUE, ret!!.state )
+        assertEquals(StatusCode.SUCCESS, ret.message!!.statusCode)
     }
 
 }
