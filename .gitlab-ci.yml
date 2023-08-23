@@ -75,6 +75,11 @@ build_sdk:
 lintDebug:
   interruptible: true
   stage: build
+  image: eclipse-temurin:17-jdk-jammy
+  services:
+    - name: eclipse-temurin:17-jdk-jammy
+      alias: docker
+
   script:
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
   artifacts:
@@ -87,6 +92,11 @@ lintDebug:
 assembleDebug:
   interruptible: true
   stage: build
+  image: eclipse-temurin:17-jdk-jammy
+  services:
+    - name: eclipse-temurin:17-jdk-jammy
+      alias: docker
+
   script:
     - ./gradlew assembleDebug
   artifacts:
