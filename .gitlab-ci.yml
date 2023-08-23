@@ -80,6 +80,8 @@ lintDebug:
   services:
     - name: eclipse-temurin:17-jdk-jammy
       alias: docker
+  tags:
+    - docker
 
   script:
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
@@ -97,7 +99,8 @@ assembleDebug:
   services:
     - name: eclipse-temurin:17-jdk-jammy
       alias: docker
-
+  tags:
+    - docker
   script:
     - ./gradlew assembleDebug
   artifacts:
@@ -114,5 +117,7 @@ debugTests:
   services:
     - name: eclipse-temurin:17-jdk-jammy
       alias: docker
+  tags:
+    - docker
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
