@@ -9,7 +9,8 @@
 stages:
   #- tag
   - pre-build
-  - build
+  - build1
+  - build2
   - test
 
 build_sdk:
@@ -74,7 +75,7 @@ build_sdk:
   
 lintDebug:
   interruptible: true
-  stage: build
+  stage: build1
   image: eclipse-temurin:17-jdk-jammy
   services:
     - name: eclipse-temurin:17-jdk-jammy
@@ -91,7 +92,7 @@ lintDebug:
 # Make Project
 assembleDebug:
   interruptible: true
-  stage: build
+  stage: build2
   image: eclipse-temurin:17-jdk-jammy
   services:
     - name: eclipse-temurin:17-jdk-jammy
@@ -109,5 +110,9 @@ debugTests:
   needs: [lintDebug, assembleDebug]
   interruptible: true
   stage: test
+  image: eclipse-temurin:17-jdk-jammy
+  services:
+    - name: eclipse-temurin:17-jdk-jammy
+      alias: docker
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
