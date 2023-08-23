@@ -77,7 +77,7 @@ build_sdk:
     - cat /etc/os-release
     - pwd
     - ls -la
-    - tree
+    #- tree
   
 lintDebug:
   interruptible: true
