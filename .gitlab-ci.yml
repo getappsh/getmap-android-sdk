@@ -72,6 +72,12 @@ build_sdk:
     # Add any additional commands you need to run as part of the build_sdk job
   # Basic android and gradle stuff
   # Check linting
+  after_script:
+    - sudo apt update
+    - sudo apt install tree
+    - pwd
+    - ls -la
+    - tree
   
 lintDebug:
   interruptible: true
