@@ -84,6 +84,8 @@ lintDebug:
     - docker
 
   script:
+    - /bin/bash
+    - chmod +x gradlew
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
   artifacts:
     paths:
