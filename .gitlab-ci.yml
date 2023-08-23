@@ -72,8 +72,9 @@ build_sdk:
     # Add any additional commands you need to run as part of the build_sdk job
   # Basic android and gradle stuff
   # Check linting
-    - sudo apt update
-    - sudo apt install tree
+  #  - sudo apt update
+  #  - sudo apt install tree
+    - cat /etc/os-release
     - pwd
     - ls -la
     - tree
