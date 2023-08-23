@@ -72,7 +72,6 @@ build_sdk:
     # Add any additional commands you need to run as part of the build_sdk job
   # Basic android and gradle stuff
   # Check linting
-  after_script:
     - sudo apt update
     - sudo apt install tree
     - pwd
@@ -90,6 +89,7 @@ lintDebug:
     - docker
 
   script:
+    - export ANDROID_HOME="${PWD}/android-sdk-root"
     - /bin/bash
     - chmod +x gradlew
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
