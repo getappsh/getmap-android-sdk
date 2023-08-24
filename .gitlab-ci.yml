@@ -168,7 +168,7 @@ create_release:
     description: 'Release $NEW_TAG testing by david abrams bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla'
     assets:
       links:
-        - name: "getapp-agent-SDK-${NEW_TAG}.zip"
+        - name: "getapp-agent-SDK-${NEW_TAG_1}.zip"
           url: "$SDK_BUILD_CI_JOB_URL/artifacts/download"
   except:
     - tags
