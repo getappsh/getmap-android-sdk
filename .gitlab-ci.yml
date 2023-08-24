@@ -162,7 +162,7 @@ create_release:
     - echo $CI_JOB_ID  
   release:
     name: 'Release $NEW_TAG'
-    tag_name: '$NEW_TAG'
+    tag_name: ${NEW_TAG}-test
     ref: '$TAG'
     description: 'Release $NEW_TAG testing by david abrams bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla'
     assets:
