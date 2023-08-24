@@ -153,6 +153,8 @@ create_release:
   variables:
     TAG: '$CI_COMMIT_SHA'
     SDK_BUILD_CI_JOB_URL: $(cat url_job_link.txt)
+  before_script:
+    - echo "test 1234"
   script:
     - export NEW_TAG_1=$(cat NEW_TAG.txt) 
     - echo $NEW_TAG_1
