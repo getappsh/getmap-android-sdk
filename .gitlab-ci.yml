@@ -138,7 +138,7 @@ debugTests:
     - ./gradlew -Pci --console=plain :app:testDebug
 
 create_release:
-  stage: .pre
+  stage: .post
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   services:
     - name: registry.gitlab.com/gitlab-org/release-cli:latest
