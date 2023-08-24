@@ -153,6 +153,7 @@ create_release:
   variables:
     TAG: '$CI_COMMIT_SHA'
     SDK_BUILD_CI_JOB_URL: $(cat url_job_link.txt)
+    NEW_TAG_1: $(cat NEW_TAG.txt)
   before_script:
     - echo "test 1234"
   script:
@@ -162,7 +163,7 @@ create_release:
     - echo $CI_JOB_ID  
   release:
     name: 'Release $NEW_TAG'
-    tag_name: ${NEW_TAG}-test
+    tag_name: ${NEW_TAG_1}-test
     ref: '$TAG'
     description: 'Release $NEW_TAG testing by david abrams bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla'
     assets:
