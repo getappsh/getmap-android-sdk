@@ -156,8 +156,8 @@ create_release:
   before_script:
     - echo "test 1234"
   script:
-    - export NEW_TAG_1=$(cat NEW_TAG.txt) 
-    - echo $NEW_TAG_1
+    - export NEW_TAG=$(cat NEW_TAG.txt) 
+    - echo $NEW_TAG
     - echo "Create Release $NEW_TAG"
     - echo $CI_JOB_ID  
   release:
