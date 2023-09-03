@@ -1,5 +1,8 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.apis.LoginApi
+import GetApp.Client.models.TokensDto
+import GetApp.Client.models.UserLoginDto
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDeployState
@@ -9,12 +12,13 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 
+class GetMapServiceImpl (configuration: Configuration?) : GetMapService {
 
-class GetMapServiceImpl private constructor() : GetMapService {
-    fun init(configuration: Configuration?, statusCode: Status?): Boolean {
-        // Implementation of init method can be added here.
-        return false
-    }
+//    private val tokens: TokensDto =
+//        LoginApi(configuration?.baseUrl?: "localhost").loginControllerGetToken(UserLoginDto(
+//            configuration?.user?: "user",
+//            configuration?.password?: "password"
+//        ))
 
     override fun getCreateMapImportStatus(inputImportRequestId: String?): CreateMapImportStatus? {
 
@@ -100,14 +104,4 @@ class GetMapServiceImpl private constructor() : GetMapService {
         return MapDeployState.DONE
     }
 
-    companion object {
-        var instance: GetMapServiceImpl? = null
-            get() {
-                if (field == null) {
-                    field = GetMapServiceImpl()
-                }
-                return field
-            }
-            private set
-    }
 }
