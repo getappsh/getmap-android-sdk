@@ -1,8 +1,7 @@
-package com.ngsoft.getapp.getapp
+package com.ngsoft.getapp.sdk
 
-import com.ngsoft.getapp.sdk.GetMapServiceImpl
-import com.ngsoft.getapp.sdk.MapDeliveryState
-import com.ngsoft.getapp.sdk.StatusCode
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import com.ngsoft.getapp.sdk.models.StatusCode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test

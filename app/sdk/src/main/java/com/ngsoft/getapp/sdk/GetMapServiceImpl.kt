@@ -1,5 +1,14 @@
 package com.ngsoft.getapp.sdk
 
+import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import com.ngsoft.getapp.sdk.models.MapDeployState
+import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
+import com.ngsoft.getapp.sdk.models.MapImportState
+import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.models.Status
+import com.ngsoft.getapp.sdk.models.StatusCode
+
 
 class GetMapServiceImpl private constructor() : GetMapService {
     fun init(configuration: Configuration?, statusCode: Status?): Boolean {

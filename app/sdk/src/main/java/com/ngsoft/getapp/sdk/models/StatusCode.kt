@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk
+package com.ngsoft.getapp.sdk.models
 
 enum class StatusCode(val code: Int) {
     // Success.

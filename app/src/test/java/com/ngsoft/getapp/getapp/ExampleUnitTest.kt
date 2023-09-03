@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk
+package com.ngsoft.getapp.getapp
 
 import org.junit.Test
 

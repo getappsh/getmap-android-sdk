@@ -1,5 +1,10 @@
 package com.ngsoft.getapp.sdk
 
+import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.MapDeployState
+import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
+import com.ngsoft.getapp.sdk.models.MapProperties
+
 interface GetMapService {
     fun getCreateMapImportStatus(inputImportRequestId: String?): CreateMapImportStatus?
     fun createMapImport(inputProperties: MapProperties?): CreateMapImportStatus?
