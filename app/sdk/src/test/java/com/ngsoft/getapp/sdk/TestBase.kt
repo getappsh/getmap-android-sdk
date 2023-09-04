@@ -23,7 +23,7 @@ open class TestBase {
             cfg.user = "rony@example.com"
             cfg.password = "rony123"
 
-            //api = GetMapServiceImpl(cfg)
+            api = GetMapServiceImpl(cfg)
         }
 
         @AfterClass

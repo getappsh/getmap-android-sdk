@@ -1,7 +1,5 @@
 # GETAPP-ANDROID-SDK
 
-
-
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
@@ -41,6 +39,34 @@ Use the built-in continuous integration in GitLab.
 - [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
 - [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
 - [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+
+
+# OpenApi code generator
+
+Running:
+
+```shell
+docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i http://getapp-dev.getapp.sh:3000/docs-yaml -g kotlin --additional-properties=packageName=GetApp.Client,packageVersion=1.0 -o /local/GetApp.Client.Kotlin
+```
+
+OR
+
+```shell
+docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i local/docs-yaml -g kotlin --additional-properties=packageName=GetApp.Client,packageVersion=1.0 -o /local/GetApp.Client.Kotlin
+```
+
+In case owner is not $USER - change ownership of generated directory:
+
+```shell
+sudo chown -R $USER GetApp.Client.Kotlin/
+```
+
+For config options, see:
+https://openapi-generator.tech/docs/generators/kotlin
+
+## Add to SDK
+
+copy-paste `kotlin` directory into `app/sdk/src/main`
 
 ***
 

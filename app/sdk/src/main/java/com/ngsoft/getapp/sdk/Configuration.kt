@@ -1,8 +1,8 @@
 package com.ngsoft.getapp.sdk
 
 class Configuration {
-    var baseUrl: String? = null
-    var user: String? = null
-    var password: String? = null
-    var storagePath: String? = null
+    lateinit var baseUrl: String
+    lateinit var user: String
+    lateinit var password: String
+    lateinit var storagePath: String
 }
