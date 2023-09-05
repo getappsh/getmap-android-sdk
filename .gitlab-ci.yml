@@ -62,10 +62,10 @@ lintDebug:
   interruptible: true
   stage: build
   script:
-    - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
+    - ./gradlew -Pci --console=plain :sdk:lintDebug -PbuildDir=lint
   artifacts:
     paths:
-      - app/lint/reports/lint-results-debug.html
+      - sdk/lint/reports/lint-results-debug.html
     expose_as: "lint-report"
     when: always
 
@@ -86,4 +86,4 @@ debugTests:
   interruptible: true
   stage: test
   script:
-    - ./gradlew -Pci --console=plain :app:testDebug
+    - ./gradlew -Pci --console=plain :sdk:testDebug
