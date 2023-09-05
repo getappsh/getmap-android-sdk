@@ -1,5 +1,14 @@
 # GETAPP-ANDROID-SDK
 
+Emulator stopped to run from Android Studio from some reason...
+Run same command Android Studio uses from terminal instead:
+
+```shell
+D:\DevTools\Android\Sdk\emulator\emulator.exe -netdelay none -netspeed full -avd Pixel_5_API_33 -qt-hide-window -grpc-use-token -idle-grpc-timeout 300
+```
+
+https://developer.android.com/studio/emulator_archive
+
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.

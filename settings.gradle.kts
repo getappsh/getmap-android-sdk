@@ -13,6 +13,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "getapp"
-include(":app")
-include(":app:sdk")
+rootProject.name = "getapp-sdk"
+include(":sdk")
+include(":getAppClient")
+include(":sharedTest")
