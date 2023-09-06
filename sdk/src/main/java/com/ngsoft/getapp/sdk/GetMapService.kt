@@ -12,8 +12,6 @@ interface GetMapService {
     fun getDiscoveryCatalog(query: DiscoveryMessageDto): DiscoveryResDto
 
 
-    //obsolete
-
     /**
      * Fetches the status of a map creation import.
      *

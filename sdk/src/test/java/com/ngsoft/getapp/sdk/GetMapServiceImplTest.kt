@@ -1,16 +1,21 @@
 package com.ngsoft.getapp.sdk
 
+import com.ngsoft.getapp.sdk.models.MapDeployState
+import com.ngsoft.getapp.sdk.models.MapImportState
+import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.models.StatusCode
 import org.junit.Test
 
 import org.junit.Assert.*
+import org.junit.Before
 
 class GetMapServiceImplTest {
 
     private lateinit var service: GetMapServiceImpl
 
-    @BeforeEach
+    @Before
     fun setUp() {
-        service = GetMapServiceImpl.instance!!
+        //service = GetMapServiceImpl.instance!!
     }
 
     @Test

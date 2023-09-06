@@ -1,19 +1,10 @@
 # GETAPP-ANDROID-SDK
-
-Emulator stopped to run from Android Studio from some reason...
-Run same command Android Studio uses from terminal instead:
-
-```shell
-D:\DevTools\Android\Sdk\emulator\emulator.exe -netdelay none -netspeed full -avd Pixel_5_API_33 -qt-hide-window -grpc-use-token -idle-grpc-timeout 300
-```
-
-https://developer.android.com/studio/emulator_archive
 GETAPP SDK is the api defined frm the application point of view.
 
 ## Getting started
 
 Just compile and use accordingly:
-- the api is in /app/sdk - provides a .aar output
+- The api is in `sdk/build/outputs/aar` + `getAppClient/build/outputs/aar`
 
 ### API flow
 
@@ -76,7 +67,6 @@ sequenceDiagram
     deactivate SDK
 ```
 
-
 # OpenApi code generator
 
 Running:
@@ -104,3 +94,13 @@ https://openapi-generator.tech/docs/generators/kotlin
 
 copy-paste `kotlin` directory into `app/sdk/src/main`
 
+***
+
+Emulator stopped to run from Android Studio from some reason...
+Run same command Android Studio uses from terminal instead:
+
+```shell
+D:\DevTools\Android\Sdk\emulator\emulator.exe -netdelay none -netspeed full -avd Pixel_5_API_33 -qt-hide-window -grpc-use-token -idle-grpc-timeout 300
+```
+
+https://developer.android.com/studio/emulator_archive
