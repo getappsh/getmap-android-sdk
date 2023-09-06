@@ -9,13 +9,21 @@ import org.junit.Test
 import org.junit.Assert.*
 import org.junit.Before
 
+
+//keeps as guidelines and see what fits 4 my needs
+
 class GetMapServiceImplTest {
 
     private lateinit var service: GetMapServiceImpl
 
     @Before
     fun setUp() {
-        //service = GetMapServiceImpl.instance!!
+        println("Test setup...")
+        val cfg = Configuration()
+        cfg.baseUrl = "http://getapp-dev.getapp.sh:3000"
+        cfg.user = "rony@example.com"
+        cfg.password = "rony123"
+        service = GetMapServiceImpl(cfg)
     }
 
     @Test
