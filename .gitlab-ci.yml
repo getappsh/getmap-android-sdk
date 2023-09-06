@@ -83,7 +83,8 @@ assembleDebug:
 # Run all tests, if any fails, interrupt the pipeline(fail it)
 debugTests:
   needs: [lintDebug, assembleDebug]
-  interruptible: true
+  #interruptible: true
+  interruptible: false
   stage: test
   script:
     - ./gradlew -Pci --console=plain :sdk:testDebug
