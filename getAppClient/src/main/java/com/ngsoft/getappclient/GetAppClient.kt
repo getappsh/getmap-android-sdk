@@ -1,6 +1,7 @@
 package com.ngsoft.getappclient
 
 import GetApp.Client.apis.DeviceApi
+import GetApp.Client.apis.GetMapApi
 import GetApp.Client.apis.LoginApi
 import GetApp.Client.infrastructure.ApiClient
 import GetApp.Client.models.TokensDto
@@ -13,6 +14,7 @@ class GetAppClient(config: ConnectionConfig) {
 
     private val tokens: TokensDto
     val deviceApi: DeviceApi
+    val getMapApi: GetMapApi
 
     init {
         if (config.baseUrl.isEmpty())
@@ -36,6 +38,7 @@ class GetAppClient(config: ConnectionConfig) {
         setAccessToken<ApiClient>(tokens.accessToken.toString())
 
         deviceApi = DeviceApi(config.baseUrl)
+        getMapApi = GetMapApi(config.baseUrl)
 
     }
     private inline fun <reified T> setAccessToken(token: String) {
@@ -48,6 +51,5 @@ class GetAppClient(config: ConnectionConfig) {
 //            println("set access token = ${curr.toString()}")
         }
     }
-
 
 }

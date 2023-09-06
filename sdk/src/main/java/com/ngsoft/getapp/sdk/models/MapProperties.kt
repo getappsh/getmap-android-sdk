@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.sdk.models
 
-class MapProperties {
-    var boundingBox: String? = null
-    var isBest = false //TODO delete?
-}
+data class MapProperties (
+    val productId: String,
+    val boundingBox: String,
+    val isBest: Boolean
+)

@@ -8,15 +8,17 @@ import org.junit.Test
 class SdkTests {
     @Test
     fun login_ShouldSuccess() {
-        val configuration = Configuration()
-        configuration.baseUrl = "http://getapp-dev.getapp.sh:3000"
-        configuration.user = "rony@example.com"
-        configuration.password = "rony123"
+        val configuration = Configuration(
+    "http://getapp-dev.getapp.sh:3000",
+    "rony@example.com",
+    "rony123",
+    "todo"
+        )
 
-        val loginApi = LoginApi(configuration.baseUrl ?: "localhost")
+        val loginApi = LoginApi(configuration.baseUrl)
         val cred = UserLoginDto(
-            configuration.user ?: "user",
-            configuration.password ?: "password"
+            configuration.user,
+            configuration.password
         )
 
         val tokens: TokensDto = loginApi.loginControllerGetToken(cred)

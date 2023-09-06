@@ -18,10 +18,12 @@ open class TestBase {
         @JvmStatic
         fun setup() {
             println("Test setup...")
-            val cfg = Configuration()
-            cfg.baseUrl = "http://getapp-dev.getapp.sh:3000"
-            cfg.user = "rony@example.com"
-            cfg.password = "rony123"
+            val cfg = Configuration(
+                "http://getapp-dev.getapp.sh:3000",
+                "rony@example.com",
+                 "rony123",
+                "todo: storage path"
+            )
 
             api = GetMapServiceImpl(cfg)
         }

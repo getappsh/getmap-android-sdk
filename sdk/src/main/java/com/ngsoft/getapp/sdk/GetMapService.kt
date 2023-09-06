@@ -1,15 +1,14 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.DiscoveryMessageDto
-import GetApp.Client.models.DiscoveryResDto
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
 
 interface GetMapService {
 
-    fun getDiscoveryCatalog(query: DiscoveryMessageDto): DiscoveryResDto
+    fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem>
 
 
     /**
@@ -71,4 +70,5 @@ interface GetMapService {
         inputImportRequestId: String?,
         inputState: MapDeployState?
     ): MapDeployState?
+
 }

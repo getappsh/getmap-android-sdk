@@ -16,11 +16,12 @@ class GetMapServiceImplTest : TestBase() {
 
     @Test
     fun `test getCreateMapImportStatus with valid input`() {
-        val result = api.getCreateMapImportStatus("testId")
+        val reqId = "1148946338667298816"
+        val result = api.getCreateMapImportStatus(reqId)
         assertNotNull(result)
-        assertEquals("testId", result?.importRequestId)
+        assertEquals(reqId, result?.importRequestId)
         assertEquals(StatusCode.SUCCESS, result?.statusCode?.statusCode)
-        assertEquals(MapImportState.START, result?.state)
+        assertEquals(MapImportState.DONE, result?.state)
     }
 
     @Test
@@ -32,11 +33,17 @@ class GetMapServiceImplTest : TestBase() {
 
     @Test
     fun `test createMapImport with valid input`() {
-        val inputProperties = MapProperties() // Assuming MapProperties has a default constructor
+
+        val inputProperties = MapProperties(
+            "getmap:Ashdod2",
+            "34.66529846191406,31.86120986938477,34.66958999633789,31.86344146728516",
+            false
+        )
+
         val result = api.createMapImport(inputProperties)
         assertNotNull(result)
         assertEquals(StatusCode.SUCCESS, result?.statusCode?.statusCode)
-        assertEquals(MapImportState.IN_PROGRESS, result?.state)
+        assertEquals(MapImportState.START, result?.state)
     }
 
     @Test

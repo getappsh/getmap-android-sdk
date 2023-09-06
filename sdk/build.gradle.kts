@@ -43,6 +43,8 @@ dependencies {
     implementation("junit:junit:4.12")
     implementation(project(mapOf("path" to ":getAppClient")))
     testImplementation("junit:junit:4.13.2")
+    testImplementation(project(mapOf("path" to ":sharedTest")))
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(project(mapOf("path" to ":sharedTest")))
 }
