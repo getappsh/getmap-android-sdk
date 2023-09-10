@@ -13,7 +13,7 @@ class DiscoveryTests : GetMapServiceTestBase() {
             false
         )
 
-        val ret = api.getDiscoveryCatalog(props)
+        val ret = service.getDiscoveryCatalog(props)
 
         println("Got discovery items:")
         ret.forEach {

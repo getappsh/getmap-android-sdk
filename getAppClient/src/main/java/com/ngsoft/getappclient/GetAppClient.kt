@@ -1,5 +1,6 @@
 package com.ngsoft.getappclient
 
+import GetApp.Client.apis.DeliveryApi
 import GetApp.Client.apis.DeviceApi
 import GetApp.Client.apis.GetMapApi
 import GetApp.Client.apis.LoginApi
@@ -15,6 +16,7 @@ class GetAppClient(config: ConnectionConfig) {
     private val tokens: TokensDto
     val deviceApi: DeviceApi
     val getMapApi: GetMapApi
+    val deliveryApi: DeliveryApi
 
     init {
         if (config.baseUrl.isEmpty())
@@ -39,16 +41,16 @@ class GetAppClient(config: ConnectionConfig) {
 
         deviceApi = DeviceApi(config.baseUrl)
         getMapApi = GetMapApi(config.baseUrl)
+        deliveryApi = DeliveryApi(config.baseUrl)
 
     }
+
     private inline fun <reified T> setAccessToken(token: String) {
         val companionObject = T::class.companionObject
         if (companionObject != null) {
             val companionInstance = T::class.companionObjectInstance
             val property = companionObject.members.first { it.name == "accessToken" } as KMutableProperty<*>?
             property?.setter?.call(companionInstance, token)
-//            val curr = property?.getter?.call(companionInstance)
-//            println("set access token = ${curr.toString()}")
         }
     }
 

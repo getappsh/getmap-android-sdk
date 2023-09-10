@@ -66,9 +66,6 @@ interface GetMapService {
      * @param inputState The state for the map deployment. Can be null.
      * @return MapDeployState? The updated deployment state of the map. Can be null.
      */
-    fun setMapImportDeploy(
-        inputImportRequestId: String?,
-        inputState: MapDeployState?
-    ): MapDeployState?
+    fun setMapImportDeploy(inputImportRequestId: String?,inputState: MapDeployState?): MapDeployState?
 
 }

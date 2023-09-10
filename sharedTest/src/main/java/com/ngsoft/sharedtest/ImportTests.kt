@@ -11,7 +11,7 @@ class ImportTests : GetMapServiceTestBase() {
             false
         )
 
-        val ret = api.createMapImport(props)
+        val ret = service.createMapImport(props)
         assert(ret != null)
         assert(!ret?.importRequestId.isNullOrEmpty())
 
@@ -30,7 +30,7 @@ class ImportTests : GetMapServiceTestBase() {
 
     fun testImportStatus(requestId: String) {
 
-        val ret = api.getCreateMapImportStatus(requestId)
+        val ret = service.getCreateMapImportStatus(requestId)
 
         assert(ret != null)
         assert(requestId == ret?.importRequestId)

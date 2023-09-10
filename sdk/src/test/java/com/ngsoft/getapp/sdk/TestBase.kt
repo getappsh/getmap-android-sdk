@@ -12,7 +12,7 @@ open class TestBase {
         }
 
         @JvmStatic
-        protected lateinit var api: GetMapService
+        protected lateinit var service: GetMapService
 
         @BeforeClass
         @JvmStatic
@@ -21,11 +21,11 @@ open class TestBase {
             val cfg = Configuration(
                 "http://getapp-dev.getapp.sh:3000",
                 "rony@example.com",
-                 "rony123",
+                "rony123",
                 "todo: storage path"
             )
 
-            api = GetMapServiceImpl(cfg)
+            service = GetMapServiceFactory.createService(cfg)
         }
 
         @AfterClass

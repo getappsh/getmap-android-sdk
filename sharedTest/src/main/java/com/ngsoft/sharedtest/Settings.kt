@@ -6,6 +6,6 @@ object Settings {
     const val password = "rony123"
 
     const val productId = "getmap:Ashdod2"
-    const val productBBOX = "34.66529846191406,31.86120986938477,34.66958999633789,31.86344146728516"
+    const val productBBOX = "34.668216705322266,31.871509552001957,34.67113494873047,31.87339782714844"
 
 }

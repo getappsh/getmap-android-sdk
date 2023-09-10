@@ -12,6 +12,8 @@ import GetApp.Client.models.ImportStatusResDto
 import GetApp.Client.models.PersonalDiscoveryDto
 import GetApp.Client.models.PhysicalDiscoveryDto
 import GetApp.Client.models.PlatformDto
+import GetApp.Client.models.PrepareDeliveryReqDto
+import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -29,12 +31,16 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class GetMapServiceImpl (configuration: Configuration) : GetMapService {
+// @hanokhaloni - after digging into Javalogy/Kotlinology naming conventions, Dot-Net style *Impl suffix for
+// implementator is not welcomed at all. Default* prefix is a lesser accepted evil in such case.
 
-    private val client: GetAppClient
+internal class DefaultGetMapService : GetMapService {
 
-    init {
+    private lateinit var client: GetAppClient
+
+    fun init(configuration: Configuration, statusCode: Status?): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
+        return true
     }
 
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
@@ -172,54 +178,83 @@ class GetMapServiceImpl (configuration: Configuration) : GetMapService {
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
-        val status = MapImportDeliveryStatus()
-        status.importRequestId = inputImportRequestId
-        status.message = Status()
-        status.message!!.statusCode = StatusCode.SUCCESS
-        status.state = MapDeliveryState.CONTINUE
-        return status
+        val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
+
+        println("download url: $status.url")
+
+        val result = MapImportDeliveryStatus()
+        result.importRequestId = status.catalogId
+        result.message = Status()
+        result.message!!.statusCode = StatusCode.SUCCESS
+
+        when (status.status){
+            PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
+            PrepareDeliveryResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
+            PrepareDeliveryResDto.Status.done -> result.state = MapDeliveryState.DONE
+            PrepareDeliveryResDto.Status.error -> result.state = MapDeliveryState.ERROR
+        }
+
+        return result
     }
 
     override fun setMapImportDeliveryStart(inputImportRequestId: String?): MapImportDeliveryStatus? {
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
-        val status = MapImportDeliveryStatus()
-        status.importRequestId = inputImportRequestId
-        status.message = Status()
-        status.message!!.statusCode = StatusCode.SUCCESS
-        status.state = MapDeliveryState.START
-        return status
+        val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "detapp-server", PrepareDeliveryReqDto.ItemType.map)
+        val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
+
+        val result = MapImportDeliveryStatus()
+        result.importRequestId = inputImportRequestId
+        result.message = Status()
+        result.message!!.statusCode = StatusCode.SUCCESS
+
+        when (status.status){
+            PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
+            PrepareDeliveryResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
+            PrepareDeliveryResDto.Status.done -> result.state = MapDeliveryState.DONE
+            PrepareDeliveryResDto.Status.error -> result.state = MapDeliveryState.ERROR
+        }
+
+        return result
     }
 
     override fun setMapImportDeliveryPause(inputImportRequestId: String?): MapImportDeliveryStatus? {
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
-        val status = MapImportDeliveryStatus()
-        status.importRequestId = inputImportRequestId
-        status.message = Status()
-        status.message!!.statusCode = StatusCode.SUCCESS
-        status.state = MapDeliveryState.PAUSE
-        return status
+        //not implemented on GetApp side AFAIK
+        val result = MapImportDeliveryStatus()
+        result.importRequestId = inputImportRequestId
+        result.message = Status()
+        result.message!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
+        result.state = MapDeliveryState.ERROR
+        return result
     }
 
     override fun setMapImportDeliveryCancel(inputImportRequestId: String?): MapImportDeliveryStatus? {
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
-        val status = MapImportDeliveryStatus()
-        status.importRequestId = inputImportRequestId
-        status.message = Status()
-        status.message!!.statusCode = StatusCode.SUCCESS
-        status.state = MapDeliveryState.CANCEL
-        return status
+        val status = client.getMapApi.getMapControllerCancelImportCreate(inputImportRequestId)
+
+        val result = MapImportDeliveryStatus()
+        result.importRequestId = inputImportRequestId
+        result.message = Status()
+        result.message!!.statusCode = StatusCode.SUCCESS
+
+        when(status.status){
+            CreateImportResDto.Status.start -> result.state = MapDeliveryState.START
+            CreateImportResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
+            CreateImportResDto.Status.done -> result.state = MapDeliveryState.DONE
+            CreateImportResDto.Status.cancel -> result.state = MapDeliveryState.CANCEL
+            CreateImportResDto.Status.error -> result.state = MapDeliveryState.ERROR
+        }
+
+        return result
     }
 
-    override fun setMapImportDeploy(
-        inputImportRequestId: String?,
-        inputState: MapDeployState?
-    ): MapDeployState? {
+    override fun setMapImportDeploy(inputImportRequestId: String?, inputState: MapDeployState?): MapDeployState? {
 
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
