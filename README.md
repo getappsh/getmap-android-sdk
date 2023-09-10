@@ -60,10 +60,9 @@ sequenceDiagram
     note over SDK: TODO
     User->>SDK: setMapImportDeploy(importRequestId, deployState)
     activate SDK
-    SDK-->>Server: POST
-/api/deploy/updateDeployStatus
-    Server-->>SDK: Returns MapDeployState
-    SDK-->>User: Returns MapDeployState
+    SDK-->>Server: POST /api/deploy/updateDeployStatus
+    Server-->>SDK: Returns MapDeployStatusDto
+    SDK-->>User: Returns MapDeployStatusDto
     note over SDK: TODO
     deactivate SDK
 ```
