@@ -21,14 +21,17 @@ class ExampleInstrumentedTest {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.ngsoft.tilematrix.test", appContext.packageName)
 
-        val tile = TileMatrix(appContext).getTile(
-            34.65699535,
-            31.77978378,
-            12)
+        val matrixGrid = TileMatrix(appContext)
+        val tile = matrixGrid.getTile(34.65699535,31.77978378,12)
 
         assert(tile.isNotEmpty())
-
         println(tile)
+
+        val bboxes = matrixGrid.getBBoxes(34.73647075, 31.94368473,
+            34.74949962, 31.95388123, 16)
+
+        assert(bboxes.isNotEmpty())
+        println(bboxes)
 
     }
 }
