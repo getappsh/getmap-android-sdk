@@ -31,9 +31,6 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-// @hanokhaloni - after digging into Javalogy/Kotlinology naming conventions, Dot-Net style *Impl suffix for
-// implementator is not welcomed at all. Default* prefix is a lesser accepted evil in such case.
-
 internal class DefaultGetMapService : GetMapService {
 
     private lateinit var client: GetAppClient
@@ -79,7 +76,6 @@ internal class DefaultGetMapService : GetMapService {
         val discoveries = client.deviceApi.deviceControllerDiscoveryCatalog(query)
         val result = mutableListOf<DiscoveryItem>()
         discoveries.map?.forEach {
-            //println(it)
             result.add(DiscoveryItem(it.productId.toString(),it.productName.toString(), it.boundingBox.toString()))
         }
 
@@ -180,7 +176,7 @@ internal class DefaultGetMapService : GetMapService {
 
         val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
-        println("download url: $status.url")
+        println("getMapImportDeliveryStatus | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = status.catalogId
@@ -203,6 +199,8 @@ internal class DefaultGetMapService : GetMapService {
 
         val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "detapp-server", PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
+
+        println("setMapImportDeliveryStart | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = inputImportRequestId
@@ -258,6 +256,10 @@ internal class DefaultGetMapService : GetMapService {
 
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
+
+        //TODO download 2 device
+        //http://getmap-dev.getapp.sh/api/Download/
+        //OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg
 
 
         return MapDeployState.DONE

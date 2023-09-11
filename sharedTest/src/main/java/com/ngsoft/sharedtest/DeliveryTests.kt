@@ -10,6 +10,7 @@ class DeliveryTests : GetMapServiceTestBase() {
         assert(requestId == ret?.importRequestId)
 
         println(ret?.state?.toString())
+
     }
 
     fun testDeliveryStatus(requestId: String) {
