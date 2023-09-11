@@ -11,8 +11,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/app/sdk" />
+            <option value="$PROJECT_DIR$/getAppClient" />
+            <option value="$PROJECT_DIR$/sdk" />
+            <option value="$PROJECT_DIR$/sharedTest" />
+            <option value="$PROJECT_DIR$/tileMatrix" />
           </set>
         </option>
       </GradleProjectSettings>

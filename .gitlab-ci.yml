@@ -30,6 +30,7 @@ variables:
 before_script:
   - apt-get --quiet update --yes
   - apt-get --quiet install --yes wget unzip
+  - apt-get --quiet install --yes python3 python3-pip
 
   # Setup path as android_home for moving/exporting the downloaded sdk into it
   - export ANDROID_HOME="${PWD}/android-sdk-root"
@@ -62,10 +63,10 @@ lintDebug:
   interruptible: true
   stage: build
   script:
-    - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
+    - ./gradlew -Pci --console=plain :sdk:lintDebug -PbuildDir=lint
   artifacts:
     paths:
-      - app/lint/reports/lint-results-debug.html
+      - sdk/lint/reports/lint-results-debug.html
     expose_as: "lint-report"
     when: always
 
@@ -77,13 +78,14 @@ assembleDebug:
     - ./gradlew assembleDebug
   artifacts:
     paths:
-      - app/build/outputs/
-      - app/sdk/build/outputs/
+      - getAppClient/build/outputs/
+      - sdk/build/outputs/
 
 # Run all tests, if any fails, interrupt the pipeline(fail it)
 debugTests:
   needs: [lintDebug, assembleDebug]
-  interruptible: true
+  #interruptible: true
+  interruptible: false
   stage: test
   script:
-    - ./gradlew -Pci --console=plain :app:testDebug
+    - ./gradlew -Pci --console=plain :sdk:testDebug
