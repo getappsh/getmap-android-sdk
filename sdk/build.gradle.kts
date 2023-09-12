@@ -43,7 +43,9 @@ dependencies {
     implementation("com.squareup.moshi:moshi-adapters:1.13.0")
     implementation("junit:junit:4.12")
     implementation(project(mapOf("path" to ":getAppClient")))
-    implementation(project(mapOf("path" to ":tileMatrix")))
+
+    //implementation(project(mapOf("path" to ":tileMatrix")))
+
     testImplementation("junit:junit:4.13.2")
     testImplementation(project(mapOf("path" to ":sharedTest")))
 

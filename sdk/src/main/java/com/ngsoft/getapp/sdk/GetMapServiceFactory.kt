@@ -14,7 +14,7 @@ class GetMapServiceFactory {
          */
         @JvmStatic
         fun createService(appCtx: Context, configuration: Configuration): GetMapService {
-            val service = DefaultGetMapService()
+            val service = DefaultGetMapService(appCtx)
             service.init(configuration, null)
             return service
         }
