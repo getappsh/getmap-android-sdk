@@ -17,7 +17,9 @@ import java.util.concurrent.TimeUnit
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class SdkIntegrationTests {
     companion object {
-        private var requestId: String = "invalid request id"
+        private var requestId: String =
+            "invalid request id"
+            //"1151176418437103616"
 
         @JvmStatic
         private lateinit var service: GetMapService
@@ -63,7 +65,7 @@ class SdkIntegrationTests {
 
         val props = MapProperties(
             "dcf8f87e-f02d-4b7a-bf7b-c8b64b2d202a",
-            "35.16130382,32.31263339,35.16365588,32.31557347",
+            "35.24013558,32.17154827,35.24551706,32.17523034",
             false
         )
 
@@ -97,6 +99,7 @@ class SdkIntegrationTests {
     }
 
     private fun getImportStatus() : MapImportState {
+
         val ret = service.getCreateMapImportStatus(requestId)
         assert(ret != null)
         assert(requestId == ret?.importRequestId)
@@ -109,7 +112,6 @@ class SdkIntegrationTests {
 
     @Test
     fun d_MapImportDeliveryStart_IsOk(){
-        println("d_DeliveryStart_IsOk")
 
         val ret = service.setMapImportDeliveryStart(requestId)
         assert(ret != null)
@@ -120,7 +122,6 @@ class SdkIntegrationTests {
 
     @Test
     fun e_MapImportDeliveryStatus_IsOk(){
-        println("e_DeliveryStatus_IsOk")
 
         //In current GetApp 4 Zayad implementation it returns almost instantly.
         //In another implementation is should take a #N number of requests to figure out is delivery ready
@@ -134,7 +135,6 @@ class SdkIntegrationTests {
 
     @Test
     fun f_MapImportDeploy_IsOk(){
-        println("f_DeliveryStatus_IsOk")
 
         val ret = service.setMapImportDeploy(requestId, null)
 
