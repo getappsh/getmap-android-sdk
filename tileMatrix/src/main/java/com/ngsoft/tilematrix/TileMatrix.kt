@@ -19,4 +19,12 @@ class TileMatrix(ctx: Context) {
         val ret = func?.call(lon, lat, zoom)
         return ret.toString()
     }
+
+    fun getBBoxes(left: Double, bottom: Double, right: Double, top: Double, zoom: Int) : String {
+        val module = Python.getInstance().getModule( "inspire_tile" )
+        val func = module["get_bboxes"]
+        val ret = func?.call(left, bottom, right, top, zoom)
+        return ret.toString()
+    }
+
 }

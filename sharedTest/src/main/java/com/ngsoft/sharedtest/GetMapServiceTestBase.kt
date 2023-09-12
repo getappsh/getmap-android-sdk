@@ -19,7 +19,8 @@ open class GetMapServiceTestBase {
             )
 
             println("GetMapServiceTestBase Init, using ${cfg}\nCreating GetMapService...")
-            service = GetMapServiceFactory.createService(cfg)
+            val ctx = FakeAppContext()
+            service = GetMapServiceFactory.createService(ctx, cfg)
             println("GetMapService created...")
         }
     }

@@ -8,6 +8,12 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 
 interface GetMapService {
 
+    /**
+     * Fetches product catalog
+     *
+     * @param inputProperties query params (for future use, currently gets all items available)
+     * @return collection of catalog items
+     */
     fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem>
 
 

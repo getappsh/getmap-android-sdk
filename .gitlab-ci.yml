@@ -76,10 +76,12 @@ assembleDebug:
   stage: build
   script:
     - ./gradlew assembleDebug
+    - ./gradlew dokkaHtml
   artifacts:
     paths:
       - getAppClient/build/outputs/
       - sdk/build/outputs/
+      - sdk/build/dokka/html
 
 # Run all tests, if any fails, interrupt the pipeline(fail it)
 debugTests:

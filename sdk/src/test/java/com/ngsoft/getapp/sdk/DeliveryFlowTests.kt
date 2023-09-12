@@ -1,23 +1,20 @@
 package com.ngsoft.getapp.sdk
 
 import com.ngsoft.sharedtest.DeliveryTests
-import com.ngsoft.sharedtest.DiscoveryTests
 import org.junit.Test
 
 class DeliveryFlowTests {
 
+    private val requestId = "1140263853284655104"
+
     @Test
     fun testDeliveryStart() {
-        DeliveryTests().testDeliveryStart(
-            "1150410442175152128"
-        )
+        DeliveryTests().testDeliveryStart(requestId)
     }
 
     @Test
     fun testDeliveryStatus() {
-        DeliveryTests().testDeliveryStatus(
-            "1150410442175152128"
-        )
+        DeliveryTests().testDeliveryStatus(requestId)
     }
 
 }

@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import com.ngsoft.sharedtest.FakeAppContext
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
@@ -25,7 +26,8 @@ open class TestBase {
                 "todo: storage path"
             )
 
-            service = GetMapServiceFactory.createService(cfg)
+            val ctx = FakeAppContext()
+            service = GetMapServiceFactory.createService(ctx, cfg)
         }
 
         @AfterClass

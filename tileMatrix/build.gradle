@@ -15,7 +15,7 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         python {
-            version "3.10"
+            version "3.10" //just to keep default to that of Ubuntu 22 in CI build image, so it will compile py sources during build
             pip {
                 install "pydantic==1.10.9"
                 install "morecantile==4.2.0"

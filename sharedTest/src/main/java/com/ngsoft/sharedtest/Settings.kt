@@ -5,7 +5,12 @@ object Settings {
     const val user = "rony@example.com"
     const val password = "rony123"
 
-    const val productId = "getmap:Ashdod2"
-    const val productBBOX = "34.668216705322266,31.871509552001957,34.67113494873047,31.87339782714844"
+    const val productId =
+        //"getmap:Ashdod2"
+        "4cbfa061-0fa2-4df0-bb4b-a823954a1649" //libot-yarden
+
+    const val productBBOX =
+        //"34.66135025024414,31.85468673706055,34.66409683227539,31.856060028076175"
+        "35.72107069,31.99615424,35.72347820,31.99813689" //libot-yarden
 
 }

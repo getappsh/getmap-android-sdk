@@ -94,6 +94,16 @@ https://openapi-generator.tech/docs/generators/kotlin
 
 copy-paste `kotlin` directory into `app/sdk/src/main`
 
+# Documentation
+
+To generate KDoc run: 
+
+```cmd
+gradlew dokkaHtml
+```
+
+https://kotlinlang.org/docs/dokka-gradle.html#single-project-builds
+
 ***
 
 Emulator stopped to run from Android Studio from some reason...

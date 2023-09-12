@@ -14,11 +14,11 @@ class ImportFlowTests {
     fun testImportStatus() {
         //values from my local VM's DB, that test is "interactive" one
         val requestId =
-            "1150410442175152128"
-        //"1145694428514484224"
-        //"1145699481723863040"
-        //"1145670037365850112"
-        //"aaa"
+            //"1150781481702916096"
+
+            //libot
+            //"1150790646945021952"
+            "1150831395237527552"
 
         ImportTests().testImportStatus(requestId)
 

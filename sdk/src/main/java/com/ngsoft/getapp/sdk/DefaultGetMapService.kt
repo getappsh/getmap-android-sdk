@@ -15,6 +15,7 @@ import GetApp.Client.models.PlatformDto
 import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
+import android.content.Context
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -26,20 +27,25 @@ import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
+import org.junit.Assert
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
 
-// @hanokhaloni - after digging into Javalogy/Kotlinology naming conventions, Dot-Net style *Impl suffix for
-// implementator is not welcomed at all. Default* prefix is a lesser accepted evil in such case.
-
-internal class DefaultGetMapService : GetMapService {
+internal class DefaultGetMapService(private val appCtx: Context) : GetMapService {
 
     private lateinit var client: GetAppClient
+    private lateinit var downloader: PackageDownloader
 
     fun init(configuration: Configuration, statusCode: Status?): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
+
+        //todo: fix later
+        if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext")
+            downloader = PackageDownloader(appCtx, configuration.storagePath)
+
         return true
     }
 
@@ -70,7 +76,7 @@ internal class DefaultGetMapService : GetMapService {
             )),
 
             DiscoveryMapDto("if32","map4","3","osm","bla-bla",
-                inputProperties.boundingBox.toString(),
+                inputProperties.boundingBox,
                 "WGS84", LocalDateTime.now().toString(), LocalDateTime.now().toString(), LocalDateTime.now().toString(),
                 "DJI Mavic","raster","N/A","ME","CCD","3.14","0.12"
             )
@@ -79,7 +85,6 @@ internal class DefaultGetMapService : GetMapService {
         val discoveries = client.deviceApi.deviceControllerDiscoveryCatalog(query)
         val result = mutableListOf<DiscoveryItem>()
         discoveries.map?.forEach {
-            //println(it)
             result.add(DiscoveryItem(it.productId.toString(),it.productName.toString(), it.boundingBox.toString()))
         }
 
@@ -180,7 +185,7 @@ internal class DefaultGetMapService : GetMapService {
 
         val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
-        println("download url: $status.url")
+        println("getMapImportDeliveryStatus | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = status.catalogId
@@ -203,6 +208,8 @@ internal class DefaultGetMapService : GetMapService {
 
         val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "detapp-server", PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
+
+        println("setMapImportDeliveryStart | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = inputImportRequestId
@@ -259,6 +266,39 @@ internal class DefaultGetMapService : GetMapService {
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
+        val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
+
+        if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
+            println("setMapImportDeploy - delivery not finished yet, nothing 2 download")
+            return MapDeployState.ERROR
+        }
+
+        val file2download =
+            //"http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg"
+            deliveryStatus.url!!
+
+        var completed = false
+        var downloadId: Long = -1
+
+        val downloadCompletionHandler: (Long) -> Unit = {
+            println("processing download ID=$it completion event...")
+            completed = it == downloadId
+        }
+
+        downloadId = downloader.downloadFile(file2download, downloadCompletionHandler)
+
+        var iterations = 0;
+        while(!completed){
+            TimeUnit.SECONDS.sleep(1)
+            println("awaiting download completion...")
+
+            if(iterations++ > 25){
+                println("breaking wait loop")
+                break
+            }
+        }
+
+        println("download completed...")
 
         return MapDeployState.DONE
     }

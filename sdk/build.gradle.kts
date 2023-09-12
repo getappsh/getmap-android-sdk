@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.dokka")
 }
 
 android {
@@ -42,10 +43,16 @@ dependencies {
     implementation("com.squareup.moshi:moshi-adapters:1.13.0")
     implementation("junit:junit:4.12")
     implementation(project(mapOf("path" to ":getAppClient")))
-    implementation(project(mapOf("path" to ":tileMatrix")))
+
+    //implementation(project(mapOf("path" to ":tileMatrix")))
+
     testImplementation("junit:junit:4.13.2")
     testImplementation(project(mapOf("path" to ":sharedTest")))
+
+    //testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(project(mapOf("path" to ":sharedTest")))
+    dokkaPlugin("org.jetbrains.dokka:android-documentation-plugin:1.9.0")
 }
