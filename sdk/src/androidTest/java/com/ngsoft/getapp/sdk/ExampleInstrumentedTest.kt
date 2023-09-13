@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import android.os.Environment
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
@@ -8,6 +9,9 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.TimeSource
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -24,11 +28,12 @@ class ExampleInstrumentedTest {
     }
 
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun downloadTest() {
 
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val downloader = PackageDownloader(appContext, "todo")
+        val downloader = PackageDownloader(appContext, Environment.DIRECTORY_DOWNLOADS)
 
         var completed = false
         var downloadId: Long = -1
@@ -45,12 +50,12 @@ class ExampleInstrumentedTest {
 
         assertNotEquals(downloadId, 0)
 
-        var iterations = 0;
+        val timeoutTime = TimeSource.Monotonic.markNow() + 2.minutes
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             println("awaiting download completion...")
 
-            if(iterations++ > 25){
+            if(timeoutTime.hasPassedNow()){
                 println("breaking wait loop")
                 break
             }

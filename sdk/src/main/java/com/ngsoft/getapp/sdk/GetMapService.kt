@@ -66,7 +66,10 @@ interface GetMapService {
     fun setMapImportDeliveryCancel(inputImportRequestId: String?): MapImportDeliveryStatus?
 
     /**
-     * Deploys the imported map.
+     * Deploys the imported map to device (downloads a file to a path within the public external storage directory).
+     * Storage permissions are not handled in SDK library - it's up to the app.
+     * That's blocking method (@hanokhaloni - I suggest callbacks in revised version).
+     * Download completion wait loop time-out is hard-coded to 15 minutes.
      *
      * @param inputImportRequestId The ID of the import request. Can be null.
      * @param inputState The state for the map deployment. Can be null.

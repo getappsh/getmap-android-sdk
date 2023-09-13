@@ -1,8 +1,11 @@
 package com.ngsoft.getapp.sdk
 
+import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDeployState
+import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import junit.framework.TestCase.fail
@@ -12,6 +15,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.TimeSource
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -33,7 +39,8 @@ class SdkIntegrationTests {
                 "http://getapp-dev.getapp.sh:3000",
                 "rony@example.com",
                 "rony123",
-                "todo: storage path"
+                //currently downloads file to a path within the public external storage directory
+                Environment.DIRECTORY_DOWNLOADS
             )
 
             service = GetMapServiceFactory.createService(appContext, cfg)
@@ -81,18 +88,20 @@ class SdkIntegrationTests {
         println(ret?.state?.toString())
     }
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun c_CreateMapImportStatus_IsOk(){
         println("checking import state...")
 
-        var interations = 0
         var stat = getImportStatus()
+        val timeoutTime = TimeSource.Monotonic.markNow() + 5.minutes
+
         while (stat != MapImportState.DONE){
             TimeUnit.SECONDS.sleep(1)
             stat = getImportStatus()
             if(stat == MapImportState.ERROR)
                 fail("error")
-            if(interations++ > 180){
+            if(timeoutTime.hasPassedNow()){
                 fail("timed out")
             }
         }
@@ -120,17 +129,35 @@ class SdkIntegrationTests {
         println(ret?.state?.toString())
     }
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun e_MapImportDeliveryStatus_IsOk(){
 
-        //In current GetApp 4 Zayad implementation it returns almost instantly.
-        //In another implementation is should take a #N number of requests to figure out is delivery ready
+        println("checking delivery status...")
+
+        var stat = getMapImportDeliveryStatus()
+        val timeoutTime = TimeSource.Monotonic.markNow() + 5.minutes
+
+        while (stat.state != MapDeliveryState.DONE){
+            TimeUnit.SECONDS.sleep(1)
+            stat = getMapImportDeliveryStatus()
+            if(stat.state == MapDeliveryState.ERROR)
+                fail("error")
+            if(timeoutTime.hasPassedNow()){
+                fail("timed out")
+            }
+        }
+
+        println(stat?.state?.toString())
+    }
+
+    private fun getMapImportDeliveryStatus() : MapImportDeliveryStatus {
         val ret = service.getMapImportDeliveryStatus(requestId)
 
         assert(ret != null)
         assert(requestId == ret?.importRequestId)
 
-        println(ret?.state?.toString())
+        return ret!!
     }
 
     @Test

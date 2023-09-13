@@ -27,12 +27,14 @@ import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
-import org.junit.Assert
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.TimeSource
 
 internal class DefaultGetMapService(private val appCtx: Context) : GetMapService {
 
@@ -261,6 +263,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         return result
     }
 
+    @OptIn(ExperimentalTime::class)
     override fun setMapImportDeploy(inputImportRequestId: String?, inputState: MapDeployState?): MapDeployState? {
 
         if(inputImportRequestId.isNullOrEmpty())
@@ -287,13 +290,14 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
 
         downloadId = downloader.downloadFile(file2download, downloadCompletionHandler)
 
-        var iterations = 0;
+        val timeoutTime = TimeSource.Monotonic.markNow() + 15.minutes
+
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             println("awaiting download completion...")
 
-            if(iterations++ > 25){
-                println("breaking wait loop")
+            if(timeoutTime.hasPassedNow()){
+                println("download wait loop - timed out")
                 break
             }
         }

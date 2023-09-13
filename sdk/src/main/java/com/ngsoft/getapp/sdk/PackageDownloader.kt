@@ -55,7 +55,8 @@ internal class PackageDownloader(private val context: Context, private val downl
             //.addRequestHeader("Authorization", "Bearer <token>")
 
             .setDestinationInExternalPublicDir(
-                Environment.DIRECTORY_DOWNLOADS,
+                downloadDirectory,
+                //Environment.DIRECTORY_DOWNLOADS,
                 fileName)
 
         return downloadManager.enqueue(request)
