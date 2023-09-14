@@ -1,17 +1,16 @@
 package com.ngsoft.getapp.sdk
 
 import android.os.Environment
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
+
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -20,13 +19,26 @@ import kotlin.time.TimeSource
  */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+
+    /**
+    works on emulator (API 33) only.
+    for my Samsung Galaxy 7 (and emulator also) add permission in AndroidManifest.xml:
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"  tools:node="replace" />
+    run test on device - it will fail on permission, then run:
+    adb shell pm grant com.ngsoft.getapp.sdk.test android.permission.WRITE_EXTERNAL_STORAGE
+    and run again
+    */
+//    @JvmField
+//    @get:Rule
+//    var runtimeRule: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+
     @Test
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.ngsoft.getapp.sdk.test", appContext.packageName)
     }
-
 
     @OptIn(ExperimentalTime::class)
     @Test

@@ -9,7 +9,7 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        minSdk = 29
+        minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -53,6 +53,8 @@ dependencies {
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    //androidTestImplementation("androidx.test:rules:1.5.0")
+
     androidTestImplementation(project(mapOf("path" to ":sharedTest")))
     dokkaPlugin("org.jetbrains.dokka:android-documentation-plugin:1.9.0")
 }
