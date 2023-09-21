@@ -8,6 +8,22 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 
 interface GetMapService {
 
+
+    /**
+     * That's basically all ASIO needs 4 discovery - grab all updates available
+     * and return  updates as list of (grid?) stamps
+     */
+    fun getExtentUpdates(extent: MapProperties): List<MapProperties>
+
+    /**
+     * That's basically all ASIO needs 4 delivery:
+     * 1. break down extent into grid's stamps
+     * 2. deliver these stamps with progress updates 2 ASIO
+     * 3. stamps management on device
+     */
+    fun deliverExtent(extent: MapProperties, onProgress: (Long) -> Unit)
+
+
     /**
      * Fetches product catalog
      *

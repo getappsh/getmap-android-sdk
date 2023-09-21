@@ -51,6 +51,14 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         return true
     }
 
+    override fun getExtentUpdates(extent: MapProperties): List<MapProperties> {
+        TODO("Not yet implemented")
+    }
+
+    override fun deliverExtent(extent: MapProperties, onProgress: (Long) -> Unit) {
+        TODO("Not yet implemented")
+    }
+
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
 
         //fill that vast GetApp param...
