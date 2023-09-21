@@ -17,4 +17,4 @@ rootProject.name = "getapp-sdk"
 include(":sdk")
 include(":getAppClient")
 include(":sharedTest")
-//include(":tileMatrix")
+include(":tileMatrix")

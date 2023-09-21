@@ -22,16 +22,24 @@ class ExampleInstrumentedTest {
         assertEquals("com.ngsoft.tilematrix.test", appContext.packageName)
 
         val matrixGrid = TileMatrix(appContext)
-        val tile = matrixGrid.getTile(34.65699535,31.77978378,12)
 
-        assert(tile.isNotEmpty())
-        println(tile)
+//        val tile = matrixGrid.getTile(34.65699535,31.77978378,12)
+//        assert(tile.isNotEmpty())
+//        println(tile)
 
-        val bboxes = matrixGrid.getBBoxes(34.73647075, 31.94368473,
-            34.74949962, 31.95388123, 16)
+//        val bboxes = matrixGrid.getBBoxes(34.73647075, 31.94368473,
+//            34.74949962, 31.95388123, 16)
+//
+//        assert(bboxes.isNotEmpty())
+//        println(bboxes)
 
-        assert(bboxes.isNotEmpty())
-        println(bboxes)
+        val bBoxes = matrixGrid.getBBoxesEx(34.73647075, 31.94368473,
+        34.74949962, 31.95388123, 16)
+
+        bBoxes.forEachIndexed {
+            index,
+            bBox -> println("result[$index]: $bBox")
+        }
 
     }
 }

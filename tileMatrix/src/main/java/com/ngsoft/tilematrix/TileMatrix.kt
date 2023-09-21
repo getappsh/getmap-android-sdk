@@ -17,6 +17,10 @@ class TileMatrix(ctx: Context) {
         val module = Python.getInstance().getModule( "inspire_tile" )
         val func = module["get_tile"]
         val ret = func?.call(lon, lat, zoom)
+
+        val x = ret?.asList()?.get(0)?.toInt()
+        println("x is:$x")
+
         return ret.toString()
     }
 
@@ -25,6 +29,28 @@ class TileMatrix(ctx: Context) {
         val func = module["get_bboxes"]
         val ret = func?.call(left, bottom, right, top, zoom)
         return ret.toString()
+    }
+
+    fun getBBoxesEx(left: Double, bottom: Double, right: Double, top: Double, zoom: Int) : List<BBox> {
+        val module = Python.getInstance().getModule( "inspire_tile" )
+        val func = module["get_bboxes"]
+
+        val pyBBoxes = func?.call(left, bottom, right, top, zoom)?.asList()
+
+        val result = mutableListOf<BBox>()
+
+        pyBBoxes?.forEachIndexed { index, pyBBox ->
+            println("pyBBox[$index]: $pyBBox")
+            result.add(BBox(
+                //pyObject?.asList()?.get(0)?.toDouble()!!,
+                pyBBox.asList()[0]?.toDouble()!!,
+                pyBBox.asList()[1]?.toDouble()!!,
+                pyBBox.asList()[2]?.toDouble()!!,
+                pyBBox.asList()[3]?.toDouble()!!
+            ))
+        }
+
+        return result
     }
 
 }
