@@ -114,3 +114,10 @@ D:\DevTools\Android\Sdk\emulator\emulator.exe -netdelay none -netspeed full -avd
 ```
 
 https://developer.android.com/studio/emulator_archive
+
+
+### Android ORMs
+
+https://developer.android.com/training/data-storage/room#kotlin
+https://github.com/AlexeyZatsepin/Android-ORM-benchmark
+https://github.com/agrosner/DBFlow
