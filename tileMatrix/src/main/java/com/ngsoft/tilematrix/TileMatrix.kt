@@ -1,41 +1,44 @@
 package com.ngsoft.tilematrix
 
 import android.content.Context
+import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 
 class TileMatrix(ctx: Context) {
+
+    private val _getBBoxes: PyObject?
+
     init {
         if( !Python.isStarted() )
-            Python.start( AndroidPlatform(ctx) )
+            Python.start(AndroidPlatform(ctx))
+
+        val module = Python.getInstance().getModule( "inspire_tile" )
+        _getBBoxes = module["get_bboxes"]
     }
 
-    //TODO
-    // 1. wrap that simple POC stuff with all niceties
-    // 2. drill down into returned PyObject and extract values into proper Kotlyn types
-    fun getTile(lon: Double, lat: Double, zoom: Int) : String {
+    fun getTile(lon: Double, lat: Double, zoom: Int) : Tile? {
         val module = Python.getInstance().getModule( "inspire_tile" )
         val func = module["get_tile"]
-        val ret = func?.call(lon, lat, zoom)
+        val tile = func?.call(lon, lat, zoom)
 
-        val x = ret?.asList()?.get(0)?.toInt()
-        println("x is:$x")
+        if(tile != null)
+            return Tile(
+                tile.asList()[0]?.toInt()!!,
+                tile.asList()[1]?.toInt()!!,
+                tile.asList()[2]?.toInt()!!,
+            )
 
-        return ret.toString()
+        return null
     }
 
-    fun getBBoxes(left: Double, bottom: Double, right: Double, top: Double, zoom: Int) : String {
-        val module = Python.getInstance().getModule( "inspire_tile" )
-        val func = module["get_bboxes"]
-        val ret = func?.call(left, bottom, right, top, zoom)
-        return ret.toString()
-    }
+    fun getBBoxes(left: Double, bottom: Double, right: Double, top: Double, zoom: Int) : List<BBox> {
+//        val module = Python.getInstance().getModule( "inspire_tile" )
+//        val func = module["get_bboxes"]
 
-    fun getBBoxesEx(left: Double, bottom: Double, right: Double, top: Double, zoom: Int) : List<BBox> {
-        val module = Python.getInstance().getModule( "inspire_tile" )
-        val func = module["get_bboxes"]
-
-        val pyBBoxes = func?.call(left, bottom, right, top, zoom)?.asList()
+        val pyBBoxes =
+            //func?.call(left, bottom, right, top, zoom)?.asList()
+            _getBBoxes?.call(left, bottom, right, top, zoom)?.asList()
 
         val result = mutableListOf<BBox>()
 
