@@ -1,11 +1,14 @@
 package com.ngsoft.tilescache
 
-import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.ngsoft.tilescache.models.BBox
+import com.ngsoft.tilescache.models.Tile
+import com.ngsoft.tilescache.models.TilePkg
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.LocalDateTime
 
 @RunWith(AndroidJUnit4::class)
 class TileTest {
@@ -38,9 +41,18 @@ class TileTest {
 
         dao.insertAll(
             TilePkg(
-                "my product #3", "prod24.gpkg",
+                "my product #3", "prod245.gpkg",
+                Tile(2314,3145, 16),
                 BBox(1.11,1.21, 2.11,2.21),
-                12
+                LocalDateTime.now().minusDays(18L),
+                LocalDateTime.now()
+            ),
+            TilePkg(
+                "my product #31", "prod246.gpkg",
+                Tile(2315,3146, 16),
+                BBox(1.12,1.212, 2.112,2.212),
+                LocalDateTime.now().minusDays(15L),
+                LocalDateTime.now()
             )
         )
 
@@ -51,7 +63,7 @@ class TileTest {
         val tiles = dao.getAll()
         assert(tiles.isNotEmpty())
 
-        tiles.forEach{ t-> println(t) }
+        tiles.forEach{ t -> println(t) }
 
     }
 

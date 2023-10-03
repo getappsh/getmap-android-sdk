@@ -1,4 +1,4 @@
-package com.ngsoft.tilematrix
+package com.ngsoft.tilescache.models
 
 data class Tile(
     val x: Int,

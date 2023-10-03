@@ -4,10 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.ngsoft.tilescache.models.TilePkg
 
 @Database(entities = [TilePkg::class], version = 1
     //, exportSchema = false
 )
+@TypeConverters(TimeStampConverter::class)
 abstract class TilesDatabase : RoomDatabase() {
 
     companion object {

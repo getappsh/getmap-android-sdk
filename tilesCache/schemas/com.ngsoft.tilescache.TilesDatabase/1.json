@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fbf496ba2c7855e546816570a16a4d24",
+    "identityHash": "d69b4534dce55a9b3d4b596656eece53",
     "entities": [
       {
         "tableName": "TilePkg",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prodName` TEXT, `fileName` TEXT, `zoom` INTEGER, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `left` REAL, `bottom` REAL, `right` REAL, `top` REAL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prodName` TEXT, `fileName` TEXT, `dateCreated` INTEGER, `dateCached` INTEGER, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `x` INTEGER, `y` INTEGER, `zoom` INTEGER, `left` REAL, `bottom` REAL, `right` REAL, `top` REAL)",
         "fields": [
           {
             "fieldPath": "prodName",
@@ -21,8 +21,14 @@
             "notNull": false
           },
           {
-            "fieldPath": "zoom",
-            "columnName": "zoom",
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCached",
+            "columnName": "dateCached",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -31,6 +37,24 @@
             "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "tile.x",
+            "columnName": "x",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tile.y",
+            "columnName": "y",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tile.zoom",
+            "columnName": "zoom",
+            "affinity": "INTEGER",
+            "notNull": false
           },
           {
             "fieldPath": "bBox.left",
@@ -70,7 +94,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fbf496ba2c7855e546816570a16a4d24')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd69b4534dce55a9b3d4b596656eece53')"
     ]
   }
 }

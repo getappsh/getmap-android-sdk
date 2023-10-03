@@ -1,4 +1,4 @@
-package com.ngsoft.tilescache
+package com.ngsoft.tilescache.models
 
 data class BBox(
     val left: Double,

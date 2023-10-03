@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.ngsoft.tilescache.TilePkg
+import com.ngsoft.tilescache.models.TilePkg
 
 @Dao
 interface TilesDAO {
