@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/sdk" />
             <option value="$PROJECT_DIR$/sharedTest" />
             <option value="$PROJECT_DIR$/tileMatrix" />
+            <option value="$PROJECT_DIR$/tilesCache" />
           </set>
         </option>
       </GradleProjectSettings>

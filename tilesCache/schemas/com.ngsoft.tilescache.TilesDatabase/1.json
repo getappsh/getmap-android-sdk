@@ -1,0 +1,76 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "fbf496ba2c7855e546816570a16a4d24",
+    "entities": [
+      {
+        "tableName": "TilePkg",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prodName` TEXT, `fileName` TEXT, `zoom` INTEGER, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `left` REAL, `bottom` REAL, `right` REAL, `top` REAL)",
+        "fields": [
+          {
+            "fieldPath": "prodName",
+            "columnName": "prodName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "zoom",
+            "columnName": "zoom",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bBox.left",
+            "columnName": "left",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bBox.bottom",
+            "columnName": "bottom",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bBox.right",
+            "columnName": "right",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bBox.top",
+            "columnName": "top",
+            "affinity": "REAL",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fbf496ba2c7855e546816570a16a4d24')"
+    ]
+  }
+}
