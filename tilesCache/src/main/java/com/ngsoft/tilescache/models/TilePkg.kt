@@ -21,10 +21,10 @@ data class TilePkg(
     val bBox: BBox?,
 
     @TypeConverters(TimeStampConverter::class)
-    var dateCreated: LocalDateTime?,
+    val dateCreated: LocalDateTime?,
 
     @TypeConverters(TimeStampConverter::class)
-    var dateCached: LocalDateTime?
+    val dateCached: LocalDateTime?
 
 ){
     @PrimaryKey(autoGenerate = true)

@@ -29,3 +29,10 @@ def get_bboxes(left, bottom, right, top, z):
         result.append(_tms.bounds(tile))
 
     return result
+
+def get_tiles_n_bboxes(left, bottom, right, top, z):
+    result = []
+    for tile in get_tiles(left, bottom, right, top, z):
+        result.append([tile, _tms.bounds(tile)])
+
+    return result

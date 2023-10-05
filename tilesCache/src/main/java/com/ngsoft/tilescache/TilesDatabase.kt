@@ -14,15 +14,11 @@ import com.ngsoft.tilescache.models.TilePkg
 abstract class TilesDatabase : RoomDatabase() {
 
     companion object {
-
-        //@JvmStatic
         fun connect(ctx: Context) : TilesDatabase {
             return Room.databaseBuilder(ctx, TilesDatabase::class.java, "tiles-DB")
-
                 //no migration support currently. 4 migration see:
                 //https://developer.android.com/training/data-storage/room/migrating-db-versions
                 .fallbackToDestructiveMigration()
-
                 .build()
         }
     }

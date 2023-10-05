@@ -197,6 +197,7 @@
                   <entry key="Pixel_3a_API_33_x86_64" value="120" />
                   <entry key="Pixel_5_API_33" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G930F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -263,6 +264,7 @@
                   <entry key="Pixel_3a_API_33_x86_64" value="120" />
                   <entry key="Pixel_5_API_33" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G930F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -308,6 +310,46 @@
           </value>
         </entry>
         <entry key="1997232726">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_5_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="2028407519">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_5_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G930F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="2046189274">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_5_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="2083985282">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">

@@ -11,7 +11,7 @@ class TimeStampConverter {
     }
 
     @TypeConverter
-    fun dateToTimestamp(date: LocalDateTime?): Long? {
+    fun toTimestamp(date: LocalDateTime?): Long? {
         return date?.toEpochSecond(ZoneOffset.UTC)
     }
 }

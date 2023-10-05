@@ -38,5 +38,19 @@ class ExampleInstrumentedTest {
             bBox -> println("result[$index]: $bBox")
         }
 
+
+        println("tiles N bboxes")
+
+        val tilesNBoxes = matrixGrid.getTilesAndBBoxes(34.73647075, 31.94368473,
+            34.74949962, 31.95388123, 16)
+
+        assert(tilesNBoxes.isNotEmpty())
+
+        tilesNBoxes.forEachIndexed {
+                index,
+                tileNBBox -> println("result[$index]: ${tileNBBox.first} | ${tileNBBox.second}" )
+        }
+
     }
+
 }
