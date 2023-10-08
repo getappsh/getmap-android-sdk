@@ -40,6 +40,7 @@ class TilesDAOTests {
                     Tile(2314,3145, 16),
                     BBox(1.11,1.21, 2.11,2.21),
                     LocalDateTime.now().minusDays(18L),
+                    LocalDateTime.now().minusDays(10L),
                     LocalDateTime.now()
                 ),
                 TilePkg(
@@ -47,6 +48,7 @@ class TilesDAOTests {
                     Tile(2314,3145, 16),
                     BBox(1.11,1.21, 2.11,2.21),
                     LocalDateTime.now().minusDays(18L),
+                    LocalDateTime.now().minusDays(10L),
                     LocalDateTime.now()
                 ),
                 TilePkg(
@@ -54,6 +56,7 @@ class TilesDAOTests {
                     Tile(2315,3146, 16),
                     BBox(1.12,1.212, 2.112,2.212),
                     LocalDateTime.now().minusDays(15L),
+                    LocalDateTime.now().minusDays(10L),
                     LocalDateTime.now()
                 ),
                 TilePkg(
@@ -61,6 +64,7 @@ class TilesDAOTests {
                     Tile(2315,3146, 16),
                     BBox(1.12,1.212, 2.112,2.212),
                     LocalDateTime.now().minusDays(15L),
+                    LocalDateTime.now().minusDays(10L),
                     LocalDateTime.now()
                 )
             )

@@ -5,26 +5,29 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.ngsoft.tilescache.TimeStampConverter
+import org.jetbrains.annotations.NotNull
 import java.time.LocalDateTime
 
 @Entity
 data class TilePkg(
     //@ColumnInfo(name = "prod_name")
-    val prodName: String?,
-
-    val fileName: String?,
-
-    @Embedded
-    val tile: Tile?,
+    val prodName: String,
+    val fileName: String,
 
     @Embedded
-    val bBox: BBox?,
+    val tile: Tile,
+
+    @Embedded
+    val bBox: BBox,
 
     @TypeConverters(TimeStampConverter::class)
-    val dateCreated: LocalDateTime?,
+    val dateCreated: LocalDateTime,
 
     @TypeConverters(TimeStampConverter::class)
-    val dateCached: LocalDateTime?
+    val dateUpdated: LocalDateTime,
+
+    @TypeConverters(TimeStampConverter::class)
+    val dateCached: LocalDateTime
 
 ){
     @PrimaryKey(autoGenerate = true)

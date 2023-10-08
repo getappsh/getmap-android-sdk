@@ -2,35 +2,41 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d69b4534dce55a9b3d4b596656eece53",
+    "identityHash": "7b3f56d769dc1985cf5e843f56632a4f",
     "entities": [
       {
         "tableName": "TilePkg",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prodName` TEXT, `fileName` TEXT, `dateCreated` INTEGER, `dateCached` INTEGER, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `x` INTEGER, `y` INTEGER, `zoom` INTEGER, `left` REAL, `bottom` REAL, `right` REAL, `top` REAL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prodName` TEXT NOT NULL, `fileName` TEXT NOT NULL, `dateCreated` INTEGER NOT NULL, `dateUpdated` INTEGER NOT NULL, `dateCached` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `x` INTEGER NOT NULL, `y` INTEGER NOT NULL, `zoom` INTEGER NOT NULL, `left` REAL NOT NULL, `bottom` REAL NOT NULL, `right` REAL NOT NULL, `top` REAL NOT NULL)",
         "fields": [
           {
             "fieldPath": "prodName",
             "columnName": "prodName",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "fileName",
             "columnName": "fileName",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "dateCreated",
             "columnName": "dateCreated",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateUpdated",
+            "columnName": "dateUpdated",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "dateCached",
             "columnName": "dateCached",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "id",
@@ -42,43 +48,43 @@
             "fieldPath": "tile.x",
             "columnName": "x",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "tile.y",
             "columnName": "y",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "tile.zoom",
             "columnName": "zoom",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "bBox.left",
             "columnName": "left",
             "affinity": "REAL",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "bBox.bottom",
             "columnName": "bottom",
             "affinity": "REAL",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "bBox.right",
             "columnName": "right",
             "affinity": "REAL",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "bBox.top",
             "columnName": "top",
             "affinity": "REAL",
-            "notNull": false
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -94,7 +100,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd69b4534dce55a9b3d4b596656eece53')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b3f56d769dc1985cf5e843f56632a4f')"
     ]
   }
 }

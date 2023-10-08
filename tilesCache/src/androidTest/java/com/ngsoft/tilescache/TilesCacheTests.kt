@@ -6,16 +6,22 @@ import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import com.ngsoft.tilescache.models.TilePkg
 import org.junit.BeforeClass
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import java.time.LocalDateTime
 
 @RunWith(AndroidJUnit4::class)
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class TilesCacheTests {
-    companion object {
 
-        @JvmStatic
+    private val prodID = "prod #01"
+    private val tileX = 248
+    private val tileY = 458
+    private val tileZoom = 12
+    private val updateDate = LocalDateTime.of(2023, 10, 1, 1, 2, 3 )
+    companion object {
         private lateinit var cache: TilesCache
 
         @BeforeClass
@@ -25,21 +31,27 @@ class TilesCacheTests {
             val appContext = InstrumentationRegistry.getInstrumentation().targetContext
             cache = TilesCache(appContext)
         }
-
     }
 
 
     @Test
-    fun registerTile() {
+    fun a_registerTile() {
         cache.registerTilePkg(
             TilePkg(
-                "prod #1", "pkg54.gpkg",
-                Tile(23, 45, 14),
+                prodID,"dummy-tile.gpkg",
+                Tile(tileX, tileY, tileZoom),
                 BBox(1.1, 2.2, 3.3, 4.4),
-                LocalDateTime.now().minusDays(18L),
+                updateDate.minusDays(18L),
+                updateDate,
                 LocalDateTime.now()
             )
         )
+    }
+
+    @Test
+    fun b_isTileInCache() {
+        val ret = cache.isTileInCache(prodID, tileX, tileY, tileZoom, updateDate)
+        assert(ret)
     }
 
 }
