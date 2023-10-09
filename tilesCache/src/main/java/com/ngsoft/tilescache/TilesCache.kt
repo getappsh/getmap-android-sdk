@@ -1,15 +1,24 @@
 package com.ngsoft.tilescache
 
 import android.content.Context
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.ngsoft.tilescache.models.TilePkg
 import java.time.LocalDateTime
 
 class TilesCache(ctx: Context)  {
 
+    private val db: TilesDatabase
     private val dao: TilesDAO
     init {
         println("TilesCache init...")
-        dao = TilesDatabase.connect(ctx).tilesDao()
+        db = TilesDatabase.connect(ctx)
+        dao = db.tilesDao()
+    }
+
+    fun nukeTable(){
+        dao.nukeTable()
+        //reset auto-increments
+        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
     fun registerTilePkg(tilePkg: TilePkg) {

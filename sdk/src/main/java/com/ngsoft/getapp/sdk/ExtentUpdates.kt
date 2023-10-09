@@ -13,7 +13,7 @@ class ExtentUpdates(appCtx: Context) {
 
     fun getExtentUpdates(extent: MapProperties, zoomLevel: Int, updDate: LocalDateTime): List<MapProperties> {
         val bBox = string2BBox(extent.boundingBox)
-        val tilesAndBBoxes = matrixGrid.getTilesAndBBoxes(bBox.left, bBox.bottom, bBox.left, bBox.top, zoomLevel)
+        val tilesAndBBoxes = matrixGrid.getTilesAndBBoxes(bBox.left, bBox.bottom, bBox.right, bBox.top, zoomLevel)
 
         val result = mutableListOf<MapProperties>()
         tilesAndBBoxes.forEach {

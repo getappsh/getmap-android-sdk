@@ -16,12 +16,13 @@ import java.time.LocalDateTime
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class TilesCacheTests {
 
-    private val prodID = "prod #01"
-    private val tileX = 248
-    private val tileY = 458
-    private val tileZoom = 12
-    private val updateDate = LocalDateTime.of(2023, 10, 1, 1, 2, 3 )
     companion object {
+        private const val prodID = "prod #01"
+        private const val tileX = 248
+        private const val tileY = 458
+        private const val tileZoom = 12
+        private val updateDate = LocalDateTime.of(2023, 10, 1, 1, 2, 3 )
+
         private lateinit var cache: TilesCache
 
         @BeforeClass

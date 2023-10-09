@@ -42,4 +42,7 @@ interface TilesDAO {
     @Delete
     fun delete(tile: TilePkg)
 
+    @Query("DELETE FROM TilePkg")
+    fun nukeTable()
+
 }

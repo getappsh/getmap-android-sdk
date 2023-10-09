@@ -43,7 +43,7 @@ class TileMatrix(ctx: Context) {
         val result = mutableListOf<BBox>()
 
         pyBBoxes?.forEachIndexed { index, pyBBox ->
-            println("pyBBox[$index]: $pyBBox")
+            //println("pyBBox[$index]: $pyBBox")
             result.add(BBox(
                 //pyObject?.asList()?.get(0)?.toDouble()!!,
                 pyBBox.asList()[0]?.toDouble()!!,
@@ -64,7 +64,7 @@ class TileMatrix(ctx: Context) {
         val result = mutableListOf<Pair<Tile, BBox>>()
 
         pyTilesNBBoxes?.forEachIndexed { index, pyTileNBBox ->
-            println("pyTileNBBox[$index]: $pyTileNBBox")
+            //println("pyTileNBBox[$index]: $pyTileNBBox")
             val pyTile = pyTileNBBox.asList()[0]
             val pyBBox = pyTileNBBox.asList()[1]
             result.add(Pair(
