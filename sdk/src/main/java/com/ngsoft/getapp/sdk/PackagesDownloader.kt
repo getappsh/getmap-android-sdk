@@ -15,6 +15,11 @@ data class DownloadProgress(
 )
 
 internal class PackagesDownloader(context: Context, downloadDirectory: String) {
+    private data class DownloadTrack(
+        val fileName: String,
+        var progress: Float,
+        var isCompleted: Boolean
+    )
 
     private val downloader = PackageDownloader(context, downloadDirectory)
     private var downloadProgressHandler: ((DownloadProgress)->Unit)? = null
@@ -22,22 +27,19 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String) {
     fun downloadFiles(files2download: List<String>, onProgress: (DownloadProgress)->Unit) {
         downloadProgressHandler = onProgress
 
-        val downloads = HashMap<Long, String>()
+        val downloads = HashMap<Long, DownloadTrack>()
 
         val downloadCompletionHandler: (Long) -> Unit = {
             println("processing download completion for id =$it...")
+            downloads[it]?.isCompleted = true
 
             var total = 0
             var completed = 0
             val packages = mutableListOf<PackageDownloadProgress>()
-            downloads.forEach { (k, v) ->
-                if(k == it){
-                    packages.add(PackageDownloadProgress(v, 0.0f, true))
-                    completed++
-                } else {
-                    packages.add(PackageDownloadProgress(v, 0.0f, false))
-                }
+            downloads.forEach { (_, v) ->
                 total++
+                if(v.isCompleted) completed++
+                packages.add(PackageDownloadProgress(v.fileName, v.progress, v.isCompleted))
             }
 
             val progress = DownloadProgress(packages, completed/total * 100.0f, total == completed)
@@ -47,7 +49,7 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String) {
         for (file in files2download){
             val downloadId = downloader.downloadFile(file, downloadCompletionHandler)
             println("adding downloadId id =$downloadId...")
-            downloads[downloadId] = getFileNameFromUri(file)
+            downloads[downloadId] = DownloadTrack(getFileNameFromUri(file),0.0f, false)
         }
 
     }
