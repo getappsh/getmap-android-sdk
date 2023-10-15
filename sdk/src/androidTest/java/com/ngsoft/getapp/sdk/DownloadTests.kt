@@ -113,7 +113,7 @@ class DownloadTests {
     @OptIn(ExperimentalTime::class)
     @Test
     fun timerTest(){
-        var completed = false
+        val completed = false
 
         val t = timer(initialDelay = 0, period = 100 ) {
             println("tick...")
