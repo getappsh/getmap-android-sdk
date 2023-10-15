@@ -17,12 +17,6 @@ import org.junit.BeforeClass
 @RunWith(AndroidJUnit4::class)
 class TileMatrixTests {
 
-    private val bBoxLeft = 34.73647075
-    private val bBoxBottom = 31.94368473
-    private val bBoxRight = 34.74949962
-    private val bBoxTop = 31.95388123
-    private val zoomLevel = 16
-
     companion object {
         private lateinit var matrixGrid: TileMatrix
 
@@ -35,32 +29,11 @@ class TileMatrixTests {
         }
     }
 
-    @Test
-    fun getTileTest() {
-        val tile = matrixGrid.getTile(34.65699535,31.77978378,12)
-        assert(tile != null)
-        println(tile)
-    }
-
-    @Test
-    fun getBBoxesTest() {
-
-        val bBoxes = matrixGrid.getBBoxes(
-            bBoxLeft,
-            bBoxBottom,
-            bBoxRight,
-            bBoxTop,
-            zoomLevel
-        )
-
-        assert(bBoxes.isNotEmpty())
-
-        bBoxes.forEachIndexed {
-                index,
-                bBox -> println("result[$index]: $bBox")
-        }
-
-    }
+    private val bBoxLeft = 34.73647075
+    private val bBoxBottom = 31.94368473
+    private val bBoxRight = 34.74949962
+    private val bBoxTop = 31.95388123
+    private val zoomLevel = 16
 
     @Test
     fun getTilesAndBBoxesTest() {
@@ -79,8 +52,6 @@ class TileMatrixTests {
                 index,
                 tileNBBox -> println("result[$index]: ${tileNBBox.first} | ${tileNBBox.second}" )
         }
-
     }
-
 
 }

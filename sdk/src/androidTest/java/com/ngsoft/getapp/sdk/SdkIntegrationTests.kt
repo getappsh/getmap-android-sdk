@@ -40,7 +40,8 @@ class SdkIntegrationTests {
                 "rony@example.com",
                 "rony123",
                 //currently downloads file to a path within the public external storage directory
-                Environment.DIRECTORY_DOWNLOADS
+                Environment.DIRECTORY_DOWNLOADS,
+                14
             )
 
             service = GetMapServiceFactory.createService(appContext, cfg)
@@ -71,8 +72,10 @@ class SdkIntegrationTests {
     fun b_CreateMapImport_IsOk() {
 
         val props = MapProperties(
-            "dcf8f87e-f02d-4b7a-bf7b-c8b64b2d202a",
-            "35.24013558,32.17154827,35.24551706,32.17523034",
+            "getmap:Ashdod2",
+            "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
+//            "dcf8f87e-f02d-4b7a-bf7b-c8b64b2d202a",
+//            "35.24013558,32.17154827,35.24551706,32.17523034",
             false
         )
 
@@ -148,7 +151,7 @@ class SdkIntegrationTests {
             }
         }
 
-        println(stat?.state?.toString())
+        println(stat.state?.toString())
     }
 
     private fun getMapImportDeliveryStatus() : MapImportDeliveryStatus {

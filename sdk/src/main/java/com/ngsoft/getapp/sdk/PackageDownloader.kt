@@ -7,12 +7,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import java.io.File
 
+
 @SuppressLint("UnspecifiedRegisterReceiverFlag")
 internal class PackageDownloader(private val context: Context, private val downloadDirectory: String) {
+
+    private val TAG = "PackageDownloader"
 
     private val downloadManager =
         context.getSystemService(DownloadManager::class.java)
@@ -21,13 +25,11 @@ internal class PackageDownloader(private val context: Context, private val downl
 
     private val broadCastReceiver = object : BroadcastReceiver() {
         override fun onReceive(contxt: Context?, intent: Intent?) {
-            //if(intent?.action == ACTION_DOWNLOAD_COMPLETE) {
-                val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
-                if(id != -1L) {
-                    println("Download with ID=$id finished!")
-                    downloadCompletedHandler?.invoke(id!!)
-                }
-           // }
+            val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
+            if(id != -1L) {
+                Log.d(TAG, "Download with ID = $id finished!")
+                downloadCompletedHandler?.invoke(id!!)
+            }
         }
     }
 
@@ -37,13 +39,13 @@ internal class PackageDownloader(private val context: Context, private val downl
     }
 
     protected fun finalize() {
-        println("PackageDownloader finalizer - unregistering receiver...")
+        Log.d(TAG, "PackageDownloader finalizer - unregistering receiver...")
         context.unregisterReceiver(broadCastReceiver)
     }
 
     fun downloadFile(url: String, onDownloadCompleted: (Long) -> Unit): Long {
         downloadCompletedHandler = onDownloadCompleted
-        val fileName= getFileNameFromUri(url);
+        val fileName= getFileNameFromUri(url)
         val request = DownloadManager.Request(url.toUri())
             .setMimeType(parseMimeType(url))
 
@@ -53,12 +55,40 @@ internal class PackageDownloader(private val context: Context, private val downl
 
             //.addRequestHeader("Authorization", "Bearer <token>")
 
-            .setDestinationInExternalPublicDir(
-                downloadDirectory,
-                //Environment.DIRECTORY_DOWNLOADS,
-                fileName)
+            .setDestinationInExternalPublicDir(downloadDirectory, fileName)
 
         return downloadManager.enqueue(request)
+    }
+
+
+    @SuppressLint("Range")
+    fun queryProgress(downloadId: Long): Int{
+        var progress = 0
+        val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+        if (cursor.moveToFirst()) {
+            when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
+                DownloadManager.STATUS_RUNNING -> {
+                    val totalBytes =
+                        cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    if (totalBytes > 0) {
+                        val downloadedBytes =
+                            cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                        progress = (downloadedBytes * 100 / totalBytes).toInt()
+                    }
+                }
+
+                DownloadManager.STATUS_SUCCESSFUL -> {
+                    progress = 100
+                }
+
+                DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING -> {}
+                DownloadManager.STATUS_FAILED -> progress = -1
+            }
+        }
+
+        cursor.close()
+
+        return progress
     }
 
     private fun parseMimeType(url: String): String {
@@ -67,11 +97,11 @@ internal class PackageDownloader(private val context: Context, private val downl
         val ext = MimeTypeMap.getFileExtensionFromUrl(file.name)
         var type = map.getMimeTypeFromExtension(ext)
         type = type ?: "*/*"
-        return type;
+        return type
     }
 
-    private fun getFileNameFromUri(url: String): String {
-        return url.substring( url.lastIndexOf('/') + 1, url.length);
+    fun getFileNameFromUri(url: String): String {
+        return url.substring( url.lastIndexOf('/') + 1, url.length)
     }
 
 }

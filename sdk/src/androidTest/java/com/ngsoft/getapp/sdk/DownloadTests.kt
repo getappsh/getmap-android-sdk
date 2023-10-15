@@ -7,7 +7,9 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
@@ -87,8 +89,9 @@ class DownloadTests {
 //            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
 //            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_23_46_306Z.gpkg",
 //            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_22_00_607Z.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/Orthophoto_tzor_crop_1_0_12_2023_07_03T05_46_13_022Z.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_07_02T14_24_17_828Z.gpkg"
+//            "http://getmap-dev.getapp.sh/api/Download/Orthophoto_tzor_crop_1_0_12_2023_07_03T05_46_13_022Z.gpkg",
+//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_07_02T14_24_17_828Z.gpkg"
+            "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg"
         )
 
         downloader.downloadFiles(files, downloadProgressHandler)
@@ -105,6 +108,31 @@ class DownloadTests {
         }
 
         println("download completed...")
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun timerTest(){
+        var completed = false
+
+        val t = timer(initialDelay = 0, period = 100 ) {
+            println("tick...")
+        }
+
+        val timeoutTime = TimeSource.Monotonic.markNow() + 5.seconds
+        while(!completed){
+            TimeUnit.SECONDS.sleep(1)
+            println("awaiting download completion...")
+
+            if(timeoutTime.hasPassedNow()){
+                println("breaking wait loop")
+                t.cancel()
+                break
+            }
+        }
+
+        println("download completed...")
 
     }
+
 }

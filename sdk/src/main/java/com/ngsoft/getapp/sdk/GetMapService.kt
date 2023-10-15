@@ -5,6 +5,7 @@ import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
+import java.time.LocalDateTime
 
 interface GetMapService {
 
@@ -13,7 +14,7 @@ interface GetMapService {
      * That's basically all ASIO needs 4 discovery - grab all updates available
      * and return  updates as list of (grid?) stamps
      */
-    fun getExtentUpdates(extent: MapProperties): List<MapProperties>
+    fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapProperties>
 
     /**
      * That's basically all ASIO needs 4 delivery:

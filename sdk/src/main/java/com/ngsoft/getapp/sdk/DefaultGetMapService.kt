@@ -27,6 +27,7 @@ import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
+import com.ngsoft.tilescache.TilesCache
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -40,9 +41,16 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
 
     private lateinit var client: GetAppClient
     private lateinit var downloader: PackageDownloader
+    private lateinit var extentUpdates: ExtentUpdates
+    private lateinit var cache: TilesCache
+    private var zoomLevel: Int = 0
+
 
     fun init(configuration: Configuration, statusCode: Status?): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
+        extentUpdates = ExtentUpdates(appCtx)
+        cache = TilesCache(appCtx)
+        zoomLevel = configuration.zoomLevel
 
         //todo: fix later
         if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext")
@@ -51,8 +59,8 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         return true
     }
 
-    override fun getExtentUpdates(extent: MapProperties): List<MapProperties> {
-        TODO("Not yet implemented")
+    override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapProperties> {
+        return extentUpdates.getExtentUpdates(extent, zoomLevel, updateDate)
     }
 
     override fun deliverExtent(extent: MapProperties, onProgress: (Long) -> Unit) {
@@ -95,7 +103,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         val discoveries = client.deviceApi.deviceControllerDiscoveryCatalog(query)
         val result = mutableListOf<DiscoveryItem>()
         discoveries.map?.forEach {
-            result.add(DiscoveryItem(it.productId.toString(),it.productName.toString(), it.boundingBox.toString()))
+            result.add(DiscoveryItem(it.productId.toString(),it.productName.toString(), it.boundingBox.toString(), it.updateDateUTC!!))
         }
 
         return result

@@ -1,16 +1,17 @@
 package com.ngsoft.tilescache
 
 import android.content.Context
+import android.util.Log
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.ngsoft.tilescache.models.TilePkg
 import java.time.LocalDateTime
 
 class TilesCache(ctx: Context)  {
-
+    private val TAG = "TilesCache"
     private val db: TilesDatabase
     private val dao: TilesDAO
     init {
-        println("TilesCache init...")
+        Log.d(TAG,"TilesCache init...")
         db = TilesDatabase.connect(ctx)
         dao = db.tilesDao()
     }
