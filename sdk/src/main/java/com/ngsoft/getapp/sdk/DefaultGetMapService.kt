@@ -16,6 +16,7 @@ import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
+import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -23,11 +24,11 @@ import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
-import com.ngsoft.tilescache.TilesCache
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -37,20 +38,15 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
-internal class DefaultGetMapService(private val appCtx: Context) : GetMapService {
+internal open class DefaultGetMapService(private val appCtx: Context) : GetMapService {
 
-    private lateinit var client: GetAppClient
-    private lateinit var downloader: PackageDownloader
-    private lateinit var extentUpdates: ExtentUpdates
-    private lateinit var cache: TilesCache
-    private var zoomLevel: Int = 0
+    private val TAG = "DefaultGetMapService"
+    protected lateinit var client: GetAppClient
+    protected lateinit var downloader: PackageDownloader
 
 
-    fun init(configuration: Configuration, statusCode: Status?): Boolean {
+    open fun init(configuration: Configuration): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
-        extentUpdates = ExtentUpdates(appCtx)
-        cache = TilesCache(appCtx)
-        zoomLevel = configuration.zoomLevel
 
         //todo: fix later
         if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext")
@@ -59,13 +55,16 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         return true
     }
 
-    override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapProperties> {
-        return extentUpdates.getExtentUpdates(extent, zoomLevel, updateDate)
+    override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
+        TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun deliverExtent(extent: MapProperties, onProgress: (Long) -> Unit) {
-        TODO("Not yet implemented")
+    override fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile> {
+        TODO("Not implemented in DefaultGetMapService")
     }
+
+
+//==================================================================================================
 
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
 
@@ -93,7 +92,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
                 )
             )),
 
-            DiscoveryMapDto("if32","map4","3","osm","bla-bla",
+            DiscoveryMapDto(inputProperties.productId,"no-name","3","osm","bla-bla",
                 inputProperties.boundingBox,
                 "WGS84", LocalDateTime.now().toString(), LocalDateTime.now().toString(), LocalDateTime.now().toString(),
                 "DJI Mavic","raster","N/A","ME","CCD","3.14","0.12"
@@ -203,7 +202,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
 
         val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
-        println("getMapImportDeliveryStatus | download url: ${status.url}")
+        Log.d(TAG,"getMapImportDeliveryStatus | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = status.catalogId
@@ -227,7 +226,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "detapp-server", PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
 
-        println("setMapImportDeliveryStart | download url: ${status.url}")
+        Log.d(TAG,"setMapImportDeliveryStart | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = inputImportRequestId
@@ -288,7 +287,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
-            println("setMapImportDeploy - delivery not finished yet, nothing 2 download")
+            Log.d(TAG,"setMapImportDeploy - delivery not finished yet, nothing 2 download")
             return MapDeployState.ERROR
         }
 
@@ -300,7 +299,7 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
         var downloadId: Long = -1
 
         val downloadCompletionHandler: (Long) -> Unit = {
-            println("processing download ID=$it completion event...")
+            Log.d(TAG,"processing download ID=$it completion event...")
             completed = it == downloadId
         }
 
@@ -310,15 +309,15 @@ internal class DefaultGetMapService(private val appCtx: Context) : GetMapService
 
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
-            println("awaiting download completion...")
+            Log.d(TAG,"awaiting download completion...")
 
             if(timeoutTime.hasPassedNow()){
-                println("download wait loop - timed out")
+                Log.d(TAG,"download wait loop - timed out")
                 break
             }
         }
 
-        println("download completed...")
+        Log.d(TAG,"download completed...")
 
         return MapDeployState.DONE
     }

@@ -4,6 +4,8 @@ import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.models.MapTile
+import com.ngsoft.tilescache.TilesCache
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -15,6 +17,9 @@ import java.time.LocalDateTime
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class App4ASIOIntegrationTests {
     companion object {
+
+        private lateinit var tilesUpdates: List<MapTile>
+        private lateinit var cache: TilesCache
 
         @JvmStatic
         private lateinit var service: GetMapService
@@ -30,16 +35,21 @@ class App4ASIOIntegrationTests {
                 "rony123",
                 //currently downloads file to a path within the public external storage directory
                 Environment.DIRECTORY_DOWNLOADS,
-                16
+                16,
+                5,5
             )
 
-            service = GetMapServiceFactory.createService(appContext, cfg)
+            service = GetMapServiceFactory.createAsioAppSvc(appContext, cfg)
+
+            cache = TilesCache(appContext)
+            cache.nukeTable()
         }
 
     }
 
     @Test
-    fun a_ExtentUpdates_IsOk() {
+    fun a_GetExtentUpdates() {
+
         val props = MapProperties(
             "getmap:Ashdod2",
             "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
@@ -48,18 +58,36 @@ class App4ASIOIntegrationTests {
             false
         )
 
-        val updates = service.getExtentUpdates(props, LocalDateTime.of(2023, 11, 23, 1, 2, 3 ))
+        tilesUpdates = service.getExtentUpdates(props, LocalDateTime.of(
+            2023, 11, 23,
+            1, 2, 3 )
+        )
 
-        assert(updates.isNotEmpty())
+        assert(tilesUpdates.isNotEmpty())
 
-        val updatesCount = updates.count()
+        val updatesCount = tilesUpdates.count()
         println("got count = $updatesCount")
 
         assert(updatesCount == 6)
 
-        updates.forEach{
+        tilesUpdates.forEach{
             println(it)
         }
+    }
+
+    @Test
+    fun b_DeliverTiles() {
+
+        var tilesCount = 0
+        val downloadProgressHandler: (DownloadProgress) -> Unit = {
+            println("processing download progress=$it event...")
+            tilesCount++
+        }
+
+        service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
+
+        assert(tilesCount == 6)
+
     }
 
 }

@@ -16,7 +16,8 @@ open class GetMapServiceTestBase {
                 Settings.user,
                 Settings.password,
                 "todo:",
-                14
+                14,
+                5,5
             )
 
             println("GetMapServiceTestBase Init, using ${cfg}\nCreating GetMapService...")

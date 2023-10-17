@@ -6,7 +6,7 @@ class GetMapServiceFactory {
     companion object {
 
         /**
-         * Creates service
+         * Creates service SDK-style
          *
          * @param appCtx application context
          * @param configuration service configuration
@@ -15,8 +15,23 @@ class GetMapServiceFactory {
         @JvmStatic
         fun createService(appCtx: Context, configuration: Configuration): GetMapService {
             val service = DefaultGetMapService(appCtx)
-            service.init(configuration, null)
+            service.init(configuration)
             return service
         }
+
+        /**
+         * Creates service ASIOApp-style
+         *
+         * @param appCtx application context
+         * @param configuration service configuration
+         * @return created service
+         */
+        @JvmStatic
+        fun createAsioAppSvc(appCtx: Context, configuration: Configuration): GetMapService {
+            val service = AsioAppGetMapService(appCtx)
+            service.init(configuration)
+            return service
+        }
+
     }
 }

@@ -76,7 +76,7 @@ class DownloadTests {
     @Test
     fun packagesDownloadTest(){
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val downloader = PackagesDownloader(appContext, Environment.DIRECTORY_DOWNLOADS)
+        val downloader = PackagesDownloader(appContext, Environment.DIRECTORY_DOWNLOADS, null)
 
         var completed = false
 
@@ -86,12 +86,13 @@ class DownloadTests {
         }
 
         val files = listOf(
-//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
-//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_23_46_306Z.gpkg",
-//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_22_00_607Z.gpkg",
-//            "http://getmap-dev.getapp.sh/api/Download/Orthophoto_tzor_crop_1_0_12_2023_07_03T05_46_13_022Z.gpkg",
-//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_07_02T14_24_17_828Z.gpkg"
-            "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg"
+            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_23_46_306Z.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_22_00_607Z.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/Orthophoto_tzor_crop_1_0_12_2023_07_03T05_46_13_022Z.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_07_02T14_24_17_828Z.gpkg"
+//            ,
+//            "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg"
         )
 
         downloader.downloadFiles(files, downloadProgressHandler)

@@ -5,24 +5,29 @@ import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.models.MapTile
 import java.time.LocalDateTime
 
 interface GetMapService {
 
+    /**
+     * Get extent updates
+     *
+     * @param extent to get tiles updates for
+     * @param updateDate
+     * @return list of tile updates
+     */
+    fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile>
 
     /**
-     * That's basically all ASIO needs 4 discovery - grab all updates available
-     * and return  updates as list of (grid?) stamps
+     * Deliver extent tiles
+     *
+     * @param extentTiles to deliver
+     * @param onProgress delivery progress handler
+     * @receiver
+     * @return list of delivered tiles
      */
-    fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapProperties>
-
-    /**
-     * That's basically all ASIO needs 4 delivery:
-     * 1. break down extent into grid's stamps
-     * 2. deliver these stamps with progress updates 2 ASIO
-     * 3. stamps management on device
-     */
-    fun deliverExtent(extent: MapProperties, onProgress: (Long) -> Unit)
+    fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile>
 
 
     /**

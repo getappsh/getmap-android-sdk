@@ -15,6 +15,12 @@ import java.io.File
 
 @SuppressLint("UnspecifiedRegisterReceiverFlag")
 internal class PackageDownloader(private val context: Context, private val downloadDirectory: String) {
+    companion object{
+        fun getFileNameFromUri(url: String): String {
+            return url.substring( url.lastIndexOf('/') + 1, url.length)
+        }
+
+    }
 
     private val TAG = "PackageDownloader"
 
@@ -100,8 +106,5 @@ internal class PackageDownloader(private val context: Context, private val downl
         return type
     }
 
-    fun getFileNameFromUri(url: String): String {
-        return url.substring( url.lastIndexOf('/') + 1, url.length)
-    }
 
 }

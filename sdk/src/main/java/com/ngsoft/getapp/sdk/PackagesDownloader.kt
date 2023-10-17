@@ -16,7 +16,12 @@ data class DownloadProgress(
     val isCompleted: Boolean
 )
 
-internal class PackagesDownloader(context: Context, downloadDirectory: String) {
+internal class PackagesDownloader(context: Context, downloadDirectory: String, private var downloader: PackageDownloader?) {
+    init {
+        if(downloader == null)
+            downloader = PackageDownloader(context, downloadDirectory)
+    }
+
     private data class DownloadTrack(
         val fileName: String,
         var progress: Int,
@@ -24,7 +29,7 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String) {
     )
 
     private val TAG = "PackagesDownloader"
-    private val downloader = PackageDownloader(context, downloadDirectory)
+    //private val downloader = PackageDownloader(context, downloadDirectory)
     private var downloadProgressHandler: ((DownloadProgress)->Unit)? = null
 
     fun downloadFiles(files2download: List<String>, onProgress: (DownloadProgress)->Unit) {
@@ -55,9 +60,9 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String) {
         }
 
         for (file in files2download){
-            val downloadId = downloader.downloadFile(file, downloadCompletionHandler)
+            val downloadId = downloader?.downloadFile(file, downloadCompletionHandler)
             Log.d(TAG,"adding downloadId = $downloadId...")
-            downloads[downloadId] = DownloadTrack(downloader.getFileNameFromUri(file),0, false)
+            downloads[downloadId!!] = DownloadTrack(PackageDownloader.getFileNameFromUri(file),0, false)
         }
 
 //        val tmr = timer(initialDelay = 0, period = 100 ) {
