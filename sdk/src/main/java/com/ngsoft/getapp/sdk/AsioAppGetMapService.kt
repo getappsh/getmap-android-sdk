@@ -31,7 +31,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
 
-        //todo: fix later
+        //todo: investigate AppContext substitution/mocking for non-android tests instead of that:
         if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext"){
             packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
             extentUpdates = ExtentUpdates(appCtx)
@@ -49,17 +49,18 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
     @OptIn(ExperimentalTime::class)
     override fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile> {
-        Log.d(TAG,"deliverExtentTiles - delivering tiles...")
+        Log.i(TAG,"deliverExtentTiles - delivering tiles...")
         val tiles2download = mutableListOf<Pair<String, MapTile>>()
         extentTiles.forEach {
             val tileFile = deliverTile(it)
-            if(tileFile != null)
+            if(tileFile != null) {
                 tiles2download.add(Pair(tileFile, it))
-            else
-                Log.d(TAG,"deliverExtentTiles - failed to import tile")
+            } else {
+                Log.w(TAG,"deliverExtentTiles - failed to import tile")
+            }
         }
 
-        Log.d(TAG,"deliverExtentTiles - downloading tiles...")
+        Log.i(TAG,"deliverExtentTiles - downloading tiles...")
         val downloadedTiles = mutableListOf<MapTile>()
         var completed = false
         val downloadProgressHandler: (DownloadProgress) -> Unit = { progress ->
@@ -68,8 +69,9 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                 if(pkg.isCompleted){
                     val found = tiles2download.find { PackageDownloader.getFileNameFromUri(it.first) == pkg.fileName }
                     if (found != null) {
-                        if (downloadedTiles.indexOf(found.second) == -1)
+                        if (downloadedTiles.indexOf(found.second) == -1){
                             downloadedTiles.add(found.second)
+                        }
                     } else {
                         throw IllegalStateException("Failed to find MapTile by file name = ${pkg.fileName}")
                     }
@@ -84,12 +86,12 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             if(timeoutTime.hasPassedNow()){
-                Log.d(TAG,"deliverExtentTiles - tiles download timed out...")
+                Log.w(TAG,"deliverExtentTiles - tiles download timed out...")
                 break
             }
         }
 
-        Log.d(TAG,"deliverExtentTiles - tiles delivery completed...")
+        Log.i(TAG,"deliverExtentTiles - tiles delivery completed...")
 
         //todo: register tiles
         println("downloaded tiles are:")

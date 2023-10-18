@@ -41,7 +41,8 @@ class SdkIntegrationTests {
                 "rony123",
                 //currently downloads file to a path within the public external storage directory
                 Environment.DIRECTORY_DOWNLOADS,
-                14
+                14,
+                5,5
             )
 
             service = GetMapServiceFactory.createService(appContext, cfg)
@@ -102,8 +103,9 @@ class SdkIntegrationTests {
         while (stat != MapImportState.DONE){
             TimeUnit.SECONDS.sleep(1)
             stat = getImportStatus()
-            if(stat == MapImportState.ERROR)
+            if(stat == MapImportState.ERROR) {
                 fail("error")
+            }
             if(timeoutTime.hasPassedNow()){
                 fail("timed out")
             }
@@ -144,8 +146,9 @@ class SdkIntegrationTests {
         while (stat.state != MapDeliveryState.DONE){
             TimeUnit.SECONDS.sleep(1)
             stat = getMapImportDeliveryStatus()
-            if(stat.state == MapDeliveryState.ERROR)
+            if(stat.state == MapDeliveryState.ERROR) {
                 fail("error")
+            }
             if(timeoutTime.hasPassedNow()){
                 fail("timed out")
             }

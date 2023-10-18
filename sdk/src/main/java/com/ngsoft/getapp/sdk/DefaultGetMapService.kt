@@ -48,7 +48,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     open fun init(configuration: Configuration): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
-        //todo: fix later
+        //todo: investigate AppContext substitution/mocking for non-android tests instead of that:
         if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext")
             downloader = PackageDownloader(appCtx, configuration.storagePath)
 
