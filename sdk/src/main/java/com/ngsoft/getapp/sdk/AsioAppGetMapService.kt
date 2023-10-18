@@ -8,6 +8,9 @@ import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.tilescache.TilesCache
+import com.ngsoft.tilescache.models.BBox
+import com.ngsoft.tilescache.models.Tile
+import com.ngsoft.tilescache.models.TilePkg
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
@@ -35,7 +38,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext"){
             packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
             extentUpdates = ExtentUpdates(appCtx)
-             cache = TilesCache(appCtx)
+            cache = TilesCache(appCtx)
         }
 
         return true
@@ -43,7 +46,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
         val result = extentUpdates.getExtentUpdates(extent, zoomLevel, updateDate)
-        Log.d(TAG,"getExtentUpdates - got ${result.count()} extent updates")
+        Log.i(TAG,"getExtentUpdates - got ${result.count()} extent updates")
         return result
     }
 
@@ -56,7 +59,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             if(tileFile != null) {
                 tiles2download.add(Pair(tileFile, it))
             } else {
-                Log.w(TAG,"deliverExtentTiles - failed to import tile")
+                Log.w(TAG,"deliverExtentTiles - failed to import/deliver tile: $it")
             }
         }
 
@@ -70,6 +73,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                     val found = tiles2download.find { PackageDownloader.getFileNameFromUri(it.first) == pkg.fileName }
                     if (found != null) {
                         if (downloadedTiles.indexOf(found.second) == -1){
+                            found.second.fileName = pkg.fileName
                             downloadedTiles.add(found.second)
                         }
                     } else {
@@ -91,14 +95,14 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             }
         }
 
-        Log.i(TAG,"deliverExtentTiles - tiles delivery completed...")
-
-        //todo: register tiles
-        println("downloaded tiles are:")
+        Log.i(TAG,"deliverExtentTiles - registering delivered tiles in cache...")
         downloadedTiles.forEach{
-            println(it)
-        }
+            cache.registerTilePkg(TilePkg( it.productId, it.fileName!!,
+                Tile(it.x, it.y, it.zoom), string2BBox(it.boundingBox),
+                LocalDateTime.now(), it.dateUpdated, LocalDateTime.now())
+        )}
 
+        Log.i(TAG,"deliverExtentTiles - tiles delivery completed...")
         return downloadedTiles
     }
 
@@ -109,11 +113,11 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             MapImportState.START -> if( !checkImportStatus(retCreate.importRequestId!!)) return null
             MapImportState.DONE -> Log.d(TAG,"deliverTile - createMapImport => DONE")
             MapImportState.CANCEL -> {
-                Log.d(TAG,"deliverTile - createMapImport => CANCEL")
+                Log.w(TAG,"deliverTile - createMapImport => CANCEL")
                 return null
             }
             else -> {
-                Log.d(TAG,"deliverTile - createMapImport failed: ${retCreate?.state}")
+                Log.e(TAG,"deliverTile - createMapImport failed: ${retCreate?.state}")
                 return null
             }
         }
@@ -126,18 +130,18 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             MapDeliveryState.CONTINUE,
             MapDeliveryState.PAUSE ->  Log.d(TAG,"deliverTile - setMapImportDeliveryStart => ${retDelivery?.state}")
             MapDeliveryState.CANCEL -> {
-                Log.d(TAG,"deliverTile - setMapImportDeliveryStart => CANCEL")
+                Log.w(TAG,"deliverTile - setMapImportDeliveryStart => CANCEL")
                 return null
             }
             else -> {
-                Log.d(TAG,"deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
+                Log.e(TAG,"deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
                 return null
             }
         }
 
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(retCreate.importRequestId!!)
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
-            Log.d(TAG,"deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
+            Log.e(TAG,"deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
             return null
         }
 
@@ -154,18 +158,18 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
             when(stat?.state){
                 MapImportState.ERROR -> {
-                    Log.d(TAG,"checkImportStatus - MapImportState.ERROR")
+                    Log.e(TAG,"checkImportStatus - MapImportState.ERROR")
                     return false
                 }
                 MapImportState.CANCEL -> {
-                    Log.d(TAG,"checkImportStatus - MapImportState.CANCEL")
+                    Log.w(TAG,"checkImportStatus - MapImportState.CANCEL")
                     return false
                 }
                 else -> {}
             }
 
             if(timeoutTime.hasPassedNow()){
-                Log.d(TAG,"checkImportStatus - timed out")
+                Log.w(TAG,"checkImportStatus - timed out")
                 return false
             }
         }
@@ -174,26 +178,24 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
     @OptIn(ExperimentalTime::class)
     private fun checkDeliveryStatus(requestId: String) : Boolean {
-
         var stat = getMapImportDeliveryStatus(requestId)
         val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
-
         while (stat?.state != MapDeliveryState.DONE){
             TimeUnit.SECONDS.sleep(1)
             stat = getMapImportDeliveryStatus(requestId)
             when(stat?.state){
                 MapDeliveryState.ERROR -> {
-                    Log.d(TAG,"checkDeliveryStatus - MapDeliveryState.ERROR")
+                    Log.e(TAG,"checkDeliveryStatus - MapDeliveryState.ERROR")
                     return false
                 }
                 MapDeliveryState.CANCEL -> {
-                    Log.d(TAG,"checkDeliveryStatus - MapDeliveryState.CANCEL")
+                    Log.w(TAG,"checkDeliveryStatus - MapDeliveryState.CANCEL")
                     return false
                 }
                 else -> {}
             }
             if(timeoutTime.hasPassedNow()){
-                Log.d(TAG,"checkDeliveryStatus - timed out")
+                Log.w(TAG,"checkDeliveryStatus - timed out")
                 return false
             }
         }
@@ -201,4 +203,13 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
+    private fun string2BBox(bBoxStr: String): BBox {
+        val digits = bBoxStr.split(',')
+        return BBox(
+            digits[0].toDouble(),
+            digits[1].toDouble(),
+            digits[2].toDouble(),
+            digits[3].toDouble()
+        )
+    }
 }

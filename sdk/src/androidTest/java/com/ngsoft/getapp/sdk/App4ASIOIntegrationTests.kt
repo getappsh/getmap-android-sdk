@@ -20,6 +20,7 @@ class App4ASIOIntegrationTests {
 
         private lateinit var tilesUpdates: List<MapTile>
         private lateinit var cache: TilesCache
+        private lateinit var updateDate: LocalDateTime
 
         @JvmStatic
         private lateinit var service: GetMapService
@@ -48,7 +49,22 @@ class App4ASIOIntegrationTests {
     }
 
     @Test
-    fun a_GetExtentUpdates() {
+    fun a_GetUpdateDate(){
+        val props = MapProperties("dummy product","1,2,3,4",false)
+        val products = service.getDiscoveryCatalog(props)
+        assert(products.isNotEmpty())
+
+        val productOfInterest = products.find { it.productId ==  "getmap:Ashdod2"}
+        assert(productOfInterest != null)
+
+        updateDate = productOfInterest?.updateDate?.toLocalDateTime()!!
+        assert(updateDate != LocalDateTime.of(1,1,1,0,0))
+
+        println("update date = $updateDate")
+    }
+
+    @Test
+    fun b_GetExtentUpdates() {
 
         val props = MapProperties(
             "getmap:Ashdod2",
@@ -58,10 +74,7 @@ class App4ASIOIntegrationTests {
             false
         )
 
-        tilesUpdates = service.getExtentUpdates(props, LocalDateTime.of(
-            2023, 11, 23,
-            1, 2, 3 )
-        )
+        tilesUpdates = service.getExtentUpdates(props, updateDate)
 
         assert(tilesUpdates.isNotEmpty())
 
@@ -76,18 +89,36 @@ class App4ASIOIntegrationTests {
     }
 
     @Test
-    fun b_DeliverTiles() {
-
-        var tilesCount = 0
+    fun c_DeliverTiles() {
+        var downloadedCount = 0
         val downloadProgressHandler: (DownloadProgress) -> Unit = {
             println("processing download progress=$it event...")
-            tilesCount++
+            downloadedCount++
         }
 
-        service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
+        val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
+        assert(downloadedCount == 6)
+        assert(delivered.isNotEmpty())
+        assert(delivered.count() == 6)
 
-        assert(tilesCount == 6)
+        delivered.forEach{
+            println(it)
+        }
 
+    }
+
+    @Test
+    fun d_CheckTilesInCache(){
+        val props = MapProperties(
+            "getmap:Ashdod2",
+            "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
+//            "dcf8f87e-f02d-4b7a-bf7b-c8b64b2d202a",
+//            "35.24013558,32.17154827,35.24551706,32.17523034",
+            false
+        )
+
+        tilesUpdates = service.getExtentUpdates(props, updateDate)
+        assert(tilesUpdates.isEmpty())
     }
 
 }

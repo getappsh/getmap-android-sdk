@@ -103,21 +103,3 @@ gradlew dokkaHtml
 ```
 
 https://kotlinlang.org/docs/dokka-gradle.html#single-project-builds
-
-***
-
-Emulator stopped to run from Android Studio from some reason...
-Run same command Android Studio uses from terminal instead:
-
-```shell
-D:\DevTools\Android\Sdk\emulator\emulator.exe -netdelay none -netspeed full -avd Pixel_5_API_33 -qt-hide-window -grpc-use-token -idle-grpc-timeout 300
-```
-
-https://developer.android.com/studio/emulator_archive
-
-
-### Android ORMs
-
-https://developer.android.com/training/data-storage/room#kotlin
-https://github.com/AlexeyZatsepin/Android-ORM-benchmark
-https://github.com/agrosner/DBFlow

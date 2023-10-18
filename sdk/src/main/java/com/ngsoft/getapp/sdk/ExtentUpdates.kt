@@ -21,7 +21,7 @@ class ExtentUpdates(appCtx: Context) {
             if( !cache.isTileInCache(extent.productId, it.first.x, it.first.y, it.first.zoom, updDate)){
                 result.add(MapTile(extent.productId,
         "${it.second.left},${it.second.bottom},${it.second.right},${it.second.top}",
-                    it.first.x, it.first.y, it.first.zoom, updDate)
+                    it.first.x, it.first.y, it.first.zoom, updDate, null)
                 )
             }
         }

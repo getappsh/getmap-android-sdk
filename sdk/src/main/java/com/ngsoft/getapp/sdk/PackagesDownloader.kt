@@ -4,12 +4,28 @@ import android.content.Context
 import android.util.Log
 import kotlin.math.roundToInt
 
+/**
+ * Package download progress
+ *
+ * @property fileName tile package's file name
+ * @property isCompleted completion flag
+ * @constructor Create empty Package download progress
+ */
+
 data class PackageDownloadProgress(
     val fileName: String,
-    val progress: Int,
+    //val progress: Int,
     val isCompleted: Boolean
 )
 
+/**
+ * Download progress
+ *
+ * @property packagesProgress list of download progress descriptors
+ * @property totalProgress whole download progress (N{downloaded} of N{total} as percentage)
+ * @property isCompleted completion flag
+ * @constructor Create empty Download progress
+ */
 data class DownloadProgress(
     val packagesProgress: List<PackageDownloadProgress>,
     val totalProgress: Int,
@@ -29,7 +45,6 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
     )
 
     private val TAG = "PackagesDownloader"
-    //private val downloader = PackageDownloader(context, downloadDirectory)
     private var downloadProgressHandler: ((DownloadProgress)->Unit)? = null
 
     fun downloadFiles(files2download: List<String>, onProgress: (DownloadProgress)->Unit) {
@@ -49,7 +64,9 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
             downloads.forEach { (_, v) ->
                 total++
                 if(v.isCompleted) completed++
-                packages.add(PackageDownloadProgress(v.fileName, v.progress, v.isCompleted))
+                packages.add(PackageDownloadProgress(v.fileName,
+                    //v.progress,
+                    v.isCompleted))
             }
 
 //            isCompleted = total == completed

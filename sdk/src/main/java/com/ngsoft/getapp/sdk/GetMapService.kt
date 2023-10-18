@@ -13,8 +13,8 @@ interface GetMapService {
     /**
      * Get extent updates
      *
-     * @param extent to get tiles updates for
-     * @param updateDate
+     * @param extent of map to get tiles updates for
+     * @param updateDate to lookup cached tile against. Call getDiscoveryCatalog() to get update date for the layer of interest.
      * @return list of tile updates
      */
     fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile>
@@ -24,8 +24,8 @@ interface GetMapService {
      *
      * @param extentTiles to deliver
      * @param onProgress delivery progress handler
-     * @receiver
-     * @return list of delivered tiles
+     * @receiver see [DownloadProgress]
+     * @return list of *actually* delivered tiles (echo semantics)
      */
     fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile>
 
