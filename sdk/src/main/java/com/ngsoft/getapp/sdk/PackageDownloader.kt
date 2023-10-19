@@ -67,6 +67,9 @@ internal class PackageDownloader(private val context: Context, private val downl
     }
 
 
+    //https://gist.github.com/tolmachevroman/2c3358faad90aa802dfb
+    //https://gist.github.com/typebrook/cbb06d0b6c8cfaf4b3698eca44d5413a
+
     @SuppressLint("Range")
     fun queryProgress(downloadId: Long): Int{
         var progress = 0

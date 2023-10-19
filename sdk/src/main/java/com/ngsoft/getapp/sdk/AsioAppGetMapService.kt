@@ -97,6 +97,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
         Log.i(TAG,"deliverExtentTiles - registering delivered tiles in cache...")
         downloadedTiles.forEach{
+            println("reg. tile: ${it.fileName!!} | ${it.boundingBox}")
             cache.registerTilePkg(TilePkg( it.productId, it.fileName!!,
                 Tile(it.x, it.y, it.zoom), string2BBox(it.boundingBox),
                 LocalDateTime.now(), it.dateUpdated, LocalDateTime.now())
