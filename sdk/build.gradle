@@ -12,6 +12,8 @@ android {
 
     defaultConfig {
         minSdk = 26
+        versionCode 2
+        versionName "0.4.1"
 
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -48,6 +50,12 @@ android {
     
     kotlinOptions {
         jvmTarget = '17'
+    }
+
+    libraryVariants.configureEach { variant ->
+        variant.outputs.configureEach {
+            outputFileName = "${archivesBaseName}-${variant.name}-${defaultConfig.versionName}.aar"
+        }
     }
 }
 
