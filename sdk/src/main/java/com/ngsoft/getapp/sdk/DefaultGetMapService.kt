@@ -187,10 +187,6 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
                 result.state = MapImportState.ERROR
             }
-            else -> {
-                result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
-                result.state = MapImportState.ERROR
-            }
         }
 
         return result

@@ -129,7 +129,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             MapDeliveryState.START -> if( !checkDeliveryStatus(retCreate.importRequestId!!)) return null
             MapDeliveryState.DOWNLOAD,
             MapDeliveryState.CONTINUE,
-            MapDeliveryState.PAUSE ->  Log.d(TAG,"deliverTile - setMapImportDeliveryStart => ${retDelivery?.state}")
+            MapDeliveryState.PAUSE ->  Log.d(TAG,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
             MapDeliveryState.CANCEL -> {
                 Log.w(TAG,"deliverTile - setMapImportDeliveryStart => CANCEL")
                 return null
