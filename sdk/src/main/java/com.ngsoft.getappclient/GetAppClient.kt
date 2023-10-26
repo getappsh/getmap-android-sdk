@@ -11,7 +11,7 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 
-class GetAppClient(config: ConnectionConfig) {
+internal class GetAppClient(config: ConnectionConfig) {
 
     private val tokens: TokensDto
     val deviceApi: DeviceApi

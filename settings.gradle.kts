@@ -15,4 +15,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "getapp-sdk"
 include(":sdk")
-include(":tileMatrix")

@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
+    id 'com.chaquo.python'
     id 'org.jetbrains.dokka'
 }
 
@@ -18,6 +19,19 @@ android {
         ksp {
             arg('room.schemaLocation', "$projectDir/schemas")
         }
+
+        python {
+            version "3.10" //just to keep default to that of Ubuntu 22 in CI build image, so it will compile py sources during build
+            pip {
+                install "pydantic==1.10.9"
+                install "morecantile==4.2.0"
+            }
+        }
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+
     }
 
 	buildTypes {
@@ -54,7 +68,6 @@ dependencies {
 
     implementation 'junit:junit:4.12'
 
-	implementation project(path: ':tileMatrix')
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

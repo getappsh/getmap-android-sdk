@@ -5,7 +5,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
-import com.ngsoft.tilescache.TilesCache
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -19,7 +18,6 @@ class App4ASIOIntegrationTests {
     companion object {
 
         private lateinit var tilesUpdates: List<MapTile>
-        private lateinit var cache: TilesCache
         private lateinit var updateDate: LocalDateTime
 
         @JvmStatic
@@ -42,8 +40,8 @@ class App4ASIOIntegrationTests {
 
             service = GetMapServiceFactory.createAsioAppSvc(appContext, cfg)
 
-            cache = TilesCache(appContext)
-            cache.nukeTable()
+            //purge cache 4 testing
+            service.purgeCache()
         }
 
     }

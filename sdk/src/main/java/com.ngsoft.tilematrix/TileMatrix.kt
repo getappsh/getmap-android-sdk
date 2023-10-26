@@ -5,7 +5,7 @@ import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 
-class TileMatrix(ctx: Context) {
+internal class TileMatrix(ctx: Context) {
 
     private val _getBBoxes: PyObject?
 

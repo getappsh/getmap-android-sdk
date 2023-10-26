@@ -11,6 +11,12 @@ import java.time.LocalDateTime
 interface GetMapService {
 
     /**
+     * Purge cache registry (cached tile files remains intact)
+     *
+     */
+    fun purgeCache()
+
+    /**
      * Get extent updates
      *
      * @param extent of map to get tiles updates for

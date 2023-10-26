@@ -1,5 +1,6 @@
 # GETAPP-ANDROID-SDK
-GETAPP SDK is the api defined frm the application point of view.
+SDK and complete application to gather extent updates as matrix grid tiles and deliver specified tiles to device.
+Due to absurd ASIO requirement all code is piled into one module.
 
 ## Getting started
 
@@ -92,7 +93,8 @@ https://openapi-generator.tech/docs/generators/kotlin
 
 ## Add to SDK
 
-copy-paste `kotlin` directory into `app/sdk/src/main`
+copy-paste `kotlin` directory into `sdk/src/main`
+
 
 # Documentation
 

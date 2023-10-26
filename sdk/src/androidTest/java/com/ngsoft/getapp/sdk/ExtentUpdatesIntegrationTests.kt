@@ -38,7 +38,7 @@ class ExtentUpdatesIntegrationTests {
 
     @Test
     fun a_InitCache(){
-        cache.nukeTable()
+        cache.purge()
 
         for (i in 1..100){
             cache.registerTilePkg(TilePkg("prod~$i","dummy-pkg.gpkg",

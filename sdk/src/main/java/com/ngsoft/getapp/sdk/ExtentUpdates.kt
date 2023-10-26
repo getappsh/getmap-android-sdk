@@ -7,7 +7,7 @@ import com.ngsoft.tilematrix.TileMatrix
 import com.ngsoft.tilescache.TilesCache
 import java.time.LocalDateTime
 
-class ExtentUpdates(appCtx: Context) {
+internal class ExtentUpdates(appCtx: Context) {
 
     private val matrixGrid: TileMatrix = TileMatrix(appCtx)
     private val cache = TilesCache(appCtx)

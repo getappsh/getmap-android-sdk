@@ -15,7 +15,6 @@ class BigDecimalAdapter {
     @FromJson
     //fun fromJson(value: String): BigDecimal {
     fun fromJson(value: Double): BigDecimal {
-        //return BigDecimal(value)
         return BigDecimal(value)
     }
 }

@@ -1,6 +1,6 @@
 package com.ngsoft.getappclient
 
-data class ConnectionConfig (
+internal data class ConnectionConfig (
     var baseUrl: String,
     var user: String,
     var password: String

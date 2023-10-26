@@ -44,6 +44,10 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
+    override fun purgeCache(){
+        cache.purge()
+    }
+
     override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
         val result = extentUpdates.getExtentUpdates(extent, zoomLevel, updateDate)
         Log.i(TAG,"getExtentUpdates - got ${result.count()} extent updates")

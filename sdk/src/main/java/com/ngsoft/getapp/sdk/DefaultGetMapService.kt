@@ -55,6 +55,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         return true
     }
 
+    override fun purgeCache(){
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
     override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
         TODO("Not implemented in DefaultGetMapService")
     }
