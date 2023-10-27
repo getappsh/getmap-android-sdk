@@ -77,11 +77,9 @@ internal class PackageDownloader(private val context: Context, private val downl
         if (cursor.moveToFirst()) {
             when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
                 DownloadManager.STATUS_RUNNING -> {
-                    val totalBytes =
-                        cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    val totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
                     if (totalBytes > 0) {
-                        val downloadedBytes =
-                            cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                        val downloadedBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
                         progress = (downloadedBytes * 100 / totalBytes).toInt()
                     }
                 }
@@ -96,7 +94,6 @@ internal class PackageDownloader(private val context: Context, private val downl
         }
 
         cursor.close()
-
         return progress
     }
 
