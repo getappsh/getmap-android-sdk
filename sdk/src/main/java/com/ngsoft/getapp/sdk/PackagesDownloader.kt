@@ -23,7 +23,7 @@ data class PackageDownloadProgress(
  * Download progress
  *
  * @property packagesProgress list of download progress descriptors
- * @property totalProgress whole download progress (N{downloaded} of N{total} as percentage)
+ * @property totalProgress whole download progress
  * @property isCompleted completion flag
  * @constructor Create empty Download progress
  */

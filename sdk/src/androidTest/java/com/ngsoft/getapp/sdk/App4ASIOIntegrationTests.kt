@@ -91,7 +91,7 @@ class App4ASIOIntegrationTests {
         var downloadedCount = 0
         val downloadProgressHandler: (DownloadProgress) -> Unit = {
             println("processing download progress=$it event...")
-            downloadedCount++
+            downloadedCount = it.packagesProgress.count { pkg ->  pkg.isCompleted }
         }
 
         val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
