@@ -64,7 +64,7 @@ class DownloadTests {
 
         tmr = timer(initialDelay = 0, period = 250 ) {
             val progress = downloader.queryProgress(downloadId)
-            println("download progress = $progress %")
+            println("download progress = $progress")
         }
 
         val timeoutTime = TimeSource.Monotonic.markNow() + 2.minutes

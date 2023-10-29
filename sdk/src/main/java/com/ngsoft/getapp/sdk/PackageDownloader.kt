@@ -22,10 +22,9 @@ internal class PackageDownloader(private val context: Context, private val downl
 
     }
 
-    private val TAG = "PackageDownloader"
+    private val _tag = "PackageDownloader"
 
-    private val downloadManager =
-        context.getSystemService(DownloadManager::class.java)
+    private val downloadManager = context.getSystemService(DownloadManager::class.java)
 
     private var downloadCompletedHandler: ((Long)->Unit)? = null
 
@@ -33,7 +32,7 @@ internal class PackageDownloader(private val context: Context, private val downl
         override fun onReceive(contxt: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
             if(id != -1L) {
-                Log.d(TAG, "Download with ID = $id finished!")
+                Log.d(_tag, "Download with ID = $id finished!")
                 downloadCompletedHandler?.invoke(id!!)
             }
         }
@@ -45,7 +44,7 @@ internal class PackageDownloader(private val context: Context, private val downl
     }
 
     protected fun finalize() {
-        Log.d(TAG, "PackageDownloader finalizer - unregistering receiver...")
+        Log.d(_tag, "PackageDownloader finalizer - unregistering receiver...")
         context.unregisterReceiver(broadCastReceiver)
     }
 
@@ -66,35 +65,26 @@ internal class PackageDownloader(private val context: Context, private val downl
         return downloadManager.enqueue(request)
     }
 
-
-    //https://gist.github.com/tolmachevroman/2c3358faad90aa802dfb
-    //https://gist.github.com/typebrook/cbb06d0b6c8cfaf4b3698eca44d5413a
-
     @SuppressLint("Range")
-    fun queryProgress(downloadId: Long): Int{
-        var progress = 0
+    fun queryProgress(downloadId: Long): Pair<Long, Long> {
+        var downloadedBytes = 0L
+        var totalBytes = 0L
+
         val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
         if (cursor.moveToFirst()) {
             when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
-                DownloadManager.STATUS_RUNNING -> {
-                    val totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-                    if (totalBytes > 0) {
-                        val downloadedBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                        progress = (downloadedBytes * 100 / totalBytes).toInt()
-                    }
+                DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING, DownloadManager.STATUS_SUCCESSFUL, DownloadManager.STATUS_RUNNING -> {
+                    totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    if(totalBytes > 0)
+                        downloadedBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                    else
+                        totalBytes = 0
                 }
-
-                DownloadManager.STATUS_SUCCESSFUL -> {
-                    progress = 100
-                }
-
-                DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING -> {}
-                DownloadManager.STATUS_FAILED -> progress = -1
             }
         }
 
         cursor.close()
-        return progress
+        return Pair(downloadedBytes, totalBytes)
     }
 
     private fun parseMimeType(url: String): String {

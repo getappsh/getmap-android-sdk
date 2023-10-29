@@ -40,18 +40,14 @@ import kotlin.time.TimeSource
 
 internal open class DefaultGetMapService(private val appCtx: Context) : GetMapService {
 
-    private val TAG = "DefaultGetMapService"
+    private val _tag = "DefaultGetMapService"
     protected lateinit var client: GetAppClient
     protected lateinit var downloader: PackageDownloader
 
 
     open fun init(configuration: Configuration): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
-
-        //todo: investigate AppContext substitution/mocking for non-android tests instead of that:
-        if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext")
-            downloader = PackageDownloader(appCtx, configuration.storagePath)
-
+        downloader = PackageDownloader(appCtx, configuration.storagePath)
         return true
     }
 
@@ -202,7 +198,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
-        Log.d(TAG,"getMapImportDeliveryStatus | download url: ${status.url}")
+        Log.d(_tag,"getMapImportDeliveryStatus | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = status.catalogId
@@ -226,7 +222,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "detapp-server", PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
 
-        Log.d(TAG,"setMapImportDeliveryStart | download url: ${status.url}")
+        Log.d(_tag,"setMapImportDeliveryStart | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = inputImportRequestId
@@ -287,7 +283,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
-            Log.d(TAG,"setMapImportDeploy - delivery not finished yet, nothing 2 download")
+            Log.d(_tag,"setMapImportDeploy - delivery not finished yet, nothing 2 download")
             return MapDeployState.ERROR
         }
 
@@ -299,7 +295,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         var downloadId: Long = -1
 
         val downloadCompletionHandler: (Long) -> Unit = {
-            Log.d(TAG,"processing download ID=$it completion event...")
+            Log.d(_tag,"processing download ID=$it completion event...")
             completed = it == downloadId
         }
 
@@ -309,15 +305,15 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
-            Log.d(TAG,"awaiting download completion...")
+            Log.d(_tag,"awaiting download completion...")
 
             if(timeoutTime.hasPassedNow()){
-                Log.d(TAG,"download wait loop - timed out")
+                Log.d(_tag,"download wait loop - timed out")
                 break
             }
         }
 
-        Log.d(TAG,"download completed...")
+        Log.d(_tag,"download completed...")
 
         return MapDeployState.DONE
     }

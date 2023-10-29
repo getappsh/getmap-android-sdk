@@ -19,7 +19,7 @@ import kotlin.time.TimeSource
 
 internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMapService(appCtx) {
 
-    private val TAG = "AsioAppGetMapService"
+    private val _tag = "AsioAppGetMapService"
     private lateinit var packagesDownloader: PackagesDownloader
     private lateinit var extentUpdates: ExtentUpdates
     private lateinit var cache: TilesCache
@@ -34,12 +34,9 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
 
-        //todo: investigate AppContext substitution/mocking for non-android tests instead of that:
-        if(appCtx::class.java.name != "com.ngsoft.sharedtest.FakeAppContext"){
-            packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
-            extentUpdates = ExtentUpdates(appCtx)
-            cache = TilesCache(appCtx)
-        }
+        packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
+        extentUpdates = ExtentUpdates(appCtx)
+        cache = TilesCache(appCtx)
 
         return true
     }
@@ -50,24 +47,24 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
         val result = extentUpdates.getExtentUpdates(extent, zoomLevel, updateDate)
-        Log.i(TAG,"getExtentUpdates - got ${result.count()} extent updates")
+        Log.i(_tag,"getExtentUpdates - got ${result.count()} extent updates")
         return result
     }
 
     @OptIn(ExperimentalTime::class)
     override fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile> {
-        Log.i(TAG,"deliverExtentTiles - delivering tiles...")
+        Log.i(_tag,"deliverExtentTiles - delivering tiles...")
         val tiles2download = mutableListOf<Pair<String, MapTile>>()
         extentTiles.forEach {
             val tileFile = deliverTile(it)
             if(tileFile != null) {
                 tiles2download.add(Pair(tileFile, it))
             } else {
-                Log.w(TAG,"deliverExtentTiles - failed to import/deliver tile: $it")
+                Log.w(_tag,"deliverExtentTiles - failed to import/deliver tile: $it")
             }
         }
 
-        Log.i(TAG,"deliverExtentTiles - downloading tiles...")
+        Log.i(_tag,"deliverExtentTiles - downloading tiles...")
         val downloadedTiles = mutableListOf<MapTile>()
         var completed = false
         val downloadProgressHandler: (DownloadProgress) -> Unit = { progress ->
@@ -94,12 +91,12 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             if(timeoutTime.hasPassedNow()){
-                Log.w(TAG,"deliverExtentTiles - tiles download timed out...")
+                Log.w(_tag,"deliverExtentTiles - tiles download timed out...")
                 break
             }
         }
 
-        Log.i(TAG,"deliverExtentTiles - registering delivered tiles in cache...")
+        Log.i(_tag,"deliverExtentTiles - registering delivered tiles in cache...")
         downloadedTiles.forEach{
             println("reg. tile: ${it.fileName!!} | ${it.boundingBox}")
             cache.registerTilePkg(TilePkg( it.productId, it.fileName!!,
@@ -107,46 +104,46 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                 LocalDateTime.now(), it.dateUpdated, LocalDateTime.now())
         )}
 
-        Log.i(TAG,"deliverExtentTiles - tiles delivery completed...")
+        Log.i(_tag,"deliverExtentTiles - tiles delivery completed...")
         return downloadedTiles
     }
 
     private fun deliverTile(tile: MapTile): String? {
         val retCreate = createMapImport(MapProperties(tile.productId, tile.boundingBox, false))
         when(retCreate?.state){
-            MapImportState.IN_PROGRESS -> Log.d(TAG,"deliverTile - createMapImport => IN_PROGRESS")
+            MapImportState.IN_PROGRESS -> Log.d(_tag,"deliverTile - createMapImport => IN_PROGRESS")
             MapImportState.START -> if( !checkImportStatus(retCreate.importRequestId!!)) return null
-            MapImportState.DONE -> Log.d(TAG,"deliverTile - createMapImport => DONE")
+            MapImportState.DONE -> Log.d(_tag,"deliverTile - createMapImport => DONE")
             MapImportState.CANCEL -> {
-                Log.w(TAG,"deliverTile - createMapImport => CANCEL")
+                Log.w(_tag,"deliverTile - createMapImport => CANCEL")
                 return null
             }
             else -> {
-                Log.e(TAG,"deliverTile - createMapImport failed: ${retCreate?.state}")
+                Log.e(_tag,"deliverTile - createMapImport failed: ${retCreate?.state}")
                 return null
             }
         }
 
         val retDelivery = setMapImportDeliveryStart(retCreate.importRequestId!!)
         when(retDelivery?.state){
-            MapDeliveryState.DONE -> Log.d(TAG,"deliverTile - setMapImportDeliveryStart => DONE")
+            MapDeliveryState.DONE -> Log.d(_tag,"deliverTile - setMapImportDeliveryStart => DONE")
             MapDeliveryState.START -> if( !checkDeliveryStatus(retCreate.importRequestId!!)) return null
             MapDeliveryState.DOWNLOAD,
             MapDeliveryState.CONTINUE,
-            MapDeliveryState.PAUSE ->  Log.d(TAG,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
+            MapDeliveryState.PAUSE ->  Log.d(_tag,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
             MapDeliveryState.CANCEL -> {
-                Log.w(TAG,"deliverTile - setMapImportDeliveryStart => CANCEL")
+                Log.w(_tag,"deliverTile - setMapImportDeliveryStart => CANCEL")
                 return null
             }
             else -> {
-                Log.e(TAG,"deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
+                Log.e(_tag,"deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
                 return null
             }
         }
 
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(retCreate.importRequestId!!)
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
-            Log.e(TAG,"deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
+            Log.e(_tag,"deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
             return null
         }
 
@@ -163,18 +160,18 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
             when(stat?.state){
                 MapImportState.ERROR -> {
-                    Log.e(TAG,"checkImportStatus - MapImportState.ERROR")
+                    Log.e(_tag,"checkImportStatus - MapImportState.ERROR")
                     return false
                 }
                 MapImportState.CANCEL -> {
-                    Log.w(TAG,"checkImportStatus - MapImportState.CANCEL")
+                    Log.w(_tag,"checkImportStatus - MapImportState.CANCEL")
                     return false
                 }
                 else -> {}
             }
 
             if(timeoutTime.hasPassedNow()){
-                Log.w(TAG,"checkImportStatus - timed out")
+                Log.w(_tag,"checkImportStatus - timed out")
                 return false
             }
         }
@@ -190,17 +187,17 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             stat = getMapImportDeliveryStatus(requestId)
             when(stat?.state){
                 MapDeliveryState.ERROR -> {
-                    Log.e(TAG,"checkDeliveryStatus - MapDeliveryState.ERROR")
+                    Log.e(_tag,"checkDeliveryStatus - MapDeliveryState.ERROR")
                     return false
                 }
                 MapDeliveryState.CANCEL -> {
-                    Log.w(TAG,"checkDeliveryStatus - MapDeliveryState.CANCEL")
+                    Log.w(_tag,"checkDeliveryStatus - MapDeliveryState.CANCEL")
                     return false
                 }
                 else -> {}
             }
             if(timeoutTime.hasPassedNow()){
-                Log.w(TAG,"checkDeliveryStatus - timed out")
+                Log.w(_tag,"checkDeliveryStatus - timed out")
                 return false
             }
         }

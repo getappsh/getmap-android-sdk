@@ -7,11 +7,11 @@ import com.ngsoft.tilescache.models.TilePkg
 import java.time.LocalDateTime
 
 internal class TilesCache(ctx: Context)  {
-    private val TAG = "TilesCache"
+    private val _tag = "TilesCache"
     private val db: TilesDatabase
     private val dao: TilesDAO
     init {
-        Log.d(TAG,"TilesCache init...")
+        Log.d(_tag,"TilesCache init...")
         db = TilesDatabase.connect(ctx)
         dao = db.tilesDao()
     }
