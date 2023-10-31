@@ -3,17 +3,17 @@ package com.ngsoft.getappclient
 import GetApp.Client.apis.DeliveryApi
 import GetApp.Client.apis.DeviceApi
 import GetApp.Client.apis.GetMapApi
-import GetApp.Client.apis.LoginApi
-import GetApp.Client.infrastructure.ApiClient
-import GetApp.Client.models.TokensDto
-import GetApp.Client.models.UserLoginDto
+import android.util.Log
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 
 internal class GetAppClient(config: ConnectionConfig) {
 
-    private val tokens: TokensDto
+    private val TAG = "GetAppClient"
+
     val deviceApi: DeviceApi
     val getMapApi: GetMapApi
     val deliveryApi: DeliveryApi
@@ -26,22 +26,24 @@ internal class GetAppClient(config: ConnectionConfig) {
         if (config.password.isEmpty())
             throw Exception("Password is empty")
 
-        println("GetApp base url = ${config.baseUrl}")
-        //todo: remove pwd later
-        println("GetApp user = ${config.user}, password = ${config.password}")
-        println("Logging in...")
+        Log.i(TAG, "GetApp base url = ${config.baseUrl}")
+        Log.i(TAG, "GetApp user = ${config.user}")
 
-        tokens = LoginApi(config.baseUrl).loginControllerGetToken(
-            UserLoginDto(config.user, config.password)
-        )
+        val tokenProvider = AccessTokenProvider(config);
 
-        println("Logged in, access token = ${tokens.accessToken}")
+        val client = OkHttpClient.Builder()
+            .authenticator(AccessTokenAuthenticator(tokenProvider))
+            .addInterceptor(Interceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("Authorization", "Bearer ${tokenProvider.token()}")
+                    .build()
+                chain.proceed(request)
+            })
+            .build()
 
-        setAccessToken<ApiClient>(tokens.accessToken.toString())
-
-        deviceApi = DeviceApi(config.baseUrl)
-        getMapApi = GetMapApi(config.baseUrl)
-        deliveryApi = DeliveryApi(config.baseUrl)
+        deviceApi = DeviceApi(config.baseUrl, client)
+        getMapApi = GetMapApi(config.baseUrl, client)
+        deliveryApi = DeliveryApi(config.baseUrl, client)
 
     }
 
