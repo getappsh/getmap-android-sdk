@@ -82,18 +82,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 ),
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
-                    "4", "13kb23", "12kb", "1212Mb")
+                    "getapp-agent", "13kb23", "12kb", "1212Mb")
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Merkava","106", BigDecimal("223"),
-                listOf(
-                    ComponentDto(
-                    "dummyCatId", "somename", "11", "N/A", BigDecimal("22"), "N/A"
-                    ),
-                    ComponentDto(
-                        "dummyCatId", "somename", "22", "N/A", BigDecimal("33"), "N/A"
-                    )
-                )
+                emptyList()
             )),
 
             DiscoveryMapDto(inputProperties.productId,"no-name","3","osm","bla-bla",
@@ -160,7 +153,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(inputProperties == null)
             throw Exception("invalid inputProperties")
 
-        val params = CreateImportDto("getapp-server", GetApp.Client.models.MapProperties(
+        val params = CreateImportDto("getapp-agent", GetApp.Client.models.MapProperties(
             BigDecimal(12), "dummy name", inputProperties.productId, inputProperties.boundingBox,
             BigDecimal(0), BigDecimal(0)
         ))
@@ -223,7 +216,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
-        val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "detapp-server", PrepareDeliveryReqDto.ItemType.map)
+        val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "getapp-agent", PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
 
         Log.d(TAG,"setMapImportDeliveryStart | download url: ${status.url}")

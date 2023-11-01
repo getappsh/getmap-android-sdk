@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import android.content.Context
 import android.util.Log
@@ -12,6 +13,7 @@ import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import com.ngsoft.tilescache.models.TilePkg
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -57,11 +59,16 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
     @OptIn(ExperimentalTime::class)
     override fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile> {
         Log.i(TAG,"deliverExtentTiles - delivering tiles...")
+
         val tiles2download = mutableListOf<Pair<String, MapTile>>()
+        val deliveryMapsStatus = mutableListOf<Pair<String, DeliveryStatusDto>>()
         extentTiles.forEach {
             val tileFile = deliverTile(it)
-            if(tileFile != null) {
-                tiles2download.add(Pair(tileFile, it))
+            if(tileFile?.url != null) {
+                tiles2download.add(Pair(tileFile.url, it))
+                val dlv =  initDeliveryStatus(tileFile.catalogId)
+                sendDeliveryStatus(dlv)
+                deliveryMapsStatus.add(Pair(tileFile.url, dlv))
             } else {
                 Log.w(TAG,"deliverExtentTiles - failed to import/deliver tile: $it")
             }
@@ -79,6 +86,15 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                         if (downloadedTiles.indexOf(found.second) == -1){
                             found.second.fileName = pkg.fileName
                             downloadedTiles.add(found.second)
+
+                            val dlv = deliveryMapsStatus.find { PackageDownloader.getFileNameFromUri(it.first) == pkg.fileName }?.second
+                            if (dlv != null){
+                                val updated = dlv.copy(
+                                    deliveryStatus = DeliveryStatusDto.DeliveryStatus.done,
+                                    downloadDone = OffsetDateTime.now()
+                                )
+                                sendDeliveryStatus(updated)
+                            }
                         }
                     } else {
                         throw IllegalStateException("Failed to find MapTile by file name = ${pkg.fileName}")
@@ -95,6 +111,19 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             TimeUnit.SECONDS.sleep(1)
             if(timeoutTime.hasPassedNow()){
                 Log.w(TAG,"deliverExtentTiles - tiles download timed out...")
+
+                val filteredDeliveryMapsStatus = deliveryMapsStatus.filter { (url, _) ->
+                    downloadedTiles.none { it.fileName ==  PackageDownloader.getFileNameFromUri(url) }
+                }
+
+                filteredDeliveryMapsStatus.forEach {(_, dlv)->
+                    val updated = dlv.copy(
+                        deliveryStatus = DeliveryStatusDto.DeliveryStatus.error,
+                        downloadStop = OffsetDateTime.now()
+                    )
+                    sendDeliveryStatus(updated)
+                }
+
                 break
             }
         }
@@ -111,7 +140,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         return downloadedTiles
     }
 
-    private fun deliverTile(tile: MapTile): String? {
+    private fun deliverTile(tile: MapTile): PrepareDeliveryResDto? {
         val retCreate = createMapImport(MapProperties(tile.productId, tile.boundingBox, false))
         when(retCreate?.state){
             MapImportState.IN_PROGRESS -> Log.d(TAG,"deliverTile - createMapImport => IN_PROGRESS")
@@ -150,7 +179,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             return null
         }
 
-        return deliveryStatus.url
+        return deliveryStatus
     }
 
     @OptIn(ExperimentalTime::class)
@@ -206,6 +235,26 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         return true
+    }
+
+    private fun sendDeliveryStatus(dlv: DeliveryStatusDto) {
+        Thread{
+            try{
+                client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
+            }catch (exc: Exception){
+                Log.e(TAG, "sendDeliveryStatus failed error: $exc", )
+            }
+        }.start()
+    }
+
+    private fun initDeliveryStatus(catalogId: String): DeliveryStatusDto {
+        return DeliveryStatusDto(
+            deliveryStatus = DeliveryStatusDto.DeliveryStatus.start,
+            type = DeliveryStatusDto.Type.map,
+            deviceId = "getapp-agent",
+            catalogId = catalogId,
+            downloadStart=OffsetDateTime.now(),
+        )
     }
 
     private fun string2BBox(bBoxStr: String): BBox {
