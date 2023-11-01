@@ -5,8 +5,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.ngsoft.tilescache.TimeStampConverter
-import org.jetbrains.annotations.NotNull
 import java.time.LocalDateTime
+
 
 @Entity
 data class TilePkg(
@@ -33,3 +33,10 @@ data class TilePkg(
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
 }
+
+data class TilePkgUpdate (
+    val id: Int,
+    val fileName: String,
+    val dateUpdated: LocalDateTime,
+    val dateCached: LocalDateTime
+)

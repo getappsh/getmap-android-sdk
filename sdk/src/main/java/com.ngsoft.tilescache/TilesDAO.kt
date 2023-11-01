@@ -4,9 +4,12 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import com.ngsoft.tilescache.models.TilePkg
+import com.ngsoft.tilescache.models.TilePkgUpdate
+
 
 //see On @Query Functions here: https://commonsware.com/Room/pages/chap-dao-005.html
 
@@ -38,6 +41,9 @@ interface TilesDAO {
 
     @Insert
     fun insertAll(vararg tiles: TilePkg)
+
+    @Update(entity = TilePkg::class)
+    fun update(tile: TilePkgUpdate)
 
     @Delete
     fun delete(tile: TilePkg)

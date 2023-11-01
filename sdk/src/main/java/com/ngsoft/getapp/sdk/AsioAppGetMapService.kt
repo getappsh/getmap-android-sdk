@@ -10,7 +10,6 @@ import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.tilescache.TilesCache
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
-import com.ngsoft.tilescache.models.TilePkg
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
@@ -99,10 +98,11 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag,"deliverExtentTiles - registering delivered tiles in cache...")
         downloadedTiles.forEach{
             println("reg. tile: ${it.fileName!!} | ${it.boundingBox}")
-            cache.registerTilePkg(TilePkg( it.productId, it.fileName!!,
+            cache.registerTilePkg(it.productId, it.fileName!!,
                 Tile(it.x, it.y, it.zoom), string2BBox(it.boundingBox),
-                LocalDateTime.now(), it.dateUpdated, LocalDateTime.now())
-        )}
+                it.dateUpdated
+            )
+        }
 
         Log.i(_tag,"deliverExtentTiles - tiles delivery completed...")
         return downloadedTiles
