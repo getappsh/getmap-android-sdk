@@ -6,6 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.Timer
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
@@ -42,20 +43,29 @@ class DownloadTests {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val downloader = PackageDownloader(appContext, Environment.DIRECTORY_DOWNLOADS)
 
+        var tmr: Timer? = null
         var completed = false
         var downloadId: Long = -1
 
         val downloadCompletionHandler: (Long) -> Unit = {
             println("processing download ID=$it completion event...")
             completed = it == downloadId
+            if(completed)
+                tmr?.cancel()
         }
 
         downloadId = downloader.downloadFile(
-            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
+            //"http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg",
             downloadCompletionHandler
         )
 
         assertNotEquals(downloadId, 0)
+
+        tmr = timer(initialDelay = 0, period = 250 ) {
+            val progress = downloader.queryProgress(downloadId)
+            println("download progress = $progress")
+        }
 
         val timeoutTime = TimeSource.Monotonic.markNow() + 2.minutes
         while(!completed){
@@ -81,18 +91,21 @@ class DownloadTests {
         var completed = false
 
         val downloadProgressHandler: (DownloadProgress) -> Unit = {
-            println("processing download progress=$it event...")
+            println("processing download progress event:\n| $it |")
             completed = it.isCompleted
         }
 
         val files = listOf(
-            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_23_46_306Z.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_22_00_607Z.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/Orthophoto_tzor_crop_1_0_12_2023_07_03T05_46_13_022Z.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_07_02T14_24_17_828Z.gpkg"
-//            ,
-//            "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg"
+//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
+//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_23_46_306Z.gpkg",
+//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_16_2023_07_03T09_22_00_607Z.gpkg",
+//            "http://getmap-dev.getapp.sh/api/Download/Orthophoto_tzor_crop_1_0_12_2023_07_03T05_46_13_022Z.gpkg",
+//            "http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_07_02T14_24_17_828Z.gpkg"
+
+            "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/dwnld-test456.gpkg",
+            "http://getmap-dev.getapp.sh/api/Download/archive.tar.gz"
+
         )
 
         downloader.downloadFiles(files, downloadProgressHandler)

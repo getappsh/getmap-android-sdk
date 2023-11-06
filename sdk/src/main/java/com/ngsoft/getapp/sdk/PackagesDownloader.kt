@@ -2,19 +2,20 @@ package com.ngsoft.getapp.sdk
 
 import android.content.Context
 import android.util.Log
-import kotlin.math.roundToInt
+import java.util.Timer
+import kotlin.concurrent.timer
 
 /**
  * Package download progress
  *
- * @property fileName tile package's file name
+ * @property fileName of downloaded package
+ * @property progress of download in %
  * @property isCompleted completion flag
  * @constructor Create empty Package download progress
  */
-
 data class PackageDownloadProgress(
     val fileName: String,
-    //val progress: Int,
+    val progress: Int,
     val isCompleted: Boolean
 )
 
@@ -22,7 +23,7 @@ data class PackageDownloadProgress(
  * Download progress
  *
  * @property packagesProgress list of download progress descriptors
- * @property totalProgress whole download progress (N{downloaded} of N{total} as percentage)
+ * @property totalProgress whole download progress
  * @property isCompleted completion flag
  * @constructor Create empty Download progress
  */
@@ -44,19 +45,19 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
         var isCompleted: Boolean
     )
 
-    private val TAG = "PackagesDownloader"
-    private var downloadProgressHandler: ((DownloadProgress)->Unit)? = null
+    private val _tag = "PackagesDownloader"
 
     fun downloadFiles(files2download: List<String>, onProgress: (DownloadProgress)->Unit) {
-        downloadProgressHandler = onProgress
 
-        //var tmr: Timer? = null
-
+        var tmr: Timer? = null
+        var isCompleted = false
+        var totalProgress = 0
         val downloads = HashMap<Long, DownloadTrack>()
 
         val downloadCompletionHandler: (Long) -> Unit = {
-            Log.d(TAG,"completion for download id = $it...")
+            Log.d(_tag,"completion for download id = $it...")
             downloads[it]?.isCompleted = true
+            downloads[it]?.progress = 100
 
             var total = 0
             var completed = 0
@@ -64,31 +65,53 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
             downloads.forEach { (_, v) ->
                 total++
                 if(v.isCompleted) completed++
-                packages.add(PackageDownloadProgress(v.fileName,
-                    //v.progress,
-                    v.isCompleted))
+                packages.add(PackageDownloadProgress(v.fileName, v.progress, v.isCompleted))
             }
 
-//            isCompleted = total == completed
-//            if(isCompleted) tmr?.cancel()
+            isCompleted = total == completed
+            if(isCompleted) {
+                totalProgress = 100
+                Log.d(_tag,"stopping progress watcher...")
+                tmr?.cancel()
+            }
 
-            val progress = DownloadProgress(packages, ((1.0f * completed)/total * 100).roundToInt(), total == completed)
-            downloadProgressHandler?.invoke(progress)
+            val progress = DownloadProgress(packages, totalProgress, isCompleted)
+            onProgress.invoke(progress)
         }
 
         for (file in files2download){
             val downloadId = downloader?.downloadFile(file, downloadCompletionHandler)
-            Log.d(TAG,"adding downloadId = $downloadId...")
+            Log.d(_tag,"adding downloadId = $downloadId...")
             downloads[downloadId!!] = DownloadTrack(PackageDownloader.getFileNameFromUri(file),0, false)
         }
 
-//        val tmr = timer(initialDelay = 0, period = 100 ) {
-//            downloads.forEach { (k, v) ->
-//                val progress = downloader.queryProgress(k)
-//                v.progress = progress
-//                println("$k = $progress %")
-//            }
-//        }
+        Log.d(_tag,"queued ${downloads.count()} downloads...")
+        Log.d(_tag,"starting progress watcher...")
+
+        tmr = timer(initialDelay = 100, period = 500 ) {
+            var downloadedBytes = 0L
+            var totalBytes = 0L
+            val packages = mutableListOf<PackageDownloadProgress>()
+            downloads.forEach { (k, v) ->
+                val fileProgress = downloader?.queryProgress(k)
+                if (fileProgress != null) {
+                    if(fileProgress.second > 0) {
+                        val progress = (fileProgress.first * 100 / fileProgress.second).toInt()
+                        v.progress = progress
+                    }
+                    downloadedBytes += fileProgress.first
+                    totalBytes += fileProgress.second
+                }
+
+                packages.add(PackageDownloadProgress(v.fileName, v.progress, v.isCompleted))
+            }
+
+            if(totalBytes > 0)
+                totalProgress = (downloadedBytes * 100 / totalBytes).toInt()
+
+            val progress = DownloadProgress(packages, totalProgress, isCompleted)
+            onProgress.invoke(progress)
+        }
 
     }
 

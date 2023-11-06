@@ -6,7 +6,6 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.tilescache.TilesCache
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
-import com.ngsoft.tilescache.models.TilePkg
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -41,13 +40,11 @@ class ExtentUpdatesIntegrationTests {
         cache.purge()
 
         for (i in 1..100){
-            cache.registerTilePkg(TilePkg("prod~$i","dummy-pkg.gpkg",
+            cache.registerTilePkg("prod~$i","dummy-pkg.gpkg",
                 Tile(1 + i,2 + i,16),
                 BBox(1.1, 2.2, 3.3, 4.4),
-                LocalDateTime.of(2023, 8, 1, 1, 2, 3 ),
-                LocalDateTime.of(2023, 9, 2, 1, 2, 3 ),
-                LocalDateTime.now()
-            ))
+                LocalDateTime.of(2023, 9, 2, 1, 2, 3 )
+            )
         }
 
         //matrix tiles for "34.73647075,31.94368473,34.74949962,31.95388123" zoom 16
@@ -84,11 +81,11 @@ class ExtentUpdatesIntegrationTests {
     @Test
     fun b_ShouldBe_1_Tile_InCache() {
 
-        cache.registerTilePkg(TilePkg(PROD_NAME,"dummy-pkg-1.gpkg",
+        cache.registerTilePkg(PROD_NAME,"dummy-pkg-1.gpkg",
             Tile(x=78186, y=21134, zoom=16),
             BBox(left=34.744262695312045, bottom=31.95098876953137, right=34.747009277343295, top=31.95373535156262),
-            updateDate.minusDays(14L), updateDate, LocalDateTime.now()
-        ))
+            updateDate
+        )
 
         val mapProps = MapProperties(PROD_NAME, TEST_BBOX,false)
         val updates = extentUpdates.getExtentUpdates(mapProps, 16, updateDate)
@@ -109,23 +106,23 @@ class ExtentUpdatesIntegrationTests {
     @Test
     fun c_ShouldBe_4_Tiles_InCache() {
 
-        cache.registerTilePkg(TilePkg(PROD_NAME,"dummy-pkg-2.gpkg",
+        cache.registerTilePkg(PROD_NAME,"dummy-pkg-2.gpkg",
             Tile(x=78185, y=21137, zoom=16),
             BBox(left=34.741516113280795, bottom=31.94274902343762, right=34.744262695312045, top=31.94549560546887),
-            updateDate.minusDays(14L), updateDate, LocalDateTime.now()
-        ))
+            updateDate
+        )
 
-        cache.registerTilePkg(TilePkg(PROD_NAME,"dummy-pkg-3.gpkg",
+        cache.registerTilePkg(PROD_NAME,"dummy-pkg-3.gpkg",
             Tile(x=78186, y=21133, zoom=16),
             BBox(left=34.744262695312045, bottom=31.95373535156262, right=34.747009277343295, top=31.95648193359387),
-            updateDate.minusDays(14L), updateDate, LocalDateTime.now()
-        ))
+            updateDate
+        )
 
-        cache.registerTilePkg(TilePkg(PROD_NAME,"dummy-pkg-4.gpkg",
+        cache.registerTilePkg(PROD_NAME,"dummy-pkg-4.gpkg",
             Tile(x=78186, y=21135, zoom=16),
             BBox(left=34.744262695312045, bottom=31.94824218750012, right=34.747009277343295, top=31.95098876953137),
-            updateDate.minusDays(14L), updateDate, LocalDateTime.now()
-        ))
+            updateDate
+        )
 
         val mapProps = MapProperties(PROD_NAME, TEST_BBOX,false)
         val updates = extentUpdates.getExtentUpdates(mapProps, 16, updateDate)
