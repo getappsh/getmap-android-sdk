@@ -89,20 +89,20 @@ class App4ASIOIntegrationTests {
 
     @Test
     fun c_DeliverTiles() {
-        deliverTiles()
+        deliverTiles(tilesUpdates, 6)
     }
 
-    private fun deliverTiles() {
+    private fun deliverTiles(tiles: List<MapTile>, validationCount: Int) {
         var downloadedCount = 0
         val downloadProgressHandler: (DownloadProgress) -> Unit = {
             println("processing download progress=$it event...")
             downloadedCount = it.packagesProgress.count { pkg ->  pkg.isCompleted }
         }
 
-        val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
-        assert(downloadedCount == 6)
+        val delivered = service.deliverExtentTiles(tiles, downloadProgressHandler)
+        assert(downloadedCount == validationCount)
         assert(delivered.isNotEmpty())
-        assert(delivered.count() == 6)
+        assert(delivered.count() == validationCount)
 
         delivered.forEach{
             println(it)
@@ -128,7 +128,19 @@ class App4ASIOIntegrationTests {
 
     @Test
     fun f_DeliverTiles2() {
-        deliverTiles()
+
+        println("delivering single tile")
+        val oneTile = listOf(tilesUpdates[0])
+        deliverTiles(oneTile, oneTile.count())
+
+        println("delivering 2 tiles")
+        val twoTiles = listOf(tilesUpdates[1], tilesUpdates[2])
+        deliverTiles(twoTiles, twoTiles.count())
+
+        println("delivering 3 tiles")
+        val threeTiles = listOf(tilesUpdates[3], tilesUpdates[4], tilesUpdates[5])
+        deliverTiles(threeTiles, threeTiles.count())
+
     }
 
     @Test

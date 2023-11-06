@@ -104,7 +104,7 @@ class DownloadTests {
 
             "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg",
             "http://getmap-dev.getapp.sh/api/Download/dwnld-test456.gpkg",
-            "http://getmap-dev.getapp.sh/api/Download/archive.tar.gz",
+            "http://getmap-dev.getapp.sh/api/Download/archive.tar.gz"
 
         )
 
