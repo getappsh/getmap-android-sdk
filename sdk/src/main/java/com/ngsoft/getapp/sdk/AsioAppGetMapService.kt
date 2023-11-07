@@ -248,7 +248,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         return DeliveryStatusDto(
             deliveryStatus = DeliveryStatusDto.DeliveryStatus.start,
             type = DeliveryStatusDto.Type.map,
-            deviceId = "getapp-agent",
+            deviceId = pref.deviceId,
             catalogId = catalogId,
             downloadStart=OffsetDateTime.now(),
         )

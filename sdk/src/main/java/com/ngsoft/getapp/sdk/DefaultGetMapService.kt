@@ -43,11 +43,13 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     private val _tag = "DefaultGetMapService"
     protected lateinit var client: GetAppClient
     protected lateinit var downloader: PackageDownloader
+    protected lateinit var pref: Pref
 
 
     open fun init(configuration: Configuration): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
         downloader = PackageDownloader(appCtx, configuration.storagePath)
+        pref = Pref.getInstance(appCtx)
         return true
     }
 
@@ -78,7 +80,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 ),
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
-                    "getapp-agent", "13kb23", "12kb", "1212Mb")
+                    pref.deviceId, "13kb23", "12kb", "1212Mb")
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Merkava","106", BigDecimal("223"),
@@ -149,7 +151,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(inputProperties == null)
             throw Exception("invalid inputProperties")
 
-        val params = CreateImportDto("getapp-agent", GetApp.Client.models.MapProperties(
+        val params = CreateImportDto(pref.deviceId, GetApp.Client.models.MapProperties(
             BigDecimal(12), "dummy name", inputProperties.productId, inputProperties.boundingBox,
             BigDecimal(0), BigDecimal(0)
         ))
@@ -212,7 +214,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(inputImportRequestId.isNullOrEmpty())
             throw Exception("invalid inputImportRequestId")
 
-        val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, "getapp-agent", PrepareDeliveryReqDto.ItemType.map)
+        val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, pref.deviceId, PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
 
         Log.d(_tag,"setMapImportDeliveryStart | download url: ${status.url}")
