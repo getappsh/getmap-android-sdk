@@ -16,6 +16,7 @@ import com.ngsoft.getapp.sdk.DownloadProgress
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.DownloadHebStatus
+import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -118,8 +119,8 @@ class MainActivity : AppCompatActivity() {
 
                 false
             )
-            val downloadStatusHandler :(DownloadHebStatus, Int) -> Unit = { status, progress ->
-                Log.d(TAG, "onDelivery: status ${status.value}, progress $progress");
+            val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
+                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress}");
             }
 
             service.downloadMap(props, downloadStatusHandler);

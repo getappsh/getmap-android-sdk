@@ -18,7 +18,7 @@ import android.content.Context
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
-import com.ngsoft.getapp.sdk.models.DownloadHebStatus
+import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
@@ -68,7 +68,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (DownloadHebStatus, Int) -> Unit) {
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit) {
         TODO("Not implemented in DefaultGetMapService")
     }
 
