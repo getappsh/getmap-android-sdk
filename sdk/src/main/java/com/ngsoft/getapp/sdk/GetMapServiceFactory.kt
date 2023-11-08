@@ -33,5 +33,13 @@ class GetMapServiceFactory {
             return service
         }
 
+
+        @JvmStatic
+        fun createAsioSdkSvc(appCtx: Context, configuration: Configuration): GetMapService {
+            val service = AsioSdkGetMapService(appCtx)
+            service.init(configuration)
+            return service
+        }
+
     }
 }

@@ -1,6 +1,5 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.ComponentDto
 import GetApp.Client.models.CreateImportDto
 import GetApp.Client.models.CreateImportResDto
 import GetApp.Client.models.DiscoveryMapDto
@@ -29,6 +28,7 @@ import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
+import com.ngsoft.tilescache.TilesCache
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -44,12 +44,14 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var client: GetAppClient
     protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
+    protected lateinit var cache: TilesCache
 
 
     open fun init(configuration: Configuration): Boolean {
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
         downloader = PackageDownloader(appCtx, configuration.storagePath)
         pref = Pref.getInstance(appCtx)
+        cache = TilesCache(appCtx)
         return true
     }
 
@@ -62,6 +64,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun downloadMap(mp: MapProperties) {
         TODO("Not implemented in DefaultGetMapService")
     }
 

@@ -10,6 +10,8 @@ import java.time.LocalDateTime
 
 interface GetMapService {
 
+    fun downloadMap(mp: MapProperties)
+
     /**
      * Purge cache registry (cached tile files remains intact)
      *

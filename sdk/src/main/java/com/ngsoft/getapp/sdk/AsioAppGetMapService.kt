@@ -8,7 +8,6 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
-import com.ngsoft.tilescache.TilesCache
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import java.time.LocalDateTime
@@ -23,7 +22,6 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
     private val _tag = "AsioAppGetMapService"
     private lateinit var packagesDownloader: PackagesDownloader
     private lateinit var extentUpdates: ExtentUpdates
-    private lateinit var cache: TilesCache
     private var zoomLevel: Int = 0
     private var deliveryTimeoutMinutes: Int = 5
     private var downloadTimeoutMinutes: Int = 5
@@ -37,7 +35,6 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
         packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
         extentUpdates = ExtentUpdates(appCtx)
-        cache = TilesCache(appCtx)
 
         return true
     }
