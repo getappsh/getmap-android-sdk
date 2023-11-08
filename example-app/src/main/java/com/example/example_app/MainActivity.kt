@@ -15,6 +15,7 @@ import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.DownloadProgress
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
+import com.ngsoft.getapp.sdk.models.DownloadHebStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -55,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             5,5
         )
 
-        service = GetMapServiceFactory.createAsioAppSvc(this@MainActivity, cfg)
+        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
         dismissLoadingDialog()
 
         selectedProductView = findViewById<TextView>(R.id.selectedProduct)
@@ -108,29 +109,35 @@ class MainActivity : AppCompatActivity() {
         showLoadingDialog("Download file")
         GlobalScope.launch(Dispatchers.IO){
 
-            service.purgeCache()
+//            service.purgeCache()
 
             val props = MapProperties(
                 selectedProduct.productId,
-                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
+//                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
+                "34.218144483292285,31.16202819895893,34.65786854261468,31.748690379853482",
+
                 false
             )
-
-            val tilesUpdates = service.getExtentUpdates(props, updateDate)
-            Log.d(TAG, "onDelivery: tilesUpdates " + tilesUpdates.toString());
-
-            var downloadedCount = 0
-            val downloadProgressHandler: (DownloadProgress) -> Unit = {
-                Log.d(TAG, "processing download progress=$it event...")
-                downloadedCount = it.packagesProgress.count { pkg ->  pkg.isCompleted }
+            val downloadStatusHandler :(DownloadHebStatus, Int) -> Unit = { status, progress ->
+                Log.d(TAG, "onDelivery: status ${status.value}, progress $progress");
             }
 
-            val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
-            Log.d(TAG, "onDelivery: delivered " + delivered)
+            service.downloadMap(props, downloadStatusHandler);
+//            val tilesUpdates = service.getExtentUpdates(props, updateDate)
+//            Log.d(TAG, "onDelivery: tilesUpdates " + tilesUpdates.toString());
+
+//            var downloadedCount = 0
+//            val downloadProgressHandler: (DownloadProgress) -> Unit = {
+//                Log.d(TAG, "processing download progress=$it event...")
+//                downloadedCount = it.packagesProgress.count { pkg ->  pkg.isCompleted }
+//            }
+//
+//            val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
+//            Log.d(TAG, "onDelivery: delivered " + delivered)
 
             launch(Dispatchers.Main) {
                 dismissLoadingDialog();
-                showMessageDialog(delivered.toString())
+//                showMessageDialog(delivered.toString())
             }
 
 
