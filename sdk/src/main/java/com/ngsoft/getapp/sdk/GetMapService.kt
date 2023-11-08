@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
+import com.ngsoft.getapp.sdk.models.DownloadHebStatus
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -10,7 +11,7 @@ import java.time.LocalDateTime
 
 interface GetMapService {
 
-    fun downloadMap(mp: MapProperties)
+    fun downloadMap(mp: MapProperties, downloadStatusHandler: (DownloadHebStatus, Int) -> Unit)
 
     /**
      * Purge cache registry (cached tile files remains intact)

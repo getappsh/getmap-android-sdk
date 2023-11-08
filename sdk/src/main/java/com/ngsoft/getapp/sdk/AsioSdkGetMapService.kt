@@ -3,10 +3,13 @@ package com.ngsoft.getapp.sdk
 import GetApp.Client.models.PrepareDeliveryResDto
 import android.content.Context
 import android.util.Log
+import com.ngsoft.getapp.sdk.models.DownloadHebStatus
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import java.util.Timer
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
@@ -29,38 +32,69 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
-    override fun downloadMap(mp: MapProperties){
-        val downloadData = getDownloadData(mp)
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (DownloadHebStatus, Int) -> Unit){
+        Log.d(_tag, "downloadMap for -> $mp")
+        var tmr: Timer? = null
+
+        val downloadData = getDownloadData(mp, downloadStatusHandler)
         Log.i(_tag, "downloadMap-> download-data: $downloadData")
         if (downloadData?.url == null) {
+            downloadStatusHandler.invoke(DownloadHebStatus.FAILED, 0)
             return
         }
 
+//        val fileName = PackageDownloader.getFileNameFromUri(downloadData.url)
 
         val downloadCompletionHandler: (Long) -> Unit = {
             Log.d(_tag,"processing download ID=$it completion event...")
+            Log.d(_tag,"stopping progress watcher...")
+            tmr?.cancel()
+
+            downloadStatusHandler.invoke(DownloadHebStatus.DONE, 100)
+
         }
+        downloadStatusHandler.invoke(DownloadHebStatus.DOWNLOAD, 0)
+
         val downloadId = downloader.downloadFile(downloadData.url, downloadCompletionHandler)
+        Log.d(_tag, "downloadMap -> downloadId: $downloadId")
+
+
+        tmr = timer(initialDelay = 100, period = 500 ) {
+            val fileProgress = downloader.queryProgress(downloadId)
+            if(fileProgress.second > 0) {
+                val progress = (fileProgress.first * 100 / fileProgress.second).toInt()
+                Log.d(_tag, "downloadId: $downloadId -> process: $progress ")
+
+                downloadStatusHandler.invoke(DownloadHebStatus.DOWNLOAD, progress)
+            }
+        }
 
     }
 
 
 
-    private fun getDownloadData(mp: MapProperties): PrepareDeliveryResDto? {
+    private fun getDownloadData(mp: MapProperties, downloadStatus: (DownloadHebStatus, Int) -> Unit): PrepareDeliveryResDto? {
         val retCreate = createMapImport(mp)
+
+        downloadStatus.invoke(DownloadHebStatus.REQUEST_SENT, 0)
+
         when(retCreate?.state){
             MapImportState.IN_PROGRESS -> Log.d(_tag,"deliverTile - createMapImport => IN_PROGRESS")
             MapImportState.START -> if( !checkImportStatus(retCreate.importRequestId!!)) return null
             MapImportState.DONE -> Log.d(_tag,"deliverTile - createMapImport => DONE")
             MapImportState.CANCEL -> {
                 Log.w(_tag,"deliverTile - createMapImport => CANCEL")
+                downloadStatus.invoke(DownloadHebStatus.CANCELED, 0)
                 return null
             }
             else -> {
                 Log.e(_tag,"deliverTile - createMapImport failed: ${retCreate?.state}")
+                downloadStatus.invoke(DownloadHebStatus.FAILED, 0)
                 return null
             }
         }
+
+        downloadStatus.invoke(DownloadHebStatus.REQUEST_IN_PROCESS, 0)
 
         val retDelivery = setMapImportDeliveryStart(retCreate.importRequestId!!)
         when(retDelivery?.state){
@@ -71,10 +105,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             MapDeliveryState.PAUSE ->  Log.d(_tag,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
             MapDeliveryState.CANCEL -> {
                 Log.w(_tag,"deliverTile - setMapImportDeliveryStart => CANCEL")
+                downloadStatus.invoke(DownloadHebStatus.CANCELED, 0)
                 return null
             }
             else -> {
                 Log.e(_tag,"deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
+                downloadStatus.invoke(DownloadHebStatus.FAILED, 0)
                 return null
             }
         }
@@ -82,6 +118,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(retCreate.importRequestId!!)
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
             Log.e(_tag,"deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
+            downloadStatus.invoke(DownloadHebStatus.FAILED, 0)
             return null
         }
 
