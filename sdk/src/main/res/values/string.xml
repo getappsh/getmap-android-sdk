@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="delivery_status_req_sent">בקשה נשלחה</string>
+    <string name="delivery_status_req_in_progress">בקשה בהפקה</string>
+    <string name="delivery_status_download">בהורדה</string>
+    <string name="delivery_status_done">הסתיים</string>
+    <string name="delivery_status_paused">מושהה</string>
+    <string name="delivery_status_canceled">בוטל</string>
+    <string name="delivery_status_failed">נכשל</string>
+    <string name="delivery_status_bad_connection">קליטה גרועה</string>
+    <string name="delivery_status_no_connection">אין רשת</string>
+    <string name="delivery_status_in_verification">באימות</string>
+    <string name="delivery_status_failed_verification">נכשל באימות</string>
+
+</resources>
