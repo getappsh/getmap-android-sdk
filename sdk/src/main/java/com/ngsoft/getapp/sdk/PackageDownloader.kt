@@ -16,6 +16,10 @@ import java.io.File
 @SuppressLint("UnspecifiedRegisterReceiverFlag")
 internal class PackageDownloader(private val context: Context, private val downloadDirectory: String) {
     companion object{
+
+        fun changeFileExtensionToJson(url: String): String{
+            return url.substring(0, url.lastIndexOf('.')) + ".json"
+        }
         fun getFileNameFromUri(url: String): String {
             return url.substring( url.lastIndexOf('/') + 1, url.length)
         }
