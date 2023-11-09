@@ -9,10 +9,17 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.ResponseBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.Headers
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.MultipartBody
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
 import okhttp3.internal.EMPTY_REQUEST
+import java.io.BufferedWriter
 import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import java.net.URLConnection
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,6 +38,7 @@ open class ApiClient(val baseUrl: String, val client: OkHttpClient = defaultClie
         protected const val FormDataMediaType = "multipart/form-data"
         protected const val FormUrlEncMediaType = "application/x-www-form-urlencoded"
         protected const val XmlMediaType = "application/xml"
+        protected const val OctetMediaType = "application/octet-stream"
 
         val apiKey: MutableMap<String, String> = mutableMapOf()
         val apiKeyPrefix: MutableMap<String, String> = mutableMapOf()
@@ -104,8 +112,10 @@ open class ApiClient(val baseUrl: String, val client: OkHttpClient = defaultClie
                         .toRequestBody((mediaType ?: JsonMediaType).toMediaTypeOrNull())
                 }
             mediaType == XmlMediaType -> throw UnsupportedOperationException("xml not currently supported.")
+            mediaType == OctetMediaType && content is ByteArray ->
+                content.toRequestBody(OctetMediaType.toMediaTypeOrNull())
             // TODO: this should be extended with other serializers
-            else -> throw UnsupportedOperationException("requestBody currently only supports JSON body and File body.")
+            else -> throw UnsupportedOperationException("requestBody currently only supports JSON body, byte body and File body.")
         }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -125,13 +135,16 @@ open class ApiClient(val baseUrl: String, val client: OkHttpClient = defaultClie
             }
             return tempFile as T
         }
-        val bodyContent = body.string()
-        if (bodyContent.isEmpty()) {
-            return null
-        }
+
         return when {
-            mediaType==null || (mediaType.startsWith("application/") && mediaType.endsWith("json")) ->
+            mediaType == null || (mediaType.startsWith("application/") && mediaType.endsWith("json")) -> {
+                val bodyContent = body.string()
+                if (bodyContent.isEmpty()) {
+                    return null
+                }
                 Serializer.moshi.adapter<T>().fromJson(bodyContent)
+            }
+            mediaType == OctetMediaType -> body.bytes() as? T
             else ->  throw UnsupportedOperationException("responseBody currently only supports JSON body.")
         }
     }

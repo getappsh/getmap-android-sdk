@@ -21,6 +21,8 @@ import okhttp3.HttpUrl
 
 import GetApp.Client.models.ComponentDto
 
+import com.squareup.moshi.Json
+
 import GetApp.Client.infrastructure.ApiClient
 import GetApp.Client.infrastructure.ApiResponse
 import GetApp.Client.infrastructure.ClientException
@@ -28,10 +30,12 @@ import GetApp.Client.infrastructure.ClientError
 import GetApp.Client.infrastructure.ServerException
 import GetApp.Client.infrastructure.ServerError
 import GetApp.Client.infrastructure.MultiValueMap
+import GetApp.Client.infrastructure.PartConfig
 import GetApp.Client.infrastructure.RequestConfig
 import GetApp.Client.infrastructure.RequestMethod
 import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
+import GetApp.Client.infrastructure.toMultiValue
 
 class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
@@ -67,7 +71,7 @@ class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }

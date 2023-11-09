@@ -68,17 +68,18 @@ data class DeployStatusDto (
     /**
      * 
      *
-     * Values: start,done,installing,`continue`,pause,cancelled,error
+     * Values: start,done,installing,`continue`,pause,cancelled,error,uninstall
      */
     @JsonClass(generateAdapter = false)
     enum class DeployStatus(val value: kotlin.String) {
         @Json(name = "Start") start("Start"),
         @Json(name = "Done") done("Done"),
-        @Json(name = "installing") installing("installing"),
+        @Json(name = "Installing") installing("Installing"),
         @Json(name = "Continue") `continue`("Continue"),
         @Json(name = "Pause") pause("Pause"),
         @Json(name = "Cancelled") cancelled("Cancelled"),
-        @Json(name = "Error") error("Error");
+        @Json(name = "Error") error("Error"),
+        @Json(name = "Uninstall") uninstall("Uninstall");
     }
     /**
      * 

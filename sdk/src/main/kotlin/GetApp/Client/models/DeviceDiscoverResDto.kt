@@ -15,6 +15,7 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.ComponentDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -22,18 +23,22 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param isNewVersion 
- * @param platform 
+ * @param deviceId 
+ * @param produceTime 
+ * @param comps 
  */
 
 
-data class OfferingResponseDto (
+data class DeviceDiscoverResDto (
 
-    @Json(name = "isNewVersion")
-    val isNewVersion: kotlin.Boolean? = null,
+    @Json(name = "deviceId")
+    val deviceId: kotlin.String,
 
-    @Json(name = "platform")
-    val platform: kotlin.Any? = null
+    @Json(name = "produceTime")
+    val produceTime: java.time.OffsetDateTime,
+
+    @Json(name = "comps")
+    val comps: kotlin.collections.List<ComponentDto>
 
 )
 

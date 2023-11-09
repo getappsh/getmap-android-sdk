@@ -15,6 +15,10 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.DiscoveryMapDto
+import GetApp.Client.models.DiscoverySoftwareDto
+import GetApp.Client.models.GeneralDiscoveryDto
+
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -47,12 +51,13 @@ data class DiscoveryMessageDto (
     /**
      * 
      *
-     * Values: app,map
+     * Values: getMinusApp,getMinusMap,mTls
      */
     @JsonClass(generateAdapter = false)
     enum class DiscoveryType(val value: kotlin.String) {
-        @Json(name = "get-app") app("get-app"),
-        @Json(name = "get-map") map("get-map");
+        @Json(name = "get-app") getMinusApp("get-app"),
+        @Json(name = "get-map") getMinusMap("get-map"),
+        @Json(name = "mTls") mTls("mTls");
     }
 }
 

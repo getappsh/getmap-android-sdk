@@ -15,7 +15,10 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.MemberResDto
+
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 /**
  * 

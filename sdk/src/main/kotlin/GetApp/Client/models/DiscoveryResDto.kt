@@ -15,7 +15,11 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.DiscoveryMapResDto
+import GetApp.Client.models.OfferingResponseDto
+
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 /**
  * 

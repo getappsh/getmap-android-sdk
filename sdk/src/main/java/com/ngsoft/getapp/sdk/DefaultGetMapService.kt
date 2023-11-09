@@ -78,7 +78,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
 
         //fill that vast GetApp param...
-        val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.app,
+        val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusApp,
             GeneralDiscoveryDto(
                 PersonalDiscoveryDto("tank","idNumber-123","personalNumber-123"),
                 SituationalDiscoveryDto( BigDecimal("23"), BigDecimal("2"),

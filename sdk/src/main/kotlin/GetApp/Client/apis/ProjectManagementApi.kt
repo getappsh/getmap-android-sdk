@@ -32,6 +32,8 @@ import GetApp.Client.models.ProjectReleasesDto
 import GetApp.Client.models.ProjectResDto
 import GetApp.Client.models.ProjectTokenDto
 
+import com.squareup.moshi.Json
+
 import GetApp.Client.infrastructure.ApiClient
 import GetApp.Client.infrastructure.ApiResponse
 import GetApp.Client.infrastructure.ClientException
@@ -39,10 +41,12 @@ import GetApp.Client.infrastructure.ClientError
 import GetApp.Client.infrastructure.ServerException
 import GetApp.Client.infrastructure.ServerError
 import GetApp.Client.infrastructure.MultiValueMap
+import GetApp.Client.infrastructure.PartConfig
 import GetApp.Client.infrastructure.RequestConfig
 import GetApp.Client.infrastructure.RequestMethod
 import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
+import GetApp.Client.infrastructure.toMultiValue
 
 class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
@@ -79,7 +83,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -153,7 +157,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -225,7 +229,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -298,7 +302,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -374,7 +378,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -432,7 +436,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun projectManagementControllerGetDevicesByCatalogId(catalogId: java.math.BigDecimal) : kotlin.collections.List<DeviceResDto> {
+    fun projectManagementControllerGetDevicesByCatalogId(catalogId: kotlin.String) : kotlin.collections.List<DeviceResDto> {
         val localVarResponse = projectManagementControllerGetDevicesByCatalogIdWithHttpInfo(catalogId = catalogId)
 
         return when (localVarResponse.responseType) {
@@ -445,7 +449,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -460,7 +464,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun projectManagementControllerGetDevicesByCatalogIdWithHttpInfo(catalogId: java.math.BigDecimal) : ApiResponse<kotlin.collections.List<DeviceResDto>?> {
+    fun projectManagementControllerGetDevicesByCatalogIdWithHttpInfo(catalogId: kotlin.String) : ApiResponse<kotlin.collections.List<DeviceResDto>?> {
         val localVariableConfig = projectManagementControllerGetDevicesByCatalogIdRequestConfig(catalogId = catalogId)
 
         return request<Unit, kotlin.collections.List<DeviceResDto>>(
@@ -474,7 +478,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
      * @param catalogId 
      * @return RequestConfig
      */
-    fun projectManagementControllerGetDevicesByCatalogIdRequestConfig(catalogId: java.math.BigDecimal) : RequestConfig<Unit> {
+    fun projectManagementControllerGetDevicesByCatalogIdRequestConfig(catalogId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
@@ -516,7 +520,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -586,7 +590,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -655,7 +659,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -725,7 +729,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -794,7 +798,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -865,7 +869,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }

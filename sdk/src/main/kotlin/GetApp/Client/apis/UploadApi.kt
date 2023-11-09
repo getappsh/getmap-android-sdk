@@ -23,6 +23,8 @@ import GetApp.Client.models.ComponentDto
 import GetApp.Client.models.UpdateUploadStatusDto
 import GetApp.Client.models.UploadArtifactDto
 
+import com.squareup.moshi.Json
+
 import GetApp.Client.infrastructure.ApiClient
 import GetApp.Client.infrastructure.ApiResponse
 import GetApp.Client.infrastructure.ClientException
@@ -35,6 +37,7 @@ import GetApp.Client.infrastructure.RequestConfig
 import GetApp.Client.infrastructure.RequestMethod
 import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
+import GetApp.Client.infrastructure.toMultiValue
 
 class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
@@ -70,7 +73,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -140,7 +143,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -209,7 +212,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -279,7 +282,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }

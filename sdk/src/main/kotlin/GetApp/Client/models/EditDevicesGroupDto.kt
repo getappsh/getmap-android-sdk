@@ -15,7 +15,6 @@
 
 package GetApp.Client.models
 
-import GetApp.Client.models.ComponentDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -23,26 +22,22 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
+ * @param id 
  * @param name 
- * @param platformNumber 
- * @param virtualSize 
- * @param components 
+ * @param description 
  */
 
 
-data class PlatformDto (
+data class EditDevicesGroupDto (
+
+    @Json(name = "id")
+    val id: java.math.BigDecimal,
 
     @Json(name = "name")
     val name: kotlin.String? = null,
 
-    @Json(name = "platformNumber")
-    val platformNumber: kotlin.String? = null,
-
-    @Json(name = "virtualSize")
-    val virtualSize: java.math.BigDecimal? = null,
-
-    @Json(name = "components")
-    val components: kotlin.collections.List<ComponentDto>? = null
+    @Json(name = "description")
+    val description: kotlin.String? = null
 
 )
 

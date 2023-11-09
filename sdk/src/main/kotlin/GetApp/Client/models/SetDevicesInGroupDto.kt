@@ -22,18 +22,22 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param isNewVersion 
- * @param platform 
+ * @param id 
+ * @param devices 
+ * @param groups 
  */
 
 
-data class OfferingResponseDto (
+data class SetDevicesInGroupDto (
 
-    @Json(name = "isNewVersion")
-    val isNewVersion: kotlin.Boolean? = null,
+    @Json(name = "id")
+    val id: java.math.BigDecimal,
 
-    @Json(name = "platform")
-    val platform: kotlin.Any? = null
+    @Json(name = "devices")
+    val devices: kotlin.collections.List<kotlin.String>? = null,
+
+    @Json(name = "groups")
+    val groups: kotlin.collections.List<kotlin.String>? = null
 
 )
 

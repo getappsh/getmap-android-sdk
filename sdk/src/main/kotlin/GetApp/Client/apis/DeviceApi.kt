@@ -19,10 +19,17 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
+import GetApp.Client.models.CreateDevicesGroupDto
 import GetApp.Client.models.DeviceContentResDto
+import GetApp.Client.models.DeviceDiscoverResDto
 import GetApp.Client.models.DeviceRegisterDto
+import GetApp.Client.models.DevicesGroupDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoveryResDto
+import GetApp.Client.models.EditDevicesGroupDto
+import GetApp.Client.models.SetDevicesInGroupDto
+
+import com.squareup.moshi.Json
 
 import GetApp.Client.infrastructure.ApiClient
 import GetApp.Client.infrastructure.ApiResponse
@@ -31,10 +38,12 @@ import GetApp.Client.infrastructure.ClientError
 import GetApp.Client.infrastructure.ServerException
 import GetApp.Client.infrastructure.ServerError
 import GetApp.Client.infrastructure.MultiValueMap
+import GetApp.Client.infrastructure.PartConfig
 import GetApp.Client.infrastructure.RequestConfig
 import GetApp.Client.infrastructure.RequestMethod
 import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
+import GetApp.Client.infrastructure.toMultiValue
 
 class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
@@ -70,7 +79,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -142,7 +151,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -189,6 +198,147 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
+     * This service message allow to IM device pull the discovery context of other agents.
+     * @param requestBody 
+     * @return kotlin.collections.List<DeviceDiscoverResDto>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerImPullDiscoveryDevices(requestBody: kotlin.collections.List<kotlin.String>) : kotlin.collections.List<DeviceDiscoverResDto> {
+        val localVarResponse = deviceControllerImPullDiscoveryDevicesWithHttpInfo(requestBody = requestBody)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as kotlin.collections.List<DeviceDiscoverResDto>
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * 
+     * This service message allow to IM device pull the discovery context of other agents.
+     * @param requestBody 
+     * @return ApiResponse<kotlin.collections.List<DeviceDiscoverResDto>?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerImPullDiscoveryDevicesWithHttpInfo(requestBody: kotlin.collections.List<kotlin.String>) : ApiResponse<kotlin.collections.List<DeviceDiscoverResDto>?> {
+        val localVariableConfig = deviceControllerImPullDiscoveryDevicesRequestConfig(requestBody = requestBody)
+
+        return request<kotlin.collections.List<kotlin.String>, kotlin.collections.List<DeviceDiscoverResDto>>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerImPullDiscoveryDevices
+     *
+     * @param requestBody 
+     * @return RequestConfig
+     */
+    fun deviceControllerImPullDiscoveryDevicesRequestConfig(requestBody: kotlin.collections.List<kotlin.String>) : RequestConfig<kotlin.collections.List<kotlin.String>> {
+        val localVariableBody = requestBody
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/device/im/pull/discovery",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * 
+     * This service message allow to IM device push the discovery context of other agents.
+     * @param requestBody 
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerImPushDiscoveryDevices(requestBody: kotlin.collections.List<kotlin.String>) : Unit {
+        val localVarResponse = deviceControllerImPushDiscoveryDevicesWithHttpInfo(requestBody = requestBody)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * 
+     * This service message allow to IM device push the discovery context of other agents.
+     * @param requestBody 
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerImPushDiscoveryDevicesWithHttpInfo(requestBody: kotlin.collections.List<kotlin.String>) : ApiResponse<Unit?> {
+        val localVariableConfig = deviceControllerImPushDiscoveryDevicesRequestConfig(requestBody = requestBody)
+
+        return request<kotlin.collections.List<kotlin.String>, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerImPushDiscoveryDevices
+     *
+     * @param requestBody 
+     * @return RequestConfig
+     */
+    fun deviceControllerImPushDiscoveryDevicesRequestConfig(requestBody: kotlin.collections.List<kotlin.String>) : RequestConfig<kotlin.collections.List<kotlin.String>> {
+        val localVariableBody = requestBody
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/device/im/push/discovery",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * 
      * This service message allow to device registration process for GetApp services.
      * @param deviceRegisterDto 
      * @return void
@@ -212,7 +362,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             }
             ResponseType.ServerError -> {
                 val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
             }
         }
     }
@@ -249,6 +399,361 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/api/device/register",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Create Devices Group
+     * 
+     * @param createDevicesGroupDto 
+     * @return DevicesGroupDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun groupControllerCreateGroup(createDevicesGroupDto: CreateDevicesGroupDto) : DevicesGroupDto {
+        val localVarResponse = groupControllerCreateGroupWithHttpInfo(createDevicesGroupDto = createDevicesGroupDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Create Devices Group
+     * 
+     * @param createDevicesGroupDto 
+     * @return ApiResponse<DevicesGroupDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun groupControllerCreateGroupWithHttpInfo(createDevicesGroupDto: CreateDevicesGroupDto) : ApiResponse<DevicesGroupDto?> {
+        val localVariableConfig = groupControllerCreateGroupRequestConfig(createDevicesGroupDto = createDevicesGroupDto)
+
+        return request<CreateDevicesGroupDto, DevicesGroupDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation groupControllerCreateGroup
+     *
+     * @param createDevicesGroupDto 
+     * @return RequestConfig
+     */
+    fun groupControllerCreateGroupRequestConfig(createDevicesGroupDto: CreateDevicesGroupDto) : RequestConfig<CreateDevicesGroupDto> {
+        val localVariableBody = createDevicesGroupDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/group",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Edit Devices Group
+     * 
+     * @param editDevicesGroupDto 
+     * @return DevicesGroupDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun groupControllerEditGroup(editDevicesGroupDto: EditDevicesGroupDto) : DevicesGroupDto {
+        val localVarResponse = groupControllerEditGroupWithHttpInfo(editDevicesGroupDto = editDevicesGroupDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Edit Devices Group
+     * 
+     * @param editDevicesGroupDto 
+     * @return ApiResponse<DevicesGroupDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun groupControllerEditGroupWithHttpInfo(editDevicesGroupDto: EditDevicesGroupDto) : ApiResponse<DevicesGroupDto?> {
+        val localVariableConfig = groupControllerEditGroupRequestConfig(editDevicesGroupDto = editDevicesGroupDto)
+
+        return request<EditDevicesGroupDto, DevicesGroupDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation groupControllerEditGroup
+     *
+     * @param editDevicesGroupDto 
+     * @return RequestConfig
+     */
+    fun groupControllerEditGroupRequestConfig(editDevicesGroupDto: EditDevicesGroupDto) : RequestConfig<EditDevicesGroupDto> {
+        val localVariableBody = editDevicesGroupDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/group",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Get Devices in a group
+     * 
+     * @param groupId 
+     * @return DevicesGroupDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun groupControllerGetGroupDevices(groupId: kotlin.String) : DevicesGroupDto {
+        val localVarResponse = groupControllerGetGroupDevicesWithHttpInfo(groupId = groupId)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get Devices in a group
+     * 
+     * @param groupId 
+     * @return ApiResponse<DevicesGroupDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun groupControllerGetGroupDevicesWithHttpInfo(groupId: kotlin.String) : ApiResponse<DevicesGroupDto?> {
+        val localVariableConfig = groupControllerGetGroupDevicesRequestConfig(groupId = groupId)
+
+        return request<Unit, DevicesGroupDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation groupControllerGetGroupDevices
+     *
+     * @param groupId 
+     * @return RequestConfig
+     */
+    fun groupControllerGetGroupDevicesRequestConfig(groupId: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/group/{groupId}/devices".replace("{"+"groupId"+"}", encodeURIComponent(groupId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Get Devices Groups and children groups
+     * 
+     * @return kotlin.collections.List<DevicesGroupDto>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun groupControllerGetGroups() : kotlin.collections.List<DevicesGroupDto> {
+        val localVarResponse = groupControllerGetGroupsWithHttpInfo()
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as kotlin.collections.List<DevicesGroupDto>
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get Devices Groups and children groups
+     * 
+     * @return ApiResponse<kotlin.collections.List<DevicesGroupDto>?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun groupControllerGetGroupsWithHttpInfo() : ApiResponse<kotlin.collections.List<DevicesGroupDto>?> {
+        val localVariableConfig = groupControllerGetGroupsRequestConfig()
+
+        return request<Unit, kotlin.collections.List<DevicesGroupDto>>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation groupControllerGetGroups
+     *
+     * @return RequestConfig
+     */
+    fun groupControllerGetGroupsRequestConfig() : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/group",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Set Devices in a Group
+     * 
+     * @param setDevicesInGroupDto 
+     * @return DevicesGroupDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun groupControllerSetDevicesInGroup(setDevicesInGroupDto: SetDevicesInGroupDto) : DevicesGroupDto {
+        val localVarResponse = groupControllerSetDevicesInGroupWithHttpInfo(setDevicesInGroupDto = setDevicesInGroupDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Set Devices in a Group
+     * 
+     * @param setDevicesInGroupDto 
+     * @return ApiResponse<DevicesGroupDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun groupControllerSetDevicesInGroupWithHttpInfo(setDevicesInGroupDto: SetDevicesInGroupDto) : ApiResponse<DevicesGroupDto?> {
+        val localVariableConfig = groupControllerSetDevicesInGroupRequestConfig(setDevicesInGroupDto = setDevicesInGroupDto)
+
+        return request<SetDevicesInGroupDto, DevicesGroupDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation groupControllerSetDevicesInGroup
+     *
+     * @param setDevicesInGroupDto 
+     * @return RequestConfig
+     */
+    fun groupControllerSetDevicesInGroupRequestConfig(setDevicesInGroupDto: SetDevicesInGroupDto) : RequestConfig<SetDevicesInGroupDto> {
+        val localVariableBody = setDevicesInGroupDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/group/devices",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

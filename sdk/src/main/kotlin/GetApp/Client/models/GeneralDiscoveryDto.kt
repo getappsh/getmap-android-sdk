@@ -15,7 +15,12 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.PersonalDiscoveryDto
+import GetApp.Client.models.PhysicalDiscoveryDto
+import GetApp.Client.models.SituationalDiscoveryDto
+
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 /**
  * 

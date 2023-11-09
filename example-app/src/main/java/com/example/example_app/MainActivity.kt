@@ -116,13 +116,11 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.productId,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
                 "34.218144483292285,31.16202819895893,34.65786854261468,31.748690379853482",
-
                 false
             )
             val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
                 Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress}");
             }
-
             service.downloadMap(props, downloadStatusHandler);
 //            val tilesUpdates = service.getExtentUpdates(props, updateDate)
 //            Log.d(TAG, "onDelivery: tilesUpdates " + tilesUpdates.toString());
@@ -159,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
             selectedProductView.setText("Selected Product: " + selectedProduct.productName)
             deliveryButton.isEnabled = true
-            updateDate = selectedProduct.updateDate.toLocalDateTime()!!
+            updateDate = selectedProduct.updateDate!!.toLocalDateTime()
 
         }
 
