@@ -28,12 +28,15 @@ import com.squareup.moshi.JsonClass
  * @param footprint 
  * @param maxResolution 
  * @param productType 
+ * @param productSubType 
  * @param boundingBox 
  * @param description 
  * @param updateDateUTC 
  * @param takenDate 
  * @param ingestionDate 
  * @param region 
+ * @param imagingTimeBeginUTC 
+ * @param imagingTimeEndUTC 
  */
 
 
@@ -57,6 +60,9 @@ data class DiscoveryMapResDto (
     @Json(name = "productType")
     val productType: kotlin.String? = null,
 
+    @Json(name = "productSubType")
+    val productSubType: kotlin.String? = null,
+
     @Json(name = "boundingBox")
     val boundingBox: kotlin.String? = null,
 
@@ -73,7 +79,13 @@ data class DiscoveryMapResDto (
     val ingestionDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "region")
-    val region: kotlin.String? = null
+    val region: kotlin.String? = null,
+
+    @Json(name = "imagingTimeBeginUTC")
+    val imagingTimeBeginUTC: java.time.OffsetDateTime? = null,
+
+    @Json(name = "imagingTimeEndUTC")
+    val imagingTimeEndUTC: java.time.OffsetDateTime? = null
 
 )
 

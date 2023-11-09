@@ -111,7 +111,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 it.footprint.toString(),
                 it.maxResolution!!,
                 it.region,
+                it.productType,
+                it.productSubType,
                 it.productVersion,
+                it.imagingTimeBeginUTC,
+                it.imagingTimeEndUTC,
                 it.ingestionDate,
                 it.takenDate,
                 it.updateDateUTC
