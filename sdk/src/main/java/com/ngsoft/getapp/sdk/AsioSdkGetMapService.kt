@@ -38,7 +38,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val downloadData: MapDownloadData
 
         try{
-            downloadData = getDownloadData(mp)
+            downloadData = getDownloadData(mp, downloadStatusHandler)
         }catch (e: Exception){
             downloadStatusHandler.invoke(MapDownloadData(
                 deliveryStatus=MapDeliveryState.ERROR,
@@ -78,13 +78,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val pkgCompletionHandler: (Long) -> Unit = {
             Log.d(_tag,"processing pkg download ID=$it completion event...")
-            if (jsonCompleted){
+//            if (jsonCompleted){
                 Log.d(_tag,"stopping progress watcher...")
                 tmr?.cancel()
                 downloadData.deliveryStatus = MapDeliveryState.DONE;
                 downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
                 downloadData.downloadProgress = 100
-            }
+//            }
             downloadData.fileName = PackageDownloader.getFileNameFromUri(pkgUrl)
             pkgCompleted = true
             downloadStatusHandler.invoke(downloadData);
@@ -124,19 +124,25 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     }
 
-    private fun getDownloadData(mp: MapProperties,): MapDownloadData {
+    private fun getDownloadData(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): MapDownloadData {
         val mapDownloadData = MapDownloadData(deliveryStatus=MapDeliveryState.START);
         mapDownloadData.statusMessage = appCtx.getString(R.string.delivery_status_req_sent)
+        downloadStatusHandler.invoke(mapDownloadData)
 
         val retCreate = createMapImport(mp)
 
         when(retCreate?.state){
             MapImportState.IN_PROGRESS -> Log.d(_tag,"deliverTile - createMapImport => IN_PROGRESS")
-            MapImportState.START -> if( !checkImportStatus(retCreate.importRequestId!!)){
-                mapDownloadData.deliveryStatus = MapDeliveryState.ERROR;
-                mapDownloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
+            MapImportState.START -> {
+                mapDownloadData.statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress)
+                downloadStatusHandler.invoke(mapDownloadData)
+
+                if( !checkImportStatus(retCreate.importRequestId!!)){
+                    mapDownloadData.deliveryStatus = MapDeliveryState.ERROR;
+                    mapDownloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
 //                TODO get the error message
-                return mapDownloadData
+                    return mapDownloadData
+                }
             }
             MapImportState.DONE -> Log.d(_tag,"deliverTile - createMapImport => DONE")
             MapImportState.CANCEL -> {

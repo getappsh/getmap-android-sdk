@@ -115,11 +115,12 @@ class MainActivity : AppCompatActivity() {
             val props = MapProperties(
                 selectedProduct.productId,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
-                "34.218144483292285,31.16202819895893,34.65786854261468,31.748690379853482",
+                "34.46264697,31.48939480,34.46454401,31.49104923",
+//                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
             val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
-                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress}");
+                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}");
             }
             service.downloadMap(props, downloadStatusHandler);
 //            val tilesUpdates = service.getExtentUpdates(props, updateDate)
