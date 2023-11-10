@@ -24,11 +24,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
 
 
+
     override fun init(configuration: Configuration): Boolean {
         super.init(configuration)
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
-
         return true
     }
 
@@ -60,6 +60,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         downloadData.deliveryStatus = MapDeliveryState.DOWNLOAD;
         downloadData.statusMessage = appCtx.getString(R.string.delivery_status_download)
+
+        downloadData.jsonName = PackageDownloader.getFileNameFromUri(jsonUrl)
+        downloadData.fileName = PackageDownloader.getFileNameFromUri(pkgUrl)
+
         downloadStatusHandler.invoke(downloadData)
 
         val jsonCompletionHandler: (Long) -> Unit = {
@@ -71,7 +75,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
                 downloadData.downloadProgress = 100
             }
-            downloadData.jsonName = PackageDownloader.getFileNameFromUri(jsonUrl)
             jsonCompleted = true
             downloadStatusHandler.invoke(downloadData);
         }
@@ -85,7 +88,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
                 downloadData.downloadProgress = 100
             }
-            downloadData.fileName = PackageDownloader.getFileNameFromUri(pkgUrl)
             pkgCompleted = true
             downloadStatusHandler.invoke(downloadData);
         }
@@ -107,12 +109,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.d(_tag, "downloadMap -> downloadId: $pkgDownloadId")
 
         tmr = timer(initialDelay = 100, period = 500 ) {
+//            this is very bad, need to rewrite
             val jsonProgress = downloader.queryProgress(jsonDownloadId)
             if(jsonProgress.second > 0) {
                 val progress = (jsonProgress.first * 100 / jsonProgress.second).toInt()
                 Log.d(_tag, "jsonDownloadId: $jsonDownloadId -> process: $progress ")
                 if (progress >= 100) {
                     jsonCompleted = true;
+                    if (pkgCompleted){
+                        Log.d(_tag,"stopping progress watcher...")
+                        downloadData.deliveryStatus = MapDeliveryState.DONE;
+                        downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
+                        downloadData.downloadProgress = 100
+                        this.cancel()
+                    }
                 }
             }
             val fileProgress = downloader.queryProgress(pkgDownloadId)
@@ -120,10 +130,17 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 val progress = (fileProgress.first * 100 / fileProgress.second).toInt()
                 Log.d(_tag, "pkgDownloadId: $pkgDownloadId -> process: $progress ")
 
-                downloadData.deliveryStatus = MapDeliveryState.DOWNLOAD;
+                if (progress < 100){
+                    downloadData.deliveryStatus = MapDeliveryState.DOWNLOAD;
+                    downloadData.statusMessage = appCtx.getString(R.string.delivery_status_download)
+                }else{
+                    downloadData.deliveryStatus = MapDeliveryState.DONE;
+                    downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
+                    this.cancel()
+                }
                 downloadData.downloadProgress = progress
-                downloadData.statusMessage = appCtx.getString(R.string.delivery_status_download)
                 downloadStatusHandler.invoke(downloadData)
+
             }
         }
 
