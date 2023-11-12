@@ -14,8 +14,10 @@ import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.DownloadProgress
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
+//import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.DownloadHebStatus
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +40,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
+
+    private lateinit var downoadnTestButton: Button
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +78,29 @@ class MainActivity : AppCompatActivity() {
         deliveryButton.isEnabled = false
         deliveryButton.setOnClickListener {
             this.onDelivery()
+        }
+
+        downoadnTestButton = findViewById<Button>(R.id.d_test)
+
+        downoadnTestButton.setOnClickListener{
+//            val downloader = PackageDownloader(this, Environment.DIRECTORY_DOWNLOADS)
+//
+//            GlobalScope.launch(Dispatchers.IO){
+//
+//                var completed = false
+//                var downloadId: Long = -1
+//                val downloadCompletionHandler: (Long) -> Unit = {
+//                    println("processing download ID=$it completion event...")
+//                    completed = it == downloadId
+//                }
+//
+//                downloadId = downloader.downloadFile(
+//                    //"http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
+////                    "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg",
+//                    "https://download.maps.pkz.even/api/raster/v1/downloads/6ef8eac0889a49e6a291a1807a097e6d/Orthophoto_O_aza_w84geo_Oct23_gpkg_19_0_2_1_0_19_2023_11_12T14_38_52_992Z.gpkg",
+//                    downloadCompletionHandler
+//                )
+//            }
         }
 
     }
@@ -117,15 +145,23 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.productId,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264697,31.48939480,34.46454401,31.49104923",
-                "34.43952527,31.52167451,34.44305441,31.52412417",
+                "34.43952521,31.52167452,34.44305443,31.52412414",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
             val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
                 Log.d(TAG, "onDelivery: ${data.url}")
                 Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}");
+                if (data.deliveryStatus == MapDeliveryState.DONE || data.deliveryStatus == MapDeliveryState.ERROR){
+                    Log.d(TAG, "onDelivery: it done")
+                    launch(Dispatchers.Main) {
+                        dismissLoadingDialog();
+//                showMessageDialog(delivered.toString())
+                    }
+                }
             }
             service.downloadMap(props, downloadStatusHandler);
+            Log.d(TAG, "onDelivery: after download map have been called")
 //            val tilesUpdates = service.getExtentUpdates(props, updateDate)
 //            Log.d(TAG, "onDelivery: tilesUpdates " + tilesUpdates.toString());
 
@@ -138,10 +174,10 @@ class MainActivity : AppCompatActivity() {
 //            val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
 //            Log.d(TAG, "onDelivery: delivered " + delivered)
 
-            launch(Dispatchers.Main) {
-                dismissLoadingDialog();
-//                showMessageDialog(delivered.toString())
-            }
+//            launch(Dispatchers.Main) {
+//                dismissLoadingDialog();
+////                showMessageDialog(delivered.toString())
+//            }
 
 
         }
