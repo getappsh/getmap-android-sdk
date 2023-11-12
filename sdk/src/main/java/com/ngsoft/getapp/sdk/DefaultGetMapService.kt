@@ -111,20 +111,20 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val result = mutableListOf<DiscoveryItem>()
         discoveries.map?.forEach {
             result.add(DiscoveryItem(
+                it.id.toString(),
                 it.productId.toString(),
                 it.productName.toString(),
-                it.boundingBox.toString(),
-                it.footprint.toString(),
-                it.maxResolution!!,
-                it.region,
+                it.productVersion.toString(),
                 it.productType,
                 it.productSubType,
-                it.productVersion,
+                it.description,
                 it.imagingTimeBeginUTC,
                 it.imagingTimeEndUTC,
+                it.maxResolutionDeg!!,
+                it.footprint.toString(),
+                it.transparency.toString(),
+                it.region,
                 it.ingestionDate,
-                it.takenDate,
-                it.updateDateUTC
             ))
         }
 

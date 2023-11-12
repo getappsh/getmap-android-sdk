@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity() {
 
             selectedProductView.setText("Selected Product: " + selectedProduct.productName)
             deliveryButton.isEnabled = true
-            updateDate = selectedProduct.updateDate!!.toLocalDateTime()
+            updateDate = selectedProduct.ingestionDate!!.toLocalDateTime()
 
         }
 

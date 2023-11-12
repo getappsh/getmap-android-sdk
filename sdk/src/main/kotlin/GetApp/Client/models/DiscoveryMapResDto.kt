@@ -22,25 +22,27 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
+ * @param id 
  * @param productId 
  * @param productName 
  * @param productVersion 
- * @param footprint 
- * @param maxResolution 
  * @param productType 
  * @param productSubType 
- * @param boundingBox 
  * @param description 
- * @param updateDateUTC 
- * @param takenDate 
- * @param ingestionDate 
- * @param region 
  * @param imagingTimeBeginUTC 
  * @param imagingTimeEndUTC 
+ * @param maxResolutionDeg 
+ * @param footprint 
+ * @param transparency 
+ * @param region 
+ * @param ingestionDate 
  */
 
 
 data class DiscoveryMapResDto (
+
+    @Json(name = "id")
+    val id: kotlin.String? = null,
 
     @Json(name = "productId")
     val productId: kotlin.String? = null,
@@ -51,41 +53,35 @@ data class DiscoveryMapResDto (
     @Json(name = "productVersion")
     val productVersion: kotlin.String? = null,
 
-    @Json(name = "footprint")
-    val footprint: kotlin.String? = null,
-
-    @Json(name = "maxResolution")
-    val maxResolution: java.math.BigDecimal? = null,
-
     @Json(name = "productType")
     val productType: kotlin.String? = null,
 
     @Json(name = "productSubType")
     val productSubType: kotlin.String? = null,
 
-    @Json(name = "boundingBox")
-    val boundingBox: kotlin.String? = null,
-
     @Json(name = "description")
     val description: kotlin.String? = null,
-
-    @Json(name = "updateDateUTC")
-    val updateDateUTC: java.time.OffsetDateTime? = null,
-
-    @Json(name = "takenDate")
-    val takenDate: java.time.OffsetDateTime? = null,
-
-    @Json(name = "ingestionDate")
-    val ingestionDate: java.time.OffsetDateTime? = null,
-
-    @Json(name = "region")
-    val region: kotlin.String? = null,
 
     @Json(name = "imagingTimeBeginUTC")
     val imagingTimeBeginUTC: java.time.OffsetDateTime? = null,
 
     @Json(name = "imagingTimeEndUTC")
-    val imagingTimeEndUTC: java.time.OffsetDateTime? = null
+    val imagingTimeEndUTC: java.time.OffsetDateTime? = null,
+
+    @Json(name = "maxResolutionDeg")
+    val maxResolutionDeg: java.math.BigDecimal? = null,
+
+    @Json(name = "footprint")
+    val footprint: kotlin.String? = null,
+
+    @Json(name = "transparency")
+    val transparency: kotlin.String? = null,
+
+    @Json(name = "region")
+    val region: kotlin.String? = null,
+
+    @Json(name = "ingestionDate")
+    val ingestionDate: java.time.OffsetDateTime? = null
 
 )
 

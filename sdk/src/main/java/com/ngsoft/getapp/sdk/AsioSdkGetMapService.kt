@@ -172,7 +172,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
             }
         }
-
     }
 
     private fun getDownloadData(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): MapDownloadData {
