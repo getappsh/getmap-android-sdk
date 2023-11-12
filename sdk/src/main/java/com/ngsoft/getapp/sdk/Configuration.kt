@@ -19,5 +19,6 @@ data class Configuration (
     val storagePath: String,
     val zoomLevel: Int,
     val deliveryTimeout: Int,
-    val downloadTimeout: Int
+    val downloadTimeout: Int,
+    val imei: String?
 )

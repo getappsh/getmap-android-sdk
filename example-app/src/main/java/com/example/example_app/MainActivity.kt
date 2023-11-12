@@ -54,7 +54,8 @@ class MainActivity : AppCompatActivity() {
             //currently downloads file to a path within the public external storage directory
             Environment.DIRECTORY_DOWNLOADS,
             16,
-            5,5
+            5,5,
+            null
         )
 
         service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)

@@ -53,6 +53,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         downloader = PackageDownloader(appCtx, configuration.storagePath)
         pref = Pref.getInstance(appCtx)
         cache = TilesCache(appCtx)
+        if(configuration.imei != null){
+            pref.deviceId = configuration.imei
+        }
+
         return true
     }
 
@@ -102,6 +106,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         )
 
         val discoveries = client.deviceApi.deviceControllerDiscoveryCatalog(query)
+        Log.d(_tag, "getDiscoveryCatalog -  offering results: $discoveries ")
+
         val result = mutableListOf<DiscoveryItem>()
         discoveries.map?.forEach {
             result.add(DiscoveryItem(
