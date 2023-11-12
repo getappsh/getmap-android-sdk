@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
 //            service.purgeCache()
 
             val props = MapProperties(
-                selectedProduct.productId,
+                selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264697,31.48939480,34.46454401,31.49104923",
                 "34.43952521,31.52167452,34.44305443,31.52412414",
