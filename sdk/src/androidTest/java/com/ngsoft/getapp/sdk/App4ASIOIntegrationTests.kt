@@ -21,7 +21,8 @@ class App4ASIOIntegrationTests {
         private lateinit var updateDate: LocalDateTime
         private val extentUpdMapProps = MapProperties(
             "getmap:Ashdod2",
-            "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
+//            "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
+            "34.43952527,31.52167451,34.44305441,31.52412417",
 //            "dcf8f87e-f02d-4b7a-bf7b-c8b64b2d202a",
 //            "35.24013558,32.17154827,35.24551706,32.17523034",
             false
@@ -42,7 +43,8 @@ class App4ASIOIntegrationTests {
                 //currently downloads file to a path within the public external storage directory
                 Environment.DIRECTORY_DOWNLOADS,
                 16,
-                5,5
+                5,5,
+                null
             )
 
             service = GetMapServiceFactory.createAsioAppSvc(appContext, cfg)
@@ -59,7 +61,8 @@ class App4ASIOIntegrationTests {
         val products = service.getDiscoveryCatalog(props)
         assert(products.isNotEmpty())
 
-        val productOfInterest = products.find { it.productId ==  "getmap:Ashdod2"}
+        println(products)
+        val productOfInterest = products.find { it.productId ==  "045eaa61-8f61-48d3-a240-4b02a683eca3"}
         assert(productOfInterest != null)
 
         updateDate = productOfInterest?.updateDate?.toLocalDateTime()!!

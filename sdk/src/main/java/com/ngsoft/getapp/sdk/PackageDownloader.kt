@@ -84,6 +84,9 @@ internal class PackageDownloader(private val context: Context, private val downl
                     else
                         totalBytes = 0
                 }
+                DownloadManager.STATUS_FAILED -> {
+                    downloadedBytes = -1
+                }
             }
         }
 

@@ -66,51 +66,80 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         downloadStatusHandler.invoke(downloadData)
 
-        val jsonCompletionHandler: (Long) -> Unit = {
-            Log.d(_tag,"processing json download ID=$it completion event...")
-            if (pkgCompleted){
+//        val jsonCompletionHandler: (Long) -> Unit = {
+//            Log.d(_tag,"processing json download ID=$it completion event...")
+//            if (pkgCompleted){
+//                Log.d(_tag,"stopping progress watcher...")
+//                tmr?.cancel()
+//                downloadData.deliveryStatus = MapDeliveryState.DONE;
+//                downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
+//                downloadData.downloadProgress = 100
+//            }
+//            jsonCompleted = true
+//            downloadStatusHandler.invoke(downloadData);
+//        }
+//
+//        val pkgCompletionHandler: (Long) -> Unit = {
+//            Log.d(_tag,"processing pkg download ID=$it completion event...")
+//            if (jsonCompleted){
+//                Log.d(_tag,"stopping progress watcher...")
+//                tmr?.cancel()
+//                downloadData.deliveryStatus = MapDeliveryState.DONE;
+//                downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
+//                downloadData.downloadProgress = 100
+//            }
+//            pkgCompleted = true
+//            downloadStatusHandler.invoke(downloadData);
+//        }
+
+        var jsonDownloadId: Long? = null
+        var pkgDownloadId: Long? = null
+
+        val completionHandler: (Long) -> Unit = {
+            Log.d(_tag,"processing download ID=$it completion event...")
+            if (jsonDownloadId != null && jsonDownloadId == it){
+                jsonCompleted = true
+            }else if(pkgDownloadId != null && jsonDownloadId == pkgDownloadId){
+                pkgCompleted = true
+                tmr?.cancel()
+            }
+
+            if (jsonCompleted && pkgCompleted){
                 Log.d(_tag,"stopping progress watcher...")
                 tmr?.cancel()
+
                 downloadData.deliveryStatus = MapDeliveryState.DONE;
                 downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
                 downloadData.downloadProgress = 100
             }
-            jsonCompleted = true
             downloadStatusHandler.invoke(downloadData);
         }
 
-        val pkgCompletionHandler: (Long) -> Unit = {
-            Log.d(_tag,"processing pkg download ID=$it completion event...")
-            if (jsonCompleted){
-                Log.d(_tag,"stopping progress watcher...")
-                tmr?.cancel()
-                downloadData.deliveryStatus = MapDeliveryState.DONE;
-                downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
-                downloadData.downloadProgress = 100
-            }
-            pkgCompleted = true
-            downloadStatusHandler.invoke(downloadData);
-        }
-
-
-        val jsonDownloadId: Long
-        val pkgDownloadId: Long
         try{
-            jsonDownloadId = downloader.downloadFile(jsonUrl, jsonCompletionHandler)
-            pkgDownloadId = downloader.downloadFile(pkgUrl, pkgCompletionHandler)
+            jsonDownloadId = downloader.downloadFile(jsonUrl, completionHandler)
+            pkgDownloadId = downloader.downloadFile(pkgUrl, completionHandler)
+            Log.d(_tag, "downloadMap: jsonDownloadId: $jsonDownloadId, pkgDownloadId: $pkgDownloadId")
+
         }catch (e: Exception){
             downloadData.deliveryStatus = MapDeliveryState.ERROR;
             downloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
             downloadData.errorContent = e.message.toString();
-            Log.e(_tag, "downloadMap - downloadFile: ${e.toString()} " )
+            Log.e(_tag, "downloadMap - downloadFile: ${e.message.toString()} " )
             return
         }
-
         Log.d(_tag, "downloadMap -> downloadId: $pkgDownloadId")
 
         tmr = timer(initialDelay = 100, period = 500 ) {
-//            this is very bad, need to rewrite
             val jsonProgress = downloader.queryProgress(jsonDownloadId)
+            val fileProgress = downloader.queryProgress(pkgDownloadId)
+
+            if (jsonProgress.first == -1L || fileProgress.first == -1L){
+                Log.i(_tag, "downloadMap: DownloadManager to download file")
+                downloadData.deliveryStatus = MapDeliveryState.ERROR;
+                downloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
+                downloadStatusHandler.invoke(downloadData)
+                this.cancel()
+            }
             if(jsonProgress.second > 0) {
                 val progress = (jsonProgress.first * 100 / jsonProgress.second).toInt()
                 Log.d(_tag, "jsonDownloadId: $jsonDownloadId -> process: $progress ")
@@ -121,11 +150,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         downloadData.deliveryStatus = MapDeliveryState.DONE;
                         downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
                         downloadData.downloadProgress = 100
+                        downloadStatusHandler.invoke(downloadData)
                         this.cancel()
                     }
                 }
             }
-            val fileProgress = downloader.queryProgress(pkgDownloadId)
             if(fileProgress.second > 0) {
                 val progress = (fileProgress.first * 100 / fileProgress.second).toInt()
                 Log.d(_tag, "pkgDownloadId: $pkgDownloadId -> process: $progress ")
