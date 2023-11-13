@@ -69,6 +69,9 @@ internal class PackageDownloader(private val context: Context, private val downl
         return downloadManager.enqueue(request)
     }
 
+    fun cancelDownload(vararg ids: Long): Int{
+        return downloadManager.remove(*ids)
+    }
     @SuppressLint("Range")
     fun queryProgress(downloadId: Long): Pair<Long, Long> {
         var downloadedBytes = 0L

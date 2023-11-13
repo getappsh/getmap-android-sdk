@@ -47,12 +47,17 @@ internal class MapRepo {
             this.statusMessage = statusMessage ?: this.statusMessage
             this.downloadProgress = downloadProgress ?: this.downloadProgress
             this.errorContent = errorContent ?: this.errorContent
+            if (state == MapDeliveryState.CANCEL){
+                this.cancelDownload = false
+            }
         }
-
 
         invoke(id)
     }
 
+    fun setCancelDownload(id: String){
+        hashMapData[id]?.cancelDownload = true
+    }
     fun getUrl(id: String):String?{
         return hashMapData[id]?.url
     }

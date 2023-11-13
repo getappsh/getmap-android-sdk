@@ -2,6 +2,7 @@ package com.example.example_app
 
 import android.app.Dialog
 import android.app.ProgressDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -10,13 +11,10 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.Configuration
-import com.ngsoft.getapp.sdk.DownloadProgress
+import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
-//import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
-import com.ngsoft.getapp.sdk.models.DownloadHebStatus
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -136,7 +134,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun onDelivery(){
         Log.d(TAG, "onDelivery: ");
-        showLoadingDialog("Download file")
         GlobalScope.launch(Dispatchers.IO){
 
 //            service.purgeCache()
@@ -145,15 +142,17 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264697,31.48939480,34.46454401,31.49104923",
-                "34.46665621,31.49807431,34.46863989,31.49913721",
+                "34.46665621,31.49807435,34.46863989,31.49913721",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
             val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
                 Log.d(TAG, "onDelivery data id: ${data.id}")
                 Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}");
-                if (data.deliveryStatus == MapDeliveryState.DONE || data.deliveryStatus == MapDeliveryState.ERROR){
-                    Log.d(TAG, "onDelivery: it done")
+                if (data.deliveryStatus == MapDeliveryState.DONE ||
+                    data.deliveryStatus == MapDeliveryState.ERROR ||
+                    data.deliveryStatus == MapDeliveryState.CANCEL ){
+                    Log.d(TAG, "onDelivery: ${data.deliveryStatus}")
                     dismissLoadingDialog();
 //                showMessageDialog(delivered.toString())
 
@@ -161,6 +160,9 @@ class MainActivity : AppCompatActivity() {
             }
             val id = service.downloadMap(props, downloadStatusHandler);
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
+            GlobalScope.launch(Dispatchers.Main){
+                showLoadingDialog("Download file id: $id", id)
+            }
 
         }
 
@@ -211,13 +213,22 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun showLoadingDialog(title: String) {
+    private fun showLoadingDialog(title: String, id: String? = null) {
         progressDialog = ProgressDialog(this)
         progressDialog?.setTitle(title)
         progressDialog?.setMessage("Loading...") // Set the message to be displayed
         progressDialog?.setCancelable(false) // Prevent users from dismissing the dialog
         progressDialog?.setProgressStyle(ProgressDialog.STYLE_SPINNER) // Use a spinner-style progress indicator
+        if(id != null){
+            progressDialog?.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel Download",
+                DialogInterface.OnClickListener { dialog, which ->
+                    this.service.cancelDownload(id)
+                    progressDialog?.dismiss() //dismiss dialog
+                })
+        }
         progressDialog?.show()
+
+
     }
 
     // Call this function to dismiss the loading dialog

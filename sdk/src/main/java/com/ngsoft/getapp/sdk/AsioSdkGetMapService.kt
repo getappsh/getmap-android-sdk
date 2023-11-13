@@ -78,8 +78,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val jsonUrl = PackageDownloader.changeFileExtensionToJson(pkgUrl)
             var pkgCompleted = false
             var jsonCompleted = false
-            var jsonDownloadId: Long? = null
-            var pkgDownloadId: Long? = null
+            val jsonDownloadId: Long?
+            val pkgDownloadId: Long?
 
             val completionHandler: (Long) -> Unit = {
                 Log.d(_tag, "processing download ID=$it completion event...")
@@ -113,12 +113,18 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
 
             timer(initialDelay = 100, period = 500) {
+                if (mapRepo.isDownloadCanceled(id)){
+                    Log.d(_tag, "downloadMap: Download $id, canceled by user")
+                    downloader.cancelDownload(jsonDownloadId, pkgDownloadId)
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL)
+                    this.cancel()
+                }
                 val jsonProgress = downloader.queryProgress(jsonDownloadId)
                 val fileProgress = downloader.queryProgress(pkgDownloadId)
 
                 if (jsonProgress.first == -1L || fileProgress.first == -1L) {
                     Log.i(_tag, "downloadMap: DownloadManager failed to download file")
-                    this@AsioSdkGetMapService.mapRepo.update(
+                    mapRepo.update(
                         id = id,
                         state = MapDeliveryState.ERROR,
                         statusMessage = appCtx.getString(R.string.delivery_status_failed),
@@ -140,7 +146,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     if (progress >= 100) {
                         pkgCompleted = true
                     }
-                    this@AsioSdkGetMapService.mapRepo.update(
+                    mapRepo.update(
                         id = id,
                         state = MapDeliveryState.DOWNLOAD,
                         statusMessage =  appCtx.getString(R.string.delivery_status_download),
@@ -151,7 +157,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 if (pkgCompleted && jsonCompleted) {
                     Log.d(_tag, "downloading Done: ")
                     Log.d(_tag, "stopping progress watcher...")
-                    this@AsioSdkGetMapService.mapRepo.update(
+                    mapRepo.update(
                         id = id,
                         state =MapDeliveryState.DONE,
                         statusMessage = appCtx.getString(R.string.delivery_status_done),
@@ -169,6 +175,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         if (this.mapRepo.isDownloadCanceled(id)){
             Log.d(_tag, "importCreate: Download $id, canceled by user")
+            mapRepo.update(id, state = MapDeliveryState.CANCEL)
             return false
         }
         val retCreate = createMapImport(mp)
@@ -222,6 +229,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
             if (this.mapRepo.isDownloadCanceled(id)){
                 Log.d(_tag, "checkImportStatue: Download $id, canceled by user")
+                mapRepo.update(id, state = MapDeliveryState.CANCEL)
                 return false
             }
 
@@ -273,6 +281,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         if (this.mapRepo.isDownloadCanceled(id)){
             Log.d(_tag, "importDelivery: Download $id, canceled by user")
+            mapRepo.update(id, state = MapDeliveryState.CANCEL)
             return false
         }
         val reqId = this.mapRepo.getReqId(id)!!;
@@ -322,6 +331,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
             if (this.mapRepo.isDownloadCanceled(id)){
                 Log.d(_tag, "checkDeliveryStatus: Download $id, canceled by user")
+                mapRepo.update(id, state = MapDeliveryState.CANCEL)
                 return false
             }
             deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(reqId)
@@ -365,5 +375,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         this.mapRepo.update(id = id, url = deliveryStatus.url)
         return true
+    }
+
+    override fun cancelDownload(id: String) {
+        Log.d(_tag, "cancelDownload: for id: $id")
+        this.mapRepo.setCancelDownload(id)
     }
 }

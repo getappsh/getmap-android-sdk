@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 
 interface GetMapService {
 
+    fun cancelDownload(id: String)
     fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?
 
     /**
