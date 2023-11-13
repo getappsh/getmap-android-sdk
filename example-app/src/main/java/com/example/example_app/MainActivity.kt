@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264697,31.48939480,34.46454401,31.49104923",
-                "34.46665621,31.49807311,34.46863989,31.49913721",
+                "34.46665621,31.49807311,34.46863989,31.49913723",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
@@ -154,31 +154,13 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}");
                 if (data.deliveryStatus == MapDeliveryState.DONE || data.deliveryStatus == MapDeliveryState.ERROR){
                     Log.d(TAG, "onDelivery: it done")
-                    launch(Dispatchers.Main) {
-                        dismissLoadingDialog();
+                    dismissLoadingDialog();
 //                showMessageDialog(delivered.toString())
-                    }
+
                 }
             }
             val id = service.downloadMap(props, downloadStatusHandler);
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
-//            val tilesUpdates = service.getExtentUpdates(props, updateDate)
-//            Log.d(TAG, "onDelivery: tilesUpdates " + tilesUpdates.toString());
-
-//            var downloadedCount = 0
-//            val downloadProgressHandler: (DownloadProgress) -> Unit = {
-//                Log.d(TAG, "processing download progress=$it event...")
-//                downloadedCount = it.packagesProgress.count { pkg ->  pkg.isCompleted }
-//            }
-//
-//            val delivered = service.deliverExtentTiles(tilesUpdates, downloadProgressHandler)
-//            Log.d(TAG, "onDelivery: delivered " + delivered)
-
-//            launch(Dispatchers.Main) {
-//                dismissLoadingDialog();
-////                showMessageDialog(delivered.toString())
-//            }
-
 
         }
 
