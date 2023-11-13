@@ -32,7 +32,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit){
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
         Log.d(_tag, "downloadMap for -> $mp")
         var tmr: Timer? = null
         val downloadData: MapDownloadData
@@ -46,12 +46,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 errorContent = e.toString()))
 
             Log.e(_tag, "downloadMap - getDownloadData: ${e.toString()}")
-            return
+            return null
         }
         Log.i(_tag, "downloadMap-> download-data: $downloadData")
         if (downloadData.deliveryStatus != MapDeliveryState.START) {
             downloadStatusHandler.invoke(downloadData)
-            return
+            return null
         }
         val pkgUrl = downloadData.url!!
         val jsonUrl = PackageDownloader.changeFileExtensionToJson(pkgUrl)
@@ -125,53 +125,61 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             downloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
             downloadData.errorContent = e.message.toString();
             Log.e(_tag, "downloadMap - downloadFile: ${e.message.toString()} " )
-            return
+            return null
         }
         Log.d(_tag, "downloadMap -> downloadId: $pkgDownloadId")
 
-        tmr = timer(initialDelay = 100, period = 500 ) {
-            val jsonProgress = downloader.queryProgress(jsonDownloadId)
-            val fileProgress = downloader.queryProgress(pkgDownloadId)
+        Thread {
 
-            if (jsonProgress.first == -1L || fileProgress.first == -1L){
-                Log.i(_tag, "downloadMap: DownloadManager to download file")
-                downloadData.deliveryStatus = MapDeliveryState.ERROR;
-                downloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
-                downloadStatusHandler.invoke(downloadData)
-                this.cancel()
-            }
-            if(jsonProgress.second > 0) {
-                val progress = (jsonProgress.first * 100 / jsonProgress.second).toInt()
-                Log.d(_tag, "jsonDownloadId: $jsonDownloadId -> process: $progress ")
-                if (progress >= 100) {
-                    jsonCompleted = true;
-                    if (pkgCompleted){
-                        Log.d(_tag,"stopping progress watcher...")
-                        downloadData.deliveryStatus = MapDeliveryState.DONE;
-                        downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
-                        downloadData.downloadProgress = 100
-                        downloadStatusHandler.invoke(downloadData)
-                        this.cancel()
-                    }
-                }
-            }
-            if(fileProgress.second > 0) {
-                val progress = (fileProgress.first * 100 / fileProgress.second).toInt()
-                Log.d(_tag, "pkgDownloadId: $pkgDownloadId -> process: $progress ")
 
-                if (progress < 100){
-                    downloadData.deliveryStatus = MapDeliveryState.DOWNLOAD;
-                    downloadData.statusMessage = appCtx.getString(R.string.delivery_status_download)
-                }else{
-                    downloadData.deliveryStatus = MapDeliveryState.DONE;
-                    downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
+            tmr = timer(initialDelay = 100, period = 500) {
+                val jsonProgress = downloader.queryProgress(jsonDownloadId)
+                val fileProgress = downloader.queryProgress(pkgDownloadId)
+
+                if (jsonProgress.first == -1L || fileProgress.first == -1L) {
+                    Log.i(_tag, "downloadMap: DownloadManager to download file")
+                    downloadData.deliveryStatus = MapDeliveryState.ERROR;
+                    downloadData.statusMessage = appCtx.getString(R.string.delivery_status_failed)
+                    downloadStatusHandler.invoke(downloadData)
                     this.cancel()
                 }
-                downloadData.downloadProgress = progress
-                downloadStatusHandler.invoke(downloadData)
+                if (jsonProgress.second > 0) {
+                    val progress = (jsonProgress.first * 100 / jsonProgress.second).toInt()
+                    Log.d(_tag, "jsonDownloadId: $jsonDownloadId -> process: $progress ")
+                    if (progress >= 100) {
+                        jsonCompleted = true;
+                        if (pkgCompleted) {
+                            Log.d(_tag, "stopping progress watcher...")
+                            downloadData.deliveryStatus = MapDeliveryState.DONE;
+                            downloadData.statusMessage =
+                                appCtx.getString(R.string.delivery_status_done)
+                            downloadData.downloadProgress = 100
+                            downloadStatusHandler.invoke(downloadData)
+                            this.cancel()
+                        }
+                    }
+                }
+                if (fileProgress.second > 0) {
+                    val progress = (fileProgress.first * 100 / fileProgress.second).toInt()
+                    Log.d(_tag, "pkgDownloadId: $pkgDownloadId -> process: $progress ")
 
+                    if (progress < 100) {
+                        downloadData.deliveryStatus = MapDeliveryState.DOWNLOAD;
+                        downloadData.statusMessage =
+                            appCtx.getString(R.string.delivery_status_download)
+                    } else {
+                        downloadData.deliveryStatus = MapDeliveryState.DONE;
+                        downloadData.statusMessage = appCtx.getString(R.string.delivery_status_done)
+                        this.cancel()
+                    }
+                    downloadData.downloadProgress = progress
+                    downloadStatusHandler.invoke(downloadData)
+
+                }
             }
-        }
+        }.start()
+
+        return downloadData.id
     }
 
     private fun getDownloadData(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): MapDownloadData {
@@ -180,6 +188,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         downloadStatusHandler.invoke(mapDownloadData)
 
         val retCreate = createMapImport(mp)
+        mapDownloadData.id = retCreate?.importRequestId
 
         when(retCreate?.state){
             MapImportState.IN_PROGRESS -> Log.d(_tag,"deliverTile - createMapImport => IN_PROGRESS")

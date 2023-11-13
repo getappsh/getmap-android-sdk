@@ -160,8 +160,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            service.downloadMap(props, downloadStatusHandler);
-            Log.d(TAG, "onDelivery: after download map have been called")
+            val id = service.downloadMap(props, downloadStatusHandler);
+            Log.d(TAG, "onDelivery: after download map have been called, id: $id")
 //            val tilesUpdates = service.getExtentUpdates(props, updateDate)
 //            Log.d(TAG, "onDelivery: tilesUpdates " + tilesUpdates.toString());
 

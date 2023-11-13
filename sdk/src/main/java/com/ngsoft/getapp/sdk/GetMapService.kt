@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 interface GetMapService {
 
-    fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit)
+    fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?
 
     /**
      * Purge cache registry (cached tile files remains intact)
