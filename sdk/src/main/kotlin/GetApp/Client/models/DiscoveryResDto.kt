@@ -15,7 +15,7 @@
 
 package GetApp.Client.models
 
-import GetApp.Client.models.DiscoveryMapResDto
+import GetApp.Client.models.OfferingMapResDto
 import GetApp.Client.models.OfferingResponseDto
 
 import com.squareup.moshi.Json
@@ -35,7 +35,7 @@ data class DiscoveryResDto (
     val software: OfferingResponseDto? = null,
 
     @Json(name = "map")
-    val map: kotlin.collections.List<DiscoveryMapResDto>? = null
+    val map: OfferingMapResDto? = null
 
 )
 

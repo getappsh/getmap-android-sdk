@@ -39,7 +39,7 @@ import com.squareup.moshi.JsonClass
  */
 
 
-data class DiscoveryMapResDto (
+data class MapProductResDto (
 
     @Json(name = "id")
     val id: kotlin.String? = null,

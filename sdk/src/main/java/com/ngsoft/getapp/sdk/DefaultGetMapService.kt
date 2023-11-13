@@ -8,6 +8,7 @@ import GetApp.Client.models.DiscoverySoftwareDto
 import GetApp.Client.models.GeneralDiscoveryDto
 import GetApp.Client.models.GeoLocationDto
 import GetApp.Client.models.ImportStatusResDto
+import GetApp.Client.models.OfferingMapResDto
 import GetApp.Client.models.PersonalDiscoveryDto
 import GetApp.Client.models.PhysicalDiscoveryDto
 import GetApp.Client.models.PlatformDto
@@ -109,7 +110,12 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Log.d(_tag, "getDiscoveryCatalog -  offering results: $discoveries ")
 
         val result = mutableListOf<DiscoveryItem>()
-        discoveries.map?.forEach {
+        if (discoveries.map?.status == OfferingMapResDto.Status.error){
+            Log.e(_tag, "getDiscoveryCatalog: get-map offering error ${discoveries.map.reason}")
+            throw Exception("get-map offering error ${discoveries.map.reason}")
+        }
+
+        discoveries.map?.products?.forEach {
             result.add(DiscoveryItem(
                 it.id.toString(),
                 it.productId.toString(),
