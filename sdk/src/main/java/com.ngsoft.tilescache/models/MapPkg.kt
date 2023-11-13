@@ -1,6 +1,7 @@
 package com.ngsoft.tilescache.models
 
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import java.time.OffsetDateTime
 
 data class MapPkg (
     var id: String,
@@ -18,4 +19,8 @@ data class MapPkg (
     var downloadProgress: Int = 0,
     var errorContent: String? = null,
     var cancelDownload: Boolean = false,
+
+    var downloadStart: OffsetDateTime? = null,
+    var downloadStop: OffsetDateTime? = null,
+    var downloadDone: OffsetDateTime? = null,
 )
