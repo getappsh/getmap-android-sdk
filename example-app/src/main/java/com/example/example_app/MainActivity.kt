@@ -40,9 +40,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var deliveryButton: Button
 
     private lateinit var downoadnTestButton: Button
-
-
-
+    
+    private var downloadId: String? = null
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             5,5,
             null
         )
+
 
         service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
         dismissLoadingDialog()
@@ -81,6 +82,13 @@ class MainActivity : AppCompatActivity() {
         downoadnTestButton = findViewById<Button>(R.id.d_test)
 
         downoadnTestButton.setOnClickListener{
+
+            try {
+                service.deleteMap(downloadId!!)
+
+            }catch (e: Exception){
+                Log.e(TAG, "onCreate - delete map, error: ${e.message.toString()}", )
+            }
 //            val downloader = PackageDownloader(this, Environment.DIRECTORY_DOWNLOADS)
 //
 //            GlobalScope.launch(Dispatchers.IO){
@@ -159,6 +167,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             val id = service.downloadMap(props, downloadStatusHandler);
+            downloadId = id
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
             GlobalScope.launch(Dispatchers.Main){
                 showLoadingDialog("Download file id: $id", id)
