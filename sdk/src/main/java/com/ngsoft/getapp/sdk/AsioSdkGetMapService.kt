@@ -10,6 +10,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.tilescache.MapRepo
+import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
@@ -43,7 +44,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String{
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,
-            appCtx.getString(R.string.delivery_status_req_sent), downloadStatusHandler)
+            appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START, downloadStatusHandler)
 
         Log.i(_tag, "downloadMap: id: $id")
 
@@ -104,6 +105,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     JDID = jsonDownloadId,
                     MDID = pkgDownloadId,
                     state =  MapDeliveryState.DOWNLOAD,
+                    flowState = DeliveryFlowState.DOWNLOAD,
                     statusMessage = appCtx.getString(R.string.delivery_status_download),
                     jsonName = PackageDownloader.getFileNameFromUri(jsonUrl),
                     fileName = PackageDownloader.getFileNameFromUri(pkgUrl)
@@ -173,6 +175,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     mapRepo.update(
                         id = id,
                         state = MapDeliveryState.DONE,
+                        flowState = DeliveryFlowState.DONE,
                         statusMessage = appCtx.getString(R.string.delivery_status_done),
                         downloadProgress = 100,
                     )
@@ -200,6 +203,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     id = id,
                     reqId = retCreate.importRequestId,
                     state = MapDeliveryState.START,
+                    flowState = DeliveryFlowState.IMPORT_CREATE,
                     statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress)
                 )
                 return true
@@ -286,6 +290,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         Log.d(_tag, "checkImportStatue: MapImportState.Done")
+        this.mapRepo.updateFlowState(id, DeliveryFlowState.IMPORT_STATUS)
         return true
     }
 
@@ -307,6 +312,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             MapDeliveryState.DOWNLOAD,
             MapDeliveryState.CONTINUE ->  {
                 Log.d(_tag,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
+                this.mapRepo.updateFlowState(id, DeliveryFlowState.IMPORT_DELIVERY)
                 return true
             }
             MapDeliveryState.CANCEL,  MapDeliveryState.PAUSE -> {
@@ -386,7 +392,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         }
 
-        this.mapRepo.update(id = id, url = deliveryStatus.url)
+        this.mapRepo.update(id = id, url = deliveryStatus.url, flowState = DeliveryFlowState.IMPORT_DELIVERY_STATUS)
         return true
     }
 

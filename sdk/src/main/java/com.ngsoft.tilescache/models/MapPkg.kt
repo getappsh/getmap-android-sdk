@@ -7,9 +7,13 @@ data class MapPkg (
     var id: String,
     var pId: String,
     var bBox: String,
+
+    var flowState: DeliveryFlowState = DeliveryFlowState.START,
+
     var reqId: String? = null,
     var JDID: Long? = null, // json download id
     var MDID: Long? = null, // map download id
+
 
     var state: MapDeliveryState,
     var statusMessage: String,
@@ -24,3 +28,7 @@ data class MapPkg (
     var downloadStop: OffsetDateTime? = null,
     var downloadDone: OffsetDateTime? = null,
 )
+
+enum class DeliveryFlowState{
+    START, IMPORT_CREATE, IMPORT_STATUS, IMPORT_DELIVERY, IMPORT_DELIVERY_STATUS, DOWNLOAD, DONE
+}

@@ -4,6 +4,7 @@ import GetApp.Client.models.DeliveryStatusDto
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
@@ -14,12 +15,13 @@ internal class MapRepo {
     private val _tag = "MapRepo"
 
 
-    fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, dsh: (MapDownloadData) -> Unit): String{
+    fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapDownloadData) -> Unit): String{
         val id = abs((0..999999999999).random()).toString()
         hashMapData[id] = MapPkg(
             id=id, pId=pId,
             bBox=bBox,
             state=state,
+            flowState=flowState,
             statusMessage = statusMessage,
             downloadStart = OffsetDateTime.now())
         downloadStatusHandlers[id] = dsh;
@@ -32,6 +34,7 @@ internal class MapRepo {
         JDID: Long? = null,
         MDID: Long? = null,
         state: MapDeliveryState? = null,
+        flowState: DeliveryFlowState? = null,
         statusMessage: String? = null,
         fileName: String? = null,
         jsonName: String? = null,
@@ -47,6 +50,7 @@ internal class MapRepo {
             this.jsonName = jsonName ?: this.jsonName
             this.url = url ?: this.url
             this.state = state ?: this.state
+            this.flowState = flowState ?: this.flowState
             this.statusMessage = statusMessage ?: this.statusMessage
             this.downloadProgress = downloadProgress ?: this.downloadProgress
             this.errorContent = errorContent ?: this.errorContent
@@ -65,6 +69,10 @@ internal class MapRepo {
         }
 
         invoke(id)
+    }
+
+    fun updateFlowState(id: String, flowState: DeliveryFlowState){
+        hashMapData[id]?.flowState = flowState
     }
 
     fun remove(id: String){
