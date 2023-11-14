@@ -80,7 +80,7 @@ data class DeliveryStatusDto (
     /**
      * 
      *
-     * Values: start,done,error,cancelled,pause,`continue`,download
+     * Values: start,done,error,cancelled,pause,`continue`,download,deleted
      */
     @JsonClass(generateAdapter = false)
     enum class DeliveryStatus(val value: kotlin.String) {
@@ -90,7 +90,8 @@ data class DeliveryStatusDto (
         @Json(name = "Cancelled") cancelled("Cancelled"),
         @Json(name = "Pause") pause("Pause"),
         @Json(name = "Continue") `continue`("Continue"),
-        @Json(name = "Download") download("Download");
+        @Json(name = "Download") download("Download"),
+        @Json(name = "Deleted") deleted("Deleted");
     }
     /**
      * 
