@@ -67,6 +67,11 @@ internal class MapRepo {
         invoke(id)
     }
 
+    fun remove(id: String){
+        update(id, state = MapDeliveryState.DELETED)
+        hashMapData.remove(id)
+        downloadStatusHandlers.remove(id)
+    }
     fun setCancelDownload(id: String){
         hashMapData[id]?.cancelDownload = true
 
@@ -117,15 +122,18 @@ internal class MapRepo {
                 MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
                 MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
                 MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
+                MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
             }
             return DeliveryStatusDto(
                 type = DeliveryStatusDto.Type.map,
                 deviceId = deviceId,
                 deliveryStatus = status,
                 catalogId = map.reqId,
+                downloadData = map.downloadProgress.toBigDecimal() ?: null,
                 downloadStart = map.downloadStart,
                 downloadStop = map.downloadStop,
-                downloadDone = map.downloadDone
+                downloadDone = map.downloadDone,
+                currentTime = OffsetDateTime.now()
             )
         }
         return null

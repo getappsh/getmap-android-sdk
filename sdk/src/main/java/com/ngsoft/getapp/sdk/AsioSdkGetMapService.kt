@@ -3,16 +3,16 @@ package com.ngsoft.getapp.sdk
 import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import android.content.Context
+import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.tilescache.MapRepo
-import com.ngsoft.tilescache.TilesCache
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
@@ -25,12 +25,16 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     private var deliveryTimeoutMinutes: Int = 5
     private var downloadTimeoutMinutes: Int = 5
 
+    private lateinit var storagePath: String
+
     private lateinit var mapRepo: MapRepo
 
     override fun init(configuration: Configuration): Boolean {
         super.init(configuration)
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
+
+        storagePath = configuration.storagePath
 
         mapRepo = MapRepo()
         return true
@@ -388,8 +392,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private fun sendDeliveryStatus(id: String) {
 //        TODO check why send delivery status done twice
+        val dlv = this.mapRepo.getDeliveryStatus(id, pref.deviceId) ?: return
+
         Thread{
-            val dlv = this.mapRepo.getDeliveryStatus(id, pref.deviceId) ?: return@Thread
             Log.d(_tag, "sendDeliveryStatus: id: $id status: $dlv.deliveryStatus, catalog id: ${dlv.catalogId}")
             try{
                 client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
@@ -401,5 +406,64 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun cancelDownload(id: String) {
         Log.d(_tag, "cancelDownload: for id: $id")
         this.mapRepo.setCancelDownload(id)
+    }
+
+    override fun deleteMap(id: String){
+        Log.d(_tag, "deleteMap - id: $id")
+        val downloadData = this.mapRepo.getDownloadData(id)
+
+        if (downloadData == null ||
+            downloadData.deliveryStatus == MapDeliveryState.START ||
+            downloadData.deliveryStatus == MapDeliveryState.DOWNLOAD ||
+            downloadData.deliveryStatus == MapDeliveryState.PAUSE){
+
+            val errorMsg = "deleteMap: Unable to delete map when status is: ${downloadData?.deliveryStatus}"
+            Log.e(_tag,  errorMsg)
+            throw Exception(errorMsg)
+        }
+
+        val map = downloadData.fileName
+        val json = downloadData.jsonName
+
+        if (map != null){
+            this.deleteFile(map)
+        }
+        if (json != null){
+            this.deleteFile(json)
+        }
+
+        val delivery = this.mapRepo.getDeliveryStatus(id, pref.deviceId)
+
+        this.mapRepo.remove(id)
+
+//        Send delivery status to server
+        Thread{
+            var dlv = delivery
+            if (dlv != null){
+                dlv = dlv.copy(deliveryStatus = DeliveryStatusDto.DeliveryStatus.deleted)
+                try{
+                    Log.d(_tag, "sendDeliveryStatus: id: $id status: $dlv.deliveryStatus, catalog id: ${dlv.catalogId}")
+                    client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
+                }catch (exc: Exception){
+                    Log.e(_tag, "sendDeliveryStatus failed error: $exc", )
+                }
+            }
+        }.start()
+    }
+    private fun deleteFile(fileName: String){
+        val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
+        val file = File(dirPath, fileName)
+
+        Log.d(_tag, "deleteFile - File path ${file.path}")
+
+        if (file.exists()){
+            if (file.delete() ) {
+                Log.d(_tag, "deleteFile - File deleted successfully. $fileName")
+            } else {
+                Log.d(_tag, "deleteFile -Failed to delete the file. $fileName")
+            }
+        }else{
+            Log.d(_tag, "deleteFile - File dose not exist. $fileName")
+        }
     }
 }

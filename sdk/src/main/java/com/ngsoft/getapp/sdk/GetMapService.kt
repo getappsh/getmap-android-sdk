@@ -11,7 +11,30 @@ import java.time.LocalDateTime
 
 interface GetMapService {
 
+    /**
+     * Delete Map
+     *
+     * @param id Map id
+     * @throws Exception if map is on download process
+     */
+    fun deleteMap(id: String)
+
+    /**
+     * Cancel Download
+     *
+     * @param id Map id
+     */
     fun cancelDownload(id: String)
+
+
+    /**
+     * Deliver extent tiles
+     *
+     * @param mp map properties to deliver
+     * @param downloadStatusHandler delivery progress handler
+     * @receiver see [MapDownloadData]
+     * @return map download id
+     */
     fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?
 
     /**
