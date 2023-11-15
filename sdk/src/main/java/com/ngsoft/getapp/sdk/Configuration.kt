@@ -20,5 +20,6 @@ data class Configuration (
     val zoomLevel: Int,
     val deliveryTimeout: Int,
     val downloadTimeout: Int,
-    val imei: String?
-)
+    val imei: String?,
+    val downloadRetry: Int = 2,
+    )

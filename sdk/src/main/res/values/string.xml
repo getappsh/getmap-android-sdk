@@ -7,6 +7,7 @@
     <string name="delivery_status_paused">מושהה</string>
     <string name="delivery_status_canceled">בוטל</string>
     <string name="delivery_status_failed">נכשל</string>
+    <string name="delivery_status_failed_try_again">נכשל - מנסה שוב</string>
     <string name="delivery_status_bad_connection">קליטה גרועה</string>
     <string name="delivery_status_no_connection">אין רשת</string>
     <string name="delivery_status_in_verification">באימות</string>

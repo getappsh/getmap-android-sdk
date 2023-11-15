@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.ngsoft.getapp.sdk.Configuration
@@ -150,20 +151,28 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264697,31.48939480,34.46454401,31.49104923",
-                "34.46665624,31.49807435,34.46863989,31.49913721",
+                "34.46665621,31.49807111,34.46863989,31.49913721",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
             val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
                 Log.d(TAG, "onDelivery data id: ${data.id}")
-                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}");
+                runOnUiThread {
+                    progressDialog?.setMessage("Loading... \n" + data.statusMessage + "\n" + data.errorContent)
+
+                }
+
+                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}, reason ${data.errorContent}");
                 if (data.deliveryStatus == MapDeliveryState.DONE ||
                     data.deliveryStatus == MapDeliveryState.ERROR ||
                     data.deliveryStatus == MapDeliveryState.CANCEL ){
                     Log.d(TAG, "onDelivery: ${data.deliveryStatus}")
                     dismissLoadingDialog();
 //                showMessageDialog(delivered.toString())
+                    runOnUiThread{
+                        Toast.makeText(this@MainActivity, data.errorContent, Toast.LENGTH_LONG).show()
 
+                    }
                 }
             }
             val id = service.downloadMap(props, downloadStatusHandler);
@@ -236,7 +245,6 @@ class MainActivity : AppCompatActivity() {
                 })
         }
         progressDialog?.show()
-
 
     }
 

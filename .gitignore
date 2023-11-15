@@ -14,3 +14,4 @@
 .cxx
 local.properties
 .idea
+/sdk/schemas/com.ngsoft.tilescache.TilesDatabase/*.json

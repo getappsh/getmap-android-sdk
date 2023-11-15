@@ -15,6 +15,14 @@ import java.io.File
 
 @SuppressLint("UnspecifiedRegisterReceiverFlag")
 internal class PackageDownloader(private val context: Context, private val downloadDirectory: String) {
+
+    data class DownloadInfo(
+        val downloadId: Long,
+        val status: Int,
+        val totalBytes: Long,
+        val downloadBytes: Long,
+        val reason: String,
+    )
     companion object{
 
         fun changeFileExtensionToJson(url: String): String{
@@ -71,6 +79,43 @@ internal class PackageDownloader(private val context: Context, private val downl
 
     fun cancelDownload(vararg ids: Long): Int{
         return downloadManager.remove(*ids)
+    }
+
+    @SuppressLint("Range")
+    fun queryStatus(downloadId: Long): DownloadInfo? {
+        val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+        if (cursor.moveToFirst()){
+
+            val totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+            val downloadedBytes = if (totalBytes <=  0) 0 else cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+            val reason = getReasonErrorMessage(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)))
+
+            return DownloadInfo(
+                downloadId = downloadId,
+                status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)),
+                totalBytes =  totalBytes,
+                downloadBytes = downloadedBytes,
+                reason = reason,
+            )
+        }
+        return null
+    }
+    private fun getReasonErrorMessage(reason: Int): String{
+        return when (reason) {
+            DownloadManager.ERROR_CANNOT_RESUME -> "Cannot resume download. Please try again."
+            DownloadManager.ERROR_DEVICE_NOT_FOUND -> "No external storage device was found."
+            DownloadManager.ERROR_FILE_ALREADY_EXISTS -> "File already exists. Download canceled."
+            DownloadManager.ERROR_FILE_ERROR -> "Storage issue. Please check your storage."
+            DownloadManager.ERROR_HTTP_DATA_ERROR -> "Error receiving or processing data at the HTTP level."
+            DownloadManager.ERROR_INSUFFICIENT_SPACE -> "Insufficient storage space. Clear some space and try again."
+            DownloadManager.ERROR_TOO_MANY_REDIRECTS -> "Too many redirects. Download canceled."
+            DownloadManager.ERROR_UNHANDLED_HTTP_CODE -> "Unhandled HTTP code. Download canceled."
+            DownloadManager.ERROR_UNKNOWN -> "Unknown error occurred during download."
+            DownloadManager.PAUSED_UNKNOWN -> "Download paused for an unknown reason."
+            DownloadManager.PAUSED_WAITING_FOR_NETWORK -> "Download paused. Waiting for network connectivity."
+            DownloadManager.PAUSED_WAITING_TO_RETRY -> "Download paused due to a network error. Retrying soon."
+            else -> "HTTP error occurred. HTTP Status Code: $reason."
+        }
     }
     @SuppressLint("Range")
     fun queryProgress(downloadId: Long): Pair<Long, Long> {

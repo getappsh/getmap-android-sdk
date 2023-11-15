@@ -50,6 +50,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
 
     open fun init(configuration: Configuration): Boolean {
+        Log.i(_tag, "Init GetMapService" )
+
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
         downloader = PackageDownloader(appCtx, configuration.storagePath)
         pref = Pref.getInstance(appCtx)
@@ -57,6 +59,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(configuration.imei != null){
             pref.deviceId = configuration.imei
         }
+        Log.d(_tag, "init - Device ID: ${pref.deviceId}")
 
         return true
     }
