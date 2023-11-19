@@ -40,7 +40,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         storagePath = configuration.storagePath
 
-        mapRepo = MapRepo()
+        mapRepo = MapRepo(appCtx)
         return true
     }
 
@@ -130,7 +130,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 return false
             }
             else -> {
-                Log.e(_tag,"getDownloadData - createMapImport failed: ${retCreate?.state}")
+                Log.e(_tag,"getDownloadData - createMapImport failed: ${retCreate?.state}, error: ${retCreate?.importRequestId}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate?.importRequestId,

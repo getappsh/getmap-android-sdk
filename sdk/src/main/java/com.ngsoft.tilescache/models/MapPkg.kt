@@ -1,21 +1,29 @@
 package com.ngsoft.tilescache.models
 
+import DeliveryFlowStateConverter
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import java.time.OffsetDateTime
+import com.ngsoft.tilescache.MapDeliveryStateConverter
+import com.ngsoft.tilescache.TimeStampConverter
+import java.time.LocalDateTime
 
+@Entity
 data class MapPkg (
-    var id: String,
     var pId: String,
     var bBox: String,
 
+    @TypeConverters(DeliveryFlowStateConverter::class)
     var flowState: DeliveryFlowState = DeliveryFlowState.START,
 
     var reqId: String? = null,
     var JDID: Long? = null, // json download id
     var MDID: Long? = null, // map download id
 
-
+    @TypeConverters(MapDeliveryStateConverter::class)
     var state: MapDeliveryState,
+
     var statusMessage: String,
     var fileName: String? = null,
     var jsonName: String? = null,
@@ -24,11 +32,16 @@ data class MapPkg (
     var errorContent: String? = null,
     var cancelDownload: Boolean = false,
 
-    var downloadStart: OffsetDateTime? = null,
-    var downloadStop: OffsetDateTime? = null,
-    var downloadDone: OffsetDateTime? = null,
-)
+    @TypeConverters(TimeStampConverter::class)
+    var downloadStart: LocalDateTime? = null,
 
-enum class DeliveryFlowState{
-    START, IMPORT_CREATE, IMPORT_STATUS, IMPORT_DELIVERY, IMPORT_DELIVERY_STATUS, DOWNLOAD, DONE
+    @TypeConverters(TimeStampConverter::class)
+    var downloadStop: LocalDateTime? = null,
+
+    @TypeConverters(TimeStampConverter::class)
+    var downloadDone: LocalDateTime? = null,
+){
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
 }
+

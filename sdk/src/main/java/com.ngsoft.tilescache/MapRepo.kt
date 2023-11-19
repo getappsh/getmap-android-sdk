@@ -1,29 +1,39 @@
 package com.ngsoft.tilescache
 
 import GetApp.Client.models.DeliveryStatusDto
+import android.content.Context
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
-internal class MapRepo {
+internal class MapRepo(ctx: Context) {
 
     private val _tag = "MapRepo"
+    private val db: TilesDatabase
+    private val dao: MapDAO
 
+    init {
+        Log.d(_tag,"MapRepo init...")
+        db = TilesDatabase.connect(ctx)
+        dao = db.mapDap()
+    }
 
     fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapDownloadData) -> Unit): String{
-        val id = abs((0..999999999999).random()).toString()
-        hashMapData[id] = MapPkg(
-            id=id, pId=pId,
+        val id = dao.insert(MapPkg(
+            pId=pId,
             bBox=bBox,
             state=state,
             flowState=flowState,
             statusMessage = statusMessage,
-            downloadStart = OffsetDateTime.now())
+            downloadStart = LocalDateTime.now(ZoneOffset.UTC))).toString()
+
         downloadStatusHandlers[id] = dsh;
         return id
     }
@@ -42,7 +52,48 @@ internal class MapRepo {
         downloadProgress: Int? = null,
         errorContent: String? = null,
     ) {
-        hashMapData[id]?.apply {
+
+        updateInternal(
+            id,
+            reqId,
+            JDID,
+            MDID,
+            state,
+            flowState,
+            statusMessage,
+            fileName,
+            jsonName,
+            url,
+            downloadProgress,
+            errorContent
+        )
+        invoke(id)
+    }
+
+    private fun getById(id: String): MapPkg?{
+        return try{
+            dao.getById(id.toInt())
+        }catch (e: NumberFormatException){
+            null
+        }
+    }
+    private fun updateInternal(
+        id: String,
+        reqId: String? = null,
+        JDID: Long? = null,
+        MDID: Long? = null,
+        state: MapDeliveryState? = null,
+        flowState: DeliveryFlowState? = null,
+        statusMessage: String? = null,
+        fileName: String? = null,
+        jsonName: String? = null,
+        url: String? = null,
+        downloadProgress: Int? = null,
+        errorContent: String? = null,
+        cancelDownland: Boolean? = null
+    ){
+        val mapPkg = this.getById(id);
+        mapPkg?.apply {
             this.reqId = reqId ?: this.reqId
             this.JDID = JDID ?: this.JDID
             this.MDID = MDID ?: this.MDID
@@ -54,44 +105,50 @@ internal class MapRepo {
             this.statusMessage = statusMessage ?: this.statusMessage
             this.downloadProgress = downloadProgress ?: this.downloadProgress
             this.errorContent = errorContent ?: this.errorContent
+            this.cancelDownload = cancelDownland ?: this.cancelDownload
 
             if (state == MapDeliveryState.CANCEL && this.cancelDownload){
-                this.downloadStop = OffsetDateTime.now()
+                this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)
                 this.cancelDownload = false
             }
             else if (state == MapDeliveryState.CANCEL ||state == MapDeliveryState.PAUSE){
-                this.downloadStop = OffsetDateTime.now()
+                this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)
             }else if(state == MapDeliveryState.CONTINUE){
-                this.downloadStart = OffsetDateTime.now()
+                this.downloadStart = LocalDateTime.now(ZoneOffset.UTC)
             }else if(state == MapDeliveryState.DONE){
-                this.downloadDone = OffsetDateTime.now()
+                this.downloadDone = LocalDateTime.now(ZoneOffset.UTC)
             }
+            dao.update(this)
         }
-
-        invoke(id)
     }
 
+
     fun updateFlowState(id: String, flowState: DeliveryFlowState){
-        hashMapData[id]?.flowState = flowState
+        this.updateInternal(id, flowState=flowState)
     }
 
     fun remove(id: String){
-        update(id, state = MapDeliveryState.DELETED)
-        hashMapData.remove(id)
-        downloadStatusHandlers.remove(id)
+        try {
+            update(id, state = MapDeliveryState.DELETED)
+            dao.deleteById(id.toInt())
+            downloadStatusHandlers.remove(id)
+        }catch (_: NumberFormatException){ }
     }
-    fun setCancelDownload(id: String){
-        hashMapData[id]?.cancelDownload = true
 
+    fun setCancelDownload(id: String){
+        this.updateInternal(id, cancelDownland = true)
     }
+
     fun getUrl(id: String):String?{
-        return hashMapData[id]?.url
+        return this.getById(id)?.url
     }
+
     fun getReqId(id: String): String?{
-        return hashMapData[id]?.reqId
+        return this.getById(id)?.reqId
     }
+
     fun isDownloadCanceled(id: String): Boolean{
-        return hashMapData[id]?.cancelDownload ?: false
+        return this.getById(id)?.cancelDownload ?: false
     }
 
     fun invoke(id: String){
@@ -103,7 +160,7 @@ internal class MapRepo {
         }
     }
     fun getDownloadData(id: String): MapDownloadData?{
-        val map = hashMapData[id];
+        val map = this.getById(id);
         if (map != null) {
             return MapDownloadData(
                 id = id,
@@ -120,7 +177,7 @@ internal class MapRepo {
     }
 
     fun getDeliveryStatus(id: String, deviceId: String): DeliveryStatusDto? {
-        val map = hashMapData[id];
+        val map = this.getById(id);
         if (map != null) {
             val status = when(map.state){
                 MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
@@ -132,15 +189,16 @@ internal class MapRepo {
                 MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
                 MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
             }
+            Log.d(_tag, "getDeliveryStatus: $map")
             return DeliveryStatusDto(
                 type = DeliveryStatusDto.Type.map,
                 deviceId = deviceId,
                 deliveryStatus = status,
                 catalogId = map.reqId,
                 downloadData = map.downloadProgress.toBigDecimal() ?: null,
-                downloadStart = map.downloadStart,
-                downloadStop = map.downloadStop,
-                downloadDone = map.downloadDone,
+                downloadStart = if (map.downloadStart != null) OffsetDateTime.of(map.downloadStart, ZoneOffset.UTC) else null,
+                downloadStop = if (map.downloadStop != null) OffsetDateTime.of(map.downloadStop, ZoneOffset.UTC) else null,
+                downloadDone = if(map.downloadDone != null) OffsetDateTime.of(map.downloadDone, ZoneOffset.UTC) else null,
                 currentTime = OffsetDateTime.now()
             )
         }
@@ -148,7 +206,6 @@ internal class MapRepo {
     }
 
     companion object {
-        val hashMapData = ConcurrentHashMap<String, MapPkg>()
         val downloadStatusHandlers = ConcurrentHashMap<String, (MapDownloadData) -> Unit>()
 
     }
