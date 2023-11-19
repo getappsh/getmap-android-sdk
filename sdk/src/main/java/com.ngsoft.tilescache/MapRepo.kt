@@ -3,6 +3,7 @@ package com.ngsoft.tilescache
 import GetApp.Client.models.DeliveryStatusDto
 import android.content.Context
 import android.util.Log
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.tilescache.models.DeliveryFlowState
@@ -36,6 +37,12 @@ internal class MapRepo(ctx: Context) {
 
         downloadStatusHandlers[id] = dsh;
         return id
+    }
+
+    fun purge(){
+        dao.nukeTable()
+        //reset auto-increments
+//        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
     fun update(

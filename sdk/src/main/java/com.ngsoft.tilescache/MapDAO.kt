@@ -23,4 +23,7 @@ interface MapDAO {
 
     @Query("DELETE FROM MapPkg WHERE id = :id")
     fun deleteById(id: Int)
+
+    @Query("DELETE FROM MapPkg")
+    fun nukeTable()
 }
