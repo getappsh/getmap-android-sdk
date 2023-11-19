@@ -44,6 +44,21 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
+
+
+    override fun getDownloadedMap(id: String): MapDownloadData? {
+        Log.i(_tag, "getDownloadedMap - map id: $id")
+        return this.mapRepo.getDownloadData(id)
+    }
+
+    override fun getDownloadedMaps(): List<MapDownloadData> {
+        Log.i(_tag, "getDownloadedMaps")
+        return this.mapRepo.getAllMapDownloadData()
+    }
+
+    override fun purgeCache(){
+        mapRepo.purge()
+    }
     override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String{
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,

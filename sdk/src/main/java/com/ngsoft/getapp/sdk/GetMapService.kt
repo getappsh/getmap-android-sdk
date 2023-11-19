@@ -12,6 +12,21 @@ import java.time.LocalDateTime
 interface GetMapService {
 
     /**
+     * Get Downloaded map by id
+     *
+     * @param id Map id
+     * @return MapDownloadData?
+     */
+    fun getDownloadedMap(id: String): MapDownloadData?
+
+    /**
+     * Get Downloaded maps
+     *
+     * @return List<MapDownloadData>
+     */
+    fun getDownloadedMaps(): List<MapDownloadData>
+
+    /**
      * Delete Map
      *
      * @param id Map id

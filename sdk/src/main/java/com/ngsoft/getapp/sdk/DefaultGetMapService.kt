@@ -84,6 +84,14 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun getDownloadedMap(id: String): MapDownloadData? {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun getDownloadedMaps(): List<MapDownloadData> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
     override fun deleteMap(id: String) {
         TODO("Not implemented in DefaultGetMapService")
     }
@@ -92,6 +100,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 //==================================================================================================
 
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
+        Log.i(_tag, "getDiscoveryCatalog")
 
         //fill that vast GetApp param...
         val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusApp,
@@ -145,6 +154,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             ))
         }
 
+        Log.d(_tag, "getDiscoveryCatalog - results $result")
         return result
     }
 

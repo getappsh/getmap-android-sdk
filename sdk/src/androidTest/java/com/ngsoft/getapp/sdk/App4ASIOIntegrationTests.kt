@@ -65,7 +65,7 @@ class App4ASIOIntegrationTests {
         val productOfInterest = products.find { it.productId ==  "045eaa61-8f61-48d3-a240-4b02a683eca3"}
         assert(productOfInterest != null)
 
-        updateDate = productOfInterest?.updateDate?.toLocalDateTime()!!
+        updateDate = productOfInterest?.imagingTimeBeginUTC?.toLocalDateTime()!!
         assert(updateDate != LocalDateTime.of(1,1,1,0,0))
 
         println("update date = $updateDate")

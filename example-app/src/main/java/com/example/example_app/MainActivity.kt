@@ -85,7 +85,14 @@ class MainActivity : AppCompatActivity() {
         downoadnTestButton.setOnClickListener{
 
             try {
-                service.deleteMap(downloadId!!)
+                GlobalScope.launch(Dispatchers.IO){
+                    val map = service.getDownloadedMap("1")
+                    Log.d(TAG, "onCreate: ${map.toString()}")
+                    val res = service.getDownloadedMaps()
+                    Log.d(TAG, "onCreate: ${res.toString()}")
+                }
+//                service.deleteMap(downloadId!!)
+
 
             }catch (e: Exception){
                 Log.e(TAG, "onCreate - delete map, error: ${e.message.toString()}", )

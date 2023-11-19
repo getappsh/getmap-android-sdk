@@ -3,7 +3,6 @@ package com.ngsoft.tilescache
 import GetApp.Client.models.DeliveryStatusDto
 import android.content.Context
 import android.util.Log
-import androidx.sqlite.db.SimpleSQLiteQuery
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.tilescache.models.DeliveryFlowState
@@ -12,7 +11,6 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.abs
 
 internal class MapRepo(ctx: Context) {
 
@@ -45,6 +43,12 @@ internal class MapRepo(ctx: Context) {
 //        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
+    fun getAllMapDownloadData(): List<MapDownloadData>{
+        return dao
+            .getAll()
+            .sortedBy { map-> map.downloadStart }
+            .map {mapPkg2DownloadData(it)}
+    }
     fun update(
         id: String,
         reqId: String? = null,
@@ -129,7 +133,6 @@ internal class MapRepo(ctx: Context) {
         }
     }
 
-
     fun updateFlowState(id: String, flowState: DeliveryFlowState){
         this.updateInternal(id, flowState=flowState)
     }
@@ -169,18 +172,21 @@ internal class MapRepo(ctx: Context) {
     fun getDownloadData(id: String): MapDownloadData?{
         val map = this.getById(id);
         if (map != null) {
-            return MapDownloadData(
-                id = id,
-                fileName = map.fileName,
-                jsonName = map.jsonName,
-                deliveryStatus = map.state,
-                url = map.url,
-                statusMessage = map.statusMessage,
-                downloadProgress = map.downloadProgress,
-                errorContent = map.errorContent
-            )
+            return mapPkg2DownloadData(map)
         }
         return null
+    }
+    private fun mapPkg2DownloadData(map: MapPkg): MapDownloadData{
+        return MapDownloadData(
+            id = map.id.toString(),
+            fileName = map.fileName,
+            jsonName = map.jsonName,
+            deliveryStatus = map.state,
+            url = map.url,
+            statusMessage = map.statusMessage,
+            downloadProgress = map.downloadProgress,
+            errorContent = map.errorContent
+        )
     }
 
     fun getDeliveryStatus(id: String, deviceId: String): DeliveryStatusDto? {
