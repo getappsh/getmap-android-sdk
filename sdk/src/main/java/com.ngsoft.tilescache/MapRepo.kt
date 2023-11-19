@@ -43,11 +43,13 @@ internal class MapRepo(ctx: Context) {
 //        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
-    fun getAllMapDownloadData(): List<MapDownloadData>{
+    fun getAll(): List<MapPkg>{
         return dao
             .getAll()
             .sortedBy { map-> map.downloadStart }
-            .map {mapPkg2DownloadData(it)}
+    }
+    fun getAllMapsDownloadData(): List<MapDownloadData>{
+        return getAll().map {mapPkg2DownloadData(it)}
     }
     fun update(
         id: String,
@@ -81,7 +83,7 @@ internal class MapRepo(ctx: Context) {
         invoke(id)
     }
 
-    private fun getById(id: String): MapPkg?{
+    fun getById(id: String): MapPkg?{
         return try{
             dao.getById(id.toInt())
         }catch (e: NumberFormatException){
