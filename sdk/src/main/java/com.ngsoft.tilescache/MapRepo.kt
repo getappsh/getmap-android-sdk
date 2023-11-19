@@ -179,6 +179,7 @@ internal class MapRepo(ctx: Context) {
     private fun mapPkg2DownloadData(map: MapPkg): MapDownloadData{
         return MapDownloadData(
             id = map.id.toString(),
+            bBox = map.bBox,
             fileName = map.fileName,
             jsonName = map.jsonName,
             deliveryStatus = map.state,
