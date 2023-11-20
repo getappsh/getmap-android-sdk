@@ -547,7 +547,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "validateImport - id: $id")
         this.mapRepo.update(
             id = id,
-            statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
+            statusMessage = appCtx.getString(R.string.delivery_status_in_verification),
+            downloadProgress = 0
         )
 
         if (this.mapRepo.isDownloadCanceled(id)){
@@ -563,8 +564,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val jsonFile = File(dirPath, mapPkg.jsonName!!)
 
             val expectedHash = JsonUtils.getValueFromJson(checksumAlgorithm, jsonFile.path)
-            val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile)
-
+            val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
+                Log.d(_tag, "validateImport - progress: $it")
+                this.mapRepo.update(id, downloadProgress = it)
+            }
             Log.d(_tag, "validateImport - expectedHash: $expectedHash, actualHash: $actualHash")
 
             val isValid = expectedHash == actualHash
