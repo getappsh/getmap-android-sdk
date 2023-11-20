@@ -13,6 +13,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
@@ -66,45 +67,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,
             appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START, downloadStatusHandler)
+        this.mapRepo.invoke(id)
 
         Log.i(_tag, "downloadMap: id: $id")
         Log.d(_tag, "downloadMap: bBox - ${mp.boundingBox}")
 
-
         Thread{
-            this.mapRepo.update(id, state = MapDeliveryState.START, statusMessage = appCtx.getString(R.string.delivery_status_req_sent))
             try {
-                var res = importCreate(id, mp)
-                sendDeliveryStatus(id)
-                if (!res) {
-                    return@Thread
-                }
-                res = checkImportStatue(id)
-                if (!res) {
-                    sendDeliveryStatus(id)
-                    return@Thread
-                }
-                res = importDelivery(id)
-                if (!res) {
-                    sendDeliveryStatus(id)
-                    return@Thread
-                }
-                res = checkDeliveryStatus(id)
-                if (!res) {
-                    sendDeliveryStatus(id)
-                    return@Thread
-                }
-                res = downloadImport(id)
-                if (!res) {
-                    sendDeliveryStatus(id)
-                    return@Thread
-                }
-                res = startProgressWatcher(id)
-                if (!res) {
-                    sendDeliveryStatus(id)
-                    return@Thread
-                }
-
+                executeDeliveryFlow(id)
             } catch (e: Exception) {
                 Log.e(_tag, "downloadMap: exception:  ${e.message.toString()}")
                 this.mapRepo.update(
@@ -120,15 +90,74 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return id
     }
 
-    private fun importCreate(id: String, mp: MapProperties,): Boolean{
+    private fun executeDeliveryFlow(id: String){
+        val state = this.mapRepo.getDeliveryFlowState(id)
+        when(state){
+            DeliveryFlowState.START -> {
+                val toContinue = importCreate(id)
+                sendDeliveryStatus(id)
+                if (!toContinue) {
+                    return
+                }
+            }
+            DeliveryFlowState.IMPORT_CREATE -> {
+                val toContinue = checkImportStatue(id)
+                if (!toContinue) {
+                    sendDeliveryStatus(id)
+                    return
+                }
+            }
+            DeliveryFlowState.IMPORT_STATUS -> {
+                val toContinue  = importDelivery(id)
+                if (!toContinue) {
+                    sendDeliveryStatus(id)
+                    return
+                }
+            }
+            DeliveryFlowState.IMPORT_DELIVERY -> {
+                val toContinue = checkDeliveryStatus(id)
+                if (!toContinue) {
+                    sendDeliveryStatus(id)
+                    return
+                }
+            }
+            DeliveryFlowState.IMPORT_DELIVERY_STATUS -> {
+                val toContinue = downloadImport(id)
+                if (!toContinue) {
+                    sendDeliveryStatus(id)
+                    return
+                }
+            }
+            DeliveryFlowState.DOWNLOAD -> {
+                val toContinue = startProgressWatcher(id)
+                if (!toContinue) {
+                    sendDeliveryStatus(id)
+                    return
+                }
+            }
+            DeliveryFlowState.DONE -> {
+                return
+            }
+            else -> {
+                return
+            }
+        }
+
+        executeDeliveryFlow(id)
+    }
+
+    private fun importCreate(id: String): Boolean{
         Log.i(_tag, "importCreate")
 
         if (this.mapRepo.isDownloadCanceled(id)){
-            Log.d(_tag, "importCreate: Download $id, canceled by user")
+            Log.d(_tag, "importCreate - Download $id, canceled by user")
             mapRepo.update(id, state = MapDeliveryState.CANCEL)
             return false
         }
-        val retCreate = createMapImport(mp)
+        val mapPkg = this.mapRepo.getById(id)!!
+        val mapProperties = MapProperties(productId = mapPkg.pId, boundingBox = mapPkg.bBox, isBest = false)
+        val retCreate = createMapImport(mapProperties)
+
         Log.d(_tag, "importCreate - import request Id: ${retCreate?.importRequestId}")
         when(retCreate?.state){
             MapImportState.START, MapImportState.DONE ->{
@@ -372,12 +401,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         var pkgReqRetry = 1
         var jsonReqRetry = 1
 
-        timer(initialDelay = 100, period = 500) {
+        val latch = CountDownLatch(1)
+
+        timer(initialDelay = 100, period = 2000) {
             if (mapRepo.isDownloadCanceled(id)){
                 Log.d(_tag, "ProgressWatcher - Download $id, canceled by user")
                 downloader.cancelDownload(jsonDownloadId, pkgDownloadId)
                 mapRepo.update(id, state = MapDeliveryState.CANCEL)
                 res = false
+                latch.countDown()
                 this.cancel()
             }
 
@@ -431,6 +463,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                             errorContent = pkgStatus?.reason ?: "ProgressWatcher - DownloadManager failed to download file"
                         )
                         res = false
+                        latch.countDown()
                         this.cancel()
                     }
 
@@ -470,6 +503,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                             errorContent = pkgStatus?.reason ?: "ProgressWatcher - DownloadManager failed to download file"
                         )
                         res = false
+                        latch.countDown()
                         this.cancel()
                     }
                 }
@@ -486,11 +520,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     downloadProgress = 100,
                 )
                 sendDeliveryStatus(id)
+                latch.countDown()
                 res = true
                 this.cancel()
             }
         }
-
+        latch.await()
         return res
     }
 
@@ -573,31 +608,34 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun updateMapsStatusOnStart(){
-        Log.d(_tag, "setMapsStatusOnStart")
+        Log.d(_tag, "updateMapsStatusOnStart")
         val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.START || it.state == MapDeliveryState.CONTINUE || it.state == MapDeliveryState.DOWNLOAD }
-        Log.d(_tag, "setMapsStatusOnStart - Found: ${mapsData.size} maps on delivery process")
+        Log.d(_tag, "updateMapsStatusOnStart - Found: ${mapsData.size} maps on delivery process")
 
         for (map in mapsData){
+            val id = map.id.toString()
             when(map.flowState){
                 DeliveryFlowState.DONE -> {}
-
-                DeliveryFlowState.IMPORT_DELIVERY_STATUS,
                 DeliveryFlowState.DOWNLOAD -> {
-                    if(map.JDID != null && map.MDID != null){
-                        Log.d(_tag, "setMapsStatusOnStart - start progress watcher for ${map.id}")
-                        this.startProgressWatcher(map.id.toString())
-                    }else{
-                        this.mapRepo.update(
-                            id = map.id.toString(),
-                            state = MapDeliveryState.PAUSE,
-                            statusMessage = appCtx.getString(R.string.delivery_status_paused)
-                        )
-                    }
-                }
+                    Thread{
+                        try {
+                            Log.d(_tag, "updateMapsStatusOnStar - map id: $id, is on download continue the flow")
+                            executeDeliveryFlow(id)
+                        } catch (e: Exception) {
+                            Log.e(_tag, "updateMapsStatusOnStart: exception:  ${e.message.toString()}")
+                            this.mapRepo.update(
+                                id = id,
+                                state = MapDeliveryState.ERROR,
+                                statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                                errorContent = e.message.toString()
+                            )
+                            this.sendDeliveryStatus(id)
+                        }}.start()
 
+                }
                 else ->{
                     this.mapRepo.update(
-                        id = map.id.toString(),
+                        id = id,
                         state = MapDeliveryState.PAUSE,
                         statusMessage = appCtx.getString(R.string.delivery_status_paused)
                     )

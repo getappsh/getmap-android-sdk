@@ -159,6 +159,10 @@ internal class MapRepo(ctx: Context) {
         return this.getById(id)?.reqId
     }
 
+    fun getDeliveryFlowState(id: String): DeliveryFlowState?{
+        return this.getById(id)?.flowState
+    }
+
     fun isDownloadCanceled(id: String): Boolean{
         return this.getById(id)?.cancelDownload ?: false
     }
