@@ -1,6 +1,7 @@
 package com.ngsoft.tilescache.models
 
 import DeliveryFlowStateConverter
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
@@ -9,6 +10,10 @@ import com.ngsoft.tilescache.MapDeliveryStateConverter
 import com.ngsoft.tilescache.TimeStampConverter
 import java.time.LocalDateTime
 
+
+data class DownloadMetadata(
+    var validationAttempt: Int = 0
+)
 @Entity
 data class MapPkg (
     var pId: String,
@@ -40,6 +45,9 @@ data class MapPkg (
 
     @TypeConverters(TimeStampConverter::class)
     var downloadDone: LocalDateTime? = null,
+
+    @Embedded
+    var metadata: DownloadMetadata = DownloadMetadata()
 ){
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0

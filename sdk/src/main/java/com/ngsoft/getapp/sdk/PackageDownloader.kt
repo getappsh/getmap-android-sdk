@@ -22,6 +22,7 @@ internal class PackageDownloader(private val context: Context, private val downl
         val totalBytes: Long,
         val downloadBytes: Long,
         val reason: String,
+        val fileName: String?
     )
     companion object{
 
@@ -89,15 +90,21 @@ internal class PackageDownloader(private val context: Context, private val downl
             val totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
             val downloadedBytes = if (totalBytes <=  0) 0 else cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
             val reason = getReasonErrorMessage(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)))
-
+            var fileName: String? = null
+            val fileUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
+            if (fileUri != null){
+                fileName = getFileNameFromUri(fileUri)
+            }
             return DownloadInfo(
                 downloadId = downloadId,
                 status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)),
                 totalBytes =  totalBytes,
                 downloadBytes = downloadedBytes,
                 reason = reason,
+                fileName = fileName
             )
         }
+        cursor.close()
         return null
     }
     private fun getReasonErrorMessage(reason: Int): String{

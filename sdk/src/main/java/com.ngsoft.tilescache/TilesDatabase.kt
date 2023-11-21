@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.ngsoft.tilescache.models.MapPkg
 import com.ngsoft.tilescache.models.TilePkg
 
-@Database(entities = [TilePkg::class, MapPkg::class], version = 2
+@Database(entities = [TilePkg::class, MapPkg::class], version = 3
     //, exportSchema = false
 )
 @TypeConverters(TimeStampConverter::class)
