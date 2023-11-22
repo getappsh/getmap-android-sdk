@@ -28,6 +28,7 @@ import com.squareup.moshi.JsonClass
  * @param fileName 
  * @param createDate 
  * @param status 
+ * @param messageLog 
  */
 
 
@@ -49,14 +50,17 @@ data class ImportStatusResDto (
     val createDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "status")
-    val status: ImportStatusResDto.Status? = null
+    val status: ImportStatusResDto.Status? = null,
+
+    @Json(name = "messageLog")
+    val messageLog: kotlin.String? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: start,inProgress,done,cancel,error
+     * Values: start,inProgress,done,cancel,pause,error,pending,expired,archived
      */
     @JsonClass(generateAdapter = false)
     enum class Status(val value: kotlin.String) {
@@ -64,7 +68,11 @@ data class ImportStatusResDto (
         @Json(name = "InProgress") inProgress("InProgress"),
         @Json(name = "Done") done("Done"),
         @Json(name = "Cancel") cancel("Cancel"),
-        @Json(name = "Error") error("Error");
+        @Json(name = "Pause") pause("Pause"),
+        @Json(name = "Error") error("Error"),
+        @Json(name = "Pending") pending("Pending"),
+        @Json(name = "Expired") expired("Expired"),
+        @Json(name = "Archived") archived("Archived");
     }
 }
 

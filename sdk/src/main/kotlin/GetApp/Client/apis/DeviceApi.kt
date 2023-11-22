@@ -22,6 +22,7 @@ import okhttp3.HttpUrl
 import GetApp.Client.models.CreateDevicesGroupDto
 import GetApp.Client.models.DeviceContentResDto
 import GetApp.Client.models.DeviceDiscoverResDto
+import GetApp.Client.models.DeviceDto
 import GetApp.Client.models.DeviceRegisterDto
 import GetApp.Client.models.DevicesGroupDto
 import GetApp.Client.models.DiscoveryMessageDto
@@ -189,6 +190,74 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/device/info/installed/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * 
+     * This service message allow received all registered devices
+     * @return DeviceDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerGetRegisteredDevices() : DeviceDto {
+        val localVarResponse = deviceControllerGetRegisteredDevicesWithHttpInfo()
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * 
+     * This service message allow received all registered devices
+     * @return ApiResponse<DeviceDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerGetRegisteredDevicesWithHttpInfo() : ApiResponse<DeviceDto?> {
+        val localVariableConfig = deviceControllerGetRegisteredDevicesRequestConfig()
+
+        return request<Unit, DeviceDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerGetRegisteredDevices
+     *
+     * @return RequestConfig
+     */
+    fun deviceControllerGetRegisteredDevicesRequestConfig() : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/device/devices",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

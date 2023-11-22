@@ -24,6 +24,7 @@ import com.squareup.moshi.JsonClass
  *
  * @param importRequestId 
  * @param status 
+ * @param messageLog 
  */
 
 
@@ -33,14 +34,17 @@ data class CreateImportResDto (
     val importRequestId: kotlin.String,
 
     @Json(name = "status")
-    val status: CreateImportResDto.Status
+    val status: CreateImportResDto.Status,
+
+    @Json(name = "messageLog")
+    val messageLog: kotlin.String? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: start,inProgress,done,cancel,error
+     * Values: start,inProgress,done,cancel,pause,error,pending,expired,archived
      */
     @JsonClass(generateAdapter = false)
     enum class Status(val value: kotlin.String) {
@@ -48,7 +52,11 @@ data class CreateImportResDto (
         @Json(name = "InProgress") inProgress("InProgress"),
         @Json(name = "Done") done("Done"),
         @Json(name = "Cancel") cancel("Cancel"),
-        @Json(name = "Error") error("Error");
+        @Json(name = "Pause") pause("Pause"),
+        @Json(name = "Error") error("Error"),
+        @Json(name = "Pending") pending("Pending"),
+        @Json(name = "Expired") expired("Expired"),
+        @Json(name = "Archived") archived("Archived");
     }
 }
 
