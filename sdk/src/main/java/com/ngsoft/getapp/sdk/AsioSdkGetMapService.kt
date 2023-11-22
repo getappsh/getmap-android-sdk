@@ -594,7 +594,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
     override fun cancelDownload(id: String) {
         Log.d(_tag, "cancelDownload - for id: $id")
-        this.mapRepo.setCancelDownload(id)
+        Thread{
+            try{
+                this.mapRepo.setCancelDownload(id)
+            }catch (e: Exception){
+                Log.e(_tag, "cancelDownload - failed to candle, error: $e", )
+            }
+        }.start()
     }
 
     override fun deleteMap(id: String){
