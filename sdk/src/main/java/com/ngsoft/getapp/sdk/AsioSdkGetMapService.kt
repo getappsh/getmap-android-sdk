@@ -127,37 +127,40 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         Log.d(_tag, "importCreate - import request Id: ${retCreate?.importRequestId}")
         when(retCreate?.state){
-            MapImportState.START, MapImportState.DONE ->{
-                Log.d(_tag,"deliverTile - createMapImport: OK: ${retCreate.state} ")
+            MapImportState.START, MapImportState.IN_PROGRESS, MapImportState.DONE,  ->{
+                Log.d(_tag,"deliverTile - createMapImport -> OK, state: ${retCreate.state} message: ${retCreate.statusCode?.messageLog}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate.importRequestId,
                     state = MapDeliveryState.START,
                     flowState = DeliveryFlowState.IMPORT_CREATE,
-                    statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress)
+                    statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress),
+                    errorContent = retCreate.statusCode?.messageLog
                 )
                 this.sendDeliveryStatus(id)
                 return true
             }
             MapImportState.CANCEL -> {
-                Log.w(_tag,"getDownloadData - createMapImport: CANCEL")
+                Log.w(_tag,"getDownloadData - createMapImport -> CANCEL, message: ${retCreate.statusCode?.messageLog}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate.importRequestId,
                     state = MapDeliveryState.CANCEL,
-                    statusMessage = appCtx.getString(R.string.delivery_status_canceled)
+                    statusMessage = appCtx.getString(R.string.delivery_status_canceled),
+                    errorContent = retCreate.statusCode?.messageLog
+
                 )
                 this.sendDeliveryStatus(id)
                 return false
             }
             else -> {
-                Log.e(_tag,"getDownloadData - createMapImport failed: ${retCreate?.state}, error: ${retCreate?.importRequestId}")
+                Log.e(_tag,"getDownloadData - createMapImport failed: ${retCreate?.state}, error: ${retCreate?.statusCode?.messageLog}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate?.importRequestId,
                     state = MapDeliveryState.ERROR,
                     statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                    errorContent = retCreate?.importRequestId
+                    errorContent = retCreate?.statusCode?.messageLog
                 )
                 this.sendDeliveryStatus(id)
                 return false
@@ -188,22 +191,24 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
             when(stat?.state){
                 MapImportState.ERROR -> {
-                    Log.e(_tag,"checkImportStatus - MapImportState.ERROR")
+                    Log.e(_tag,"checkImportStatus - MapImportState -> ERROR, error:  ${stat?.statusCode?.messageLog}")
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.ERROR,
-                        statusMessage = appCtx.getString(R.string.delivery_status_failed)
+                        statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                        errorContent = stat?.statusCode?.messageLog
                     )
 //                    todo error message
                     this.sendDeliveryStatus(id)
                     return false
                 }
                 MapImportState.CANCEL -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState.CANCEL")
+                    Log.w(_tag,"checkImportStatus - MapImportState -> CANCEL, message: ${stat?.statusCode?.messageLog}")
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.CANCEL,
-                        statusMessage = appCtx.getString(R.string.delivery_status_canceled)
+                        statusMessage = appCtx.getString(R.string.delivery_status_canceled),
+                        errorContent = stat?.statusCode?.messageLog
                     )
                     this.sendDeliveryStatus(id)
                     return false

@@ -175,10 +175,12 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             }
             ImportStatusResDto.Status.done -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.DONE
             }
             ImportStatusResDto.Status.inProgress -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.IN_PROGRESS
             }
             ImportStatusResDto.Status.cancel -> {
@@ -187,10 +189,31 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             }
             ImportStatusResDto.Status.error -> {
                 result.statusCode!!.statusCode = StatusCode.NOT_FOUND
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
 
                 if(status.fileName == "Request not found")
                     result.statusCode!!.statusCode = StatusCode.REQUEST_ID_NOT_FOUND
 
+                result.state = MapImportState.ERROR
+            }
+            ImportStatusResDto.Status.pause -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            ImportStatusResDto.Status.pending -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            ImportStatusResDto.Status.expired -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            ImportStatusResDto.Status.archived -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             else -> {
@@ -219,14 +242,17 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         when(status.status) {
             CreateImportResDto.Status.start -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.START
             }
             CreateImportResDto.Status.done -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.DONE
             }
             CreateImportResDto.Status.inProgress -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
                 result.state = MapImportState.IN_PROGRESS
             }
             CreateImportResDto.Status.cancel -> {
@@ -235,6 +261,27 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             }
             CreateImportResDto.Status.error -> {
                 result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            CreateImportResDto.Status.pause -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            CreateImportResDto.Status.pending -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            CreateImportResDto.Status.expired -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.state = MapImportState.ERROR
+            }
+            CreateImportResDto.Status.archived -> {
+                result.statusCode!!.statusCode = StatusCode.SUCCESS
+                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
         }
@@ -319,6 +366,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             CreateImportResDto.Status.done -> result.state = MapDeliveryState.DONE
             CreateImportResDto.Status.cancel -> result.state = MapDeliveryState.CANCEL
             CreateImportResDto.Status.error -> result.state = MapDeliveryState.ERROR
+            CreateImportResDto.Status.pause -> result.state = MapDeliveryState.ERROR
+            CreateImportResDto.Status.pending -> result.state = MapDeliveryState.ERROR
+            CreateImportResDto.Status.expired -> result.state = MapDeliveryState.ERROR
+            CreateImportResDto.Status.archived -> result.state = MapDeliveryState.ERROR
         }
 
         return result
