@@ -671,11 +671,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         for (map in mapsData){
             val id = map.id.toString()
             when(map.flowState){
-                DeliveryFlowState.DOWNLOAD_DONE -> {}
-                DeliveryFlowState.DOWNLOAD -> {
+                DeliveryFlowState.DOWNLOAD, DeliveryFlowState.DOWNLOAD_DONE -> {
                     Thread{
                         try {
-                            Log.d(_tag, "updateMapsStatusOnStar - map id: $id, is on download continue the flow")
+                            Log.d(_tag, "updateMapsStatusOnStart - map id: $id, is on ${map.flowState} continue the flow")
                             executeDeliveryFlow(id)
                         } catch (e: Exception) {
                             Log.e(_tag, "updateMapsStatusOnStart: exception:  ${e.message.toString()}")
@@ -690,6 +689,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                 }
                 else ->{
+                    Log.d(_tag, "updateMapsStatusOnStart - map id: $id, set state to pause ")
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.PAUSE,
