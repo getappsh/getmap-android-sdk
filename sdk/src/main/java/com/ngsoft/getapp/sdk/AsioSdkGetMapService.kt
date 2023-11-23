@@ -12,6 +12,7 @@ import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
+import com.ngsoft.technician.mockserver.MockServer
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
@@ -43,6 +44,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun init(configuration: Configuration): Boolean {
         super.init(configuration)
+        if (configuration.baseUrl == "http://localhost:1111"){
+            Log.i(_tag, "init - Use MockServer")
+            MockServer.getInstance(appCtx)
+        }
+
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
         downloadRetryAttempts = configuration.downloadRetry
