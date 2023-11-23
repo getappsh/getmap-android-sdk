@@ -396,6 +396,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 res = false
                 latch.countDown()
                 this.cancel()
+                return@timer
             }
 
             val pkgStatus = downloader.queryStatus(pkgDownloadId)
@@ -450,6 +451,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         res = false
                         latch.countDown()
                         this.cancel()
+                        return@timer
                     }
 
                 }
@@ -491,6 +493,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         res = false
                         latch.countDown()
                         this.cancel()
+                        return@timer
                     }
                 }
             }
@@ -506,6 +509,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 latch.countDown()
                 res = true
                 this.cancel()
+                return@timer
             }
         }
         latch.await()
