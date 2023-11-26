@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/example-app" />
             <option value="$PROJECT_DIR$/sdk" />
+            <option value="$PROJECT_DIR$/technician" />
           </set>
         </option>
       </GradleProjectSettings>

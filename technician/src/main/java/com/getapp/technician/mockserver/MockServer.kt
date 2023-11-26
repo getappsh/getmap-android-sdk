@@ -1,4 +1,4 @@
-package com.ngsoft.technician.mockserver
+package com.getapp.technician.mockserver
 
 import android.content.Context
 import android.content.res.AssetManager
@@ -9,7 +9,7 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 
 
-internal class MockServer(assets: AssetManager) {
+class MockServer(assets: AssetManager) {
 
     private val _tag = "MockServer"
 
@@ -32,7 +32,7 @@ internal class MockServer(assets: AssetManager) {
         }
         mockServer = MockWebServer()
         mockServer.dispatcher = getDispatcher()
-        mockServer.start(port = 1111)
+        mockServer.start(port = 3333)
         url = mockServer.url("/").toString()
 
         Log.d(_tag, "startServer - url: $url")

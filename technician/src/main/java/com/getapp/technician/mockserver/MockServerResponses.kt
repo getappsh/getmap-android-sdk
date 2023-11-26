@@ -1,4 +1,4 @@
-package com.ngsoft.technician.mockserver
+package com.getapp.technician.mockserver
 
 import GetApp.Client.infrastructure.Serializer
 import GetApp.Client.models.CreateImportResDto
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 class MockServerResponses(private val assets: AssetManager) {
     private val _tag = "MockServerResponses"
 
-    private val baseDownloadUrl = "http://localhost:1111/api/download/"
+    private val baseDownloadUrl = "http://localhost:3333/api/download/"
     private val mapFile = "Orthophoto_gaza_north_2_0_19_2023_11_21T13_13_01_792Z.gpkg"
     private val jsonFile = "Orthophoto_gaza_north_2_0_19_2023_11_21T13_13_01_792Z.json"
 

@@ -1,4 +1,4 @@
-package com.ngsoft.technician.mockserver
+package com.getapp.technician.mockserver
 
 data class MockConfig (
     var discoveryTimeOut: Int = 0,
