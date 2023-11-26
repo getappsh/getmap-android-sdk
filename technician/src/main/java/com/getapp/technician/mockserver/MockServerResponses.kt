@@ -12,6 +12,7 @@ import org.json.JSONObject
 import okio.Buffer
 import okio.source
 import okio.use
+import java.io.File
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
@@ -32,8 +33,15 @@ class MockServerResponses(private val assets: AssetManager) {
 
     fun getDiscovery(config: MockConfig): MockResponse {
         Log.d(_tag, "getDiscovery - timeout: " + config.discoveryTimeOut)
+
+        val fileString = if (config.discoveryPath != null) {
+            readFile(config.discoveryPath!!)
+        }else {
+            readFileFromAssets("discovery.json")
+        }
+
         return MockResponse()
-            .setBody(readFile("discovery.json"))
+            .setBody(fileString)
             .throttleBody(1024, config.discoveryTimeOut.toLong(), TimeUnit.SECONDS)
             .setResponseCode(201)
     }
@@ -105,8 +113,14 @@ class MockServerResponses(private val assets: AssetManager) {
 
     }
 
-    private fun readFile(fileName: String): String{
+    private fun readFileFromAssets(fileName: String): String{
         return assets.open(fileName).bufferedReader().use{
+            it.readText()
+        }
+    }
+
+    private fun readFile(filePath: String): String{
+        return File(filePath).bufferedReader().use {
             it.readText()
         }
     }

@@ -7,8 +7,8 @@
     tools:context=".MainActivity">
 
     <ScrollView
-        android:layout_width="409dp"
-        android:layout_height="729dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -17,32 +17,29 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:padding="10dp">
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/failed_validation"
-                android:layout_margin="10dp"
-                android:padding="10dp"
+            <TextView
+                android:id="@+id/textView"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:gravity="center_horizontal"
-                android:text="Failed Validation?" />
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="Choose discovery file (optional)"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
-
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/fast_download"
-                android:layout_margin="10dp"
-                android:padding="10dp"
+            <Button
+                android:id="@+id/select_discovery"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:gravity="center_horizontal"
-                android:text="Fast Download?" />
-
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="default"/>
 
         </LinearLayout>
+
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
