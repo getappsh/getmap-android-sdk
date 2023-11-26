@@ -48,11 +48,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        showLoadingDialog("Login")
-
-
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-dev.getapp.sh:3000",
+            "http://localhost:3333",
             "rony@example.com",
             "rony123",
             //currently downloads file to a path within the public external storage directory
@@ -84,19 +82,21 @@ class MainActivity : AppCompatActivity() {
 
         downoadnTestButton.setOnClickListener{
 
-            try {
-                GlobalScope.launch(Dispatchers.IO){
-                    val map = service.getDownloadedMap("1")
-                    Log.d(TAG, "onCreate: ${map.toString()}")
-                    val res = service.getDownloadedMaps()
-                    Log.d(TAG, "onCreate: ${res.toString()}")
-                }
-//                service.deleteMap(downloadId!!)
 
-
-            }catch (e: Exception){
-                Log.e(TAG, "onCreate - delete map, error: ${e.message.toString()}", )
-            }
+            service.cancelDownload("1")
+//            try {
+//                GlobalScope.launch(Dispatchers.IO){
+//                    val map = service.getDownloadedMap("1")
+//                    Log.d(TAG, "onCreate: ${map.toString()}")
+//                    val res = service.getDownloadedMaps()
+//                    Log.d(TAG, "onCreate: ${res.toString()}")
+//                }
+////                service.deleteMap(downloadId!!)
+//
+//
+//            }catch (e: Exception){
+//                Log.e(TAG, "onCreate - delete map, error: ${e.message.toString()}", )
+//            }
 //            val downloader = PackageDownloader(this, Environment.DIRECTORY_DOWNLOADS)
 //
 //            GlobalScope.launch(Dispatchers.IO){
