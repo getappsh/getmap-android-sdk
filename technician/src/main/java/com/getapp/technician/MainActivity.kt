@@ -1,5 +1,6 @@
 package com.getapp.technician
 
+import GetApp.Client.models.CreateImportResDto
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -9,6 +10,7 @@ import android.os.Environment
 import android.provider.Settings
 import android.util.Log
 import android.widget.Button
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var failedValidation: SwitchCompat
     private lateinit var fastDownload: SwitchCompat
     private lateinit var selectDiscovery: Button
+    private lateinit var importCreate: RadioGroup
 
     lateinit var mockServer: MockServer
 
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity() {
 //        failedValidation = findViewById(R.id.failed_validation)
 //        fastDownload = findViewById(R.id.fast_download)
         selectDiscovery = findViewById<Button>(R.id.select_discovery)
+        importCreate = findViewById(R.id.radio_import_group)
 
 
         thread {
@@ -66,9 +70,15 @@ class MainActivity : AppCompatActivity() {
                 type = "*/*"
 
             }
-
-
             startActivityForResult(intent, PICK_DISCOVERY_FILE)
+        }
+
+        importCreate.setOnCheckedChangeListener { group, checkedId ->
+            if (checkedId == R.id.radio_import_success){
+                mockServer.config.importCreateStatus = CreateImportResDto.Status.inProgress
+            }else if(checkedId == R.id.radio_import_error){
+                mockServer.config.importCreateStatus = CreateImportResDto.Status.error
+            }
         }
 
         if (!checkStoragePermissions()){

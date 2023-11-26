@@ -47,7 +47,11 @@ class MockServerResponses(private val assets: AssetManager) {
     }
 
     fun importCreate(config: MockConfig): MockResponse{
-        val import = CreateImportResDto("test-1", CreateImportResDto.Status.inProgress)
+        var error: String? = null
+        if (config.importCreateStatus == CreateImportResDto.Status.error){
+            error = "Libot failed to create requested map";
+        }
+        val import = CreateImportResDto("test-1", config.importCreateStatus, messageLog=error)
 
         return MockResponse()
             .setBody(toJsonString(import))

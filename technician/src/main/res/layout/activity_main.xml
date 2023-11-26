@@ -24,6 +24,21 @@
             android:padding="10dp">
 
             <TextView
+                android:id="@+id/textView0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="To use the mock server:\n 1. Keep this app running in the background, do not close it.\n 2. Set the URL in the Asio app to http://localhost:3333"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -37,6 +52,52 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:text="default"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/darker_gray"/>
+
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="On Request to Libot"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <RadioGroup
+                android:id="@+id/radio_import_group"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp"
+                android:checkedButton="@id/radio_import_success"
+                android:layout_gravity="center_horizontal">
+
+                <RadioButton
+                    android:id="@+id/radio_import_success"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Success" />
+
+                <RadioButton
+                    android:id="@+id/radio_import_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Error" />
+
+            </RadioGroup>
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/darker_gray"/>
 
         </LinearLayout>
 
