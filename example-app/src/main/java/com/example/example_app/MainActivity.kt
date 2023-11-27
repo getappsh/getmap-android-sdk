@@ -82,8 +82,16 @@ class MainActivity : AppCompatActivity() {
 
         downoadnTestButton.setOnClickListener{
 
+            GlobalScope.launch(Dispatchers.IO) {
+                var downloads = service.getDownloadedMaps()
+                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
+                service.cleanDownloads()
 
-            service.cancelDownload("1")
+                downloads = service.getDownloadedMaps()
+                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
+
+            }
+//            service.cancelDownload("1")
 //            try {
 //                GlobalScope.launch(Dispatchers.IO){
 //                    val map = service.getDownloadedMap("1")

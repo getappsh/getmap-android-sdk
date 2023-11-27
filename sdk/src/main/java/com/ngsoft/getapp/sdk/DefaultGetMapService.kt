@@ -96,6 +96,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun cleanDownloads() {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
 
 //==================================================================================================
 

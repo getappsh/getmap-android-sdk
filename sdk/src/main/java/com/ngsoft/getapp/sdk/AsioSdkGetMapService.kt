@@ -403,7 +403,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val pkgStatus = downloader.queryStatus(pkgDownloadId)
             val jsonStatus = downloader.queryStatus(jsonDownloadId)
 
-
             when(pkgStatus?.status){
                 DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING ->{
                     mapRepo.update(
@@ -434,6 +433,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     if (pkgReqRetry < downloadRetryAttempts){
                         Log.d(_tag, "ProgressWatcher - retry download")
                         pkgReqRetry ++
+
+                        downloader.cancelDownload(pkgDownloadId)
                         pkgDownloadId = downloader.downloadFile(pkgUrl, completionHandler)
                         mapRepo.update(
                             id = id,
@@ -477,6 +478,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     if (jsonReqRetry < downloadRetryAttempts){
                         Log.d(_tag, "ProgressWatcher - retry download")
                         jsonReqRetry ++
+
+                        downloader.cancelDownload(jsonDownloadId)
                         jsonDownloadId = downloader.downloadFile(jsonUrl, completionHandler)
                         mapRepo.update(
                             id = id,
@@ -602,6 +605,29 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
         }.start()
     }
+    override fun cleanDownloads(){
+        Log.i(_tag, "cleanDownloads")
+        val mapsData = this.mapRepo.getAll().filter {
+                    it.state == MapDeliveryState.DONE ||
+                    it.state == MapDeliveryState.ERROR ||
+                    it.state == MapDeliveryState.CANCEL ||
+                    it.state == MapDeliveryState.PAUSE ||
+                    it.state == MapDeliveryState.DELETED}
+        for (map in mapsData) {
+            Log.d(_tag, "cleanDownloads - map id: ${map.id}, state: ${map.state}")
+            if (map.state != MapDeliveryState.DONE){
+                this.deleteMap(map.id.toString())
+            }else{
+                val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
+                val mapFile = map.fileName?.let { File(dirPath, it) }
+                val jsonFile = map.jsonName?.let { File(dirPath, it) }
+
+                if (mapFile?.exists() != true || jsonFile?.exists() != true){
+                    this.deleteMap(map.id.toString())
+                }
+            }
+        }
+    }
     override fun cancelDownload(id: String) {
         Log.d(_tag, "cancelDownload - for id: $id")
         Thread{
@@ -615,20 +641,23 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun deleteMap(id: String){
         Log.d(_tag, "deleteMap - id: $id")
-        val downloadData = this.mapRepo.getDownloadData(id)
+        val map = this.mapRepo.getById(id)
 
-        if (downloadData == null ||
-            downloadData.deliveryStatus == MapDeliveryState.START ||
-            downloadData.deliveryStatus == MapDeliveryState.DOWNLOAD ||
-            downloadData.deliveryStatus == MapDeliveryState.CONTINUE){
+        if (map == null ||
+            map.state == MapDeliveryState.START ||
+            map.state == MapDeliveryState.DOWNLOAD ||
+            map.state == MapDeliveryState.CONTINUE){
 
-            val errorMsg = "deleteMap: Unable to delete map when status is: ${downloadData?.deliveryStatus}"
+            val errorMsg = "deleteMap: Unable to delete map when status is: ${map?.state}"
             Log.e(_tag,  errorMsg)
             throw Exception(errorMsg)
         }
 
-        this.deleteFile(downloadData.fileName)
-        this.deleteFile(downloadData.jsonName)
+        map.JDID?.let { downloader.cancelDownload(it) }
+        map.MDID?.let { downloader.cancelDownload(it) }
+
+        this.deleteFile(map.fileName)
+        this.deleteFile(map.jsonName)
 
         val delivery = this.mapRepo.getDeliveryStatus(id, pref.deviceId)
 
@@ -643,11 +672,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     Log.d(_tag, "sendDeliveryStatus: id: $id status: $dlv.deliveryStatus, catalog id: ${dlv.catalogId}")
                     client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
                 }catch (exc: Exception){
-                    Log.e(_tag, "sendDeliveryStatus failed error: $exc", )
+                    Log.e(_tag, "sendDeliveryStatus failed error: $exc")
                 }
             }
         }.start()
     }
+
     private fun deleteFile(fileName: String?){
         if (fileName == null){
             return

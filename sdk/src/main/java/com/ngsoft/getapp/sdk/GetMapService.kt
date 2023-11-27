@@ -53,6 +53,11 @@ interface GetMapService {
     fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?
 
     /**
+     * Clean downloads that are cancel, error... or if map or json file doesn't exist
+     */
+    fun cleanDownloads()
+
+    /**
      * Purge cache registry (cached tile files remains intact)
      *
      */
