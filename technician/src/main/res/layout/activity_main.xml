@@ -99,6 +99,40 @@
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/darker_gray"/>
 
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="Choose Map (.gpkg) file (optional)"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <Button
+                android:id="@+id/select_map_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="default"/>
+
+
+            <TextView
+                android:id="@+id/json_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="Choose json file (optional)"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/select_json_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="default"
+                android:visibility="gone"/>
+
+
         </LinearLayout>
 
     </ScrollView>

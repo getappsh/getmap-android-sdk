@@ -9,8 +9,10 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.RadioGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -29,11 +31,16 @@ class MainActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
     private val PICK_DISCOVERY_FILE = 1
+    private val PICK_MAP_FILE = 2
+    private val PICK_JSON_FILE = 3
 
 
     private lateinit var failedValidation: SwitchCompat
     private lateinit var fastDownload: SwitchCompat
     private lateinit var selectDiscovery: Button
+    private lateinit var selectMap: Button
+    private lateinit var textJson: TextView
+    private lateinit var selectJson: Button
     private lateinit var importCreate: RadioGroup
 
     lateinit var mockServer: MockServer
@@ -46,6 +53,9 @@ class MainActivity : AppCompatActivity() {
 //        fastDownload = findViewById(R.id.fast_download)
         selectDiscovery = findViewById<Button>(R.id.select_discovery)
         importCreate = findViewById(R.id.radio_import_group)
+        selectMap = findViewById(R.id.select_map_file)
+        textJson = findViewById(R.id.json_text_view)
+        selectJson = findViewById(R.id.select_json_file)
 
 
         thread {
@@ -73,6 +83,24 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, PICK_DISCOVERY_FILE)
         }
 
+        selectMap.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+
+            }
+            startActivityForResult(intent, PICK_MAP_FILE)
+        }
+
+        selectJson.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+
+            }
+            startActivityForResult(intent, PICK_JSON_FILE)
+        }
+
         importCreate.setOnCheckedChangeListener { group, checkedId ->
             if (checkedId == R.id.radio_import_success){
                 mockServer.config.importCreateStatus = CreateImportResDto.Status.inProgress
@@ -89,31 +117,73 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_DISCOVERY_FILE && resultCode == RESULT_OK) {
-            if (data != null) {
-
-                val selectedFileUri = data.data
-
+        if (resultCode != RESULT_OK || data == null){
+            return
+        }
+        val selectedFileUri = data.data
+        when(requestCode){
+            PICK_DISCOVERY_FILE -> {
                 Log.d(TAG, "onActivityResult - selected discovery: $selectedFileUri")
                 handleSelectDiscoveryFile(selectedFileUri)
-
+            }
+            PICK_MAP_FILE -> {
+                Log.d(TAG, "onActivityResult - selected map file: $selectedFileUri")
+                handleSelectMapFile(selectedFileUri)
 
             }
+            PICK_JSON_FILE -> {
+                Log.d(TAG, "onActivityResult - selected json file: $selectedFileUri")
+                handleSelectJsonFile(selectedFileUri)
+            }
         }
+
     }
     private fun handleSelectDiscoveryFile(uri: Uri?){
         if (uri == null){
-            selectDiscovery.setText("default")
+            selectDiscovery.text = "default"
+            mockServer.config.discoveryPath = null
             return
         }
         val filePath = FileHelper.getRealPathFromURI(this, uri)!!
         val fileName = filePath.substring( filePath.lastIndexOf('/') + 1, filePath.length)
-        selectDiscovery.setText(fileName)
+        selectDiscovery.text = fileName
         Log.d(TAG, "handleSelectDiscoveryFile - file path: $filePath")
         mockServer.config.discoveryPath = filePath
     }
+    private fun handleSelectMapFile(uri: Uri?){
+        if (uri == null){
+            selectMap.text = "default"
+            mockServer.config.mapPath = null
+            mockServer.config.jsonPath = null
+            textJson.visibility = View.GONE
+            selectJson.visibility = View.GONE
+            return
+        }
+
+        val filePath = FileHelper.getRealPathFromURI(this, uri)!!
+        val fileName = filePath.substring( filePath.lastIndexOf('/') + 1, filePath.length)
+        selectMap.text = fileName
+        Log.d(TAG, "handleSelectMapFile - file path: $filePath")
+        mockServer.config.mapPath = filePath
+
+        textJson.visibility = View.VISIBLE
+        selectJson.visibility = View.VISIBLE
+    }
 
 
+    private fun handleSelectJsonFile(uri: Uri?){
+        if (uri == null){
+            selectJson.text = "default"
+            mockServer.config.jsonPath = null
+            return
+        }
+        val filePath = FileHelper.getRealPathFromURI(this, uri)!!
+        val fileName = filePath.substring( filePath.lastIndexOf('/') + 1, filePath.length)
+        selectJson.text = fileName
+        Log.d(TAG, "handleSelectMapFile - file path: $filePath")
+        mockServer.config.jsonPath = filePath
+
+    }
 
 
     fun checkStoragePermissions(): Boolean {

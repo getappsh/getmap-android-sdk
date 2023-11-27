@@ -65,8 +65,8 @@ class MockServerResponses(private val assets: AssetManager) {
             status = status,
             deviceId = "device-1",
             importRequestId = reqId,
-            packageUrl = baseDownloadUrl + mapFile,
-            fileName = mapFile,
+            packageUrl = baseDownloadUrl + getMapFileName(config),
+            fileName = getMapFileName(config),
             createDate = OffsetDateTime.now())
 
         return MockResponse()
@@ -74,12 +74,17 @@ class MockServerResponses(private val assets: AssetManager) {
             .setResponseCode(200)
     }
 
+    private fun getMapFileName(config: MockConfig): String{
+        val mapPath = config.mapPath
+        return mapPath?.substring( mapPath.lastIndexOf('/') + 1, mapPath.length) ?: mapFile
+    }
+
     fun prepareDelivery(config: MockConfig, body: Buffer): MockResponse{
         val catalogId = JSONObject(body.readUtf8()).get("catalogId").toString()
-        val response =PrepareDeliveryResDto(
+        val response = PrepareDeliveryResDto(
             catalogId = catalogId,
             status = PrepareDeliveryResDto.Status.done,
-            url = baseDownloadUrl + mapFile)
+            url = baseDownloadUrl + getMapFileName(config))
 
         return MockResponse()
             .setBody(toJsonString(response))
@@ -88,10 +93,10 @@ class MockServerResponses(private val assets: AssetManager) {
 
     fun preparedDelivery(config: MockConfig, path: String): MockResponse{
         val catalogId = path.substring( path.lastIndexOf('/') + 1, path.length)
-        val response =PrepareDeliveryResDto(
+        val response = PrepareDeliveryResDto(
             catalogId = catalogId,
             status = PrepareDeliveryResDto.Status.done,
-            url = baseDownloadUrl + mapFile)
+            url = baseDownloadUrl + getMapFileName(config))
 
         return MockResponse()
             .setBody(toJsonString(response))
@@ -100,13 +105,15 @@ class MockServerResponses(private val assets: AssetManager) {
 
 
     fun downloadFile(config: MockConfig, path: String): MockResponse{
-
-        val fileName = if (path.substring( path.lastIndexOf('.') + 1, path.length) == "json"){
-            if(config.failedValidation) "E-$jsonFile" else jsonFile
+        Log.d(_tag, "downloadFile - path: $path")
+        val file = if (path.substring( path.lastIndexOf('.') + 1, path.length) == "json"){
+            val jsonName = if(config.failedValidation) "E-$jsonFile" else jsonFile
+            config.jsonPath?.let { File(it).inputStream() } ?: assets.open(jsonName)
         }else{
-            mapFile
+            config.mapPath?.let { File(it).inputStream() } ?: assets.open(mapFile)
         }
-        val file = assets.open(fileName)
+
+
         val period = if (config.fastDownload) 5L else 50L
 
         return MockResponse()
