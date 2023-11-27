@@ -130,13 +130,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         when(retCreate?.state){
             MapImportState.START, MapImportState.IN_PROGRESS, MapImportState.DONE,  ->{
                 Log.d(_tag,"deliverTile - createMapImport -> OK, state: ${retCreate.state} message: ${retCreate.statusCode?.messageLog}")
+                val progress = try {retCreate.statusCode?.messageLog?.toInt()}catch (e: Exception) {0}
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate.importRequestId,
                     state = MapDeliveryState.START,
                     flowState = DeliveryFlowState.IMPORT_CREATE,
                     statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress),
-                    errorContent = retCreate.statusCode?.messageLog
+                    errorContent = retCreate.statusCode?.messageLog,
+                    downloadProgress = progress
                 )
                 this.sendDeliveryStatus(id)
                 return true
@@ -215,6 +217,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     return false
 
                 }
+                MapImportState.IN_PROGRESS -> {
+                    Log.w(_tag,"checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat?.statusCode?.messageLog}")
+                    val progress = try {stat?.statusCode?.messageLog?.toInt()}catch (e: Exception) {0}
+                    this.mapRepo.update(
+                        id = id,
+                        downloadProgress = progress
+                    )
+                }
                 else -> {}
             }
 
@@ -233,7 +243,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         Log.d(_tag, "checkImportStatue: MapImportState.Done")
-        this.mapRepo.updateFlowState(id, DeliveryFlowState.IMPORT_STATUS)
+        this.mapRepo.update(
+            id = id,
+            downloadProgress = 100,
+            flowState = DeliveryFlowState.IMPORT_STATUS)
         return true
     }
 
@@ -364,7 +377,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             MDID = pkgDownloadId,
             state =  MapDeliveryState.DOWNLOAD,
             flowState = DeliveryFlowState.DOWNLOAD,
-            statusMessage = statusMessage
+            statusMessage = statusMessage,
+            downloadProgress = 0
         )
         this.sendDeliveryStatus(id)
 
