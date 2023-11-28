@@ -39,6 +39,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private lateinit var mapRepo: MapRepo
 
+    companion object {
+        private var instanceCount = 0
+    }
+
     private val completionHandler: (Long) -> Unit = {
         Log.d(_tag, "downloadImport - completionHandler: processing download ID=$it completion event...")
     }
@@ -53,7 +57,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         storagePath = configuration.storagePath
 
         mapRepo = MapRepo(appCtx)
-        Thread{updateMapsStatusOnStart()}.start()
+
+        if (instanceCount == 0){
+            Thread{updateMapsStatusOnStart()}.start()
+        }
+        instanceCount++
         return true
     }
 
