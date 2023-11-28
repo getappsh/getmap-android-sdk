@@ -6,6 +6,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
 import android.util.Log
+import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
@@ -15,6 +16,7 @@ import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
@@ -99,7 +101,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val currentState = this.mapRepo.getDeliveryFlowState(id)
         val toContinue = when(currentState){
             DeliveryFlowState.START -> importCreate(id)
-            DeliveryFlowState.IMPORT_CREATE -> checkImportStatue(id)
+            DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
             DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
             DeliveryFlowState.IMPORT_DELIVERY -> checkDeliveryStatus(id)
             DeliveryFlowState.IMPORT_DELIVERY_STATUS -> downloadImport(id)
@@ -172,17 +174,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     @OptIn(ExperimentalTime::class)
-    private fun checkImportStatue(id: String): Boolean {
+    private fun checkImportStatus(id: String): Boolean{
         Log.i(_tag, "checkImportStatue")
 
         val reqId = this.mapRepo.getReqId(id)!!;
-
-        var stat = getCreateMapImportStatus(reqId)
-
         val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
-        while (stat?.state!! != MapImportState.DONE){
-            TimeUnit.SECONDS.sleep(2)
 
+        var stat : CreateMapImportStatus? = null
+        do{
             if (this.mapRepo.isDownloadCanceled(id)){
                 Log.d(_tag, "checkImportStatue: Download $id, canceled by user")
                 mapRepo.update(id, state = MapDeliveryState.CANCEL)
@@ -190,28 +189,39 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 return false
             }
 
-            stat = getCreateMapImportStatus(reqId)
+
+            try {
+                stat = getCreateMapImportStatus(reqId)
+            }catch (e: IOException){
+                Log.e(_tag, "checkImportStatue - SocketException, try again. error: ${e.message.toString()}" )
+                this.mapRepo.update(
+                    id = id,
+                    statusMessage = appCtx.getString(R.string.delivery_status_connection_issue_try_again),
+                    errorContent = e.message.toString()
+                )
+                TimeUnit.SECONDS.sleep(2)
+                continue
+            }
 
             when(stat?.state){
                 MapImportState.ERROR -> {
-                    Log.e(_tag,"checkImportStatus - MapImportState -> ERROR, error:  ${stat?.statusCode?.messageLog}")
+                    Log.e(_tag,"checkImportStatus - MapImportState -> ERROR, error:  ${stat.statusCode?.messageLog}")
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.ERROR,
                         statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                        errorContent = stat?.statusCode?.messageLog
+                        errorContent = stat.statusCode?.messageLog
                     )
-//                    todo error message
                     this.sendDeliveryStatus(id)
                     return false
                 }
                 MapImportState.CANCEL -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState -> CANCEL, message: ${stat?.statusCode?.messageLog}")
+                    Log.w(_tag,"checkImportStatus - MapImportState -> CANCEL, message: ${stat.statusCode?.messageLog}")
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.CANCEL,
                         statusMessage = appCtx.getString(R.string.delivery_status_canceled),
-                        errorContent = stat?.statusCode?.messageLog
+                        errorContent = stat.statusCode?.messageLog
                     )
                     this.sendDeliveryStatus(id)
                     return false
@@ -240,13 +250,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 return false
 
             }
-        }
+            TimeUnit.SECONDS.sleep(2)
+        }while (stat == null || stat.state!! != MapImportState.DONE)
 
         Log.d(_tag, "checkImportStatue: MapImportState.Done")
         this.mapRepo.update(
             id = id,
             downloadProgress = 100,
-            flowState = DeliveryFlowState.IMPORT_STATUS)
+            flowState = DeliveryFlowState.IMPORT_STATUS,
+            errorContent = "")
         return true
     }
 

@@ -49,8 +49,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val cfg = Configuration(
-//            "http://getapp-dev.getapp.sh:3000",
-            "http://localhost:3333",
+            "http://getapp-dev.getapp.sh:3000",
+//            "http://localhost:3333",
             "rony@example.com",
             "rony123",
             //currently downloads file to a path within the public external storage directory
@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity() {
             val props = MapProperties(
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
-                "34.46264697,31.48939480,34.46454401,31.49104923",
+                "34.46264631,31.48939470,34.46454410,31.49104920",
 //                "34.47146482,31.55712952,34.48496639,31.56652665",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false

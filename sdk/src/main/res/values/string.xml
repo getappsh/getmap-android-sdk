@@ -2,6 +2,7 @@
 <resources>
     <string name="delivery_status_req_sent">בקשה נשלחה</string>
     <string name="delivery_status_req_in_progress">בקשה בהפקה</string>
+    <string name="delivery_status_connection_issue_try_again">בעיה בתקשורת - מנסה שוב</string>
     <string name="delivery_status_download">בהורדה</string>
     <string name="delivery_status_done">הסתיים</string>
     <string name="delivery_status_paused">מושהה</string>
