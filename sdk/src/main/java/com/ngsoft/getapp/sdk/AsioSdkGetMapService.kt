@@ -106,21 +106,40 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun executeDeliveryFlow(id: String){
-        val currentState = this.mapRepo.getDeliveryFlowState(id)
-        val toContinue = when(currentState){
-            DeliveryFlowState.START -> importCreate(id)
-            DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
-            DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
-            DeliveryFlowState.IMPORT_DELIVERY -> checkDeliveryStatus(id)
-            DeliveryFlowState.IMPORT_DELIVERY_STATUS -> downloadImport(id)
-            DeliveryFlowState.DOWNLOAD -> startProgressWatcher(id)
-            DeliveryFlowState.DOWNLOAD_DONE -> validateImport(id)
-            DeliveryFlowState.DONE -> false
-            else -> false
+        val map = this.mapRepo.getById(id)
+        try{
+            val toContinue = when(map?.flowState){
+                DeliveryFlowState.START -> importCreate(id)
+                DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
+                DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
+                DeliveryFlowState.IMPORT_DELIVERY -> checkDeliveryStatus(id)
+                DeliveryFlowState.IMPORT_DELIVERY_STATUS -> downloadImport(id)
+                DeliveryFlowState.DOWNLOAD -> startProgressWatcher(id)
+                DeliveryFlowState.DOWNLOAD_DONE -> validateImport(id)
+                DeliveryFlowState.DONE -> false
+                else -> false
+            }
+            if (toContinue) {
+                executeDeliveryFlow(id)
+            }
+        }catch (e: IOException){
+            var attempt = map?.metadata?.connectionAttempt ?: 5
+            if (attempt < 5){
+                Log.e(_tag, "executeDeliveryFlow - IOException try again, attempt: $attempt, Error: ${e.message.toString()}")
+
+                this.mapRepo.update(
+                    id = id,
+                    statusMessage = appCtx.getString(R.string.delivery_status_connection_issue_try_again),
+                    errorContent = e.message.toString(),
+                    connectionAttempt = ++attempt
+                )
+                TimeUnit.SECONDS.sleep(2)
+                executeDeliveryFlow(id)
+            }else{
+                throw e
+            }
         }
-        if (toContinue) {
-            executeDeliveryFlow(id)
-        }
+
     }
 
     private fun importCreate(id: String): Boolean{
@@ -147,7 +166,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     state = MapDeliveryState.START,
                     flowState = DeliveryFlowState.IMPORT_CREATE,
                     statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress),
-                    errorContent = retCreate.statusCode?.messageLog,
+                    errorContent = retCreate.statusCode?.messageLog ?: "",
                     downloadProgress = progress
                 )
                 this.sendDeliveryStatus(id)
@@ -190,6 +209,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         var stat : CreateMapImportStatus? = null
         do{
+            TimeUnit.SECONDS.sleep(2)
             if (this.mapRepo.isDownloadCanceled(id)){
                 Log.d(_tag, "checkImportStatue: Download $id, canceled by user")
                 mapRepo.update(id, state = MapDeliveryState.CANCEL)
@@ -207,7 +227,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     statusMessage = appCtx.getString(R.string.delivery_status_connection_issue_try_again),
                     errorContent = e.message.toString()
                 )
-                TimeUnit.SECONDS.sleep(2)
                 continue
             }
 
@@ -236,11 +255,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                 }
                 MapImportState.IN_PROGRESS -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat?.statusCode?.messageLog}")
-                    val progress = try {stat?.statusCode?.messageLog?.toInt()}catch (e: Exception) {0}
+                    Log.w(_tag,"checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.statusCode?.messageLog}")
+                    val progress = try {stat.statusCode?.messageLog?.toInt()}catch (e: Exception) {0}
                     this.mapRepo.update(
                         id = id,
-                        downloadProgress = progress
+                        downloadProgress = progress,
+                        errorContent = ""
                     )
                 }
                 else -> {}
@@ -258,7 +278,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 return false
 
             }
-            TimeUnit.SECONDS.sleep(2)
         }while (stat == null || stat.state!! != MapImportState.DONE)
 
         Log.d(_tag, "checkImportStatue: MapImportState.Done")
@@ -398,6 +417,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             state =  MapDeliveryState.DOWNLOAD,
             flowState = DeliveryFlowState.DOWNLOAD,
             statusMessage = statusMessage,
+            errorContent = "",
             downloadProgress = 0
         )
         this.sendDeliveryStatus(id)

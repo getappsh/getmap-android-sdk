@@ -64,7 +64,9 @@ internal class MapRepo(ctx: Context) {
         url: String? = null,
         downloadProgress: Int? = null,
         errorContent: String? = null,
-        validationAttempt: Int? = null
+        validationAttempt: Int? = null,
+        connectionAttempt: Int? = null
+
     ) {
 
         updateInternal(
@@ -80,7 +82,8 @@ internal class MapRepo(ctx: Context) {
             url,
             downloadProgress,
             errorContent,
-            validationAttempt
+            validationAttempt,
+            connectionAttempt
         )
         invoke(id)
     }
@@ -106,6 +109,7 @@ internal class MapRepo(ctx: Context) {
         downloadProgress: Int? = null,
         errorContent: String? = null,
         validationAttempt: Int? = null,
+        connectionAttempt: Int? = null,
         cancelDownland: Boolean? = null
     ){
         val mapPkg = this.getById(id);
@@ -124,6 +128,7 @@ internal class MapRepo(ctx: Context) {
             this.cancelDownload = cancelDownland ?: this.cancelDownload
 
             this.metadata.validationAttempt = validationAttempt ?: this.metadata.validationAttempt
+            this.metadata.connectionAttempt = connectionAttempt ?: this.metadata.connectionAttempt
 
             if (state == MapDeliveryState.CANCEL && this.cancelDownload){
                 this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)

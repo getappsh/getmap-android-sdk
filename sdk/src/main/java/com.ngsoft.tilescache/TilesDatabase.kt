@@ -1,6 +1,7 @@
 package com.ngsoft.tilescache
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -8,7 +9,12 @@ import androidx.room.TypeConverters
 import com.ngsoft.tilescache.models.MapPkg
 import com.ngsoft.tilescache.models.TilePkg
 
-@Database(entities = [TilePkg::class, MapPkg::class], version = 3
+@Database(
+    version = 4,
+    entities = [TilePkg::class, MapPkg::class],
+    autoMigrations = [
+        AutoMigration(from = 3, to = 4)
+    ]
     //, exportSchema = false
 )
 @TypeConverters(TimeStampConverter::class)

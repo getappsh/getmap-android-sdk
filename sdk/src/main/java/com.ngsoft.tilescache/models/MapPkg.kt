@@ -1,6 +1,7 @@
 package com.ngsoft.tilescache.models
 
 import DeliveryFlowStateConverter
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -12,7 +13,9 @@ import java.time.LocalDateTime
 
 
 data class DownloadMetadata(
-    var validationAttempt: Int = 0
+    var validationAttempt: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    var connectionAttempt: Int = 0
 )
 @Entity
 data class MapPkg (
