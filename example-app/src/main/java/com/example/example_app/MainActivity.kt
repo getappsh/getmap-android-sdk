@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         val cfg = Configuration(
             "http://getapp-dev.getapp.sh:3000",
 //            "http://localhost:3333",
+//            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
             //currently downloads file to a path within the public external storage directory
@@ -165,15 +166,15 @@ class MainActivity : AppCompatActivity() {
             val props = MapProperties(
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
-                "34.46264631,31.48939470,34.46454410,31.49104920",
-//                "34.47146482,31.55712952,34.48496639,31.56652665",
+//                "34.46264631,31.48939470,34.46454410,31.49104920",
+                "34.47146482,31.55712952,34.48496631,31.56652669",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
             val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
                 Log.d(TAG, "onDelivery data id: ${data.id}")
                 runOnUiThread {
-                    progressDialog?.setMessage("Loading... \n" + data.statusMessage + "\n" + data.errorContent)
+                    progressDialog?.setMessage("Loading... \nstatus: ${data.statusMessage} \nprogress: ${data.downloadProgress} \nerror: ${data.errorContent}")
 
                 }
 

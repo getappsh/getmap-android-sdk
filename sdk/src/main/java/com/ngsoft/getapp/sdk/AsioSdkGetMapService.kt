@@ -308,7 +308,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             MapDeliveryState.DOWNLOAD,
             MapDeliveryState.CONTINUE ->  {
                 Log.d(_tag,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
-                this.mapRepo.updateFlowState(id, DeliveryFlowState.IMPORT_DELIVERY)
+                this.mapRepo.update(id = id, flowState = DeliveryFlowState.IMPORT_DELIVERY, errorContent = "")
                 return true
             }
             MapDeliveryState.CANCEL,  MapDeliveryState.PAUSE -> {
@@ -394,7 +394,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         Log.d(_tag, "checkDeliveryStatus - delivery is ready, download url: ${deliveryStatus.url} ")
-        this.mapRepo.update(id = id, url = deliveryStatus.url, flowState = DeliveryFlowState.IMPORT_DELIVERY_STATUS)
+        this.mapRepo.update(id = id, url = deliveryStatus.url, flowState = DeliveryFlowState.IMPORT_DELIVERY_STATUS, errorContent = "")
         return true
     }
 
@@ -472,7 +472,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                             id = id,
                             state = MapDeliveryState.DOWNLOAD,
                             downloadProgress = progress,
-                            fileName = pkgStatus.fileName
+                            fileName = pkgStatus.fileName,
+                            errorContent = ""
                         )
                         sendDeliveryStatus(id)
                     }
@@ -523,7 +524,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 DownloadManager.STATUS_SUCCESSFUL -> {
                     if (!jsonCompleted){
                         Log.d(_tag, "ProgressWatcher - download json Done!")
-                        mapRepo.update(id = id, jsonName = jsonStatus.fileName)
+                        mapRepo.update(id = id, jsonName = jsonStatus.fileName, errorContent = "")
                         jsonCompleted = true
                     }
                 }
@@ -563,6 +564,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     id = id,
                     flowState = DeliveryFlowState.DOWNLOAD_DONE,
                     downloadProgress = 100,
+                    errorContent = ""
                 )
                 latch.countDown()
                 res = true
@@ -580,7 +582,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.update(
             id = id,
             statusMessage = appCtx.getString(R.string.delivery_status_in_verification),
-            downloadProgress = 0
+            downloadProgress = 0,
+            errorContent = ""
         )
 
         if (this.mapRepo.isDownloadCanceled(id)){
@@ -590,7 +593,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
         val mapPkg = this.mapRepo.getById(id)!!
 
-        val isValid =  try{
+        val isValid = try{
             val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
             Log.d(_tag, "validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
             val mapFile = File(dirPath, mapPkg.fileName!!)
@@ -632,6 +635,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     statusMessage = appCtx.getString(R.string.delivery_status_failed_verification_try_again),
                     errorContent = "Checksum validation Failed try downloading again",
                 )
+                Log.d(_tag, "validateImport - Failed downloading again")
                 return true
             }
             mapRepo.update(
