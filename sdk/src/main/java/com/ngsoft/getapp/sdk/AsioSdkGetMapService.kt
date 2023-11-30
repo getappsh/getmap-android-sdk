@@ -594,10 +594,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val mapPkg = this.mapRepo.getById(id)!!
 
         val isValid = try{
-            val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
             Log.d(_tag, "validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
-            val mapFile = File(dirPath, mapPkg.fileName!!)
-            val jsonFile = File(dirPath, mapPkg.jsonName!!)
+            val mapFile = File(storagePath, mapPkg.fileName!!)
+            val jsonFile = File(storagePath, mapPkg.jsonName!!)
 
             val expectedHash = JsonUtils.getValueFromJson(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
@@ -676,9 +675,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             if (map.state != MapDeliveryState.DONE){
                 this.deleteMap(map.id.toString())
             }else{
-                val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
-                val mapFile = map.fileName?.let { File(dirPath, it) }
-                val jsonFile = map.jsonName?.let { File(dirPath, it) }
+                val mapFile = map.fileName?.let { File(storagePath, it) }
+                val jsonFile = map.jsonName?.let { File(storagePath, it) }
 
                 if (mapFile?.exists() != true || jsonFile?.exists() != true){
                     this.deleteMap(map.id.toString())
@@ -740,8 +738,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         if (fileName == null){
             return
         }
-        val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
-        val file = File(dirPath, fileName)
+        val file = File(storagePath, fileName)
 
         Log.d(_tag, "deleteFile - File path ${file.path}")
 

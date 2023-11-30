@@ -22,6 +22,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDateTime
 
 
@@ -55,7 +56,8 @@ class MainActivity : AppCompatActivity() {
             "rony@example.com",
             "rony123",
             //currently downloads file to a path within the public external storage directory
-            Environment.DIRECTORY_DOWNLOADS,
+//            Environment.DIRECTORY_DOWNLOADS,
+            File("/storage/1115-0C18/Download").path,
             16,
             5,5,
             null
@@ -84,12 +86,14 @@ class MainActivity : AppCompatActivity() {
         downoadnTestButton.setOnClickListener{
 
             GlobalScope.launch(Dispatchers.IO) {
-                var downloads = service.getDownloadedMaps()
-                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
-                service.cleanDownloads()
 
-                downloads = service.getDownloadedMaps()
-                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
+                var downloads = service.getDownloadedMaps()
+                service.deleteMap(downloads[0].id!!)
+//                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
+//                service.cleanDownloads()
+//
+//                downloads = service.getDownloadedMaps()
+//                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
 
             }
 //            service.cancelDownload("1")

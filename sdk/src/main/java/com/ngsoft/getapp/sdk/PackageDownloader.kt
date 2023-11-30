@@ -63,7 +63,8 @@ internal class PackageDownloader(private val context: Context, private val downl
 
     fun downloadFile(url: String, onDownloadCompleted: (Long) -> Unit): Long {
         downloadCompletedHandler = onDownloadCompleted
-        val fileName= getFileNameFromUri(url)
+        val fileName = getFileNameFromUri(url)
+        val fileUri = File(downloadDirectory, fileName).toUri()
         val request = DownloadManager.Request(url.toUri())
             .setMimeType(parseMimeType(url))
 
@@ -73,7 +74,8 @@ internal class PackageDownloader(private val context: Context, private val downl
 
             //.addRequestHeader("Authorization", "Bearer <token>")
 
-            .setDestinationInExternalPublicDir(downloadDirectory, fileName)
+            .setDestinationUri(fileUri)
+//            .setDestinationInExternalPublicDir(downloadDirectory, fileName)
 
         return downloadManager.enqueue(request)
     }
