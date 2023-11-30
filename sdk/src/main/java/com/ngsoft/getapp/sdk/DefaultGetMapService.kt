@@ -16,6 +16,7 @@ import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
+import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -53,7 +54,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Log.i(_tag, "Init GetMapService" )
 
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
-        downloader = PackageDownloader(appCtx, configuration.storagePath)
+        downloader = PackageDownloader(appCtx, Environment.DIRECTORY_DOWNLOADS)
         pref = Pref.getInstance(appCtx)
         cache = TilesCache(appCtx)
         if(configuration.imei != null){

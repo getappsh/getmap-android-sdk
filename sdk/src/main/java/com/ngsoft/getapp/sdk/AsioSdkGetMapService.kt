@@ -17,6 +17,8 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
@@ -91,7 +93,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             try {
                 executeDeliveryFlow(id)
             } catch (e: Exception) {
-                Log.e(_tag, "downloadMap: exception:  ${e.message.toString()}")
+                Log.e(_tag, "downloadMap - exception:  ${e.message.toString()}")
                 this.mapRepo.update(
                     id = id,
                     state = MapDeliveryState.ERROR,
@@ -592,12 +594,27 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             return false
         }
         val mapPkg = this.mapRepo.getById(id)!!
+//     TODO move it from here
+        try {
+            moveFileToTargetDir(mapPkg.fileName!!)
+            moveFileToTargetDir(mapPkg.jsonName!!)
+        }catch (e: Exception){
+            mapRepo.update(
+                id = id,
+                state = MapDeliveryState.ERROR,
+                statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                errorContent = "Move files Failed: ${e.message.toString()}"
+            )
+            this.sendDeliveryStatus(id)
+            return false
+        }
+
 
         val isValid = try{
-            val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
+//            val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             Log.d(_tag, "validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
-            val mapFile = File(dirPath, mapPkg.fileName!!)
-            val jsonFile = File(dirPath, mapPkg.jsonName!!)
+            val mapFile = File(storagePath, mapPkg.fileName!!)
+            val jsonFile = File(storagePath, mapPkg.jsonName!!)
 
             val expectedHash = JsonUtils.getValueFromJson(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
@@ -676,7 +693,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             if (map.state != MapDeliveryState.DONE){
                 this.deleteMap(map.id.toString())
             }else{
-                val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
+                val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val mapFile = map.fileName?.let { File(dirPath, it) }
                 val jsonFile = map.jsonName?.let { File(dirPath, it) }
 
@@ -736,17 +753,49 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }.start()
     }
 
+    private fun moveFileToTargetDir(fileName: String) {
+        val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+        val downloadFile = File(dirPath, fileName)
+        val destinationFile = File(storagePath, fileName)
+//        TODO clean
+//        try {
+            Files.move(
+                downloadFile.toPath(),
+                destinationFile.toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+            )
+
+//        } catch (e: FileAlreadyExistsException) {
+//            println("Destination file already exists: $destinationFilePath")
+//        } catch (e: IOException) {
+//            println("Error moving the file: ${e.message}")
+//        }
+
+    }
+
     private fun deleteFile(fileName: String?){
         if (fileName == null){
             return
         }
-        val dirPath = Environment.getExternalStoragePublicDirectory(storagePath)
+        val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val file = File(dirPath, fileName)
 
         Log.d(_tag, "deleteFile - File path ${file.path}")
 
         if (file.exists()){
             if (file.delete() ) {
+                Log.d(_tag, "deleteFile - File deleted successfully. $fileName")
+            } else {
+                Log.d(_tag, "deleteFile -Failed to delete the file. $fileName")
+            }
+        }else{
+            Log.d(_tag, "deleteFile - File dose not exist. $fileName")
+        }
+
+        val fileTarget = File(storagePath, fileName)
+        if (fileTarget.exists()){
+            if (fileTarget.delete() ) {
                 Log.d(_tag, "deleteFile - File deleted successfully. $fileName")
             } else {
                 Log.d(_tag, "deleteFile -Failed to delete the file. $fileName")

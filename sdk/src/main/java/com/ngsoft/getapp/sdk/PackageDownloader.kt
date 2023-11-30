@@ -114,7 +114,7 @@ internal class PackageDownloader(private val context: Context, private val downl
             DownloadManager.ERROR_FILE_ALREADY_EXISTS -> "File already exists. Download canceled."
             DownloadManager.ERROR_FILE_ERROR -> "Storage issue. Please check your storage."
             DownloadManager.ERROR_HTTP_DATA_ERROR -> "Error receiving or processing data at the HTTP level."
-            DownloadManager.ERROR_INSUFFICIENT_SPACE -> "Insufficient storage space. Clear some space and try again."
+            DownloadManager.ERROR_INSUFFICIENT_SPACE -> "אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב."
             DownloadManager.ERROR_TOO_MANY_REDIRECTS -> "Too many redirects. Download canceled."
             DownloadManager.ERROR_UNHANDLED_HTTP_CODE -> "Unhandled HTTP code. Download canceled."
             DownloadManager.ERROR_UNKNOWN -> "Unknown error occurred during download."
