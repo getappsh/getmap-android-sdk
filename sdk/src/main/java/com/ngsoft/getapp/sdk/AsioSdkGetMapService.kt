@@ -693,9 +693,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             if (map.state != MapDeliveryState.DONE){
                 this.deleteMap(map.id.toString())
             }else{
-                val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val mapFile = map.fileName?.let { File(dirPath, it) }
-                val jsonFile = map.jsonName?.let { File(dirPath, it) }
+                val mapFile = map.fileName?.let { File(storagePath, it) }
+                val jsonFile = map.jsonName?.let { File(storagePath, it) }
 
                 if (mapFile?.exists() != true || jsonFile?.exists() != true){
                     this.deleteMap(map.id.toString())
