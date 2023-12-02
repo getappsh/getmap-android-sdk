@@ -11,6 +11,7 @@ import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.utils.FileNameUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
@@ -405,7 +406,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mapPkg = this.mapRepo.getById(id)!!
         val pkgUrl = mapPkg.url!!
-        val jsonUrl = PackageDownloader.changeFileExtensionToJson(pkgUrl)
+        val jsonUrl = FileNameUtils.changeFileExtensionToJson(pkgUrl)
 
         val jsonDownloadId = downloader.downloadFile(jsonUrl, completionHandler)
         val pkgDownloadId = downloader.downloadFile(pkgUrl, completionHandler)
@@ -435,7 +436,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         var jsonDownloadId = pkgData.JDID ?: return false;
 
         val pkgUrl = pkgData.url ?: return false
-        val jsonUrl = PackageDownloader.changeFileExtensionToJson(pkgUrl)
+        val jsonUrl = FileNameUtils.changeFileExtensionToJson(pkgUrl)
         var pkgCompleted = false
         var jsonCompleted = false
 
@@ -657,8 +658,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             )
         }else{
             if (mapPkg.metadata.validationAttempt < 1){
-                this.deleteFile(mapPkg.fileName)
-                this.deleteFile(mapPkg.jsonName)
+                deleteMapFiles(id)
 
                 this.mapRepo.update(
                     id = id,
@@ -745,8 +745,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         map.JDID?.let { downloader.cancelDownload(it) }
         map.MDID?.let { downloader.cancelDownload(it) }
 
-        this.deleteFile(map.fileName)
-        this.deleteFile(map.jsonName)
+        deleteMapFiles(id)
 
         val delivery = this.mapRepo.getDeliveryStatus(id, pref.deviceId)
 
@@ -779,31 +778,45 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         )
     }
 
-    private fun deleteFile(fileName: String?){
-        if (fileName == null){
-            return
+    private fun deleteMapFiles(id: String){
+        val mapPkg = this.mapRepo.getById(id) ?: return
+
+        val mapName = mapPkg.fileName
+        if (mapName != null){
+            deleteFile(mapName)
+            val journalName = FileNameUtils.changeFileExtensionToJournal(mapName)
+            deleteFile(journalName)
         }
+        val jsonName = mapPkg.jsonName
+        if (jsonName != null){
+            deleteFile(jsonName)
+        }
+
+    }
+    private fun deleteFile(fileName: String){
         val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val file = File(dirPath, fileName)
+        val fileDownload = File(dirPath, fileName)
 
-        Log.d(_tag, "deleteFile - File path ${file.path}")
+        Log.d(_tag, "deleteFile - From Download dir, File path: ${fileDownload.path}")
 
-        if (file.exists()){
-            if (file.delete() ) {
+        if (fileDownload.exists()){
+            if (fileDownload.delete() ) {
                 Log.d(_tag, "deleteFile - File deleted successfully. $fileName")
             } else {
-                Log.d(_tag, "deleteFile -Failed to delete the file. $fileName")
+                Log.d(_tag, "deleteFile - Failed to delete the file. $fileName")
             }
         }else{
             Log.d(_tag, "deleteFile - File dose not exist. $fileName")
         }
 
         val fileTarget = File(storagePath, fileName)
+        Log.d(_tag, "deleteFile - From Target dir, File path: ${fileTarget.path}")
+
         if (fileTarget.exists()){
             if (fileTarget.delete() ) {
                 Log.d(_tag, "deleteFile - File deleted successfully. $fileName")
             } else {
-                Log.d(_tag, "deleteFile -Failed to delete the file. $fileName")
+                Log.d(_tag, "deleteFile - Failed to delete the file. $fileName")
             }
         }else{
             Log.d(_tag, "deleteFile - File dose not exist. $fileName")
