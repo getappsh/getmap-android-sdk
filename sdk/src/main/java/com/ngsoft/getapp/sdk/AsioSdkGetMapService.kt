@@ -560,6 +560,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
 
             if (pkgCompleted && jsonCompleted) {
+                if (!moveImportFiles(id)){
+                    latch.countDown()
+                    res = false
+                    this.cancel()
+                    return@timer
+                }
                 Log.d(_tag, "ProgressWatcher - downloading Done")
                 Log.d(_tag, "ProgressWatcher - stopping progress watcher...")
                 mapRepo.update(
@@ -579,6 +585,30 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return res
     }
 
+    private fun moveImportFiles(id: String): Boolean{
+        Log.i(_tag, "moveImportFiles - id: $id")
+
+        val mapPkg = this.mapRepo.getById(id)!!
+
+        return try {
+            Log.d(_tag, "moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
+            moveFileToTargetDir(mapPkg.fileName!!)
+            moveFileToTargetDir(mapPkg.jsonName!!)
+            true
+        }catch (e: Exception){
+            Log.e(_tag, "moveImportFiles - move file failed: ${e.message.toString()}", )
+            mapRepo.update(
+                id = id,
+                state = MapDeliveryState.ERROR,
+                statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                errorContent = "Move files Failed: ${e.message.toString()}"
+            )
+            sendDeliveryStatus(id)
+            false
+        }
+
+    }
+
     private fun validateImport(id: String): Boolean{
         Log.i(_tag, "validateImport - id: $id")
         this.mapRepo.update(
@@ -594,21 +624,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             return false
         }
         val mapPkg = this.mapRepo.getById(id)!!
-//     TODO move it from here
-        try {
-            moveFileToTargetDir(mapPkg.fileName!!)
-            moveFileToTargetDir(mapPkg.jsonName!!)
-        }catch (e: Exception){
-            mapRepo.update(
-                id = id,
-                state = MapDeliveryState.ERROR,
-                statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                errorContent = "Move files Failed: ${e.message.toString()}"
-            )
-            this.sendDeliveryStatus(id)
-            return false
-        }
-
 
         val isValid = try{
 //            val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -757,20 +772,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val downloadFile = File(dirPath, fileName)
         val destinationFile = File(storagePath, fileName)
-//        TODO clean
-//        try {
-            Files.move(
-                downloadFile.toPath(),
-                destinationFile.toPath(),
-                StandardCopyOption.REPLACE_EXISTING
-            )
-
-//        } catch (e: FileAlreadyExistsException) {
-//            println("Destination file already exists: $destinationFilePath")
-//        } catch (e: IOException) {
-//            println("Error moving the file: ${e.message}")
-//        }
-
+        Files.move(
+            downloadFile.toPath(),
+            destinationFile.toPath(),
+            StandardCopyOption.REPLACE_EXISTING
+        )
     }
 
     private fun deleteFile(fileName: String?){
