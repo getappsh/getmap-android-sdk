@@ -10,7 +10,7 @@ import android.content.IntentFilter
 import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
-import com.ngsoft.getapp.sdk.utils.FileNameUtils
+import com.ngsoft.getapp.sdk.utils.FileUtils
 import java.io.File
 
 
@@ -53,7 +53,7 @@ internal class PackageDownloader(private val context: Context, private val downl
 
     fun downloadFile(url: String, onDownloadCompleted: (Long) -> Unit): Long {
         downloadCompletedHandler = onDownloadCompleted
-        val fileName= FileNameUtils.getFileNameFromUri(url)
+        val fileName= FileUtils.getFileNameFromUri(url)
         val request = DownloadManager.Request(url.toUri())
             .setMimeType(parseMimeType(url))
 
@@ -83,7 +83,7 @@ internal class PackageDownloader(private val context: Context, private val downl
             var fileName: String? = null
             val fileUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
             if (fileUri != null){
-                fileName = FileNameUtils.getFileNameFromUri(fileUri)
+                fileName = FileUtils.getFileNameFromUri(fileUri)
             }
             return DownloadInfo(
                 downloadId = downloadId,

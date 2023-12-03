@@ -11,7 +11,7 @@ import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
-import com.ngsoft.getapp.sdk.utils.FileNameUtils
+import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
@@ -37,6 +37,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     private var downloadRetryAttempts: Int = 2
 
     private val checksumAlgorithm = "sha256"
+    private val minAvailableSpaceMb = 250 * 1024L * 1024L
 
     private lateinit var storagePath: String
 
@@ -89,6 +90,19 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         Log.i(_tag, "downloadMap: id: $id")
         Log.d(_tag, "downloadMap: bBox - ${mp.boundingBox}")
+
+
+        val availableSpace = FileUtils.getAvailableSpace(storagePath)
+        if (minAvailableSpaceMb >= availableSpace){
+            Log.e(_tag, "downloadMap - Available Space: $availableSpace is lower then the minimum: $minAvailableSpaceMb", )
+            this.mapRepo.update(
+                id = id,
+                state = MapDeliveryState.ERROR,
+                statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                errorContent = "אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב."
+            )
+            return id
+        }
 
         Thread{
             try {
@@ -406,7 +420,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mapPkg = this.mapRepo.getById(id)!!
         val pkgUrl = mapPkg.url!!
-        val jsonUrl = FileNameUtils.changeFileExtensionToJson(pkgUrl)
+        val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
 
         val jsonDownloadId = downloader.downloadFile(jsonUrl, completionHandler)
         val pkgDownloadId = downloader.downloadFile(pkgUrl, completionHandler)
@@ -436,7 +450,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         var jsonDownloadId = pkgData.JDID ?: return false;
 
         val pkgUrl = pkgData.url ?: return false
-        val jsonUrl = FileNameUtils.changeFileExtensionToJson(pkgUrl)
+        val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
         var pkgCompleted = false
         var jsonCompleted = false
 
@@ -767,6 +781,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun moveFileToTargetDir(fileName: String) {
+//        TODO handle not enough space
         val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
         val downloadFile = File(dirPath, fileName)
@@ -784,7 +799,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val mapName = mapPkg.fileName
         if (mapName != null){
             deleteFile(mapName)
-            val journalName = FileNameUtils.changeFileExtensionToJournal(mapName)
+            val journalName = FileUtils.changeFileExtensionToJournal(mapName)
             deleteFile(journalName)
         }
         val jsonName = mapPkg.jsonName

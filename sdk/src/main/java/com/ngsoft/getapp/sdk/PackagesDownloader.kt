@@ -2,7 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import android.content.Context
 import android.util.Log
-import com.ngsoft.getapp.sdk.utils.FileNameUtils
+import com.ngsoft.getapp.sdk.utils.FileUtils
 import java.util.Timer
 import kotlin.concurrent.timer
 
@@ -83,7 +83,7 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
         for (file in files2download){
             val downloadId = downloader?.downloadFile(file, downloadCompletionHandler)
             Log.d(_tag,"adding downloadId = $downloadId...")
-            downloads[downloadId!!] = DownloadTrack(FileNameUtils.getFileNameFromUri(file),0, false)
+            downloads[downloadId!!] = DownloadTrack(FileUtils.getFileNameFromUri(file),0, false)
         }
 
         Log.d(_tag,"queued ${downloads.count()} downloads...")

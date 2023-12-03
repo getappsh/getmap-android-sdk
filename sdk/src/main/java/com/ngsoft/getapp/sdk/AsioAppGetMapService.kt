@@ -8,7 +8,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
-import com.ngsoft.getapp.sdk.utils.FileNameUtils
+import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import java.time.LocalDateTime
@@ -75,13 +75,13 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             println("deliverExtentTiles => processing download progress=$progress event...")
             progress.packagesProgress.forEach { pkg ->
                 if(pkg.isCompleted){
-                    val found = tiles2download.find { FileNameUtils.getFileNameFromUri(it.first) == pkg.fileName }
+                    val found = tiles2download.find { FileUtils.getFileNameFromUri(it.first) == pkg.fileName }
                     if (found != null) {
                         if (downloadedTiles.indexOf(found.second) == -1){
                             found.second.fileName = pkg.fileName
                             downloadedTiles.add(found.second)
 
-                            val dlv = deliveryMapsStatus.find { FileNameUtils.getFileNameFromUri(it.first) == pkg.fileName }?.second
+                            val dlv = deliveryMapsStatus.find { FileUtils.getFileNameFromUri(it.first) == pkg.fileName }?.second
                             if (dlv != null){
                                 val updated = dlv.copy(
                                     deliveryStatus = DeliveryStatusDto.DeliveryStatus.done,
@@ -107,7 +107,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                 Log.w(_tag,"deliverExtentTiles - tiles download timed out...")
 
                 val filteredDeliveryMapsStatus = deliveryMapsStatus.filter { (url, _) ->
-                    downloadedTiles.none { it.fileName ==  FileNameUtils.getFileNameFromUri(url) }
+                    downloadedTiles.none { it.fileName ==  FileUtils.getFileNameFromUri(url) }
                 }
 
                 filteredDeliveryMapsStatus.forEach {(_, dlv)->
