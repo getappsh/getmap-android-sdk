@@ -132,7 +132,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 DeliveryFlowState.IMPORT_DELIVERY -> checkDeliveryStatus(id)
                 DeliveryFlowState.IMPORT_DELIVERY_STATUS -> downloadImport(id)
                 DeliveryFlowState.DOWNLOAD -> startProgressWatcher(id)
-                DeliveryFlowState.DOWNLOAD_DONE -> validateImport(id)
+                DeliveryFlowState.DOWNLOAD_DONE -> moveImportFiles(id)
+                DeliveryFlowState.MOVE_FILES -> validateImport(id)
                 DeliveryFlowState.DONE -> false
                 else -> false
             }
@@ -575,12 +576,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
 
             if (pkgCompleted && jsonCompleted) {
-                if (!moveImportFiles(id)){
-                    latch.countDown()
-                    res = false
-                    this.cancel()
-                    return@timer
-                }
                 Log.d(_tag, "ProgressWatcher - downloading Done")
                 Log.d(_tag, "ProgressWatcher - stopping progress watcher...")
                 mapRepo.update(
@@ -609,6 +604,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             Log.d(_tag, "moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
             moveFileToTargetDir(mapPkg.fileName!!)
             moveFileToTargetDir(mapPkg.jsonName!!)
+            this.mapRepo.updateFlowState(id, DeliveryFlowState.MOVE_FILES)
             true
         }catch (e: Exception){
             Log.e(_tag, "moveImportFiles - move file failed: ${e.message.toString()}", )
@@ -641,7 +637,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val mapPkg = this.mapRepo.getById(id)!!
 
         val isValid = try{
-//            val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             Log.d(_tag, "validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
             val mapFile = File(storagePath, mapPkg.fileName!!)
             val jsonFile = File(storagePath, mapPkg.jsonName!!)
@@ -846,7 +841,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         for (map in mapsData){
             val id = map.id.toString()
             when(map.flowState){
-                DeliveryFlowState.DOWNLOAD, DeliveryFlowState.DOWNLOAD_DONE -> {
+                DeliveryFlowState.DOWNLOAD, DeliveryFlowState.MOVE_FILES, DeliveryFlowState.DOWNLOAD_DONE -> {
                     Thread{
                         try {
                             Log.d(_tag, "updateMapsStatusOnStart - map id: $id, is on ${map.flowState} continue the flow")
