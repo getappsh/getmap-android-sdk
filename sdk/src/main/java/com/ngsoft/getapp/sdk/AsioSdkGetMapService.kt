@@ -99,7 +99,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 id = id,
                 state = MapDeliveryState.ERROR,
                 statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                errorContent = "אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב."
+                errorContent = appCtx.getString(R.string.error_not_enough_space)
             )
             return id
         }
@@ -612,7 +612,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 id = id,
                 state = MapDeliveryState.ERROR,
                 statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                errorContent = "Move files Failed: ${e.message.toString()}"
+                errorContent = e.message.toString()
             )
             sendDeliveryStatus(id)
             false
@@ -776,11 +776,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun moveFileToTargetDir(fileName: String) {
-//        TODO handle not enough space
         val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
         val downloadFile = File(dirPath, fileName)
         val destinationFile = File(storagePath, fileName)
+
+        if (FileUtils.getAvailableSpace(storagePath) <= downloadFile.length()){
+            throw IOException(appCtx.getString(R.string.error_not_enough_space))
+        }
         Files.move(
             downloadFile.toPath(),
             destinationFile.toPath(),

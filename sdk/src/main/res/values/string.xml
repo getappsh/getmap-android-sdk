@@ -15,4 +15,6 @@
     <string name="delivery_status_failed_verification">נכשל באימות</string>
     <string name="delivery_status_failed_verification_try_again">נכשל באימות - מוריד שוב</string>
 
+    <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>
+
 </resources>
