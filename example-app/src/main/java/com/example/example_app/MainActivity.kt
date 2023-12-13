@@ -48,14 +48,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+//        if (!Environment.isExternalStorageManager()){
+//            val intent = Intent()
+//            intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
+//            val uri = Uri.fromParts("package", this.packageName, null)
+//            intent.data = uri
+//            startActivity(intent)
+//        }
+
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-dev.getapp.sh:3000",
+            "http://getapp-test.getapp.sh:3000",
 //            "http://localhost:3333",
 //            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
-            //currently downloads file to a path within the public external storage directory
-            Environment.DIRECTORY_DOWNLOADS,
+//            File("/storage/1115-0C18/com.asio.gis").path,
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
             16,
             5,5,
             null
@@ -167,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264631,31.48939470,34.46454410,31.49104920",
-                "34.47146482,31.55712952,34.48496631,31.56652669",
+                "34.47146482,31.55712952,34.48496631,31.56652666",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )

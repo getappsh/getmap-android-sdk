@@ -706,14 +706,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
     override fun cleanDownloads(){
         Log.i(_tag, "cleanDownloads")
+        cleanDatabase ()
+        cleanStorage()
+    }
+
+    private fun cleanDatabase (){
+        Log.i(_tag, "cleanDatabase")
         val mapsData = this.mapRepo.getAll().filter {
-                    it.state == MapDeliveryState.DONE ||
+            it.state == MapDeliveryState.DONE ||
                     it.state == MapDeliveryState.ERROR ||
                     it.state == MapDeliveryState.CANCEL ||
                     it.state == MapDeliveryState.PAUSE ||
                     it.state == MapDeliveryState.DELETED}
         for (map in mapsData) {
-            Log.d(_tag, "cleanDownloads - map id: ${map.id}, state: ${map.state}")
+            Log.d(_tag, "cleanDatabase  - map id: ${map.id}, state: ${map.state}")
             if (map.state != MapDeliveryState.DONE){
                 this.deleteMap(map.id.toString())
             }else{
@@ -723,6 +729,61 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 if (mapFile?.exists() != true || jsonFile?.exists() != true){
                     this.deleteMap(map.id.toString())
                 }
+            }
+        }
+    }
+
+    private fun cleanStorage(){
+        Log.i(_tag, "cleanStorage")
+        val dir =  File(storagePath)
+        val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
+        val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
+        val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
+
+
+        mapFiles?.forEach { file ->
+            val correspondingJsonFile = File(FileUtils.changeFileExtensionToJson(file.absolutePath))
+            if (!correspondingJsonFile.exists()) {
+                Log.d(_tag, "cleanStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+        jsonFiles?.forEach { file ->
+            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
+            if (!correspondingMapFile.exists()) {
+                Log.d(_tag, "cleanStorage - Not found corresponding map file for jsonFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+        journalFiles?.forEach { file ->
+            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
+            if (!correspondingMapFile.exists()) {
+                Log.d(_tag, "cleanStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+
+
+        val remainingMapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
+        remainingMapFiles?.forEach { file ->
+            if (!this.mapRepo.doesMapFileExist(file.name)){
+                Log.d(_tag, "cleanStorage - found file not in the inventory, fileName: ${file.name}. insert it.")
+
+
+                val jsonFile = File(dir, FileUtils.changeFileExtensionToJson(file.name))
+                val id = this.mapRepo.save(
+                    pId = JsonUtils.getValueFromJson("id", jsonFile.path),
+                    bBox = JsonUtils.getValueFromJson("productBoundingBox", jsonFile.path),
+                    state = MapDeliveryState.DOWNLOAD,
+                    flowState = DeliveryFlowState.MOVE_FILES,
+                    fileName = file.name,
+                    jsonName = jsonFile.name,
+                    statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
+                )
+                Thread{executeDeliveryFlow(id)}.start()
             }
         }
     }

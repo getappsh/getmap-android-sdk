@@ -37,6 +37,20 @@ internal class MapRepo(ctx: Context) {
         return id
     }
 
+
+    fun save(pId:String, bBox: String, fileName: String, jsonName: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState): String{
+        val id = dao.insert(MapPkg(
+            pId=pId,
+            bBox=bBox,
+            state=state,
+            flowState=flowState,
+            statusMessage = statusMessage,
+            fileName = fileName,
+            jsonName = jsonName,
+        ))
+
+        return id.toString()
+    }
     fun purge(){
         dao.nukeTable()
         //reset auto-increments
@@ -94,6 +108,10 @@ internal class MapRepo(ctx: Context) {
         }catch (e: NumberFormatException){
             null
         }
+    }
+
+    fun doesMapFileExist(name: String): Boolean{
+        return dao.doesMapFileExist(name)
     }
     private fun updateInternal(
         id: String,

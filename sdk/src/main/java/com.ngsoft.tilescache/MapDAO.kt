@@ -24,6 +24,9 @@ interface MapDAO {
     @Query("DELETE FROM MapPkg WHERE id = :id")
     fun deleteById(id: Int)
 
+    @Query("SELECT EXISTS (SELECT 1 FROM MapPkg WHERE fileName = :name)")
+    fun doesMapFileExist(name: String): Boolean
+
     @Query("DELETE FROM MapPkg")
     fun nukeTable()
 }
