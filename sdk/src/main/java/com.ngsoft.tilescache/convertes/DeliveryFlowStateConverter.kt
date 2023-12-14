@@ -1,3 +1,5 @@
+package com.ngsoft.tilescache.convertes
+
 import androidx.room.TypeConverter
 import com.ngsoft.tilescache.models.DeliveryFlowState
 

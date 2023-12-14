@@ -6,6 +6,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.ngsoft.tilescache.convertes.TimeStampConverter
+import com.ngsoft.tilescache.dao.MapDAO
+import com.ngsoft.tilescache.dao.TilesDAO
 import com.ngsoft.tilescache.models.MapPkg
 import com.ngsoft.tilescache.models.TilePkg
 

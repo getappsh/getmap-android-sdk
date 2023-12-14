@@ -1,14 +1,14 @@
 package com.ngsoft.tilescache.models
 
-import DeliveryFlowStateConverter
+import com.ngsoft.tilescache.convertes.DeliveryFlowStateConverter
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import com.ngsoft.tilescache.MapDeliveryStateConverter
-import com.ngsoft.tilescache.TimeStampConverter
+import com.ngsoft.tilescache.convertes.MapDeliveryStateConverter
+import com.ngsoft.tilescache.convertes.TimeStampConverter
 import java.time.LocalDateTime
 
 

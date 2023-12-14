@@ -3,6 +3,7 @@ package com.ngsoft.tilescache
 import android.content.Context
 import android.util.Log
 import androidx.sqlite.db.SimpleSQLiteQuery
+import com.ngsoft.tilescache.dao.TilesDAO
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import com.ngsoft.tilescache.models.TilePkg

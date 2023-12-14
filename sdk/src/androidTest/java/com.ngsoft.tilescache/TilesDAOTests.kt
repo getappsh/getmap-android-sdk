@@ -2,6 +2,7 @@ package com.ngsoft.tilescache
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.ngsoft.tilescache.dao.TilesDAO
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile
 import com.ngsoft.tilescache.models.TilePkg

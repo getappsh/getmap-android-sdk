@@ -57,8 +57,8 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         val cfg = Configuration(
-//            "http://getapp-dev.getapp.sh:3000",
-            "http://getapp-test.getapp.sh:3000",
+            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-test.getapp.sh:3000",
 //            "http://localhost:3333",
 //            "http://192.168.2.26:3000",
             "rony@example.com",

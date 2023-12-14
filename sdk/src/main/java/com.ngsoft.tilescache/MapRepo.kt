@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.time.LocalDateTime

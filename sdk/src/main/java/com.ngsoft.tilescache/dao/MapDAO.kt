@@ -1,4 +1,4 @@
-package com.ngsoft.tilescache
+package com.ngsoft.tilescache.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.ngsoft.tilescache.TimeStampConverter
+import com.ngsoft.tilescache.convertes.TimeStampConverter
 import java.time.LocalDateTime
 
 
