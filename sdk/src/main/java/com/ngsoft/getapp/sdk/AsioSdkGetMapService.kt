@@ -123,9 +123,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun executeDeliveryFlow(id: String){
-        val map = this.mapRepo.getById(id)
+        val mapPkg = this.mapRepo.getById(id)
         try{
-            val toContinue = when(map?.flowState){
+            val toContinue = when(mapPkg?.flowState){
                 DeliveryFlowState.START -> importCreate(id)
                 DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
                 DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
@@ -141,7 +141,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 executeDeliveryFlow(id)
             }
         }catch (e: IOException){
-            var attempt = map?.metadata?.connectionAttempt ?: 5
+            var attempt = mapPkg?.metadata?.connectionAttempt ?: 5
             if (attempt < 5){
                 Log.e(_tag, "executeDeliveryFlow - IOException try again, attempt: $attempt, Error: ${e.message.toString()}")
 
@@ -445,12 +445,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private fun startProgressWatcher(id: String): Boolean{
 //        TODO remove the download retry logic
-        val pkgData = this.mapRepo.getById(id) ?: return false;
+        val mapPkg = this.mapRepo.getById(id) ?: return false;
 
-        var pkgDownloadId = pkgData.MDID ?: return false;
-        var jsonDownloadId = pkgData.JDID ?: return false;
+        var pkgDownloadId = mapPkg.MDID ?: return false;
+        var jsonDownloadId = mapPkg.JDID ?: return false;
 
-        val pkgUrl = pkgData.url ?: return false
+        val pkgUrl = mapPkg.url ?: return false
         val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
         var pkgCompleted = false
         var jsonCompleted = false
@@ -800,20 +800,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun deleteMap(id: String){
         Log.d(_tag, "deleteMap - id: $id")
-        val map = this.mapRepo.getById(id)
+        val mapPkg = this.mapRepo.getById(id)
 
-        if (map == null ||
-            map.state == MapDeliveryState.START ||
-            map.state == MapDeliveryState.DOWNLOAD ||
-            map.state == MapDeliveryState.CONTINUE){
+        if (mapPkg == null ||
+            mapPkg.state == MapDeliveryState.START ||
+            mapPkg.state == MapDeliveryState.DOWNLOAD ||
+            mapPkg.state == MapDeliveryState.CONTINUE){
 
-            val errorMsg = "deleteMap: Unable to delete map when status is: ${map?.state}"
+            val errorMsg = "deleteMap: Unable to delete map when status is: ${mapPkg?.state}"
             Log.e(_tag,  errorMsg)
             throw Exception(errorMsg)
         }
 
-        map.JDID?.let { downloader.cancelDownload(it) }
-        map.MDID?.let { downloader.cancelDownload(it) }
+        mapPkg.JDID?.let { downloader.cancelDownload(it) }
+        mapPkg.MDID?.let { downloader.cancelDownload(it) }
 
         deleteMapFiles(id)
 
