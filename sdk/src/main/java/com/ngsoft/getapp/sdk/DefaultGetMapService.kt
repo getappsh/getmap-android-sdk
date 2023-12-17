@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import GetApp.Client.models.CreateImportDto
 import GetApp.Client.models.CreateImportResDto
+import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.DiscoveryMapDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoverySoftwareDto
@@ -19,6 +20,7 @@ import android.content.Context
 import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -422,4 +424,36 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         return MapDeployState.DONE
     }
 
+    fun pushDeliveryStatus(deliveryStatus: DeliveryStatus){
+        val status = when(deliveryStatus.state){
+            MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
+            MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done
+            MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.error
+            MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.cancelled
+            MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
+            MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
+            MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
+            MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
+        }
+
+        val dlv = DeliveryStatusDto(
+            type = DeliveryStatusDto.Type.map,
+            deviceId = pref.deviceId,
+            deliveryStatus = status,
+            catalogId = deliveryStatus.reqId,
+            downloadData = deliveryStatus.progress?.toBigDecimal(),
+            downloadStart = deliveryStatus.start,
+            downloadStop = deliveryStatus.stop,
+            downloadDone = deliveryStatus.done,
+            currentTime = OffsetDateTime.now()
+        )
+        Thread {
+            try {
+                client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
+            } catch (exc: Exception) {
+                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}",)
+                exc.printStackTrace()
+            }
+        }.start()
+    }
 }

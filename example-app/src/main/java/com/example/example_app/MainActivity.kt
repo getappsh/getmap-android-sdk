@@ -57,9 +57,9 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-dev.getapp.sh:3000",
 //            "http://getapp-test.getapp.sh:3000",
-//            "http://localhost:3333",
+            "http://localhost:3333",
 //            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264631,31.48939470,34.46454410,31.49104920",
-                "34.33390512,31.39424664,34.33937683,31.39776380",
+                "34.33390515,31.39424664,34.33937683,31.39776380",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )

@@ -1,12 +1,12 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
@@ -20,6 +20,8 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
@@ -690,19 +692,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return isValid
     }
-    private fun sendDeliveryStatus(id: String) {
-//        TODO check why send delivery status done twice
-        val dlv = this.mapRepo.getDeliveryStatus(id, pref.deviceId) ?: return
+    private fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null) {
+        val mapPkg = this.mapRepo.getById(id) ?: return
+        val deliveryStatus = DeliveryStatus(
+            state = state ?: mapPkg.state,
+            reqId = mapPkg.reqId ?: "-1",
+            progress = mapPkg.downloadProgress,
+            start = mapPkg.downloadStart?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            stop = mapPkg.downloadStop?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) }
+        )
 
-        Thread{
-            Log.d(_tag, "sendDeliveryStatus - id: $id status: $dlv")
-            try{
-                client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
-            }catch (exc: Exception){
-                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}", )
-                exc.printStackTrace()
-            }
-        }.start()
+        Log.d(_tag, "sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
+
+        pushDeliveryStatus(deliveryStatus)
     }
     override fun cleanDownloads(){
         Log.i(_tag, "cleanDownloads")
@@ -817,23 +820,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         deleteMapFiles(id)
 
-        val delivery = this.mapRepo.getDeliveryStatus(id, pref.deviceId)
+//        TODO send status after removed from the DB
+        this.sendDeliveryStatus(id, MapDeliveryState.DELETED)
 
         this.mapRepo.remove(id)
-
-//        Send delivery status to server
-        Thread{
-            var dlv = delivery
-            if (dlv != null){
-                dlv = dlv.copy(deliveryStatus = DeliveryStatusDto.DeliveryStatus.deleted)
-                try{
-                    Log.d(_tag, "sendDeliveryStatus: id: $id status: $dlv.deliveryStatus, catalog id: ${dlv.catalogId}")
-                    client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
-                }catch (exc: Exception){
-                    Log.e(_tag, "sendDeliveryStatus failed error: $exc")
-                }
-            }
-        }.start()
     }
 
     private fun moveFileToTargetDir(fileName: String) {

@@ -221,35 +221,6 @@ internal class MapRepo(ctx: Context) {
         )
     }
 
-    fun getDeliveryStatus(id: String, deviceId: String): DeliveryStatusDto? {
-        val map = this.getById(id);
-        if (map != null) {
-            val status = when(map.state){
-                MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
-                MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done
-                MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.error
-                MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.cancelled
-                MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
-                MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
-                MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
-                MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
-            }
-            Log.d(_tag, "getDeliveryStatus: $map")
-            return DeliveryStatusDto(
-                type = DeliveryStatusDto.Type.map,
-                deviceId = deviceId,
-                deliveryStatus = status,
-                catalogId = map.reqId,
-                downloadData = map.downloadProgress.toBigDecimal() ?: null,
-                downloadStart = if (map.downloadStart != null) OffsetDateTime.of(map.downloadStart, ZoneOffset.UTC) else null,
-                downloadStop = if (map.downloadStop != null) OffsetDateTime.of(map.downloadStop, ZoneOffset.UTC) else null,
-                downloadDone = if(map.downloadDone != null) OffsetDateTime.of(map.downloadDone, ZoneOffset.UTC) else null,
-                currentTime = OffsetDateTime.now()
-            )
-        }
-        return null
-    }
-
     companion object {
         val downloadStatusHandlers = ConcurrentHashMap<String, (MapDownloadData) -> Unit>()
 
