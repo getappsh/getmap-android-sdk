@@ -306,6 +306,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         result.importRequestId = status.catalogId
         result.message = Status()
         result.message!!.statusCode = StatusCode.SUCCESS
+        result.url = status.url
 
         when (status.status){
             PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
@@ -330,6 +331,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         result.importRequestId = inputImportRequestId
         result.message = Status()
         result.message!!.statusCode = StatusCode.SUCCESS
+        result.url = status.url
 
         when (status.status){
             PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
