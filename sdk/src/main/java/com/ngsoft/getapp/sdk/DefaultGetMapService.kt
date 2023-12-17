@@ -234,7 +234,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             throw Exception("invalid inputProperties")
 
         val params = CreateImportDto(pref.deviceId, GetApp.Client.models.MapProperties(
-            BigDecimal(12), "dummy name", inputProperties.productId, inputProperties.boundingBox,
+            BigDecimal(12), inputProperties.boundingBox,"dummy name", inputProperties.productId,
             BigDecimal(0), BigDecimal(0)
         ))
 
