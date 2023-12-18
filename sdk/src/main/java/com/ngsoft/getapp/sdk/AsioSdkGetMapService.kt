@@ -40,8 +40,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     private val checksumAlgorithm = "sha256"
     private val minAvailableSpaceMb = 250 * 1024L * 1024L
 
-    private lateinit var storagePath: String
-
     private lateinit var mapRepo: MapRepo
 
     companion object {
@@ -58,8 +56,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
         downloadRetryAttempts = configuration.downloadRetry
-
-        storagePath = configuration.storagePath
 
         mapRepo = MapRepo(appCtx)
 

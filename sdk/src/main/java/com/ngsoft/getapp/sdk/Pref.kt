@@ -32,7 +32,7 @@ class Pref private constructor(context: Context) {
         }
 
     @SuppressLint("HardwareIds")
-    private fun generateDeviceId():String {
+    fun generateDeviceId():String {
         val newDeviceId = Secure.getString(contentResolver, Secure.ANDROID_ID).toString()
         this.deviceId = newDeviceId
         return newDeviceId
