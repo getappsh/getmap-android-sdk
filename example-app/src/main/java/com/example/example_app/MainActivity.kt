@@ -92,15 +92,37 @@ class MainActivity : AppCompatActivity() {
 
         downoadnTestButton.setOnClickListener{
 
-            GlobalScope.launch(Dispatchers.IO) {
-                var downloads = service.getDownloadedMaps()
-                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
-                service.cleanDownloads()
+            val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
+                Log.d(TAG, "onDelivery data id: ${data.id}")
+                runOnUiThread {
+                    progressDialog?.setMessage("Loading... \nstatus: ${data.statusMessage} \nprogress: ${data.downloadProgress} \nerror: ${data.errorContent}")
 
-                downloads = service.getDownloadedMaps()
-                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
+                }
 
+                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}, reason ${data.errorContent}");
+                if (data.deliveryStatus == MapDeliveryState.DONE ||
+                    data.deliveryStatus == MapDeliveryState.ERROR ||
+                    data.deliveryStatus == MapDeliveryState.CANCEL ){
+                    Log.d(TAG, "onDelivery: ${data.deliveryStatus}")
+                    dismissLoadingDialog();
+//                showMessageDialog(delivered.toString())
+                    runOnUiThread{
+                        Toast.makeText(this@MainActivity, data.errorContent, Toast.LENGTH_LONG).show()
+
+                    }
+                }
             }
+
+            service.resumeDownload(downloadId!!, downloadStatusHandler)
+//            GlobalScope.launch(Dispatchers.IO) {
+//                var downloads = service.getDownloadedMaps()
+//                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
+//                service.cleanDownloads()
+//
+//                downloads = service.getDownloadedMaps()
+//                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
+//
+//            }
 //            service.cancelDownload("1")
 //            try {
 //                GlobalScope.launch(Dispatchers.IO){

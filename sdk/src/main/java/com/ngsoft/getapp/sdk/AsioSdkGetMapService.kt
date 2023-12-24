@@ -443,6 +443,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                             state = MapDeliveryState.DOWNLOAD,
                             downloadProgress = progress,
                             fileName = pkgStatus.fileName,
+                            statusMessage = appCtx.getString(R.string.delivery_status_download),
                             errorContent = ""
                         )
                         sendDeliveryStatus(id)
@@ -774,6 +775,45 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.sendDeliveryStatus(id, MapDeliveryState.DELETED)
 
         this.mapRepo.remove(id)
+    }
+
+    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+        Log.i(_tag, "resumeDownload for id: $id")
+        Thread{
+            val mapPkg = this.mapRepo.getById(id)
+            this.mapRepo.setListener(id, downloadStatusHandler)
+
+            if (mapPkg == null ||
+                !(mapPkg.state == MapDeliveryState.PAUSE ||
+                        mapPkg.state == MapDeliveryState.CANCEL||
+                        mapPkg.state == MapDeliveryState.ERROR)
+            ){
+                val errorMsg = "deleteMap: Unable to resume download map status is: ${mapPkg?.state}"
+                Log.e(_tag,  errorMsg)
+                this.mapRepo.update(id, state = MapDeliveryState.ERROR, errorContent = errorMsg)
+            }
+
+
+            this.mapRepo.update(id,
+                state = MapDeliveryState.CONTINUE,
+                statusMessage = appCtx.getString(R.string.delivery_status_continue),
+                errorContent = "")
+
+                try {
+                    executeDeliveryFlow(id)
+                } catch (e: Exception) {
+                    Log.e(_tag, "downloadMap - exception:  ${e.message.toString()}")
+                    this.mapRepo.update(
+                        id = id,
+                        state = MapDeliveryState.ERROR,
+                        statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                        errorContent = e.message.toString()
+                    )
+                    this.sendDeliveryStatus(id)
+                }
+        }.start()
+
+        return id
     }
 
     private fun moveFileToTargetDir(fileName: String) {

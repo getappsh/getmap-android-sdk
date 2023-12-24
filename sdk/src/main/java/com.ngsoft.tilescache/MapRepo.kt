@@ -38,7 +38,9 @@ internal class MapRepo(ctx: Context) {
         return id
     }
 
-
+    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
+        downloadStatusHandlers[id] = dsh
+    }
     fun save(pId:String, bBox: String, fileName: String, jsonName: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState): String{
         val id = dao.insert(MapPkg(
             pId=pId,
