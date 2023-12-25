@@ -15,7 +15,17 @@ import java.time.LocalDateTime
 data class DownloadMetadata(
     var validationAttempt: Int = 0,
     @ColumnInfo(defaultValue = "0")
-    var connectionAttempt: Int = 0
+    var connectionAttempt: Int = 0,
+
+    @ColumnInfo(defaultValue = "0")
+    var mapAttempt: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    var mapDone: Boolean = false,
+
+    @ColumnInfo(defaultValue = "0")
+    var jsonAttempt: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    var jsonDone: Boolean = false,
 )
 @Entity
 data class MapPkg (

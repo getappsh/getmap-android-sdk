@@ -1,6 +1,5 @@
 package com.ngsoft.tilescache
 
-import GetApp.Client.models.DeliveryStatusDto
 import android.content.Context
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -82,7 +81,12 @@ internal class MapRepo(ctx: Context) {
         downloadProgress: Int? = null,
         errorContent: String? = null,
         validationAttempt: Int? = null,
-        connectionAttempt: Int? = null
+        connectionAttempt: Int? = null,
+        mapAttempt: Int? = null,
+        mapDone: Boolean? = null,
+        jsonAttempt: Int? = null,
+        jsonDone: Boolean? = null
+
 
     ) {
 
@@ -100,21 +104,13 @@ internal class MapRepo(ctx: Context) {
             downloadProgress,
             errorContent,
             validationAttempt,
-            connectionAttempt
+            connectionAttempt,
+            mapAttempt,
+            mapDone,
+            jsonAttempt,
+            jsonDone
         )
         invoke(id)
-    }
-
-    fun getById(id: String): MapPkg?{
-        return try{
-            dao.getById(id.toInt())
-        }catch (e: NumberFormatException){
-            null
-        }
-    }
-
-    fun doesMapFileExist(name: String): Boolean{
-        return dao.doesMapFileExist(name)
     }
     private fun updateInternal(
         id: String,
@@ -131,6 +127,10 @@ internal class MapRepo(ctx: Context) {
         errorContent: String? = null,
         validationAttempt: Int? = null,
         connectionAttempt: Int? = null,
+        mapAttempt: Int? = null,
+        mapDone: Boolean? = null,
+        jsonAttempt: Int? = null,
+        jsonDone: Boolean? = null,
         cancelDownland: Boolean? = null
     ){
         val mapPkg = this.getById(id);
@@ -151,6 +151,14 @@ internal class MapRepo(ctx: Context) {
             this.metadata.validationAttempt = validationAttempt ?: this.metadata.validationAttempt
             this.metadata.connectionAttempt = connectionAttempt ?: this.metadata.connectionAttempt
 
+            this.metadata.mapAttempt = mapAttempt ?: this.metadata.mapAttempt
+            this.metadata.mapDone = mapDone ?: this.metadata.mapDone
+
+            this.metadata.jsonAttempt = jsonAttempt ?: this.metadata.jsonAttempt
+            this.metadata.jsonDone = jsonDone ?: this.metadata.jsonDone
+
+
+
             if (state == MapDeliveryState.CANCEL && this.cancelDownload){
                 this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)
                 this.cancelDownload = false
@@ -164,6 +172,18 @@ internal class MapRepo(ctx: Context) {
             }
             dao.update(this)
         }
+    }
+
+    fun getById(id: String): MapPkg?{
+        return try{
+            dao.getById(id.toInt())
+        }catch (e: NumberFormatException){
+            null
+        }
+    }
+
+    fun doesMapFileExist(name: String): Boolean{
+        return dao.doesMapFileExist(name)
     }
 
     fun updateFlowState(id: String, flowState: DeliveryFlowState){
