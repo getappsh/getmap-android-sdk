@@ -42,6 +42,14 @@ interface GetMapService {
     fun cancelDownload(id: String)
 
     /**
+     * Register download handler to on going download
+     *
+     * @param id Map id
+     * @param downloadStatusHandler delivery progress handler
+     * @receiver see [MapDownloadData]
+     */
+    fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit)
+    /**
      * Resume download
      *
      * @param id Map id

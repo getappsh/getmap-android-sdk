@@ -99,6 +99,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
     override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
         TODO("Not implemented in DefaultGetMapService")
     }

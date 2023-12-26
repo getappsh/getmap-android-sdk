@@ -788,6 +788,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return id
     }
 
+    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+        Log.i(_tag, "registerDownloadHandler, downloadId: $id")
+        this.mapRepo.setListener(id, downloadStatusHandler)
+    }
+
     private fun moveFileToTargetDir(fileName: String) {
         val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
