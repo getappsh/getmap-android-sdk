@@ -21,7 +21,6 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
@@ -35,7 +34,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private var deliveryTimeoutMinutes: Int = 5
     private var downloadTimeoutMinutes: Int = 5
-    private var downloadRetryAttempts: Int = 2
+    private var downloadRetryAttempts: Int = 3
 
     private val checksumAlgorithm = "sha256"
     private val minAvailableSpaceMb = 250 * 1024L * 1024L
@@ -127,7 +126,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
                 DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
                 DeliveryFlowState.IMPORT_DELIVERY -> downloadImport(id)
-                DeliveryFlowState.DOWNLOAD -> startProgressWatcher(id)
+                DeliveryFlowState.DOWNLOAD -> false // startProgressWatcher(id)
                 DeliveryFlowState.DOWNLOAD_DONE -> moveImportFiles(id)
                 DeliveryFlowState.MOVE_FILES -> validateImport(id)
                 DeliveryFlowState.DONE -> false
@@ -367,7 +366,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.update(id = id, url = retDelivery.url, flowState = DeliveryFlowState.IMPORT_DELIVERY, errorContent = "")
         return true
     }
-
     private fun downloadImport(id: String): Boolean{
         Log.i(_tag, "downloadImport")
 
@@ -375,179 +373,153 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val pkgUrl = mapPkg.url!!
         val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
 
-        val jsonDownloadId = downloader.downloadFile(jsonUrl, completionHandler)
-        val pkgDownloadId = downloader.downloadFile(pkgUrl, completionHandler)
-
+        val jsonDownloadId = if(!mapPkg.metadata.jsonDone) downloadFile(id, jsonUrl, true) else null
+        val pkgDownloadId = if(!mapPkg.metadata.mapDone) downloadFile(id, pkgUrl, false) else null
         Log.d(_tag, "downloadImport - jsonDownloadId: $jsonDownloadId, pkgDownloadId: $pkgDownloadId")
+
         val statusMessage = if(mapPkg.metadata.validationAttempt <= 0) appCtx.getString(R.string.delivery_status_download) else appCtx.getString(R.string.delivery_status_failed_verification_try_again)
         this.mapRepo.update(
-            id = id,
-            JDID = jsonDownloadId,
-            MDID = pkgDownloadId,
-            state =  MapDeliveryState.DOWNLOAD,
-            flowState = DeliveryFlowState.DOWNLOAD,
-            statusMessage = statusMessage,
-            errorContent = "",
-            downloadProgress = 0
+            id = id, JDID = jsonDownloadId, MDID = pkgDownloadId,
+            state =  MapDeliveryState.DOWNLOAD, flowState = DeliveryFlowState.DOWNLOAD,
+            statusMessage = statusMessage, errorContent = "", downloadProgress = 0
         )
         this.sendDeliveryStatus(id)
 
-        return true
+        return false
     }
 
-    private fun startProgressWatcher(id: String): Boolean{
-//        TODO remove the download retry logic
-        val mapPkg = this.mapRepo.getById(id) ?: return false;
-
-        var pkgDownloadId = mapPkg.MDID ?: return false;
-        var jsonDownloadId = mapPkg.JDID ?: return false;
-
-        val pkgUrl = mapPkg.url ?: return false
-        val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
-        var pkgCompleted = false
-        var jsonCompleted = false
-
-        var res = true
-        var pkgReqRetry = 1
-        var jsonReqRetry = 1
-
-        val latch = CountDownLatch(1)
+    private fun downloadFile(id: String, url: String, isJson: Boolean): Long{
+        val downloadId = downloader.downloadFile(url, completionHandler);
 
         timer(initialDelay = 100, period = 2000) {
-            if (mapRepo.isDownloadCanceled(id)){
-                Log.d(_tag, "ProgressWatcher - Download $id, canceled by user")
-                downloader.cancelDownload(jsonDownloadId, pkgDownloadId)
-                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
-                res = false
-                latch.countDown()
+//            todo heck what happen when cancel the download in the download manager
+            val mapPkg = mapRepo.getById(id) ?: return@timer
+            if (mapPkg.cancelDownload){
+                Log.d(_tag, "downloadFile - Download $id, canceled by user")
+                downloader.cancelDownload(downloadId)
+                if (!isJson){
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
+                }
                 this.cancel()
                 return@timer
             }
 
-            val pkgStatus = downloader.queryStatus(pkgDownloadId)
-            val jsonStatus = downloader.queryStatus(jsonDownloadId)
-
-            when(pkgStatus?.status){
-                DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING ->{
-                    mapRepo.update(
-                        id = id,
-                        errorContent = pkgStatus.reason
-                    )
+            val statusInfo = downloader.queryStatus(downloadId)
+            when(statusInfo?.status){
+                DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING -> {
+                    mapRepo.update(id = id, errorContent = statusInfo.reason)
                 }
                 DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_SUCCESSFUL -> {
-                    val progress = (pkgStatus.downloadBytes * 100 / pkgStatus.totalBytes).toInt()
-                    Log.d(_tag, "ProgressWatcher - pkgDownloadId: $pkgDownloadId -> process: $progress ")
-                    if (!pkgCompleted){
+                    val progress = (statusInfo.downloadBytes * 100 / statusInfo.totalBytes).toInt()
+                    Log.d(_tag, "downloadFile - DownloadId: $downloadId -> process: $progress ")
+
+                    if (!isJson && !mapPkg.metadata.mapDone){
                         mapRepo.update(
                             id = id,
                             state = MapDeliveryState.DOWNLOAD,
                             downloadProgress = progress,
-                            fileName = pkgStatus.fileName,
+                            fileName = statusInfo.fileName,
                             statusMessage = appCtx.getString(R.string.delivery_status_download),
                             errorContent = ""
                         )
                         sendDeliveryStatus(id)
                     }
 
-                    if (progress >= 100 || pkgStatus.status == DownloadManager.STATUS_SUCCESSFUL){
-                        pkgCompleted = true
-                    }
+                    if (progress >= 100 || statusInfo.status == DownloadManager.STATUS_SUCCESSFUL){
+                        if (isJson){
+                            mapRepo.update(id, jsonDone = true)
+                        }else{
+                            mapRepo.update(id, mapDone = true)
+                        }
 
+//                        todo mapRepo update will return the updated map
+                        val updatedMapPkg =  mapRepo.getById(id)
+
+                        if (updatedMapPkg?.metadata?.mapDone == true && updatedMapPkg.metadata.jsonDone){
+                            Log.d(_tag, "downloadFile - downloading Done")
+                            mapRepo.update(
+                                id = id,
+                                flowState = DeliveryFlowState.DOWNLOAD_DONE,
+                                downloadProgress = 100,
+                                errorContent = "")
+                            sendDeliveryStatus(id)
+                            if (!isJson){
+                                Thread{executeDeliveryFlow(id)}.start()
+                            }
+                        }
+                        this.cancel()
+                    }
                 }
                 else -> {
-                    Log.e(_tag, "ProgressWatcher -  DownloadManager failed to download pkg, reason: ${pkgStatus?.reason}")
-                    if (pkgReqRetry < downloadRetryAttempts){
-                        Log.d(_tag, "ProgressWatcher - retry download")
-                        pkgReqRetry ++
+                    Log.e(_tag, "downloadFile -  DownloadManager failed to download file. id: $downloadId, reason: ${statusInfo?.reason}")
 
-                        downloader.cancelDownload(pkgDownloadId)
-                        pkgDownloadId = downloader.downloadFile(pkgUrl, completionHandler)
-                        mapRepo.update(
-                            id = id,
-                            MDID = pkgDownloadId,
-                            statusMessage = appCtx.getString(R.string.delivery_status_failed_try_again),
-                            errorContent = pkgStatus?.reason ?: "ProgressWatcher - DownloadManager failed to download file"
-                        )
+                    val downloadAttempts = if (isJson) mapPkg.metadata.jsonAttempt else mapPkg.metadata.mapAttempt
+
+                    if (downloadAttempts < downloadRetryAttempts) {
+                        Log.d(_tag, "downloadFile - retry download")
+                        downloader.cancelDownload(downloadId)
+
+                        mapRepo.update(id, statusMessage = appCtx.getString(R.string.delivery_status_failed_verification_try_again),
+                            errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file")
+
+                        handelDownloadRetry(id, url, isJson, downloadAttempts)
 
                     }else{
                         mapRepo.update(
                             id = id,
                             state = MapDeliveryState.ERROR,
                             statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                            errorContent = pkgStatus?.reason ?: "ProgressWatcher - DownloadManager failed to download file"
+                            errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file"
                         )
-                        res = false
-                        latch.countDown()
-                        this.cancel()
-                        return@timer
                     }
-
+                    sendDeliveryStatus(id)
+                    this.cancel()
                 }
-            }
-            when(jsonStatus?.status){
-                DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING ->{
-                    mapRepo.update(
-                        id = id,
-                        errorContent = pkgStatus?.reason
-                    )
-                }
-                DownloadManager.STATUS_RUNNING -> {}
-                DownloadManager.STATUS_SUCCESSFUL -> {
-                    if (!jsonCompleted){
-                        Log.d(_tag, "ProgressWatcher - download json Done!")
-                        mapRepo.update(id = id, jsonName = jsonStatus.fileName, errorContent = "")
-                        jsonCompleted = true
-                    }
-                }
-                else -> {
-                    Log.e(_tag, "ProgressWatcher -  DownloadManager failed to download json, reason: ${jsonStatus?.reason}")
-                    if (jsonReqRetry < downloadRetryAttempts){
-                        Log.d(_tag, "ProgressWatcher - retry download")
-                        jsonReqRetry ++
-
-                        downloader.cancelDownload(jsonDownloadId)
-                        jsonDownloadId = downloader.downloadFile(jsonUrl, completionHandler)
-                        mapRepo.update(
-                            id = id,
-                            JDID = jsonDownloadId,
-                            statusMessage = appCtx.getString(R.string.delivery_status_failed_try_again),
-                            errorContent = pkgStatus?.reason ?: "ProgressWatcher - DownloadManager failed to download json"
-                        )
-                    }else{
-                        mapRepo.update(
-                            id = id,
-                            state = MapDeliveryState.ERROR,
-                            statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                            errorContent = pkgStatus?.reason ?: "ProgressWatcher - DownloadManager failed to download file"
-                        )
-                        res = false
-                        latch.countDown()
-                        this.cancel()
-                        return@timer
-                    }
-                }
-            }
-
-            if (pkgCompleted && jsonCompleted) {
-                Log.d(_tag, "ProgressWatcher - downloading Done")
-                Log.d(_tag, "ProgressWatcher - stopping progress watcher...")
-                mapRepo.update(
-                    id = id,
-                    flowState = DeliveryFlowState.DOWNLOAD_DONE,
-                    downloadProgress = 100,
-                    errorContent = ""
-                )
-                latch.countDown()
-                res = true
-                this.cancel()
-                return@timer
             }
         }
-        latch.await()
-        sendDeliveryStatus(id)
-        return res
+        return downloadId
     }
 
+    private fun handelDownloadRetry(id: String, url: String, isJson: Boolean, downloadAttempts: Int) {
+        Log.i(_tag, "handelDownloadRetry, id: $id, isJson: $isJson ")
+        val waitTime = TimeUnit.MINUTES.toMillis(if (downloadAttempts == 1) 5 else 10)
+        val startTime = System.currentTimeMillis()
+
+        Log.d(_tag, "handelDownloadRetry try again in: ${TimeUnit.MILLISECONDS.toMinutes(waitTime)} minutes")
+        timer(initialDelay = 100, period = 2000) {
+            val diff = System.currentTimeMillis() - startTime
+            if (diff > waitTime){
+                Log.d(_tag, "handelDownloadRetry - try again id: $id, isJson: $isJson")
+                this.cancel()
+                val mapPkg = mapRepo.getById(id) ?: return@timer
+
+                val statusMessage = appCtx.getString(R.string.delivery_status_failed_try_again)
+
+                if (isJson) {
+                    val downloadId = downloadFile(id, url, true)
+                    val attempts = ++mapPkg.metadata.jsonAttempt
+                    mapRepo.update(id, JDID = downloadId, jsonAttempt = attempts, statusMessage = statusMessage)
+                } else {
+                    val downloadId = downloadFile(id, url, false)
+                    val attempts = ++mapPkg.metadata.mapAttempt
+                    mapRepo.update(id, MDID = downloadId, mapAttempt = attempts, statusMessage = statusMessage)
+                }
+
+            }else {
+                if (mapRepo.isDownloadCanceled(id)) {
+                    Log.d(_tag, "handelDownloadRetry - Download $id, canceled by user")
+                    if (!isJson) {
+                        mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
+                        this.cancel()
+                    }
+                }
+                if (!isJson) {
+                    val secToFinish = TimeUnit.MILLISECONDS.toSeconds(waitTime - diff)
+                    mapRepo.update(id, statusMessage = appCtx.getString(R.string.delivery_status_failed_try_again_in, secToFinish))
+                }
+            }
+        }
+    }
     private fun moveImportFiles(id: String): Boolean{
         Log.i(_tag, "moveImportFiles - id: $id")
 
