@@ -40,6 +40,10 @@ internal class MapRepo(ctx: Context) {
     fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
         downloadStatusHandlers[id] = dsh
     }
+    fun save(mapPkg: MapPkg): String{
+        val id = dao.insert(mapPkg)
+        return id.toString()
+    }
     fun save(pId:String, bBox: String, fileName: String, jsonName: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState): String{
         val id = dao.insert(MapPkg(
             pId=pId,
@@ -183,6 +187,10 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun doesMapFileExist(name: String): Boolean{
+        return dao.doesMapFileExist(name)
+    }
+
+    fun doesJsonFileExist(name: String): Boolean{
         return dao.doesMapFileExist(name)
     }
 
