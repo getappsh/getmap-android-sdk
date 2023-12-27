@@ -123,7 +123,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun cleanDownloads() {
+    override fun synchronizeMapData() {
         TODO("Not implemented in DefaultGetMapService")
     }
 

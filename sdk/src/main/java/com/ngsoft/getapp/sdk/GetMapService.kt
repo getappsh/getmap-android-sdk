@@ -70,9 +70,9 @@ interface GetMapService {
     fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?
 
     /**
-     * Clean downloads that are cancel, error... or if map or json file doesn't exist
+     * Synchronize Map data by reading the files from storage, and syncing them against the DB
      */
-    fun cleanDownloads()
+    fun synchronizeMapData()
 
     /**
      * Purge cache registry (cached tile files remains intact)

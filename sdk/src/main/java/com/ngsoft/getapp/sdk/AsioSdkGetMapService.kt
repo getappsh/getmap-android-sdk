@@ -14,6 +14,7 @@ import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.ngsoft.tilescache.models.MapPkg
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -629,89 +630,125 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         pushDeliveryStatus(deliveryStatus)
     }
-    override fun cleanDownloads(){
-        Log.i(_tag, "cleanDownloads")
-        cleanDatabase ()
-        cleanStorage()
+    override fun synchronizeMapData(){
+        Log.i(_tag, "synchronizeMapData")
+        syncDatabase ()
+        syncStorage()
     }
 
-    private fun cleanDatabase (){
-        Log.i(_tag, "cleanDatabase")
-        val mapsData = this.mapRepo.getAll().filter {
-            it.state == MapDeliveryState.DONE ||
-                    it.state == MapDeliveryState.ERROR ||
-                    it.state == MapDeliveryState.CANCEL ||
-                    it.state == MapDeliveryState.PAUSE ||
-                    it.state == MapDeliveryState.DELETED}
-        for (map in mapsData) {
-            Log.d(_tag, "cleanDatabase  - map id: ${map.id}, state: ${map.state}")
-            if (map.state != MapDeliveryState.DONE){
-                this.deleteMap(map.id.toString())
-            }else{
-                val mapFile = map.fileName?.let { File(storagePath, it) }
-                val jsonFile = map.jsonName?.let { File(storagePath, it) }
+    private fun syncDatabase (){
+        Log.i(_tag, "syncDatabase")
+        val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.DONE ||
+                    it.state == MapDeliveryState.ERROR || it.state == MapDeliveryState.CANCEL ||
+                    it.state == MapDeliveryState.PAUSE || it.state == MapDeliveryState.DELETED}
 
-                if (mapFile?.exists() != true || jsonFile?.exists() != true){
-                    this.deleteMap(map.id.toString())
-                }
+        for (map in mapsData) {
+            Log.d(_tag, "syncDatabase  - map id: ${map.id}, state: ${map.state}")
+
+            if (map.state == MapDeliveryState.DELETED) {
+                deleteMap(map.id.toString())
+                continue
             }
+
+            val rMap = refreshMapState(map)
+            this.mapRepo.update(rMap.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
+                statusMessage = rMap.statusMessage, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
     }
 
-    private fun cleanStorage(){
-        Log.i(_tag, "cleanStorage")
+    private fun refreshMapState(mapPkg: MapPkg): MapPkg{
+        val originalMapFile = mapPkg.fileName?.let { File(downloadPath, it) }
+        val originalJsonFile = mapPkg.jsonName?.let { File(downloadPath, it) }
+
+        val targetMapFile = mapPkg.fileName?.let { File(storagePath, it) }
+        val targetJsonFile = mapPkg.jsonName?.let { File(storagePath, it) }
+
+
+        if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true){
+            if (mapPkg.state == MapDeliveryState.DONE){
+                mapPkg.state = MapDeliveryState.DONE
+                mapPkg.flowState = DeliveryFlowState.DONE
+                mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_done)
+            }else{
+                mapPkg.flowState = DeliveryFlowState.MOVE_FILES
+            }
+            return mapPkg
+        }
+//      TODO When target json file exist and target map file dose not exist, do not delete the json file just download the map file only.
+//        todo handle error
+        targetMapFile?.delete()
+        targetJsonFile?.delete()
+
+        mapPkg.flowState = if (originalMapFile?.exists() == true && originalJsonFile?.exists() == true){
+            DeliveryFlowState.DOWNLOAD_DONE
+        }else if(mapPkg.url != null) {
+            DeliveryFlowState.IMPORT_DELIVERY
+        }else if(mapPkg.reqId != null){
+            DeliveryFlowState.IMPORT_CREATE
+        }else{
+            DeliveryFlowState.START
+        }
+
+        if (mapPkg.state != MapDeliveryState.CANCEL && mapPkg.state != MapDeliveryState.PAUSE){
+            mapPkg.state = MapDeliveryState.ERROR
+            mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_failed)
+        }
+
+        mapPkg.metadata.mapDone = originalMapFile?.exists() ?: false
+        mapPkg.metadata.jsonDone = originalJsonFile?.exists() ?: false
+
+        return mapPkg
+    }
+
+    private fun syncStorage(){
+        Log.i(_tag, "syncStorage")
         val dir =  File(storagePath)
         val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
         val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
         val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
 
-
+//        delete map file when there is no corresponding json file and no record in the DB
         mapFiles?.forEach { file ->
             val correspondingJsonFile = File(FileUtils.changeFileExtensionToJson(file.absolutePath))
-            if (!correspondingJsonFile.exists()) {
-                Log.d(_tag, "cleanStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
+            if (!this.mapRepo.doesMapFileExist(file.name) && !correspondingJsonFile.exists()) {
+                Log.d(_tag, "syncStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
                 file.delete()
             }
         }
-
-        jsonFiles?.forEach { file ->
-            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
-            if (!correspondingMapFile.exists()) {
-                Log.d(_tag, "cleanStorage - Not found corresponding map file for jsonFile: ${file.name}, delete it.")
-                file.delete()
-            }
-        }
-
+//        delete journal file when there is no corresponding map file
         journalFiles?.forEach { file ->
             val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
             if (!correspondingMapFile.exists()) {
-                Log.d(_tag, "cleanStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
+                Log.d(_tag, "syncStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
                 file.delete()
             }
         }
 
+        jsonFiles?.forEach { jsonFile ->
+            if (!this.mapRepo.doesJsonFileExist(jsonFile.name)) {
+                Log.d(_tag, "syncStorage - found json file not in the inventory, fileName: ${jsonFile.name}. insert it.")
 
-
-        val remainingMapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
-        remainingMapFiles?.forEach { file ->
-            if (!this.mapRepo.doesMapFileExist(file.name)){
-                Log.d(_tag, "cleanStorage - found file not in the inventory, fileName: ${file.name}. insert it.")
-
-
-                val jsonFile = File(dir, FileUtils.changeFileExtensionToJson(file.name))
-                val id = this.mapRepo.save(
+//                todo in future download url maybe in the json.
+                val mapPkg = refreshMapState(MapPkg(
                     pId = JsonUtils.getValueFromJson("id", jsonFile.path),
                     bBox = JsonUtils.getValueFromJson("productBoundingBox", jsonFile.path),
-                    state = MapDeliveryState.DOWNLOAD,
+                    state = MapDeliveryState.ERROR,
                     flowState = DeliveryFlowState.MOVE_FILES,
-                    fileName = file.name,
+                    fileName = FileUtils.changeFileExtensionToMap(jsonFile.name),
                     jsonName = jsonFile.name,
                     statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
-                )
-                Thread{executeDeliveryFlow(id)}.start()
+                ))
+
+                val id = this.mapRepo.save(mapPkg)
+                Log.d(_tag, "syncStorage - new map id: $id, deliveryFlowState: ${mapPkg.flowState} ")
+                if (mapPkg.flowState == DeliveryFlowState.MOVE_FILES){
+                    Log.i(_tag, "syncStorage - execute delivery flow for map id: $id")
+                    Thread{executeDeliveryFlow(id)}.start()
+                }
             }
         }
     }
+
     override fun cancelDownload(id: String) {
         Log.d(_tag, "cancelDownload - for id: $id")
         Thread{
