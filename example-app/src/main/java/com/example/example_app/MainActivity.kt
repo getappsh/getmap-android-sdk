@@ -9,9 +9,10 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
@@ -41,9 +42,54 @@ class MainActivity : AppCompatActivity() {
     private lateinit var deliveryButton: Button
 
     private lateinit var downoadnTestButton: Button
-    
+
     private var downloadId: String? = null
-    
+
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var downloadListAdapter: DownloadListAdapter
+    private val downloadList = mutableListOf<MapDownloadData>()
+
+
+    private val onDelete: (String) -> Unit = { id ->
+        GlobalScope.launch(Dispatchers.IO) {
+            service.deleteMap(id)
+        }
+    }
+
+    private val onCancel: (String) -> Unit = { id ->
+        GlobalScope.launch(Dispatchers.IO) {
+            service.cancelDownload(id)
+        }
+    }
+
+    private val onResume: (String) -> Unit = { id ->
+        GlobalScope.launch(Dispatchers.IO) {
+            service.resumeDownload(id, downloadStatusHandler)
+        }
+    }
+    private val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
+        Log.d(TAG, "onDelivery data id: ${data.id}")
+
+        runOnUiThread {
+            val position = downloadListAdapter.getPositionById(data.id)
+            if (position != -1) {
+
+                if(data.deliveryStatus == MapDeliveryState.DELETED){
+                    downloadList.removeAt(position)
+                    downloadListAdapter.notifyItemRemoved(position)
+                }else{
+                    downloadList[position] = data
+                    downloadListAdapter.notifyItemChanged(position)
+                }
+            } else {
+                downloadList.add(0, data)
+                downloadListAdapter.notifyItemInserted(0)
+                print(downloadList[0])
+            }
+
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -57,9 +103,9 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         val cfg = Configuration(
-//            "http://getapp-dev.getapp.sh:3000",
+            "http://getapp-dev.getapp.sh:3000",
 //            "http://getapp-test.getapp.sh:3000",
-            "http://localhost:3333",
+//            "http://localhost:3333",
 //            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
@@ -73,6 +119,13 @@ class MainActivity : AppCompatActivity() {
 
         service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
         dismissLoadingDialog()
+
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        downloadListAdapter = DownloadListAdapter(downloadList, onDelete, onCancel, onResume)
+        recyclerView.adapter = downloadListAdapter
+
+
 
         selectedProductView = findViewById<TextView>(R.id.selectedProduct)
 
@@ -92,71 +145,35 @@ class MainActivity : AppCompatActivity() {
 
         downoadnTestButton.setOnClickListener{
 
-            val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
-                Log.d(TAG, "onDelivery data id: ${data.id}")
-                runOnUiThread {
-                    progressDialog?.setMessage("Loading... \nstatus: ${data.statusMessage} \nprogress: ${data.downloadProgress} \nerror: ${data.errorContent}")
+            GlobalScope.launch(Dispatchers.IO) {
+                var downloads = service.getDownloadedMaps()
+                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
+                service.synchronizeMapData()
+                refreshAll()
+                downloads = service.getDownloadedMaps()
+                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
 
-                }
-
-                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}, reason ${data.errorContent}");
-                if (data.deliveryStatus == MapDeliveryState.DONE ||
-                    data.deliveryStatus == MapDeliveryState.ERROR ||
-                    data.deliveryStatus == MapDeliveryState.CANCEL ){
-                    Log.d(TAG, "onDelivery: ${data.deliveryStatus}")
-                    dismissLoadingDialog();
-//                showMessageDialog(delivered.toString())
-                    runOnUiThread{
-                        Toast.makeText(this@MainActivity, data.errorContent, Toast.LENGTH_LONG).show()
-
-                    }
-                }
             }
-
-            service.resumeDownload(downloadId!!, downloadStatusHandler)
-//            GlobalScope.launch(Dispatchers.IO) {
-//                var downloads = service.getDownloadedMaps()
-//                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
-//                service.cleanDownloads()
-//
-//                downloads = service.getDownloadedMaps()
-//                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
-//
-//            }
-//            service.cancelDownload("1")
-//            try {
-//                GlobalScope.launch(Dispatchers.IO){
-//                    val map = service.getDownloadedMap("1")
-//                    Log.d(TAG, "onCreate: ${map.toString()}")
-//                    val res = service.getDownloadedMaps()
-//                    Log.d(TAG, "onCreate: ${res.toString()}")
-//                }
-////                service.deleteMap(downloadId!!)
-//
-//
-//            }catch (e: Exception){
-//                Log.e(TAG, "onCreate - delete map, error: ${e.message.toString()}", )
-//            }
-//            val downloader = PackageDownloader(this, Environment.DIRECTORY_DOWNLOADS)
-//
-//            GlobalScope.launch(Dispatchers.IO){
-//
-//                var completed = false
-//                var downloadId: Long = -1
-//                val downloadCompletionHandler: (Long) -> Unit = {
-//                    println("processing download ID=$it completion event...")
-//                    completed = it == downloadId
-//                }
-//
-//                downloadId = downloader.downloadFile(
-//                    //"http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
-////                    "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg",
-//                    "https://download.maps.pkz.even/api/raster/v1/downloads/6ef8eac0889a49e6a291a1807a097e6d/Orthophoto_O_aza_w84geo_Oct23_gpkg_19_0_2_1_0_19_2023_11_12T14_38_52_992Z.gpkg",
-//                    downloadCompletionHandler
-//                )
-//            }
         }
 
+    }
+    private fun refreshAll(){
+        Log.d(TAG, "refreshAll")
+        GlobalScope.launch(Dispatchers.IO){
+            val maps = service.getDownloadedMaps()
+            downloadList.clear()
+            downloadList.addAll(maps)
+            runOnUiThread { downloadListAdapter.notifyDataSetChanged() }
+
+            maps.forEach{map->
+                service.registerDownloadHandler(map.id!!, downloadStatusHandler)
+            }
+        }
+    }
+    override fun onResume() {
+        super.onResume()
+        Log.i(TAG, "onResume")
+        refreshAll()
     }
 
     private fun onDiscovery(){
@@ -192,43 +209,22 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onDelivery: ");
         GlobalScope.launch(Dispatchers.IO){
 
-//            service.purgeCache()
 
             val props = MapProperties(
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
-//                "34.46264631,31.48939470,34.46454410,31.49104920",
-                "34.33390515,31.39424664,34.33937683,31.39776380",
+                "34.46264651,31.48939470,34.46454410,31.49104920",
+//                "34.33390515,31.39424664,34.33937683,31.39776380",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
-            val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
-                Log.d(TAG, "onDelivery data id: ${data.id}")
-                runOnUiThread {
-                    progressDialog?.setMessage("Loading... \nstatus: ${data.statusMessage} \nprogress: ${data.downloadProgress} \nerror: ${data.errorContent}")
-
-                }
-
-                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}, reason ${data.errorContent}");
-                if (data.deliveryStatus == MapDeliveryState.DONE ||
-                    data.deliveryStatus == MapDeliveryState.ERROR ||
-                    data.deliveryStatus == MapDeliveryState.CANCEL ){
-                    Log.d(TAG, "onDelivery: ${data.deliveryStatus}")
-                    dismissLoadingDialog();
-//                showMessageDialog(delivered.toString())
-                    runOnUiThread{
-                        Toast.makeText(this@MainActivity, data.errorContent, Toast.LENGTH_LONG).show()
-
-                    }
-                }
-            }
             val id = service.downloadMap(props, downloadStatusHandler);
+
             downloadId = id
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
-            GlobalScope.launch(Dispatchers.Main){
-                showLoadingDialog("Download file id: $id", id)
-            }
-
+//            GlobalScope.launch(Dispatchers.Main){
+//                showLoadingDialog("Download file id: $id", id)
+//            }
         }
 
     }

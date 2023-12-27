@@ -55,6 +55,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var storagePath: String
     protected lateinit var downloadPath: String
     private lateinit var batteryManager: BatteryManager
+    protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
 
 
@@ -72,6 +73,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         storagePath = configuration.storagePath
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
+
+        mapFileManager = MapFileManager(appCtx, downloadPath, storagePath)
 
         cache = TilesCache(appCtx)
 
