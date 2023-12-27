@@ -388,7 +388,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 Log.d(_tag, "downloadFile - Download $id, canceled by user")
                 downloader.cancelDownload(downloadId)
                 if (!isJson){
-                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_canceled),)
                 }
                 this.cancel()
                 return@timer
@@ -499,7 +499,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 if (mapRepo.isDownloadCanceled(id)) {
                     Log.d(_tag, "handelDownloadRetry - Download $id, canceled by user")
                     if (!isJson) {
-                        mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
+                        mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
                         this.cancel()
                     }
                 }
@@ -722,7 +722,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         mapPkg.JDID?.let { downloader.cancelDownload(it) }
         mapPkg.MDID?.let { downloader.cancelDownload(it) }
 
-        mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.fileName)
+        mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
 //        TODO send status after removed from the DB
         this.sendDeliveryStatus(id, MapDeliveryState.DELETED)
 
