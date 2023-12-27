@@ -427,7 +427,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                     if (progress >= 100 || statusInfo.status == DownloadManager.STATUS_SUCCESSFUL){
                         if (isJson){
-                            mapRepo.update(id, jsonDone = true)
+                            mapRepo.update(id, jsonDone = true, jsonName = statusInfo.fileName)
                         }else{
                             mapRepo.update(id, mapDone = true)
                         }
@@ -662,7 +662,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val targetMapFile = mapPkg.fileName?.let { File(storagePath, it) }
         val targetJsonFile = mapPkg.jsonName?.let { File(storagePath, it) }
-
 
         if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true){
             if (mapPkg.state == MapDeliveryState.DONE){

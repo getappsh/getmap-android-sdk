@@ -191,7 +191,7 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun doesJsonFileExist(name: String): Boolean{
-        return dao.doesMapFileExist(name)
+        return dao.doesJsonFileExist(name)
     }
 
     fun updateFlowState(id: String, flowState: DeliveryFlowState){
