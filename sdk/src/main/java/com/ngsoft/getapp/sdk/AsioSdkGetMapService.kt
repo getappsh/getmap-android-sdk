@@ -2,7 +2,6 @@ package com.ngsoft.getapp.sdk
 
 import android.app.DownloadManager
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
@@ -794,9 +793,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun moveFileToTargetDir(fileName: String) {
-        val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-
-        val downloadFile = File(dirPath, fileName)
+        val downloadFile = File(downloadPath, fileName)
         val destinationFile = File(storagePath, fileName)
 
         if (FileUtils.getAvailableSpace(storagePath) <= downloadFile.length()){
@@ -825,8 +822,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     }
     private fun deleteFile(fileName: String){
-        val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val fileDownload = File(dirPath, fileName)
+        val fileDownload = File(downloadPath, fileName)
 
         Log.d(_tag, "deleteFile - From Download dir, File path: ${fileDownload.path}")
 

@@ -53,6 +53,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
     protected lateinit var storagePath: String
+    protected lateinit var downloadPath: String
     private lateinit var batteryManager: BatteryManager
     protected lateinit var cache: TilesCache
 
@@ -62,7 +63,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Log.i(_tag, "Init GetMapService" )
 
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
-        downloader = PackageDownloader(appCtx, Environment.DIRECTORY_DOWNLOADS)
+
+        val dir = Environment.DIRECTORY_DOWNLOADS
+        downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
+        downloader = PackageDownloader(appCtx, dir)
+
         pref = Pref.getInstance(appCtx)
 
         storagePath = configuration.storagePath
