@@ -31,7 +31,6 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
     }
 
     fun deleteMapFiles(mapName: String?, jsonName: String?){
-
         if (mapName != null){
             deleteFile(mapName)
             val journalName = FileUtils.changeFileExtensionToJournal(mapName)
@@ -79,7 +78,6 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             return mapPkg
         }
 //      TODO When target json file exist and target map file dose not exist, do not delete the json file just download the map file only.
-//        todo handle error
         targetMapFile?.delete()
         targetJsonFile?.delete()
 

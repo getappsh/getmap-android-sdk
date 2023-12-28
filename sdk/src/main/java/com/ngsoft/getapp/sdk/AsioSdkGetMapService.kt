@@ -15,6 +15,7 @@ import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
+import org.json.JSONException
 import java.io.File
 import java.io.IOException
 import java.time.OffsetDateTime
@@ -555,7 +556,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val mapFile = File(storagePath, mapPkg.fileName!!)
             val jsonFile = File(storagePath, mapPkg.jsonName!!)
 
-            val expectedHash = JsonUtils.getValueFromJson(checksumAlgorithm, jsonFile.path)
+            val expectedHash = JsonUtils.getStringOrThrow(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
                 Log.d(_tag, "validateImport - progress: $it")
                 this.mapRepo.update(id, downloadProgress = it)
@@ -669,18 +670,31 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
         }
 
-        jsonFiles?.forEach { jsonFile ->
-            if (!this.mapRepo.doesJsonFileExist(jsonFile.name)) {
-                Log.d(_tag, "syncStorage - found json file not in the inventory, fileName: ${jsonFile.name}. insert it.")
+        jsonFiles?.forEach { file ->
+            if (!this.mapRepo.doesJsonFileExist(file.name)) {
+                Log.d(_tag, "syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
 
 //                todo in future download url maybe in the json.
+
+                val pId: String; val bBox: String
+                try{
+                    val json = JsonUtils.readJson(file.path)
+                    pId = json.getString("id")
+                    bBox = json.getString("productBoundingBox")
+                }catch (e: JSONException){
+                    Log.e(_tag, "syncStorage - not valid json object: ${e.message.toString()}")
+                    Log.d(_tag, "syncStorage - delete json file: ${file.name}")
+                    file.delete()
+                    return@forEach
+                }
+
                 val mapPkg = mapFileManager.refreshMapState(MapPkg(
-                    pId = JsonUtils.getValueFromJson("id", jsonFile.path),
-                    bBox = JsonUtils.getValueFromJson("productBoundingBox", jsonFile.path),
+                    pId = pId,
+                    bBox = bBox,
                     state = MapDeliveryState.ERROR,
                     flowState = DeliveryFlowState.MOVE_FILES,
-                    fileName = FileUtils.changeFileExtensionToMap(jsonFile.name),
-                    jsonName = jsonFile.name,
+                    fileName = FileUtils.changeFileExtensionToMap(file.name),
+                    jsonName = file.name,
                     statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
                 ))
 
