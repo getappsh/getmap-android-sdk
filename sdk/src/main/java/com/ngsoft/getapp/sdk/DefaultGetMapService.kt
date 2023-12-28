@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import GetApp.Client.models.CreateImportDto
 import GetApp.Client.models.CreateImportResDto
+import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.DiscoveryMapDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoverySoftwareDto
@@ -16,9 +17,12 @@ import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
+import android.content.Context.BATTERY_SERVICE
+import android.os.BatteryManager
 import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -29,6 +33,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
+import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.TilesCache
@@ -47,7 +52,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var client: GetAppClient
     protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
+    protected lateinit var storagePath: String
+    private lateinit var batteryManager: BatteryManager
     protected lateinit var cache: TilesCache
+
 
 
     open fun init(configuration: Configuration): Boolean {
@@ -56,7 +64,13 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
         downloader = PackageDownloader(appCtx, Environment.DIRECTORY_DOWNLOADS)
         pref = Pref.getInstance(appCtx)
+
+        storagePath = configuration.storagePath
+        batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
+
         cache = TilesCache(appCtx)
+
+
         if(configuration.imei != null){
             pref.deviceId = configuration.imei
         }
@@ -85,6 +99,9 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
+        TODO("Not implemented in DefaultGetMapService")
+    }
     override fun getDownloadedMap(id: String): MapDownloadData? {
         TODO("Not implemented in DefaultGetMapService")
     }
@@ -107,20 +124,24 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
         Log.i(_tag, "getDiscoveryCatalog")
 
+        val batteryPower = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+
         //fill that vast GetApp param...
-        val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusApp,
+        val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusMap,
             GeneralDiscoveryDto(
-                PersonalDiscoveryDto("tank","idNumber-123","personalNumber-123"),
+                PersonalDiscoveryDto("user-1","idNumber-123","personalNumber-123"),
                 SituationalDiscoveryDto( BigDecimal("23"), BigDecimal("2"),
-                    OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), true, BigDecimal("34"),
+                    OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), true,
+                    batteryPower.toBigDecimal(),
                     GeoLocationDto("33.4","23.3", "344")
                 ),
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
-                    pref.deviceId, "13kb23", "12kb", "1212Mb")
+                    pref.deviceId, pref.generateDeviceId(), "Yes",
+                    FileUtils.getAvailableSpace(storagePath).toString())
             ),
 
-            DiscoverySoftwareDto("yatush", PlatformDto("Merkava","106", BigDecimal("223"),
+            DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),
                 emptyList()
             )),
 
@@ -130,6 +151,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 "DJI Mavic","raster","N/A","ME","CCD","3.14","0.12"
             )
         )
+
+        Log.v(_tag, "getDiscoveryCatalog - discovery object built")
 
         val discoveries = client.deviceApi.deviceControllerDiscoveryCatalog(query)
         Log.d(_tag, "getDiscoveryCatalog -  offering results: $discoveries ")
@@ -234,7 +257,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             throw Exception("invalid inputProperties")
 
         val params = CreateImportDto(pref.deviceId, GetApp.Client.models.MapProperties(
-            BigDecimal(12), "dummy name", inputProperties.productId, inputProperties.boundingBox,
+            BigDecimal(12), inputProperties.boundingBox,"dummy name", inputProperties.productId,
             BigDecimal(0), BigDecimal(0)
         ))
 
@@ -304,6 +327,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         result.importRequestId = status.catalogId
         result.message = Status()
         result.message!!.statusCode = StatusCode.SUCCESS
+        result.url = status.url
 
         when (status.status){
             PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
@@ -328,6 +352,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         result.importRequestId = inputImportRequestId
         result.message = Status()
         result.message!!.statusCode = StatusCode.SUCCESS
+        result.url = status.url
 
         when (status.status){
             PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
@@ -422,4 +447,36 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         return MapDeployState.DONE
     }
 
+    fun pushDeliveryStatus(deliveryStatus: DeliveryStatus){
+        val status = when(deliveryStatus.state){
+            MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
+            MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done
+            MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.error
+            MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.cancelled
+            MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
+            MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
+            MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
+            MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
+        }
+
+        val dlv = DeliveryStatusDto(
+            type = DeliveryStatusDto.Type.map,
+            deviceId = pref.deviceId,
+            deliveryStatus = status,
+            catalogId = deliveryStatus.reqId,
+            downloadData = deliveryStatus.progress?.toBigDecimal(),
+            downloadStart = deliveryStatus.start,
+            downloadStop = deliveryStatus.stop,
+            downloadDone = deliveryStatus.done,
+            currentTime = OffsetDateTime.now()
+        )
+        Thread {
+            try {
+                client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
+            } catch (exc: Exception) {
+                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}",)
+                exc.printStackTrace()
+            }
+        }.start()
+    }
 }

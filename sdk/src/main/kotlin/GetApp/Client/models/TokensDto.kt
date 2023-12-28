@@ -24,16 +24,24 @@ import com.squareup.moshi.JsonClass
  *
  * @param accessToken 
  * @param refreshToken 
+ * @param expireAt 
+ * @param refreshExpireAt 
  */
 
 
 data class TokensDto (
 
     @Json(name = "accessToken")
-    val accessToken: kotlin.String? = null,
+    val accessToken: kotlin.String,
 
     @Json(name = "refreshToken")
-    val refreshToken: kotlin.String? = null
+    val refreshToken: kotlin.String,
+
+    @Json(name = "expireAt")
+    val expireAt: java.time.OffsetDateTime? = null,
+
+    @Json(name = "refreshExpireAt")
+    val refreshExpireAt: java.time.OffsetDateTime? = null
 
 )
 

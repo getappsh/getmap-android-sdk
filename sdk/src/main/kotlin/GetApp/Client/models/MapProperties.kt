@@ -23,9 +23,9 @@ import com.squareup.moshi.JsonClass
  * 
  *
  * @param zoomLevel 
+ * @param boundingBox 
  * @param productName 
  * @param productId 
- * @param boundingBox 
  * @param targetResolution 
  * @param lastUpdateAfter 
  */
@@ -36,14 +36,14 @@ data class MapProperties (
     @Json(name = "zoomLevel")
     val zoomLevel: java.math.BigDecimal,
 
+    @Json(name = "boundingBox")
+    val boundingBox: kotlin.String,
+
     @Json(name = "productName")
     val productName: kotlin.String? = null,
 
     @Json(name = "productId")
     val productId: kotlin.String? = null,
-
-    @Json(name = "boundingBox")
-    val boundingBox: kotlin.String? = null,
 
     @Json(name = "targetResolution")
     val targetResolution: java.math.BigDecimal? = null,

@@ -1,12 +1,11 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.DeliveryStatusDto
-import GetApp.Client.models.PrepareDeliveryResDto
 import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
+import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
@@ -20,6 +19,8 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
@@ -39,8 +40,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     private val checksumAlgorithm = "sha256"
     private val minAvailableSpaceMb = 250 * 1024L * 1024L
 
-    private lateinit var storagePath: String
-
     private lateinit var mapRepo: MapRepo
 
     companion object {
@@ -57,8 +56,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         deliveryTimeoutMinutes = configuration.deliveryTimeout
         downloadTimeoutMinutes = configuration.downloadTimeout
         downloadRetryAttempts = configuration.downloadRetry
-
-        storagePath = configuration.storagePath
 
         mapRepo = MapRepo(appCtx)
 
@@ -123,14 +120,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     private fun executeDeliveryFlow(id: String){
-        val map = this.mapRepo.getById(id)
+        val mapPkg = this.mapRepo.getById(id)
         try{
-            val toContinue = when(map?.flowState){
+            val toContinue = when(mapPkg?.flowState){
                 DeliveryFlowState.START -> importCreate(id)
                 DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
                 DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
-                DeliveryFlowState.IMPORT_DELIVERY -> checkDeliveryStatus(id)
-                DeliveryFlowState.IMPORT_DELIVERY_STATUS -> downloadImport(id)
+                DeliveryFlowState.IMPORT_DELIVERY -> downloadImport(id)
                 DeliveryFlowState.DOWNLOAD -> startProgressWatcher(id)
                 DeliveryFlowState.DOWNLOAD_DONE -> moveImportFiles(id)
                 DeliveryFlowState.MOVE_FILES -> validateImport(id)
@@ -141,7 +137,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 executeDeliveryFlow(id)
             }
         }catch (e: IOException){
-            var attempt = map?.metadata?.connectionAttempt ?: 5
+            var attempt = mapPkg?.metadata?.connectionAttempt ?: 5
             if (attempt < 5){
                 Log.e(_tag, "executeDeliveryFlow - IOException try again, attempt: $attempt, Error: ${e.message.toString()}")
 
@@ -307,112 +303,68 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun importDelivery(id: String): Boolean{
         Log.i(_tag, "importDelivery")
 
-        if (this.mapRepo.isDownloadCanceled(id)){
-            Log.d(_tag, "importDelivery: Download $id, canceled by user")
-            mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
-            this.sendDeliveryStatus(id)
-            return false
-        }
         val reqId = this.mapRepo.getReqId(id)!!;
 
-        val retDelivery = setMapImportDeliveryStart(reqId)
-
-        when(retDelivery?.state){
-            MapDeliveryState.DONE,
-            MapDeliveryState.START,
-            MapDeliveryState.DOWNLOAD,
-            MapDeliveryState.CONTINUE ->  {
-                Log.d(_tag,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
-                this.mapRepo.update(id = id, flowState = DeliveryFlowState.IMPORT_DELIVERY, errorContent = "")
-                return true
-            }
-            MapDeliveryState.CANCEL,  MapDeliveryState.PAUSE -> {
-                Log.w(_tag,"getDownloadData - setMapImportDeliveryStart => CANCEL")
-                this.mapRepo.update(
-                    id = id,
-                    state = MapDeliveryState.CANCEL,
-                    statusMessage = appCtx.getString(R.string.delivery_status_canceled))
-                this.sendDeliveryStatus(id)
-                return false
-            }
-            else -> {
-                Log.e(_tag,"getDownloadData - setMapImportDeliveryStart failed: ${retDelivery?.state}")
-                this.mapRepo.update(
-                    id = id,
-                    state = MapDeliveryState.ERROR,
-                    statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                    errorContent = "getDownloadData - setMapImportDeliveryStart failed: ${retDelivery?.state}"
-                )
-                this.sendDeliveryStatus(id)
-                return false
-            }
-        }
-    }
-
-    @OptIn(ExperimentalTime::class)
-    private fun checkDeliveryStatus(id: String): Boolean {
-        Log.i(_tag, "checkDeliveryStatus")
-        val reqId = this.mapRepo.getReqId(id)!!;
-
-        var deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(reqId)
-
+        var retDelivery = setMapImportDeliveryStart(reqId)
         val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
-        while (deliveryStatus.status != PrepareDeliveryResDto.Status.done){
-            TimeUnit.SECONDS.sleep(2)
 
-            if (this.mapRepo.isDownloadCanceled(id)){
-                Log.d(_tag, "checkDeliveryStatus: Download $id, canceled by user")
-                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
-                this.sendDeliveryStatus(id)
-                return false
-            }
-            deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(reqId)
+        while (retDelivery?.state != MapDeliveryState.DONE) {
+            when (retDelivery?.state) {
+                MapDeliveryState.DONE, MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE -> {}
 
-            when(deliveryStatus.status){
-                PrepareDeliveryResDto.Status.error -> {
-                    Log.e(_tag,"getDownloadData - prepared delivery status: Error")
-                    this.mapRepo.update(
-                        id = id,
+                MapDeliveryState.CANCEL, MapDeliveryState.PAUSE -> {
+                    Log.w(_tag, "importDelivery - setMapImportDeliveryStart => CANCEL")
+                    this.mapRepo.update(id = id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
+                    this.sendDeliveryStatus(id)
+                    return false
+                }
+                else -> {
+                    Log.e(_tag, "importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}")
+                    this.mapRepo.update(id = id,
                         state = MapDeliveryState.ERROR,
                         statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                        errorContent = "getDownloadData - prepared delivery status: Error"
+                        errorContent = "importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}"
                     )
                     this.sendDeliveryStatus(id)
                     return false
                 }
-                else -> {}
             }
             if(timeoutTime.hasPassedNow()){
-                Log.w(_tag,"checkDeliveryStatus - timed out")
-                this.mapRepo.update(
-                    id = id,
-                    state = MapDeliveryState.ERROR,
-                    statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                    errorContent = "checkDeliveryStatus - timed out"
-                )
+                Log.e(_tag,"importDelivery - timed out")
+                this.mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = appCtx.getString(R.string.delivery_status_failed), errorContent = "ImportDelivery- timed out")
                 this.sendDeliveryStatus(id)
                 return false
             }
+
+            if (this.mapRepo.isDownloadCanceled(id)){
+                Log.d(_tag, "importDelivery: Download $id, canceled by user")
+                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = appCtx.getString(R.string.delivery_status_canceled))
+                this.sendDeliveryStatus(id)
+                return false
+            }
+            TimeUnit.SECONDS.sleep(2)
+            retDelivery = getMapImportDeliveryStatus(reqId)
         }
 
-        if (deliveryStatus.url == null){
-            Log.e(_tag, "getDownloadData - download url is null", )
+        if (retDelivery.url == null){
+            Log.e(_tag, "importDelivery- download url is null", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
                 statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                errorContent = "getDownloadData - download url is null"
+                errorContent = "importDelivery - download url is null"
             )
             this.sendDeliveryStatus(id)
             return false
 
         }
 
-        Log.d(_tag, "checkDeliveryStatus - delivery is ready, download url: ${deliveryStatus.url} ")
-        this.mapRepo.update(id = id, url = deliveryStatus.url, flowState = DeliveryFlowState.IMPORT_DELIVERY_STATUS, errorContent = "")
+        Log.d(_tag, "importDelivery - delivery is ready, download url: ${retDelivery.url} ")
+        this.mapRepo.update(id = id, url = retDelivery.url, flowState = DeliveryFlowState.IMPORT_DELIVERY, errorContent = "")
         return true
     }
 
@@ -445,12 +397,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private fun startProgressWatcher(id: String): Boolean{
 //        TODO remove the download retry logic
-        val pkgData = this.mapRepo.getById(id) ?: return false;
+        val mapPkg = this.mapRepo.getById(id) ?: return false;
 
-        var pkgDownloadId = pkgData.MDID ?: return false;
-        var jsonDownloadId = pkgData.JDID ?: return false;
+        var pkgDownloadId = mapPkg.MDID ?: return false;
+        var jsonDownloadId = mapPkg.JDID ?: return false;
 
-        val pkgUrl = pkgData.url ?: return false
+        val pkgUrl = mapPkg.url ?: return false
         val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
         var pkgCompleted = false
         var jsonCompleted = false
@@ -491,6 +443,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                             state = MapDeliveryState.DOWNLOAD,
                             downloadProgress = progress,
                             fileName = pkgStatus.fileName,
+                            statusMessage = appCtx.getString(R.string.delivery_status_download),
                             errorContent = ""
                         )
                         sendDeliveryStatus(id)
@@ -671,7 +624,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                 this.mapRepo.update(
                     id = id,
-                    flowState = DeliveryFlowState.IMPORT_DELIVERY_STATUS,
+                    flowState = DeliveryFlowState.IMPORT_DELIVERY,
                     validationAttempt = ++mapPkg.metadata.validationAttempt,
                     statusMessage = appCtx.getString(R.string.delivery_status_failed_verification_try_again),
                     errorContent = "Checksum validation Failed try downloading again",
@@ -690,30 +643,37 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return isValid
     }
-    private fun sendDeliveryStatus(id: String) {
-//        TODO check why send delivery status done twice
-        val dlv = this.mapRepo.getDeliveryStatus(id, pref.deviceId) ?: return
+    private fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null) {
+        val mapPkg = this.mapRepo.getById(id) ?: return
+        val deliveryStatus = DeliveryStatus(
+            state = state ?: mapPkg.state,
+            reqId = mapPkg.reqId ?: "-1",
+            progress = mapPkg.downloadProgress,
+            start = mapPkg.downloadStart?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            stop = mapPkg.downloadStop?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) }
+        )
 
-        Thread{
-            Log.d(_tag, "sendDeliveryStatus - id: $id status: $dlv")
-            try{
-                client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
-            }catch (exc: Exception){
-                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}", )
-                exc.printStackTrace()
-            }
-        }.start()
+        Log.d(_tag, "sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
+
+        pushDeliveryStatus(deliveryStatus)
     }
     override fun cleanDownloads(){
         Log.i(_tag, "cleanDownloads")
+        cleanDatabase ()
+        cleanStorage()
+    }
+
+    private fun cleanDatabase (){
+        Log.i(_tag, "cleanDatabase")
         val mapsData = this.mapRepo.getAll().filter {
-                    it.state == MapDeliveryState.DONE ||
+            it.state == MapDeliveryState.DONE ||
                     it.state == MapDeliveryState.ERROR ||
                     it.state == MapDeliveryState.CANCEL ||
                     it.state == MapDeliveryState.PAUSE ||
                     it.state == MapDeliveryState.DELETED}
         for (map in mapsData) {
-            Log.d(_tag, "cleanDownloads - map id: ${map.id}, state: ${map.state}")
+            Log.d(_tag, "cleanDatabase  - map id: ${map.id}, state: ${map.state}")
             if (map.state != MapDeliveryState.DONE){
                 this.deleteMap(map.id.toString())
             }else{
@@ -723,6 +683,61 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 if (mapFile?.exists() != true || jsonFile?.exists() != true){
                     this.deleteMap(map.id.toString())
                 }
+            }
+        }
+    }
+
+    private fun cleanStorage(){
+        Log.i(_tag, "cleanStorage")
+        val dir =  File(storagePath)
+        val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
+        val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
+        val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
+
+
+        mapFiles?.forEach { file ->
+            val correspondingJsonFile = File(FileUtils.changeFileExtensionToJson(file.absolutePath))
+            if (!correspondingJsonFile.exists()) {
+                Log.d(_tag, "cleanStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+        jsonFiles?.forEach { file ->
+            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
+            if (!correspondingMapFile.exists()) {
+                Log.d(_tag, "cleanStorage - Not found corresponding map file for jsonFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+        journalFiles?.forEach { file ->
+            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
+            if (!correspondingMapFile.exists()) {
+                Log.d(_tag, "cleanStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+
+
+        val remainingMapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
+        remainingMapFiles?.forEach { file ->
+            if (!this.mapRepo.doesMapFileExist(file.name)){
+                Log.d(_tag, "cleanStorage - found file not in the inventory, fileName: ${file.name}. insert it.")
+
+
+                val jsonFile = File(dir, FileUtils.changeFileExtensionToJson(file.name))
+                val id = this.mapRepo.save(
+                    pId = JsonUtils.getValueFromJson("id", jsonFile.path),
+                    bBox = JsonUtils.getValueFromJson("productBoundingBox", jsonFile.path),
+                    state = MapDeliveryState.DOWNLOAD,
+                    flowState = DeliveryFlowState.MOVE_FILES,
+                    fileName = file.name,
+                    jsonName = jsonFile.name,
+                    statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
+                )
+                Thread{executeDeliveryFlow(id)}.start()
             }
         }
     }
@@ -739,40 +754,66 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun deleteMap(id: String){
         Log.d(_tag, "deleteMap - id: $id")
-        val map = this.mapRepo.getById(id)
+        val mapPkg = this.mapRepo.getById(id)
 
-        if (map == null ||
-            map.state == MapDeliveryState.START ||
-            map.state == MapDeliveryState.DOWNLOAD ||
-            map.state == MapDeliveryState.CONTINUE){
+        if (mapPkg == null ||
+            mapPkg.state == MapDeliveryState.START ||
+            mapPkg.state == MapDeliveryState.DOWNLOAD ||
+            mapPkg.state == MapDeliveryState.CONTINUE){
 
-            val errorMsg = "deleteMap: Unable to delete map when status is: ${map?.state}"
+            val errorMsg = "deleteMap: Unable to delete map when status is: ${mapPkg?.state}"
             Log.e(_tag,  errorMsg)
             throw Exception(errorMsg)
         }
 
-        map.JDID?.let { downloader.cancelDownload(it) }
-        map.MDID?.let { downloader.cancelDownload(it) }
+        mapPkg.JDID?.let { downloader.cancelDownload(it) }
+        mapPkg.MDID?.let { downloader.cancelDownload(it) }
 
         deleteMapFiles(id)
 
-        val delivery = this.mapRepo.getDeliveryStatus(id, pref.deviceId)
+//        TODO send status after removed from the DB
+        this.sendDeliveryStatus(id, MapDeliveryState.DELETED)
 
         this.mapRepo.remove(id)
+    }
 
-//        Send delivery status to server
+    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+        Log.i(_tag, "resumeDownload for id: $id")
         Thread{
-            var dlv = delivery
-            if (dlv != null){
-                dlv = dlv.copy(deliveryStatus = DeliveryStatusDto.DeliveryStatus.deleted)
-                try{
-                    Log.d(_tag, "sendDeliveryStatus: id: $id status: $dlv.deliveryStatus, catalog id: ${dlv.catalogId}")
-                    client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
-                }catch (exc: Exception){
-                    Log.e(_tag, "sendDeliveryStatus failed error: $exc")
-                }
+            val mapPkg = this.mapRepo.getById(id)
+            this.mapRepo.setListener(id, downloadStatusHandler)
+
+            if (mapPkg == null ||
+                !(mapPkg.state == MapDeliveryState.PAUSE ||
+                        mapPkg.state == MapDeliveryState.CANCEL||
+                        mapPkg.state == MapDeliveryState.ERROR)
+            ){
+                val errorMsg = "deleteMap: Unable to resume download map status is: ${mapPkg?.state}"
+                Log.e(_tag,  errorMsg)
+                this.mapRepo.update(id, state = MapDeliveryState.ERROR, errorContent = errorMsg)
             }
+
+
+            this.mapRepo.update(id,
+                state = MapDeliveryState.CONTINUE,
+                statusMessage = appCtx.getString(R.string.delivery_status_continue),
+                errorContent = "")
+
+                try {
+                    executeDeliveryFlow(id)
+                } catch (e: Exception) {
+                    Log.e(_tag, "downloadMap - exception:  ${e.message.toString()}")
+                    this.mapRepo.update(
+                        id = id,
+                        state = MapDeliveryState.ERROR,
+                        statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                        errorContent = e.message.toString()
+                    )
+                    this.sendDeliveryStatus(id)
+                }
         }.start()
+
+        return id
     }
 
     private fun moveFileToTargetDir(fileName: String) {

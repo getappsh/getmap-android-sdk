@@ -48,14 +48,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+//        if (!Environment.isExternalStorageManager()){
+//            val intent = Intent()
+//            intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
+//            val uri = Uri.fromParts("package", this.packageName, null)
+//            intent.data = uri
+//            startActivity(intent)
+//        }
+
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
-//            "http://localhost:3333",
+//            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-test.getapp.sh:3000",
+            "http://localhost:3333",
 //            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
-            //currently downloads file to a path within the public external storage directory
-            Environment.DIRECTORY_DOWNLOADS,
+//            File("/storage/1115-0C18/com.asio.gis").path,
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
             16,
             5,5,
             null
@@ -83,15 +92,37 @@ class MainActivity : AppCompatActivity() {
 
         downoadnTestButton.setOnClickListener{
 
-            GlobalScope.launch(Dispatchers.IO) {
-                var downloads = service.getDownloadedMaps()
-                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
-                service.cleanDownloads()
+            val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
+                Log.d(TAG, "onDelivery data id: ${data.id}")
+                runOnUiThread {
+                    progressDialog?.setMessage("Loading... \nstatus: ${data.statusMessage} \nprogress: ${data.downloadProgress} \nerror: ${data.errorContent}")
 
-                downloads = service.getDownloadedMaps()
-                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
+                }
 
+                Log.d(TAG, "onDelivery: status ${data.deliveryStatus}, progress ${data.downloadProgress} heb status ${data.statusMessage}, reason ${data.errorContent}");
+                if (data.deliveryStatus == MapDeliveryState.DONE ||
+                    data.deliveryStatus == MapDeliveryState.ERROR ||
+                    data.deliveryStatus == MapDeliveryState.CANCEL ){
+                    Log.d(TAG, "onDelivery: ${data.deliveryStatus}")
+                    dismissLoadingDialog();
+//                showMessageDialog(delivered.toString())
+                    runOnUiThread{
+                        Toast.makeText(this@MainActivity, data.errorContent, Toast.LENGTH_LONG).show()
+
+                    }
+                }
             }
+
+            service.resumeDownload(downloadId!!, downloadStatusHandler)
+//            GlobalScope.launch(Dispatchers.IO) {
+//                var downloads = service.getDownloadedMaps()
+//                Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
+//                service.cleanDownloads()
+//
+//                downloads = service.getDownloadedMaps()
+//                Log.d(TAG, "onCreate - downloads size after ${downloads.size}")
+//
+//            }
 //            service.cancelDownload("1")
 //            try {
 //                GlobalScope.launch(Dispatchers.IO){
@@ -167,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264631,31.48939470,34.46454410,31.49104920",
-                "34.47146482,31.55712952,34.48496631,31.56652669",
+                "34.33390515,31.39424664,34.33937683,31.39776380",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )

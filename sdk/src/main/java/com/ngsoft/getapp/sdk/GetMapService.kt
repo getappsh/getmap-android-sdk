@@ -41,6 +41,15 @@ interface GetMapService {
      */
     fun cancelDownload(id: String)
 
+    /**
+     * Resume download
+     *
+     * @param id Map id
+     * @param downloadStatusHandler delivery progress handler
+     * @receiver see [MapDownloadData]
+     * @return map download id
+     */
+    fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String
 
     /**
      * Deliver extent tiles

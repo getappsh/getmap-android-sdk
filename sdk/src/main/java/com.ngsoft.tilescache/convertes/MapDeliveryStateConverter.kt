@@ -1,4 +1,4 @@
-package com.ngsoft.tilescache
+package com.ngsoft.tilescache.convertes
 
 import androidx.room.TypeConverter
 import com.ngsoft.getapp.sdk.models.MapDeliveryState

@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.time.LocalDateTime
@@ -37,6 +38,22 @@ internal class MapRepo(ctx: Context) {
         return id
     }
 
+    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
+        downloadStatusHandlers[id] = dsh
+    }
+    fun save(pId:String, bBox: String, fileName: String, jsonName: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState): String{
+        val id = dao.insert(MapPkg(
+            pId=pId,
+            bBox=bBox,
+            state=state,
+            flowState=flowState,
+            statusMessage = statusMessage,
+            fileName = fileName,
+            jsonName = jsonName,
+        ))
+
+        return id.toString()
+    }
     fun purge(){
         dao.nukeTable()
         //reset auto-increments
@@ -94,6 +111,10 @@ internal class MapRepo(ctx: Context) {
         }catch (e: NumberFormatException){
             null
         }
+    }
+
+    fun doesMapFileExist(name: String): Boolean{
+        return dao.doesMapFileExist(name)
     }
     private fun updateInternal(
         id: String,
@@ -200,35 +221,6 @@ internal class MapRepo(ctx: Context) {
             downloadProgress = map.downloadProgress,
             errorContent = map.errorContent
         )
-    }
-
-    fun getDeliveryStatus(id: String, deviceId: String): DeliveryStatusDto? {
-        val map = this.getById(id);
-        if (map != null) {
-            val status = when(map.state){
-                MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
-                MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done
-                MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.error
-                MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.cancelled
-                MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
-                MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
-                MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
-                MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
-            }
-            Log.d(_tag, "getDeliveryStatus: $map")
-            return DeliveryStatusDto(
-                type = DeliveryStatusDto.Type.map,
-                deviceId = deviceId,
-                deliveryStatus = status,
-                catalogId = map.reqId,
-                downloadData = map.downloadProgress.toBigDecimal() ?: null,
-                downloadStart = if (map.downloadStart != null) OffsetDateTime.of(map.downloadStart, ZoneOffset.UTC) else null,
-                downloadStop = if (map.downloadStop != null) OffsetDateTime.of(map.downloadStop, ZoneOffset.UTC) else null,
-                downloadDone = if(map.downloadDone != null) OffsetDateTime.of(map.downloadDone, ZoneOffset.UTC) else null,
-                currentTime = OffsetDateTime.now()
-            )
-        }
-        return null
     }
 
     companion object {
