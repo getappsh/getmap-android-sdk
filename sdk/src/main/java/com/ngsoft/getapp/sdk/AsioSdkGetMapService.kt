@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import android.app.DownloadManager
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
@@ -9,6 +10,7 @@ import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.qr.QRManager
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
@@ -39,6 +41,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     private val minAvailableSpaceMb = 250 * 1024L * 1024L
 
     private lateinit var mapRepo: MapRepo
+    private lateinit var qrManager: QRManager
 
     companion object {
         private var instanceCount = 0
@@ -56,6 +59,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         downloadRetryAttempts = configuration.downloadRetry
 
         mapRepo = MapRepo(appCtx)
+        qrManager = QRManager()
 
         if (instanceCount == 0){
             Thread{updateMapsStatusOnStart()}.start()
@@ -768,6 +772,30 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }.start()
 
         return id
+    }
+
+    override fun generateQrCode(id: String, width: Int, height: Int): Bitmap {
+        Log.i(_tag, "generateQrCode - for map id: $id")
+        val mapPkg = this.mapRepo.getById(id)!!
+
+        if (mapPkg.state != MapDeliveryState.DONE){
+            val errorMsg = "generateQrCode - Only when map state is DONE can create QR code, current state: ${mapPkg.state}"
+            Log.e(_tag,  errorMsg)
+            throw Exception(errorMsg)
+        }
+
+        if (mapPkg.jsonName == null || mapPkg.url == null){
+            val errorMsg = "generateQrCode - Missing data, not found jsonName or download url"
+            Log.e(_tag,  errorMsg)
+            throw Exception(errorMsg)
+        }
+        val file = File(storagePath, mapPkg.jsonName!!)
+        val json = JsonUtils.readJson(file.path)
+
+        Log.d(_tag, "generateQrCode - append download url to json")
+        json.put("downloadUrl", mapPkg.url)
+
+        return qrManager.generateQrCode(json.toString(), width, height)
     }
 
     override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {

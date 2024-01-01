@@ -18,6 +18,7 @@ import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
 import android.content.Context.BATTERY_SERVICE
+import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Environment
 import android.util.Log
@@ -88,6 +89,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun purgeCache(){
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun generateQrCode(id: String, width: Int, height: Int): Bitmap {
         TODO("Not implemented in DefaultGetMapService")
     }
 

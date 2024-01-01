@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import android.graphics.Bitmap
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDownloadData
@@ -79,6 +80,14 @@ interface GetMapService {
      *
      */
     fun purgeCache()
+
+    /**
+     * Generate QR Code from map json file.
+     * @param id Map id
+     * @param width of the QR code
+     * @param height of the QR code
+     */
+    fun generateQrCode(id: String, width: Int=1000, height: Int=1000): Bitmap
 
     /**
      * Get extent updates
