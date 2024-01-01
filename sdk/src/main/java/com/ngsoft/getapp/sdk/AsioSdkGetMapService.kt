@@ -223,9 +223,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "checkImportStatue")
 
         val reqId = this.mapRepo.getReqId(id)!!;
-        val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+        var timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
 
         var stat : CreateMapImportStatus? = null
+        var lastProgress : Int? = null
         do{
             TimeUnit.SECONDS.sleep(2)
             if (this.mapRepo.isDownloadCanceled(id)){
@@ -280,6 +281,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         downloadProgress = progress,
                         errorContent = ""
                     )
+                    if (lastProgress != progress){
+                        timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+                    }
+                    lastProgress = progress
                 }
                 else -> {}
             }
