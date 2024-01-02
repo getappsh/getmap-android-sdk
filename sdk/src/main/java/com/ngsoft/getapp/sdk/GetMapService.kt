@@ -82,12 +82,21 @@ interface GetMapService {
     fun purgeCache()
 
     /**
-     * Generate QR Code from map json file.
+     * Generate QR code from map json file.
      * @param id Map id
      * @param width of the QR code
      * @param height of the QR code
      */
     fun generateQrCode(id: String, width: Int=1000, height: Int=1000): Bitmap
+
+    /**
+     * Process QR code data.
+     * @param data from the QR code
+     * @param downloadStatusHandler delivery progress handler
+     * @receiver see [MapDownloadData]
+     * @return map download id
+     */
+    fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String
 
     /**
      * Get extent updates
@@ -96,6 +105,7 @@ interface GetMapService {
      * @param updateDate to lookup cached tile against. Call getDiscoveryCatalog() to get update date for the layer of interest.
      * @return list of tile updates
      */
+
     fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile>
 
     /**

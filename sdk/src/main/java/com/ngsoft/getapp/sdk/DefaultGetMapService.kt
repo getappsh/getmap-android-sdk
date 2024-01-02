@@ -96,6 +96,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
     override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
         TODO("Not implemented in DefaultGetMapService")
     }

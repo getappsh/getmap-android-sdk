@@ -16,10 +16,15 @@ import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.ngsoft.tilescache.models.DownloadMetadata
 import com.ngsoft.tilescache.models.MapPkg
 import org.json.JSONException
+import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
@@ -90,21 +95,28 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "downloadMap: id: $id")
         Log.d(_tag, "downloadMap: bBox - ${mp.boundingBox}")
 
+        if (isEnoughSpace(id, storagePath, minAvailableSpaceMb)){
+            Thread{executeDeliveryFlow(id)}.start()
+        }
 
-        val availableSpace = FileUtils.getAvailableSpace(storagePath)
-        if (minAvailableSpaceMb >= availableSpace){
-            Log.e(_tag, "downloadMap - Available Space: $availableSpace is lower then the minimum: $minAvailableSpaceMb", )
+        return id
+    }
+
+
+    private fun isEnoughSpace(id: String, path: String, requiredSpace: Long): Boolean{
+        Log.i(_tag, "isEnoughSpace")
+        val availableSpace = FileUtils.getAvailableSpace(path)
+        if (requiredSpace >= availableSpace){
+            Log.e(_tag, "isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpace", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
                 statusMessage = appCtx.getString(R.string.delivery_status_failed),
                 errorContent = appCtx.getString(R.string.error_not_enough_space)
             )
-            return id
+            return false
         }
-
-        Thread{executeDeliveryFlow(id)}.start()
-        return id
+        return true
     }
 
     private fun executeDeliveryFlow(id: String){
@@ -438,6 +450,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                                 downloadProgress = 100,
                                 errorContent = "")
                             sendDeliveryStatus(id)
+//                            TODO When only the json is downloaded, delivery flow need to continue
                             if (!isJson){
                                 Thread{executeDeliveryFlow(id)}.start()
                             }
@@ -796,6 +809,49 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         json.put("downloadUrl", mapPkg.url)
 
         return qrManager.generateQrCode(json.toString(), width, height)
+    }
+
+    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+            Log.i(_tag, "processQrCodeData")
+
+            val jsonString = qrManager.processQrCodeData(data)
+            val json = JSONObject(jsonString)
+
+            val url = json.getString("downloadUrl")
+            Log.d(_tag, "processQrCodeData - download url: $url")
+            val jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
+            Log.d(_tag, "processQrCodeData - fileName: $jsonName")
+
+            val path = Paths.get(storagePath, jsonName)
+
+            Files.write(
+                path,
+                jsonString.toByteArray(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING
+            )
+
+            val mapPkg = MapPkg(
+                    pId = json.getString("id"),
+                    bBox = json.getString("productBoundingBox"),
+                    jsonName = jsonName,
+                    url = url,
+                    metadata = DownloadMetadata(jsonDone = true),
+                    state = MapDeliveryState.CONTINUE,
+                    flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                    statusMessage = appCtx.getString(R.string.delivery_status_continue))
+
+
+        val id = this.mapRepo.save(mapPkg)
+        this.mapRepo.setListener(id, downloadStatusHandler)
+        this.mapRepo.invoke(id)
+
+        if (isEnoughSpace(id, storagePath, minAvailableSpaceMb)){
+            Log.d(_tag, "processQrCodeData - execute the auth delivery process")
+            Thread{executeDeliveryFlow(id)}.start()
+        }
+
+        return id
     }
 
     override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {

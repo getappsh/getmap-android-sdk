@@ -23,6 +23,7 @@ internal class QRManager {
         Log.i(_tag, "compressAndHashJson")
         Log.d(_tag, "compressAndHashJson - Original size: ${jsonString.toByteArray().size}")
 
+//        TODO set value for max size for QR code
         val compressed = try{
             CompressionUtils.compress(jsonString)
         }catch (exception: Exception){
@@ -82,5 +83,11 @@ internal class QRManager {
             )
             throw io
         }
+    }
+
+
+    fun processQrCodeData(data: String): String{
+        Log.i(_tag, "scannedCode")
+        return decompressAndValidateJson(data)
     }
 }

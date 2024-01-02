@@ -19,6 +19,13 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
         val downloadFile = File(downloadPath, fileName)
         val destinationFile = File(storagePath, fileName)
 
+        if (!downloadFile.exists()){
+            if (destinationFile.exists()){
+                return
+            }
+            throw IOException("File $downloadFile, doesn't exist")
+        }
+
         if (FileUtils.getAvailableSpace(storagePath) <= downloadFile.length()){
             throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
@@ -61,8 +68,8 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
     }
 
     fun refreshMapState(mapPkg: MapPkg): MapPkg {
-        val originalMapFile = mapPkg.fileName?.let { File(downloadPath, it) }
-        val originalJsonFile = mapPkg.jsonName?.let { File(downloadPath, it) }
+        val downloadMapFile = mapPkg.fileName?.let { File(downloadPath, it) }
+        val downloadJsonFile = mapPkg.jsonName?.let { File(downloadPath, it) }
 
         val targetMapFile = mapPkg.fileName?.let { File(storagePath, it) }
         val targetJsonFile = mapPkg.jsonName?.let { File(storagePath, it) }
@@ -77,11 +84,8 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             }
             return mapPkg
         }
-//      TODO When target json file exist and target map file dose not exist, do not delete the json file just download the map file only.
-        targetMapFile?.delete()
-        targetJsonFile?.delete()
 
-        mapPkg.flowState = if (originalMapFile?.exists() == true && originalJsonFile?.exists() == true){
+        mapPkg.flowState = if (downloadMapFile?.exists() == true && downloadJsonFile?.exists() == true){
             DeliveryFlowState.DOWNLOAD_DONE
         }else if(mapPkg.url != null) {
             DeliveryFlowState.IMPORT_DELIVERY
@@ -96,8 +100,8 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_failed)
         }
 
-        mapPkg.metadata.mapDone = originalMapFile?.exists() ?: false
-        mapPkg.metadata.jsonDone = originalJsonFile?.exists() ?: false
+        mapPkg.metadata.mapDone = downloadMapFile?.exists() == true || targetMapFile?.exists() == true
+        mapPkg.metadata.jsonDone = downloadJsonFile?.exists() == true || targetJsonFile?.exists() == true
 
         return mapPkg
     }
