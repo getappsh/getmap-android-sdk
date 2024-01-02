@@ -3,16 +3,23 @@ package com.example.example_app
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
@@ -27,6 +34,7 @@ import java.time.LocalDateTime
 
 
 class MainActivity : AppCompatActivity() {
+
     private val TAG = MainActivity::class.qualifiedName
 
     private var progressDialog: ProgressDialog? = null
@@ -40,8 +48,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
+    private lateinit var scanQRButton: Button
 
-    private lateinit var downoadnTestButton: Button
+    private lateinit var syncButton: Button
 
     private var downloadId: String? = null
 
@@ -68,6 +77,17 @@ class MainActivity : AppCompatActivity() {
             service.resumeDownload(id, downloadStatusHandler)
         }
     }
+
+    private val generateQrCode: (String) -> Unit = { id ->
+        GlobalScope.launch(Dispatchers.IO) {
+            val qrCode = service.generateQrCode(id, 1000, 1000)
+            runOnUiThread {
+                showQRCodeDialog(qrCode)
+            }
+        }
+    }
+
+
     private val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
         Log.d(TAG, "onDelivery data id: ${data.id}")
 
@@ -116,13 +136,12 @@ class MainActivity : AppCompatActivity() {
             null
         )
 
-
         service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
         dismissLoadingDialog()
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        downloadListAdapter = DownloadListAdapter(downloadList, onDelete, onCancel, onResume)
+        downloadListAdapter = DownloadListAdapter(downloadList, onDelete, onCancel, onResume, generateQrCode)
         recyclerView.adapter = downloadListAdapter
 
 
@@ -141,10 +160,9 @@ class MainActivity : AppCompatActivity() {
             this.onDelivery()
         }
 
-        downoadnTestButton = findViewById<Button>(R.id.d_test)
+        syncButton = findViewById<Button>(R.id.d_test)
 
-        downoadnTestButton.setOnClickListener{
-
+        syncButton.setOnClickListener{
             GlobalScope.launch(Dispatchers.IO) {
                 var downloads = service.getDownloadedMaps()
                 Log.d(TAG, "onCreate - downloads size before ${downloads.size}")
@@ -155,6 +173,13 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+
+
+        scanQRButton = findViewById<Button>(R.id.scanQR)
+        scanQRButton.setOnClickListener {
+            barcodeLauncher.launch(ScanOptions())
+        }
+
 
     }
     private fun refreshAll(){
@@ -213,7 +238,8 @@ class MainActivity : AppCompatActivity() {
             val props = MapProperties(
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
-                "34.46264651,31.48939470,34.46454410,31.49104920",
+//                "34.46264651,31.48939470,34.46454410,31.49104920",
+                "34.47956403,31.52202183,34.51125394,31.54650525",
 //                "34.33390515,31.39424664,34.33937683,31.39776380",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
@@ -240,7 +266,7 @@ class MainActivity : AppCompatActivity() {
             selectedProduct = products[which]
             Log.d(TAG, "dialogPicker: selected item " + selectedProduct.productName)
 
-            selectedProductView.setText("Selected Product: " + selectedProduct.productName)
+            selectedProductView.setText("Selected Product:\n" + selectedProduct.productName)
             deliveryButton.isEnabled = true
             updateDate = selectedProduct.ingestionDate!!.toLocalDateTime()
 
@@ -294,5 +320,37 @@ class MainActivity : AppCompatActivity() {
     // Call this function to dismiss the loading dialog
     private fun dismissLoadingDialog() {
         progressDialog?.dismiss()
+    }
+
+    private fun showQRCodeDialog(qrCodeBitmap: Bitmap) {
+        val builder = AlertDialog.Builder(this)
+        val inflater = LayoutInflater.from(this)
+        val dialogView = inflater.inflate(R.layout.dialog_qr_code, null)
+
+        val imageViewQRCode: ImageView = dialogView.findViewById(R.id.imageViewQRCode)
+        imageViewQRCode.setImageBitmap(qrCodeBitmap)
+
+        builder.setView(dialogView)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+
+    private val barcodeLauncher: ActivityResultLauncher<ScanOptions> = registerForActivityResult(
+        ScanContract()
+    ) { result ->
+        if (result.contents == null) {
+            Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG)
+                .show()
+            GlobalScope.launch(Dispatchers.IO) {
+                service.processQrCodeData(result.contents){
+                    Log.d(TAG, "on data change: $it")
+                }
+            }
+        }
     }
 }

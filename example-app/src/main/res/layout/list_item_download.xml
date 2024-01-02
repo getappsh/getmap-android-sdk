@@ -62,5 +62,13 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="Delete"/>
+
+        <Button
+            android:id="@+id/btnQRCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            android:text="QR code"/>
     </LinearLayout>
 </LinearLayout>

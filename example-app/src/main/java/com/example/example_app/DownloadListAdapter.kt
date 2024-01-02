@@ -14,6 +14,7 @@ class DownloadListAdapter(private val downloadList: List<MapDownloadData>,
                           private val onDelete: (String) -> Unit,
                           private val onCancel: (String) -> Unit,
                           private val onResume: (String) -> Unit,
+                          private val generateQrCode: (String) -> Unit,
     ) : RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -23,6 +24,7 @@ class DownloadListAdapter(private val downloadList: List<MapDownloadData>,
         val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
         val btnCancelResume: Button = itemView.findViewById(R.id.btnCancelResume)
         val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
+        val btnQRCode: Button = itemView.findViewById(R.id.btnQRCode)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -43,6 +45,13 @@ class DownloadListAdapter(private val downloadList: List<MapDownloadData>,
         holder.btnDelete.isEnabled = !(downloadData.deliveryStatus == MapDeliveryState.START ||
                 downloadData.deliveryStatus == MapDeliveryState.DOWNLOAD ||
                 downloadData.deliveryStatus == MapDeliveryState.CONTINUE)
+
+        if (downloadData.deliveryStatus == MapDeliveryState.DONE){
+            holder.btnQRCode.visibility = View.VISIBLE
+        }else{
+            holder.btnQRCode.visibility = View.GONE
+
+        }
 
         if (downloadData.deliveryStatus == MapDeliveryState.CANCEL ||
             downloadData.deliveryStatus == MapDeliveryState.ERROR ||
@@ -68,6 +77,10 @@ class DownloadListAdapter(private val downloadList: List<MapDownloadData>,
             // and update your data accordingly
 //            callback.invoke(downloadData)
             onDelete.invoke(downloadData.id!!)
+        }
+
+        holder.btnQRCode.setOnClickListener {
+            generateQrCode(downloadData.id!!)
         }
     }
     fun getPositionById(itemId: String?): Int {
