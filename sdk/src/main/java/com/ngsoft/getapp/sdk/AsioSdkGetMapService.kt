@@ -812,34 +812,26 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
-            Log.i(_tag, "processQrCodeData")
+        Log.i(_tag, "processQrCodeData")
 
-            val jsonString = qrManager.processQrCodeData(data)
-            val json = JSONObject(jsonString)
+        val jsonString = qrManager.processQrCodeData(data)
+        val json = JSONObject(jsonString)
 
-            val url = json.getString("downloadUrl")
-            Log.d(_tag, "processQrCodeData - download url: $url")
-            val jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
-            Log.d(_tag, "processQrCodeData - fileName: $jsonName")
+        val url = json.getString("downloadUrl")
+        Log.d(_tag, "processQrCodeData - download url: $url")
+        var jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
+        jsonName = FileUtils.writeFile(storagePath, jsonName, jsonString)
+        Log.d(_tag, "processQrCodeData - fileName: $jsonName")
 
-            val path = Paths.get(storagePath, jsonName)
-
-            Files.write(
-                path,
-                jsonString.toByteArray(),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING
-            )
-
-            val mapPkg = MapPkg(
-                    pId = json.getString("id"),
-                    bBox = json.getString("productBoundingBox"),
-                    jsonName = jsonName,
-                    url = url,
-                    metadata = DownloadMetadata(jsonDone = true),
-                    state = MapDeliveryState.CONTINUE,
-                    flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                    statusMessage = appCtx.getString(R.string.delivery_status_continue))
+        val mapPkg = MapPkg(
+                pId = json.getString("id"),
+                bBox = json.getString("productBoundingBox"),
+                jsonName = jsonName,
+                url = url,
+                metadata = DownloadMetadata(jsonDone = true),
+                state = MapDeliveryState.CONTINUE,
+                flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                statusMessage = appCtx.getString(R.string.delivery_status_continue))
 
 
         val id = this.mapRepo.save(mapPkg)
