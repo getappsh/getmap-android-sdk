@@ -22,9 +22,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
@@ -535,9 +532,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return try {
             Log.d(_tag, "moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
-            mapFileManager.moveFileToTargetDir(mapPkg.fileName!!)
-            mapFileManager.moveFileToTargetDir(mapPkg.jsonName!!)
-            this.mapRepo.updateFlowState(id, DeliveryFlowState.MOVE_FILES)
+            val fileName = mapFileManager.moveFileToTargetDir(mapPkg.fileName!!)
+            val jsonName = mapFileManager.moveFileToTargetDir(mapPkg.jsonName!!)
+            this.mapRepo.update(id, flowState = DeliveryFlowState.MOVE_FILES, fileName = fileName, jsonName = jsonName)
             true
         }catch (e: Exception){
             Log.e(_tag, "moveImportFiles - move file failed: ${e.message.toString()}", )

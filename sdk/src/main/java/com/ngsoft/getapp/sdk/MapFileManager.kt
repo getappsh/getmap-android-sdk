@@ -15,13 +15,13 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
     private val _tag = "MapManager"
 
 
-    fun moveFileToTargetDir(fileName: String) {
+    fun moveFileToTargetDir(fileName: String): String {
         val downloadFile = File(downloadPath, fileName)
-        val destinationFile = File(storagePath, fileName)
 
+//        TODO fined better way to handle when file exist and have not been downloaded
         if (!downloadFile.exists()){
-            if (destinationFile.exists()){
-                return
+            if(File(storagePath, fileName).exists()){
+                return fileName
             }
             throw IOException("File $downloadFile, doesn't exist")
         }
@@ -30,11 +30,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
 
-        Files.move(
-            downloadFile.toPath(),
-            destinationFile.toPath(),
-            StandardCopyOption.REPLACE_EXISTING
-        )
+        return FileUtils.moveFile(downloadPath, storagePath, fileName)
     }
 
     fun deleteMapFiles(mapName: String?, jsonName: String?){
