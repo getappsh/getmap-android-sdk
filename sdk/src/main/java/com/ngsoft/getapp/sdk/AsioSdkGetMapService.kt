@@ -61,7 +61,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         downloadRetryAttempts = configuration.downloadRetry
 
         mapRepo = MapRepo(appCtx)
-        qrManager = QRManager()
+        qrManager = QRManager(appCtx)
 
         if (instanceCount == 0){
             Thread{updateMapsStatusOnStart()}.start()

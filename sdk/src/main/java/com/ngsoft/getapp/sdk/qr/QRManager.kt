@@ -1,11 +1,13 @@
 package com.ngsoft.getapp.sdk.qr
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Base64
 import android.util.Log
 
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.ngsoft.getapp.sdk.R
 
 import com.ngsoft.getapp.sdk.utils.CompressionUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
@@ -14,16 +16,16 @@ import java.io.IOException
 
 
 
-internal class QRManager {
+internal class QRManager(private val appCtx: Context) {
     private val _tag = "QRManager"
 
     private val checksumAlgorithm = "sha256"
+    private val maxBytesSize = 2953
 
     private fun compressAndHashJson(jsonString: String): String{
         Log.i(_tag, "compressAndHashJson")
         Log.d(_tag, "compressAndHashJson - Original size: ${jsonString.toByteArray().size}")
 
-//        TODO set value for max size for QR code
         val compressed = try{
             CompressionUtils.compress(jsonString)
         }catch (exception: Exception){
@@ -33,8 +35,13 @@ internal class QRManager {
         Log.d(_tag, "compressAndHashJson - Compressed size: ${compressed.size}")
 
         val encoded =  Base64.encodeToString(compressed, Base64.DEFAULT)
-        Log.d(_tag, "compressAndHashJson - Encoded size: ${encoded.toByteArray().size}")
+        val finalSize = encoded.toByteArray().size
+        Log.d(_tag, "compressAndHashJson - Encoded size: $finalSize")
 
+        if ( finalSize >= maxBytesSize){
+            Log.e(_tag, "compressAndHashJson - Final size: $finalSize, is Higher then required: $maxBytesSize.", )
+            throw Exception(appCtx.getString(R.string.error_qr_code_file_size_to_large, finalSize))
+        }
         val hash = HashUtils.getCheckSumFromByteArray(checksumAlgorithm, compressed){}
 
         val jsonContainer = JSONObject()
@@ -77,10 +84,7 @@ internal class QRManager {
         try {
             return CompressionUtils.decompress(decoded)
         } catch (io: IOException) {
-            Log.e(
-                _tag,
-                "decompressAndValidateJson - Failed to decompress the json: ${io.message.toString()}",
-            )
+            Log.e(_tag, "decompressAndValidateJson - Failed to decompress the json: ${io.message.toString()}",)
             throw io
         }
     }

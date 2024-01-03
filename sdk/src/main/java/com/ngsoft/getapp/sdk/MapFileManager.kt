@@ -8,8 +8,6 @@ import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.io.File
 import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 internal class MapFileManager(private val appCtx: Context, private val downloadPath: String, private val storagePath: String) {
     private val _tag = "MapManager"

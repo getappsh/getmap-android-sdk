@@ -80,10 +80,13 @@ class MainActivity : AppCompatActivity() {
 
     private val generateQrCode: (String) -> Unit = { id ->
         GlobalScope.launch(Dispatchers.IO) {
-            val qrCode = service.generateQrCode(id, 1000, 1000)
-            runOnUiThread {
-                showQRCodeDialog(qrCode)
+            try {
+                val qrCode = service.generateQrCode(id, 1000, 1000)
+                runOnUiThread { showQRCodeDialog(qrCode) }
+            }catch (e: Exception){
+                runOnUiThread { showErrorDialog(e.message.toString()) }
             }
+
         }
     }
 
@@ -300,6 +303,22 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun showErrorDialog(msg: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Error")
+
+        // Set the response data as the message in the AlertDialog
+        builder.setMessage(msg)
+
+        builder.setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+
     private fun showLoadingDialog(title: String, id: String? = null) {
         progressDialog = ProgressDialog(this)
         progressDialog?.setTitle(title)
@@ -346,9 +365,14 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
             GlobalScope.launch(Dispatchers.IO) {
-                service.processQrCodeData(result.contents){
-                    Log.d(TAG, "on data change: $it")
+                try{
+                    service.processQrCodeData(result.contents){
+                        Log.d(TAG, "on data change: $it")
+                    }
+                }catch (e: Exception){
+                    runOnUiThread { showErrorDialog(e.message.toString()) }
                 }
+
             }
         }
     }
