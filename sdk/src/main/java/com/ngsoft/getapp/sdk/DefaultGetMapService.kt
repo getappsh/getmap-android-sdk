@@ -22,6 +22,7 @@ import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Environment
 import android.util.Log
+import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -127,7 +128,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun getDownloadedMaps(): List<MapDownloadData> {
+    override fun getDownloadedMaps(): LiveData<List<MapDownloadData>> {
         TODO("Not implemented in DefaultGetMapService")
     }
 
