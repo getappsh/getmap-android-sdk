@@ -22,7 +22,7 @@ internal class MapRepo(ctx: Context) {
 
     private val mapMutableLiveHase = MutableLiveData<HashMap<String, MapDownloadData>>()
     private val mapLiveList: LiveData<List<MapDownloadData>> =  Transformations.map(mapMutableLiveHase){
-        it.values.toList()
+        it.values.toList().sortedByDescending{ map -> map.id }
     }
 
     init {
