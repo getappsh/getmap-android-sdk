@@ -52,35 +52,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var downloadListAdapter: DownloadListAdapter
 
-    private val onDelete: (String) -> Unit = { id ->
-        GlobalScope.launch(Dispatchers.IO) {
-            service.deleteMap(id)
-        }
-    }
 
-    private val onCancel: (String) -> Unit = { id ->
-        GlobalScope.launch(Dispatchers.IO) {
-            service.cancelDownload(id)
-        }
-    }
-
-    private val onResume: (String) -> Unit = { id ->
-        GlobalScope.launch(Dispatchers.IO) {
-            service.resumeDownload(id, downloadStatusHandler)
-        }
-    }
-
-    private val generateQrCode: (String) -> Unit = { id ->
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val qrCode = service.generateQrCode(id, 1000, 1000)
-                runOnUiThread { showQRCodeDialog(qrCode) }
-            }catch (e: Exception){
-                runOnUiThread { showErrorDialog(e.message.toString()) }
-            }
-
-        }
-    }
 
 
     private val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
@@ -115,7 +87,14 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        downloadListAdapter = DownloadListAdapter(onDelete, onCancel, onResume, generateQrCode)
+        downloadListAdapter = DownloadListAdapter(){bId, mapId ->
+            when(bId){
+                DownloadListAdapter.RESUME_BUTTON_CLICK -> onResume(mapId)
+                DownloadListAdapter.CANCEL_BUTTON_CLICK -> onCancel(mapId)
+                DownloadListAdapter.DELETE_BUTTON_CLICK -> onDelete(mapId)
+                DownloadListAdapter.QR_CODE_BUTTON_CLICK -> generateQrCode(mapId)
+            }
+        }
         recyclerView.adapter = downloadListAdapter
 
         service.getDownloadedMaps().observe(this, Observer {
@@ -228,6 +207,36 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun onDelete(id: String){
+        GlobalScope.launch(Dispatchers.IO) {
+            service.deleteMap(id)
+        }
+    }
+
+    private fun onCancel(id: String){
+        GlobalScope.launch(Dispatchers.IO) {
+            service.cancelDownload(id)
+        }
+    }
+
+    private fun onResume(id: String){
+        GlobalScope.launch(Dispatchers.IO) {
+            service.resumeDownload(id, downloadStatusHandler)
+        }
+    }
+
+    private fun generateQrCode(id: String){
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val qrCode = service.generateQrCode(id, 1000, 1000)
+                runOnUiThread { showQRCodeDialog(qrCode) }
+            }catch (e: Exception){
+                runOnUiThread { showErrorDialog(e.message.toString()) }
+            }
+
+        }
+    }
+
 
     private fun showErrorDialog(msg: String) {
         val builder = AlertDialog.Builder(this)
@@ -262,6 +271,7 @@ class MainActivity : AppCompatActivity() {
     private fun dismissLoadingDialog() {
         progressDialog?.dismiss()
     }
+
 
     private fun showQRCodeDialog(qrCodeBitmap: Bitmap) {
         val builder = AlertDialog.Builder(this)

@@ -9,14 +9,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 
-class DownloadListAdapter(private val onDelete: (String) -> Unit,
-                          private val onCancel: (String) -> Unit,
-                          private val onResume: (String) -> Unit,
-                          private val generateQrCode: (String) -> Unit,
-    ) : RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
+class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textFileName: TextView = itemView.findViewById(R.id.textFileName)
@@ -49,52 +45,75 @@ class DownloadListAdapter(private val onDelete: (String) -> Unit,
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val downloadData = asyncListDiffer.currentList[position]
 
-        // Update UI elements with data from MapDownloadData
         holder.textFileName.text = downloadData.fileName
         holder.textStatus.text = downloadData.statusMessage
         holder.textError.text = downloadData.errorContent
         holder.progressBar.progress = downloadData.downloadProgress
 
+        holder.btnCancelResume.visibility = View.VISIBLE
+        holder.btnCancelResume.isEnabled = true
 
-        holder.btnDelete.isEnabled = !(downloadData.deliveryStatus == MapDeliveryState.START ||
-                downloadData.deliveryStatus == MapDeliveryState.DOWNLOAD ||
-                downloadData.deliveryStatus == MapDeliveryState.CONTINUE)
+        when(downloadData.deliveryStatus){
+            START -> {
+                holder.btnDelete.visibility = View.GONE
+                holder.btnCancelResume.text = "Cancel"
+                holder.btnQRCode.visibility = View.GONE
+            }
+            DONE -> {
+                holder.btnDelete.visibility = View.VISIBLE
+                holder.btnCancelResume.isEnabled = false
+                holder.btnCancelResume.text = "Cancel"
+                holder.btnQRCode.visibility = View.VISIBLE
+            }
+            ERROR -> {
+                holder.btnDelete.visibility = View.VISIBLE
+                holder.btnCancelResume.text = "Resume"
+                holder.btnQRCode.visibility = View.GONE
+            }
+            CANCEL -> {
+                holder.btnDelete.visibility = View.VISIBLE
+                holder.btnCancelResume.text = "Resume"
+                holder.btnQRCode.visibility = View.GONE
+            }
+            PAUSE -> {
+                holder.btnDelete.visibility = View.VISIBLE
+                holder.btnCancelResume.text = "Resume"
+                holder.btnQRCode.visibility = View.GONE
+            }
+            CONTINUE -> {
+                holder.btnDelete.visibility = View.GONE
+                holder.btnCancelResume.text = "Cancel"
+                holder.btnQRCode.visibility = View.GONE
+            }
+            DOWNLOAD -> {
+                holder.btnDelete.visibility = View.GONE
+                holder.btnCancelResume.text = "Cancel"
+                holder.btnQRCode.visibility = View.GONE
+            }
+            DELETED -> {
+                holder.btnDelete.visibility = View.VISIBLE
+                holder.btnCancelResume.text = "Cancel"
+                holder.btnQRCode.visibility = View.GONE
 
-        if (downloadData.deliveryStatus == MapDeliveryState.DONE){
-            holder.btnQRCode.visibility = View.VISIBLE
-        }else{
-            holder.btnQRCode.visibility = View.GONE
-
+            }
         }
 
-        if (downloadData.deliveryStatus == MapDeliveryState.CANCEL ||
-            downloadData.deliveryStatus == MapDeliveryState.ERROR ||
-            downloadData.deliveryStatus == MapDeliveryState.PAUSE){
-            holder.btnCancelResume.text = "Resume"
-        }else{
-            holder.btnCancelResume.text = "Cancel"
-
-        }
         // Set click listeners for buttons
         holder.btnCancelResume.setOnClickListener {
-            // TODO: Handle cancel/resume button click
             if ((it as Button).text == "Resume" ){
-                onResume.invoke(downloadData.id!!)
+                onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!)
             }else{
-                onCancel.invoke(downloadData.id!!)
+                onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!)
             }
         }
 
         holder.btnDelete.setOnClickListener {
-            // TODO: Handle delete button click
-            // You may want to confirm the deletion before proceeding
-            // and update your data accordingly
-//            callback.invoke(downloadData)
-            onDelete.invoke(downloadData.id!!)
+            onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!)
+
         }
 
         holder.btnQRCode.setOnClickListener {
-            generateQrCode(downloadData.id!!)
+            onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!)
         }
     }
     override fun getItemCount(): Int {
@@ -103,6 +122,12 @@ class DownloadListAdapter(private val onDelete: (String) -> Unit,
     fun saveData(dataResponse: List<MapDownloadData>){
         asyncListDiffer.submitList(dataResponse)
     }
+
+    companion object {
+        const val RESUME_BUTTON_CLICK = 1
+        const val CANCEL_BUTTON_CLICK = 2
+        const val QR_CODE_BUTTON_CLICK = 3
+        const val DELETE_BUTTON_CLICK = 4    }
 
 
 }
