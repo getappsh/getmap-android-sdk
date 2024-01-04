@@ -8,7 +8,6 @@ import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 
@@ -90,10 +89,7 @@ internal class MapRepo(ctx: Context) {
         mapDone: Boolean? = null,
         jsonAttempt: Int? = null,
         jsonDone: Boolean? = null
-
-
     ) {
-
         updateInternal(
             id,
             reqId,
@@ -116,6 +112,7 @@ internal class MapRepo(ctx: Context) {
         )
         invoke(id)
     }
+//    TODO potential issue with this calls, they are not in the same transaction
     private fun updateInternal(
         id: String,
         reqId: String? = null,
@@ -176,6 +173,18 @@ internal class MapRepo(ctx: Context) {
             }
             dao.update(this)
         }
+    }
+
+    fun updateAndReturn(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null): MapPkg?{
+        val mapPkg = this.getById(id) ?: return null
+        mapPkg.apply {
+            this.fileName = fileName ?: this.fileName
+            this.jsonName = jsonName ?: this.jsonName
+
+            this.metadata.mapDone = mapDone ?: this.metadata.mapDone
+            this.metadata.jsonDone = jsonDone ?: this.metadata.jsonDone
+        }
+        return dao.updateAndReturn(mapPkg)
     }
 
     fun getById(id: String): MapPkg?{

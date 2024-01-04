@@ -430,14 +430,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     }
 
                     if (progress >= 100 || statusInfo.status == DownloadManager.STATUS_SUCCESSFUL){
-                        if (isJson){
-                            mapRepo.update(id, jsonDone = true, jsonName = statusInfo.fileName)
+                        val updatedMapPkg  = if (isJson){
+                             mapRepo.updateAndReturn(id, jsonDone = true, jsonName = statusInfo.fileName)
                         }else{
-                            mapRepo.update(id, mapDone = true)
+                            mapRepo.updateAndReturn(id, mapDone = true)
                         }
-
-//                        todo mapRepo update will return the updated map
-                        val updatedMapPkg =  mapRepo.getById(id)
 
                         if (updatedMapPkg?.metadata?.mapDone == true && updatedMapPkg.metadata.jsonDone){
                             Log.d(_tag, "downloadFile - downloading Done")
@@ -447,10 +444,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                                 downloadProgress = 100,
                                 errorContent = "")
                             sendDeliveryStatus(id)
-//                            TODO When only the json is downloaded, delivery flow need to continue
-                            if (!isJson){
-                                Thread{executeDeliveryFlow(id)}.start()
-                            }
+                            Thread{executeDeliveryFlow(id)}.start()
                         }
                         this.cancel()
                     }
@@ -655,6 +649,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
 
             val rMap = mapFileManager.refreshMapState(map)
+            if(map.state == MapDeliveryState.DOWNLOAD || map.state == MapDeliveryState.CONTINUE){
+                if ((rMap.metadata.mapDone ||!downloader.isDownloadFailed(map.MDID)) &&
+                    (rMap.metadata.jsonDone || !downloader.isDownloadFailed(map.JDID))){
+                    continue
+                }
+            }
+
             this.mapRepo.update(rMap.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
                 statusMessage = rMap.statusMessage, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
@@ -688,13 +689,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             if (!this.mapRepo.doesJsonFileExist(file.name)) {
                 Log.d(_tag, "syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
 
-//                todo in future download url maybe in the json.
-
-                val pId: String; val bBox: String
+                val pId: String; val bBox: String; val url: String?;
                 try{
                     val json = JsonUtils.readJson(file.path)
                     pId = json.getString("id")
                     bBox = json.getString("productBoundingBox")
+                    url =  if (json.has("downloadUrl")) json.getString("downloadUrl") else null
                 }catch (e: JSONException){
                     Log.e(_tag, "syncStorage - not valid json object: ${e.message.toString()}")
                     Log.d(_tag, "syncStorage - delete json file: ${file.name}")
@@ -707,6 +707,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     bBox = bBox,
                     state = MapDeliveryState.ERROR,
                     flowState = DeliveryFlowState.MOVE_FILES,
+                    url = url,
                     fileName = FileUtils.changeFileExtensionToMap(file.name),
                     jsonName = file.name,
                     statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
@@ -856,7 +857,18 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         for (map in mapsData){
             val id = map.id.toString()
             when(map.flowState){
-                DeliveryFlowState.DOWNLOAD, DeliveryFlowState.MOVE_FILES, DeliveryFlowState.DOWNLOAD_DONE -> {
+                DeliveryFlowState.DOWNLOAD -> {
+                    if((!map.metadata.mapDone && downloader.isDownloadFailed(map.MDID)) ||
+                        (!map.metadata.jsonDone && downloader.isDownloadFailed(map.JDID))){
+                        Log.d(_tag, "updateMapsStatusOnStart - Map download failed, set state to pause")
+                        this.mapRepo.update(id = id, state = MapDeliveryState.PAUSE,
+                            flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                            statusMessage = appCtx.getString(R.string.delivery_status_paused))
+                        continue
+                    }
+                    Thread{ executeDeliveryFlow(id)}.start()
+                }
+                DeliveryFlowState.MOVE_FILES, DeliveryFlowState.DOWNLOAD_DONE -> {
                     Log.d(_tag, "updateMapsStatusOnStart - map id: $id, is on ${map.flowState} continue the flow")
                     Thread{ executeDeliveryFlow(id)}.start()
                 }
