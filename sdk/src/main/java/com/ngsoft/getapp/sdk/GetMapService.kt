@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.sdk
 
 import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDownloadData
@@ -25,7 +26,7 @@ interface GetMapService {
      *
      * @return List<MapDownloadData>
      */
-    fun getDownloadedMaps(): List<MapDownloadData>
+    fun getDownloadedMaps(): LiveData<List<MapDownloadData>>
 
     /**
      * Delete Map

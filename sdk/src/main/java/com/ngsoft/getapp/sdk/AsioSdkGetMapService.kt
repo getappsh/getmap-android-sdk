@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapDownloadData
@@ -75,9 +76,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return this.mapRepo.getDownloadData(id)
     }
 
-    override fun getDownloadedMaps(): List<MapDownloadData> {
+    override fun getDownloadedMaps(): LiveData<List<MapDownloadData>> {
         Log.i(_tag, "getDownloadedMaps")
-        return this.mapRepo.getAllMapsDownloadData()
+        return this.mapRepo.getAllMapsLiveData()
     }
 
     override fun purgeCache(){
