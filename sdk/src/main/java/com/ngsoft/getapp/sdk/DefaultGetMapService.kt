@@ -18,9 +18,11 @@ import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
 import android.content.Context.BATTERY_SERVICE
+import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Environment
 import android.util.Log
+import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -53,7 +55,9 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
     protected lateinit var storagePath: String
+    protected lateinit var downloadPath: String
     private lateinit var batteryManager: BatteryManager
+    protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
 
 
@@ -62,11 +66,17 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Log.i(_tag, "Init GetMapService" )
 
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
-        downloader = PackageDownloader(appCtx, Environment.DIRECTORY_DOWNLOADS)
+
+        val dir = Environment.DIRECTORY_DOWNLOADS
+        downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
+        downloader = PackageDownloader(appCtx, dir)
+
         pref = Pref.getInstance(appCtx)
 
         storagePath = configuration.storagePath
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
+
+        mapFileManager = MapFileManager(appCtx, downloadPath, storagePath)
 
         cache = TilesCache(appCtx)
 
@@ -80,6 +90,14 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun purgeCache(){
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun generateQrCode(id: String, width: Int, height: Int): Bitmap {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -99,6 +117,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
     override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
         TODO("Not implemented in DefaultGetMapService")
     }
@@ -106,7 +128,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun getDownloadedMaps(): List<MapDownloadData> {
+    override fun getDownloadedMaps(): LiveData<List<MapDownloadData>> {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -114,7 +136,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun cleanDownloads() {
+    override fun synchronizeMapData() {
         TODO("Not implemented in DefaultGetMapService")
     }
 

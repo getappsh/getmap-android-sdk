@@ -10,6 +10,7 @@
     <string name="delivery_status_canceled">בוטל</string>
     <string name="delivery_status_failed">נכשל</string>
     <string name="delivery_status_failed_try_again">נכשל - מנסה שוב</string>
+    <string name="delivery_status_failed_try_again_in">נכשל - מנסה שוב בעוד %d שניות</string>
     <string name="delivery_status_bad_connection">קליטה גרועה</string>
     <string name="delivery_status_no_connection">אין רשת</string>
     <string name="delivery_status_in_verification">באימות</string>
@@ -17,5 +18,6 @@
     <string name="delivery_status_failed_verification_try_again">נכשל באימות - מוריד שוב</string>
 
     <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>
+    <string name="error_qr_code_file_size_to_large">יצירת קוד QR נכשלה: גודל הנתונים %d בייט, גדול מדי</string>
 
 </resources>

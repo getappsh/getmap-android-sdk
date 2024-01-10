@@ -11,7 +11,7 @@ object JsonUtils {
         return JSONObject(String(file))
     }
 
-    fun getValueFromJson(key: String, jsonPath: String): String{
+    fun getStringOrThrow(key: String, jsonPath: String): String{
         val jsonObject = readJson(jsonPath);
         return jsonObject.getString(key)
     }

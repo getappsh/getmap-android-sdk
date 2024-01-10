@@ -3,6 +3,7 @@ package com.ngsoft.tilescache.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 
 import com.ngsoft.tilescache.models.MapPkg
@@ -17,15 +18,22 @@ interface MapDAO {
 
     @Insert
     fun insert(map: MapPkg): Long
-
     @Update
     fun update(mapPkg: MapPkg)
 
+    @Transaction
+    fun updateAndReturn(mapPkg: MapPkg): MapPkg? {
+        update(mapPkg)
+        return getById(mapPkg.id)
+    }
     @Query("DELETE FROM MapPkg WHERE id = :id")
     fun deleteById(id: Int)
 
     @Query("SELECT EXISTS (SELECT 1 FROM MapPkg WHERE fileName = :name)")
     fun doesMapFileExist(name: String): Boolean
+
+    @Query("SELECT EXISTS (SELECT 1 FROM MapPkg WHERE jsonName = :name)")
+    fun doesJsonFileExist(name: String): Boolean
 
     @Query("DELETE FROM MapPkg")
     fun nukeTable()

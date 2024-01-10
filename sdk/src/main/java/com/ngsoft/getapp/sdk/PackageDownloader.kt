@@ -72,6 +72,11 @@ internal class PackageDownloader(private val context: Context, private val downl
         return downloadManager.remove(*ids)
     }
 
+    fun isDownloadFailed(downloadId: Long?):Boolean{
+        val info = downloadId?.let { queryStatus(it) }
+        return info == null || info.status == DownloadManager.STATUS_FAILED
+    }
+
     @SuppressLint("Range")
     fun queryStatus(downloadId: Long): DownloadInfo? {
         val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
