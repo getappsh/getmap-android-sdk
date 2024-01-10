@@ -818,7 +818,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val url = json.getString("downloadUrl")
         Log.d(_tag, "processQrCodeData - download url: $url")
         var jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
-        jsonName = FileUtils.writeFile(storagePath, jsonName, jsonString)
+        jsonName = FileUtils.writeFile(downloadPath, jsonName, jsonString)
         Log.d(_tag, "processQrCodeData - fileName: $jsonName")
 
         val mapPkg = MapPkg(

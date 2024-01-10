@@ -33,17 +33,17 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
 
     fun deleteMapFiles(mapName: String?, jsonName: String?){
         if (mapName != null){
-            deleteFile(mapName)
+            deleteFileFromAllLocations(mapName)
             val journalName = FileUtils.changeFileExtensionToJournal(mapName)
-            deleteFile(journalName)
+            deleteFileFromAllLocations(journalName)
         }
 
         if (jsonName != null){
-            deleteFile(jsonName)
+            deleteFileFromAllLocations(jsonName)
         }
     }
 
-    private fun deleteFile(fileName: String){
+    private fun deleteFileFromAllLocations(fileName: String){
         Log.i(_tag, "deleteFile - fileName: $fileName")
         for (path in arrayOf(downloadPath, storagePath)){
             val file = File(path, fileName)
@@ -61,6 +61,13 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
         }
     }
 
+    private fun deleteFile(file: File){
+        try {
+            file.delete()
+        }catch (e: Exception){
+            Log.e(_tag, "refreshMapState - failed to delete file: ${file.path}", )
+        }
+    }
     fun refreshMapState(mapPkg: MapPkg): MapPkg {
         val downloadMapFile = mapPkg.fileName?.let { File(downloadPath, it) }
         val downloadJsonFile = mapPkg.jsonName?.let { File(downloadPath, it) }
@@ -77,6 +84,19 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
                 mapPkg.flowState = DeliveryFlowState.MOVE_FILES
             }
             return mapPkg
+        }
+
+        if(targetJsonFile?.exists() == true && targetMapFile?.exists() != true){
+            if (downloadJsonFile?.exists() == false){
+                try {
+                    FileUtils.moveFile(storagePath, downloadPath, targetJsonFile.name)
+                }catch (e: Exception){
+                    Log.e(_tag, "refreshMapState - failed to move json file to download dir, json: ${targetJsonFile.name}, error: ${e.message.toString()}")
+                }
+                deleteFile(targetJsonFile)
+            }else{
+                deleteFile(targetJsonFile)
+            }
         }
 
         mapPkg.flowState = if (downloadMapFile?.exists() == true && downloadJsonFile?.exists() == true){
