@@ -3,6 +3,7 @@ package com.ngsoft.tilescache.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 
 import com.ngsoft.tilescache.models.MapPkg
@@ -17,10 +18,14 @@ interface MapDAO {
 
     @Insert
     fun insert(map: MapPkg): Long
-
     @Update
     fun update(mapPkg: MapPkg)
 
+    @Transaction
+    fun updateAndReturn(mapPkg: MapPkg): MapPkg? {
+        update(mapPkg)
+        return getById(mapPkg.id)
+    }
     @Query("DELETE FROM MapPkg WHERE id = :id")
     fun deleteById(id: Int)
 

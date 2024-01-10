@@ -11,6 +11,15 @@ object HashUtils {
     private const val STREAM_BUFFER_LENGTH = 1024
     private const val UPDATE_INTERVAL = 1024 * 1024 * 5
 
+    fun getCheckSumFromByteArray(algorithm: String, data: ByteArray, progressCallback: ((Int) -> Unit)? = null): String{
+        val digest = MessageDigest.getInstance(algorithm)
+        val bs = data.inputStream()
+        val byteArray = updateDigest(digest, bs, progressCallback).digest()
+        bs.close()
+        val hexCode = StringUtils.encodeHex(byteArray, true)
+        return String(hexCode)
+    }
+
     fun getCheckSumFromFile(algorithm: String, filePath: String, progressCallback: ((Int) -> Unit)? = null): String {
         val file = File(filePath)
         return getCheckSumFromFile(algorithm, file, progressCallback)
@@ -37,8 +46,8 @@ object HashUtils {
      */
     private fun updateDigest(digest: MessageDigest, data: InputStream, progressCallback: ((Int) -> Unit)?): MessageDigest {
         val buffer = ByteArray(STREAM_BUFFER_LENGTH)
-        var read = data.read(buffer, 0, STREAM_BUFFER_LENGTH)
         val fileSize = data.available().toLong()
+        var read = data.read(buffer, 0, STREAM_BUFFER_LENGTH)
         var totalBytesRead = 0L
         var lastUpdate = 0L
 

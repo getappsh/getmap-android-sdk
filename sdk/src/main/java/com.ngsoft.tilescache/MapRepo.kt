@@ -2,13 +2,15 @@ package com.ngsoft.tilescache
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 
@@ -17,6 +19,11 @@ internal class MapRepo(ctx: Context) {
     private val _tag = "MapRepo"
     private val db: TilesDatabase
     private val dao: MapDAO
+
+    private val mapMutableLiveHase = MutableLiveData<HashMap<String, MapDownloadData>>()
+    private val mapLiveList: LiveData<List<MapDownloadData>> =  Transformations.map(mapMutableLiveHase){
+        it.values.toList().sortedByDescending{ map -> map.id }
+    }
 
     init {
         Log.d(_tag,"MapRepo init...")
@@ -44,19 +51,6 @@ internal class MapRepo(ctx: Context) {
         val id = dao.insert(mapPkg)
         return id.toString()
     }
-    fun save(pId:String, bBox: String, fileName: String, jsonName: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState): String{
-        val id = dao.insert(MapPkg(
-            pId=pId,
-            bBox=bBox,
-            state=state,
-            flowState=flowState,
-            statusMessage = statusMessage,
-            fileName = fileName,
-            jsonName = jsonName,
-        ))
-
-        return id.toString()
-    }
     fun purge(){
         dao.nukeTable()
         //reset auto-increments
@@ -68,9 +62,14 @@ internal class MapRepo(ctx: Context) {
             .getAll()
             .sortedBy { map-> map.downloadStart }
     }
-    fun getAllMapsDownloadData(): List<MapDownloadData>{
-        return getAll().map {mapPkg2DownloadData(it)}
+
+    fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
+        if (mapMutableLiveHase.value == null){
+            Thread{mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap)}.start()
+        }
+        return mapLiveList
     }
+
     fun update(
         id: String,
         reqId: String? = null,
@@ -90,10 +89,7 @@ internal class MapRepo(ctx: Context) {
         mapDone: Boolean? = null,
         jsonAttempt: Int? = null,
         jsonDone: Boolean? = null
-
-
     ) {
-
         updateInternal(
             id,
             reqId,
@@ -116,6 +112,7 @@ internal class MapRepo(ctx: Context) {
         )
         invoke(id)
     }
+//    TODO potential issue with this calls, they are not in the same transaction
     private fun updateInternal(
         id: String,
         reqId: String? = null,
@@ -161,8 +158,6 @@ internal class MapRepo(ctx: Context) {
             this.metadata.jsonAttempt = jsonAttempt ?: this.metadata.jsonAttempt
             this.metadata.jsonDone = jsonDone ?: this.metadata.jsonDone
 
-
-
             if (state == MapDeliveryState.CANCEL && this.cancelDownload){
                 this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)
                 this.cancelDownload = false
@@ -176,6 +171,18 @@ internal class MapRepo(ctx: Context) {
             }
             dao.update(this)
         }
+    }
+
+    fun updateAndReturn(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null): MapPkg?{
+        val mapPkg = this.getById(id) ?: return null
+        mapPkg.apply {
+            this.fileName = fileName ?: this.fileName
+            this.jsonName = jsonName ?: this.jsonName
+
+            this.metadata.mapDone = mapDone ?: this.metadata.mapDone
+            this.metadata.jsonDone = jsonDone ?: this.metadata.jsonDone
+        }
+        return dao.updateAndReturn(mapPkg)
     }
 
     fun getById(id: String): MapPkg?{
@@ -194,15 +201,15 @@ internal class MapRepo(ctx: Context) {
         return dao.doesJsonFileExist(name)
     }
 
-    fun updateFlowState(id: String, flowState: DeliveryFlowState){
-        this.updateInternal(id, flowState=flowState)
-    }
-
     fun remove(id: String){
         try {
             update(id, state = MapDeliveryState.DELETED)
             dao.deleteById(id.toInt())
             downloadStatusHandlers.remove(id)
+
+            mapMutableLiveHase.value?.remove(id)
+            mapMutableLiveHase.postValue(mapMutableLiveHase.value)
+
         }catch (_: NumberFormatException){ }
     }
 
@@ -214,10 +221,6 @@ internal class MapRepo(ctx: Context) {
         return this.getById(id)?.reqId
     }
 
-    fun getDeliveryFlowState(id: String): DeliveryFlowState?{
-        return this.getById(id)?.flowState
-    }
-
     fun isDownloadCanceled(id: String): Boolean{
         return this.getById(id)?.cancelDownload ?: false
     }
@@ -226,6 +229,9 @@ internal class MapRepo(ctx: Context) {
         val map = getDownloadData(id);
         if (map != null) {
             downloadStatusHandlers[id]?.invoke(map)
+
+            mapMutableLiveHase.value?.set(id, map)
+            mapMutableLiveHase.postValue(mapMutableLiveHase.value)
         }else{
             Log.e(_tag, "invoke: not found map id: $id", )
         }

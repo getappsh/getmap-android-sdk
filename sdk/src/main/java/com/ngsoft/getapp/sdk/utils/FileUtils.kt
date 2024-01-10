@@ -1,6 +1,10 @@
 package com.ngsoft.getapp.sdk.utils
 
 import android.os.StatFs
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 object FileUtils {
 
@@ -27,5 +31,47 @@ object FileUtils {
         val blockSize = statFs.blockSizeLong
         val availableBlocks = statFs.availableBlocksLong
         return blockSize * availableBlocks // bytes available
+    }
+
+    fun moveFile(from: String, to: String, fileName: String): String{
+        val uniqueFileName = getUniqueFileName(to, fileName)
+
+        Files.move(
+            Paths.get(from, fileName),
+            Paths.get(to, uniqueFileName),
+            StandardCopyOption.REPLACE_EXISTING)
+
+        return uniqueFileName
+    }
+    fun writeFile(path: String, fileName: String, data: String): String{
+        val uniqueFileName = getUniqueFileName(path, fileName)
+        File(path, uniqueFileName).writeText(data)
+        return uniqueFileName
+    }
+
+    fun getUniqueFileName(path: String, fileName: String): String{
+        var fileNumber = 0
+        var uniqueFileName = fileName
+        while (File(path, uniqueFileName).exists()){
+            fileNumber++
+            uniqueFileName = incrementFileName(fileName, fileNumber)
+        }
+        return uniqueFileName
+    }
+
+    private fun incrementFileName(fileName: String, number: Int): String {
+        val dotIndex = fileName.lastIndexOf('.')
+        val name = if (dotIndex != -1) {
+            fileName.substring(0, dotIndex)
+        } else {
+            fileName
+        }
+
+        val extension = if (dotIndex != -1 && dotIndex < fileName.length - 1) {
+            fileName.substring(dotIndex)
+        } else {
+            ""
+        }
+        return "${name}-$number$extension"
     }
 }
