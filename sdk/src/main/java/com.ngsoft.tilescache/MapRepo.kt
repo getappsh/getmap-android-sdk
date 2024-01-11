@@ -27,7 +27,7 @@ internal class MapRepo(ctx: Context) {
 
     init {
         Log.d(_tag,"MapRepo init...")
-        db = TilesDatabase.connect(ctx)
+        db = TilesDatabase.getInstance(ctx)
         dao = db.mapDap()
     }
 

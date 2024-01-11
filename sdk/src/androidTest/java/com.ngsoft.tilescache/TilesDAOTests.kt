@@ -24,7 +24,7 @@ class TilesDAOTests {
         fun setup() {
             println("Test setup...")
             val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            val db = TilesDatabase.connect(appContext)
+            val db = TilesDatabase.getInstance(appContext)
             dao = db.tilesDao()
         }
 
