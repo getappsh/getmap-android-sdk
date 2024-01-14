@@ -26,7 +26,14 @@ interface GetMapService {
      *
      * @return List<MapDownloadData>
      */
-    fun getDownloadedMaps(): LiveData<List<MapDownloadData>>
+    fun getDownloadedMaps(): List<MapDownloadData>
+
+    /**
+     * Get Downloaded maps
+     *
+     * @return LiveData<List<MapDownloadData>>
+     */
+    fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>>
 
     /**
      * Delete Map

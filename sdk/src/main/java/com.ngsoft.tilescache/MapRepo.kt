@@ -63,6 +63,10 @@ internal class MapRepo(ctx: Context) {
             .sortedBy { map-> map.downloadStart }
     }
 
+    fun getAllMaps(): List<MapDownloadData>{
+        return getAll().map { mapPkg2DownloadData(it) }
+    }
+
     fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
         if (mapMutableLiveHase.value == null){
             Thread{mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap)}.start()

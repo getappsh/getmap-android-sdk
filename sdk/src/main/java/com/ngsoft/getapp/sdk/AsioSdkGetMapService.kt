@@ -76,11 +76,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return this.mapRepo.getDownloadData(id)
     }
 
-    override fun getDownloadedMaps(): LiveData<List<MapDownloadData>> {
+    override fun getDownloadedMaps(): List<MapDownloadData> {
         Log.i(_tag, "getDownloadedMaps")
-        return this.mapRepo.getAllMapsLiveData()
+        return this.mapRepo.getAllMaps()
     }
 
+    override fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>> {
+        Log.i(_tag, "getDownloadedMapsLive")
+        return this.mapRepo.getAllMapsLiveData()
+    }
     override fun purgeCache(){
         mapRepo.purge()
     }
