@@ -24,6 +24,7 @@ import com.squareup.moshi.JsonClass
  *
  * @param id 
  * @param productId 
+ * @param footprint 
  * @param productName 
  * @param productVersion 
  * @param productType 
@@ -32,7 +33,6 @@ import com.squareup.moshi.JsonClass
  * @param imagingTimeBeginUTC 
  * @param imagingTimeEndUTC 
  * @param maxResolutionDeg 
- * @param footprint 
  * @param transparency 
  * @param region 
  * @param ingestionDate 
@@ -42,10 +42,13 @@ import com.squareup.moshi.JsonClass
 data class MapProductResDto (
 
     @Json(name = "id")
-    val id: kotlin.String? = null,
+    val id: kotlin.String,
 
     @Json(name = "productId")
-    val productId: kotlin.String? = null,
+    val productId: kotlin.String,
+
+    @Json(name = "footprint")
+    val footprint: kotlin.String,
 
     @Json(name = "productName")
     val productName: kotlin.String? = null,
@@ -70,9 +73,6 @@ data class MapProductResDto (
 
     @Json(name = "maxResolutionDeg")
     val maxResolutionDeg: java.math.BigDecimal? = null,
-
-    @Json(name = "footprint")
-    val footprint: kotlin.String? = null,
 
     @Json(name = "transparency")
     val transparency: kotlin.String? = null,
