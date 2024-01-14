@@ -84,6 +84,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(configuration.imei != null){
             pref.deviceId = configuration.imei
         }
+        pref.username = configuration.user
+        pref.password = configuration.password
+        pref.baseUrl = configuration.baseUrl
+
         Log.d(_tag, "init - Device ID: ${pref.deviceId}")
 
         return true

@@ -19,17 +19,35 @@ class Pref private constructor(context: Context) {
 
     var deviceId: String
         get(){
-            var currentDeviceId =  sharedPreferences.getString(DEVICE_ID, null)
-            if (currentDeviceId == null){
+            var currentDeviceId = getString(DEVICE_ID)
+            if (currentDeviceId.isNotEmpty()){
                 currentDeviceId =  generateDeviceId()
             }
             return currentDeviceId
         }
-        set(value) {
-            val editor = sharedPreferences.edit()
-            editor.putString(DEVICE_ID, value)
-            editor.apply()
-        }
+        set(value) = setString(DEVICE_ID, value)
+
+
+    var username: String
+        get() = getString(USERNAME)
+        set(value) = setString(USERNAME, value)
+
+    var password: String
+        get() = getString(PASSWORD)
+        set(value) = setString(PASSWORD, value)
+
+    var baseUrl: String
+        get() = getString(BASE_URL)
+        set(value) = setString(BASE_URL, value)
+    private fun getString(key: String): String{
+        return sharedPreferences.getString(key, "")!!
+    }
+
+    private fun setString(key: String, value: String){
+        val editor = sharedPreferences.edit()
+        editor.putString(key, value)
+        editor.apply()
+    }
 
     @SuppressLint("HardwareIds")
     fun generateDeviceId():String {
@@ -40,11 +58,13 @@ class Pref private constructor(context: Context) {
 
 
     companion object {
-
         private const val DEVICE_ID = "device_id"
+        private const val BASE_URL = "base_url"
+        private const val USERNAME = "username"
+        private const val PASSWORD = "password"
+
 
         private var instance: Pref? = null
-
         @Synchronized
         fun getInstance(context: Context): Pref {
             if (instance == null) {
