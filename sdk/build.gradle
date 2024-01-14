@@ -13,7 +13,7 @@ android {
     defaultConfig {
         minSdk = 26
         versionCode 2
-        versionName "0.6.17"
+        versionName "0.6.18"
 
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

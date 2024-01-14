@@ -394,7 +394,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 PrepareDeliveryResDto.Status.inProgress ->{
                     this.mapRepo.update(
                         id = id,
-                        state = MapDeliveryState.ERROR,
                         statusMessage = appCtx.getString(R.string.delivery_status_prepare_to_download),
                         errorContent = "",
                     )
