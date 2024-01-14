@@ -49,13 +49,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-dev.getapp.sh:3000",
+            "http://getapp-test.getapp.sh:3000",
 //            "http://localhost:3333",
 //            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
             //currently downloads file to a path within the public external storage directory
-            Environment.DIRECTORY_DOWNLOADS,
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
             16,
             5,5,
             null
@@ -167,7 +168,7 @@ class MainActivity : AppCompatActivity() {
                 selectedProduct.id,
 //                "34.76177215576172,31.841297149658207,34.76726531982422,31.8464469909668",
 //                "34.46264631,31.48939470,34.46454410,31.49104920",
-                "34.47146482,31.55712952,34.48496631,31.56652669",
+                "34.47956453,31.52202183,34.51125397,31.5465132",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false
             )
