@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         }
         recyclerView.adapter = downloadListAdapter
 
-        service.getDownloadedMaps().observe(this, Observer {
+        service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
         })

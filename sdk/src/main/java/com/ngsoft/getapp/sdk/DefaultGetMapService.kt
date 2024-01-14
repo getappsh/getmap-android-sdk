@@ -128,7 +128,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun getDownloadedMaps(): LiveData<List<MapDownloadData>> {
+    override fun getDownloadedMaps(): List<MapDownloadData> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>> {
         TODO("Not implemented in DefaultGetMapService")
     }
 
