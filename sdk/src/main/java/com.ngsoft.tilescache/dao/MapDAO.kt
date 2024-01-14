@@ -21,6 +21,9 @@ interface MapDAO {
     @Update
     fun update(mapPkg: MapPkg)
 
+    @Query("UPDATE MapPkg SET isUpdated = :isUpdate WHERE reqId = :reqId")
+    fun setUpdatedByReqId(reqId: String, isUpdate: Boolean)
+
     @Transaction
     fun updateAndReturn(mapPkg: MapPkg): MapPkg? {
         update(mapPkg)

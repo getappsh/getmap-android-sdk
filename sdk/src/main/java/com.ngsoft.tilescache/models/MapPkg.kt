@@ -60,7 +60,10 @@ data class MapPkg (
     var downloadDone: LocalDateTime? = null,
 
     @Embedded
-    var metadata: DownloadMetadata = DownloadMetadata()
+    var metadata: DownloadMetadata = DownloadMetadata(),
+
+    @ColumnInfo(defaultValue = "1")
+    var isUpdated: Boolean = true,
 ){
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
