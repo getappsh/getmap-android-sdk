@@ -5,6 +5,7 @@
     <string name="delivery_status_connection_issue_try_again">בעיה בתקשורת - מנסה שוב</string>
     <string name="delivery_status_download">בהורדה</string>
     <string name="delivery_status_continue">ממשיך</string>
+    <string name="delivery_status_prepare_to_download">מכין להורדה</string>
     <string name="delivery_status_done">הסתיים</string>
     <string name="delivery_status_paused">מושהה</string>
     <string name="delivery_status_canceled">בוטל</string>

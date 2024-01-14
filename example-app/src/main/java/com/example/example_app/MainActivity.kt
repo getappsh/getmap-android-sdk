@@ -166,6 +166,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onDelivery: ");
         GlobalScope.launch(Dispatchers.IO){
 
+//            service.purgeCache()
 
             val props = MapProperties(
                 selectedProduct.id,

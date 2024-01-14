@@ -162,6 +162,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 this.sendDeliveryStatus(id)
             }
         }
+
     }
 
     private fun importCreate(id: String): Boolean{
@@ -232,6 +233,19 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         var stat : CreateMapImportStatus? = null
         var lastProgress : Int? = null
         do{
+            if(timeoutTime.hasPassedNow()){
+                Log.w(_tag,"checkImportStatus - timed out")
+                this.mapRepo.update(
+                    id = id,
+                    state = MapDeliveryState.ERROR,
+                    statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                    errorContent = "checkImportStatus - timed out"
+                )
+                this.sendDeliveryStatus(id)
+                return false
+
+            }
+
             TimeUnit.SECONDS.sleep(2)
             if (this.mapRepo.isDownloadCanceled(id)){
                 Log.d(_tag, "checkImportStatue: Download $id, canceled by user")
@@ -283,6 +297,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     this.mapRepo.update(
                         id = id,
                         downloadProgress = progress,
+                        statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress),
                         errorContent = ""
                     )
                     if (lastProgress != progress){
@@ -293,18 +308,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 else -> {}
             }
 
-            if(timeoutTime.hasPassedNow()){
-                Log.w(_tag,"checkImportStatus - timed out")
-                this.mapRepo.update(
-                    id = id,
-                    state = MapDeliveryState.ERROR,
-                    statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                    errorContent = "checkImportStatus - timed out"
-                )
-                this.sendDeliveryStatus(id)
-                return false
-
-            }
         }while (stat == null || stat.state!! != MapImportState.DONE)
 
         Log.d(_tag, "checkImportStatue: MapImportState.Done")
@@ -327,7 +330,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         while (retDelivery?.state != MapDeliveryState.DONE) {
             when (retDelivery?.state) {
-                MapDeliveryState.DONE, MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE -> {}
+                MapDeliveryState.DONE, MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE -> {
+                    this.mapRepo.update(id = id, flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                        statusMessage = appCtx.getString(R.string.delivery_status_prepare_to_download), errorContent = "")
+
+                }
 
                 MapDeliveryState.CANCEL, MapDeliveryState.PAUSE -> {
                     Log.w(_tag, "importDelivery - setMapImportDeliveryStart => CANCEL")
@@ -577,7 +584,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val expectedHash = JsonUtils.getStringOrThrow(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
                 Log.d(_tag, "validateImport - progress: $it")
-                this.mapRepo.update(id, downloadProgress = it)
+                this.mapRepo.update(id, downloadProgress = it, statusMessage = appCtx.getString(R.string.delivery_status_in_verification), errorContent = "")
             }
             Log.d(_tag, "validateImport - expectedHash: $expectedHash, actualHash: $actualHash")
 
