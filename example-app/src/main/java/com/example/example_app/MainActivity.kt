@@ -70,9 +70,10 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-dev.getapp.sh:3000",
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://localhost:3333",
+            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
 //            File("/storage/1115-0C18/com.asio.gis").path,
@@ -171,7 +172,7 @@ class MainActivity : AppCompatActivity() {
             val props = MapProperties(
                 selectedProduct.id,
 //                "34.46264651,31.48939470,34.46454410,31.49104920",
-                "34.47956403,31.52202183,34.51125394,31.54650525",
+                "34.47956403,31.52202183,34.51125394,31.54650521",
 //                "34.33390515,31.39424664,34.33937683,31.39776380",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false

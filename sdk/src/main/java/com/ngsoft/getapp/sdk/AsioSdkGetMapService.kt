@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.jobs.JobScheduler
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapDownloadData
@@ -68,6 +69,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             Thread{updateMapsStatusOnStart()}.start()
         }
         instanceCount++
+        JobScheduler().scheduleInventoryOfferingJob(appCtx)
         return true
     }
 

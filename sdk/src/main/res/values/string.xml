@@ -21,4 +21,9 @@
     <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>
     <string name="error_qr_code_file_size_to_large">יצירת קוד QR נכשלה: גודל הנתונים %d בייט, גדול מדי</string>
 
+    <string name="notification_update_map_title">עדכן את המפות</string>
+    <string name="notification_update_map_description">נמצאו עדכונים ל%d מפות</string>
+
+
+
 </resources>

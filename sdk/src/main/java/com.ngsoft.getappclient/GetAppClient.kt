@@ -10,6 +10,7 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 
+//TODO make it singleton
 internal class GetAppClient(config: ConnectionConfig) {
 
     private val TAG = "GetAppClient"
