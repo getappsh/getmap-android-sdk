@@ -106,6 +106,35 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return id
     }
+    
+    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+        Log.i(_tag, "downloadUpdatedMap")
+        val mapPkg  = this.mapRepo.getById(id)
+        if (mapPkg == null){
+            Log.e(_tag, "downloadUpdatedMap - old download map id: $id dose not exist")
+            return null
+        }
+
+        val newId = this.mapRepo.create(mapPkg.pId, mapPkg.bBox,
+            MapDeliveryState.START, appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START
+        ) {
+//            TODO temp solution
+            if (it.deliveryStatus == MapDeliveryState.DONE) {
+                Log.d(_tag, "downloadUpdatedMap - new map finished with status Done, delete ths old Map")
+                this.deleteMap(id)
+            }
+            downloadStatusHandler.invoke(it)
+        }
+
+        Log.d(_tag, "downloadUpdatedMap - new map id: $id")
+        if (isEnoughSpace(id, storagePath, minAvailableSpaceMb)){
+
+            Thread{
+                executeDeliveryFlow(newId)
+            }.start()
+        }
+        return newId
+    }
 
 
     private fun isEnoughSpace(id: String, path: String, requiredSpace: Long): Boolean{
