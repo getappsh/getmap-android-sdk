@@ -4,17 +4,20 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
+import android.util.Log
+import java.lang.IllegalArgumentException
 
 
 internal class JobScheduler {
     companion object {
         private const val INVENTORY_OFFERING_JOB_ID = 1
+        private val _tag = "JobScheduler"
     }
     fun scheduleInventoryOfferingJob(context: Context) {
+        Log.i(_tag, "scheduleInventoryOfferingJob")
         if(isJobScheduled(context, INVENTORY_OFFERING_JOB_ID)){
             return
         }
-
         // Calculate the initial delay until midnight
 //        val calendar: Calendar = Calendar.getInstance()
 //        calendar.timeInMillis = System.currentTimeMillis()
@@ -33,7 +36,11 @@ internal class JobScheduler {
             .setPersisted(true)
             .build()
 
-        jobScheduler.schedule(jobInfo)
+        try{
+            jobScheduler.schedule(jobInfo)
+        }catch (e: IllegalArgumentException){
+            Log.e(_tag, "scheduleInventoryOfferingJob - failed to schedule the service, error: ${e.message.toString()}")
+        }
     }
 
 
