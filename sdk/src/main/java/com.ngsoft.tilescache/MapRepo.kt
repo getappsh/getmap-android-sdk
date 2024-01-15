@@ -244,10 +244,17 @@ internal class MapRepo(ctx: Context) {
     fun isMapUpdated(id: String): Boolean?{
         return this.getById(id)?.isUpdated
     }
+
+    fun getMapsToUpdate(): List<String>{
+        return this.getAll().filter { !it.isUpdated }.map { it.id.toString() }
+    }
     fun setMapsUpdatedValue(values: Map<String, Boolean>){
         values.forEach{ (reqId, isUpdated) ->
             this.dao.setUpdatedByReqId(reqId, isUpdated)
+            val id = this.dao.getByReqId(reqId)?.id ?: return@forEach
+            invoke(id.toString())
         }
+        onInventoryUpdatesListener?.invoke(this.getMapsToUpdate())
     }
     fun getDownloadData(id: String): MapDownloadData?{
         val map = this.getById(id);
@@ -273,6 +280,7 @@ internal class MapRepo(ctx: Context) {
 
     companion object {
         val downloadStatusHandlers = ConcurrentHashMap<String, (MapDownloadData) -> Unit>()
+        var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
 
     }
 

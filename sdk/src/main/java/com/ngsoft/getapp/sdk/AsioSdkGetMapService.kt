@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.helpers.InventoryClientHelper
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
@@ -826,6 +827,16 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         json.put("downloadUrl", mapPkg.url)
 
         return qrManager.generateQrCode(json.toString(), width, height)
+    }
+
+    override fun fetchInventoryUpdates(): List<String> {
+        Log.i(_tag, "fetchInventoryUpdates")
+        return InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
+    }
+
+    override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
+        Log.i(_tag, "setOnInventoryUpdatesListener")
+        MapRepo.onInventoryUpdatesListener = listener
     }
 
     override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{

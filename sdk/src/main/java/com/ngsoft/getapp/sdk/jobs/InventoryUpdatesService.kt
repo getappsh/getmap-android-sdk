@@ -38,14 +38,14 @@ class InventoryUpdatesService: JobService() {
 
     private fun runJob(params: JobParameters?){
         try{
-            val amount = InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
+            val mapsToUpdate = InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
 
-            if (amount > 0){
+            if (mapsToUpdate.isNotEmpty()){
                 Log.d(_tag, "run - send notification")
                 NotificationHelper(this)
                     .sendNotification(
                         getString(R.string.notification_update_map_title),
-                        getString(R.string.notification_update_map_description, amount),
+                        getString(R.string.notification_update_map_description, mapsToUpdate.size),
                         1)
             }
             jobFinished(params, false)

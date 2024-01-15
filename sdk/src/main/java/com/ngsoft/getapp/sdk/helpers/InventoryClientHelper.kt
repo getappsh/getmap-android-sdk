@@ -8,7 +8,7 @@ import com.ngsoft.tilescache.MapRepo
 internal object InventoryClientHelper {
     private val _tag = "InventoryClientHelper"
 
-    fun getUpdates(mapRepo: MapRepo, client: GetAppClient, deviceId: String): Int{
+    fun getUpdates(mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
         Log.i(_tag, "getUpdates")
 
         val inventory = mapRepo.getAll().mapNotNull { it.reqId }
@@ -18,8 +18,8 @@ internal object InventoryClientHelper {
         val res = client.getMapApi.getMapControllerGetInventoryUpdates(req).updates
 
         mapRepo.setMapsUpdatedValue(res)
-        val amountToUpdate = res.values.count { !it }
-        Log.i(_tag, "getUpdates - Found $amountToUpdate maps to update")
-        return amountToUpdate
+        val mapsToUpdate = mapRepo.getMapsToUpdate()
+        Log.i(_tag, "getUpdates - Found ${mapsToUpdate.size} maps to update")
+        return mapsToUpdate
     }
 }

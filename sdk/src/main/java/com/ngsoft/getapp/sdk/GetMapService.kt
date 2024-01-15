@@ -90,6 +90,19 @@ interface GetMapService {
     fun purgeCache()
 
     /**
+     * Fetch inventory Updates from the server
+     * @return list of ids that can be updates
+     * @throws Exception when the request to server failed for some reason
+     */
+    @Throws(Exception::class)
+    fun fetchInventoryUpdates(): List<String>
+
+    /**
+     * Set listener to get notified when there is a new map update
+     */
+    fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit)
+
+    /**
      * Generate QR code from map json file.
      * @param id Map id
      * @param width of the QR code

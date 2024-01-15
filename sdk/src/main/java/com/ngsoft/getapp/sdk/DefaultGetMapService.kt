@@ -97,6 +97,14 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun fetchInventoryUpdates(): List<String> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
     override fun generateQrCode(id: String, width: Int, height: Int): Bitmap {
         TODO("Not implemented in DefaultGetMapService")
     }
