@@ -23,6 +23,8 @@ import GetApp.Client.models.CreateImportDto
 import GetApp.Client.models.CreateImportResDto
 import GetApp.Client.models.ImportStatusDto
 import GetApp.Client.models.ImportStatusResDto
+import GetApp.Client.models.InventoryUpdatesReqDto
+import GetApp.Client.models.InventoryUpdatesResDto
 import GetApp.Client.models.MapDto
 import GetApp.Client.models.OfferingMapResDto
 
@@ -331,8 +333,80 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
+     * This service message get list of map&#39;s request id, and response if there is new data map-product for theme.
+     * @param inventoryUpdatesReqDto 
+     * @return InventoryUpdatesResDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getMapControllerGetInventoryUpdates(inventoryUpdatesReqDto: InventoryUpdatesReqDto) : InventoryUpdatesResDto {
+        val localVarResponse = getMapControllerGetInventoryUpdatesWithHttpInfo(inventoryUpdatesReqDto = inventoryUpdatesReqDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as InventoryUpdatesResDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * 
+     * This service message get list of map&#39;s request id, and response if there is new data map-product for theme.
+     * @param inventoryUpdatesReqDto 
+     * @return ApiResponse<InventoryUpdatesResDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun getMapControllerGetInventoryUpdatesWithHttpInfo(inventoryUpdatesReqDto: InventoryUpdatesReqDto) : ApiResponse<InventoryUpdatesResDto?> {
+        val localVariableConfig = getMapControllerGetInventoryUpdatesRequestConfig(inventoryUpdatesReqDto = inventoryUpdatesReqDto)
+
+        return request<InventoryUpdatesReqDto, InventoryUpdatesResDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation getMapControllerGetInventoryUpdates
+     *
+     * @param inventoryUpdatesReqDto 
+     * @return RequestConfig
+     */
+    fun getMapControllerGetInventoryUpdatesRequestConfig(inventoryUpdatesReqDto: InventoryUpdatesReqDto) : RequestConfig<InventoryUpdatesReqDto> {
+        val localVariableBody = inventoryUpdatesReqDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/map/inventory/updates",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     *
      * This service message allows the to get map by catalog id with its all devices
-     * @param catalogId 
+     * @param catalogId
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -360,9 +434,9 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
+     *
      * This service message allows the to get map by catalog id with its all devices
-     * @param catalogId 
+     * @param catalogId
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -379,14 +453,14 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     /**
      * To obtain the request config of the operation getMapControllerGetMap
      *
-     * @param catalogId 
+     * @param catalogId
      * @return RequestConfig
      */
     fun getMapControllerGetMapRequestConfig(catalogId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        
+
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/map/map/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
@@ -396,6 +470,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
             body = localVariableBody
         )
     }
+
 
     /**
      * 

@@ -1,6 +1,5 @@
 package com.example.example_app
 
-import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.graphics.Bitmap
@@ -10,7 +9,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -70,9 +68,10 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         val cfg = Configuration(
-            "http://getapp-dev.getapp.sh:3000",
+//            "http://getapp-dev.getapp.sh:3000",
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://localhost:3333",
+            "http://192.168.2.26:3000",
             "rony@example.com",
             "rony123",
 //            File("/storage/1115-0C18/com.asio.gis").path,
@@ -83,6 +82,12 @@ class MainActivity : AppCompatActivity() {
         )
 
         service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
+        service.setOnInventoryUpdatesListener {
+            val data = it.joinToString()
+            runOnUiThread{Toast.makeText(this, data, Toast.LENGTH_LONG).show()}
+            Log.d(TAG, "onCreate - setOnInventoryUpdatesListener: $data")
+
+        }
         dismissLoadingDialog()
 
         recyclerView = findViewById(R.id.recyclerView)
@@ -170,8 +175,9 @@ class MainActivity : AppCompatActivity() {
 
             val props = MapProperties(
                 selectedProduct.id,
-//                "34.46264651,31.48939470,34.46454410,31.49104920",
-                "34.47956403,31.52202183,34.51125394,31.54650525",
+//                "34.46641783,31.55079535, 34.47001187,31.55095355, 34.4700189, 31.553150863,34.46641783, 31.55318508, 34.46641783, 31.55079535",
+//                "34.46264675,31.48939450,34.46454414,31.49104920",
+                "34.47956403,31.52202193,34.51125394,31.54650521",
 //                "34.33390515,31.39424664,34.33937683,31.39776380",
 //                "34.46087927,31.48921097,34.47834067,31.50156334"
                 false

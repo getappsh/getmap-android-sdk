@@ -84,12 +84,24 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         if(configuration.imei != null){
             pref.deviceId = configuration.imei
         }
+        pref.username = configuration.user
+        pref.password = configuration.password
+        pref.baseUrl = configuration.baseUrl
+
         Log.d(_tag, "init - Device ID: ${pref.deviceId}")
 
         return true
     }
 
     override fun purgeCache(){
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun fetchInventoryUpdates(): List<String> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
         TODO("Not implemented in DefaultGetMapService")
     }
 

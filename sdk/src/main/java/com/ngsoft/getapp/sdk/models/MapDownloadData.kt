@@ -10,5 +10,6 @@ class MapDownloadData(
     var statusMessage: String? = null,
     var downloadProgress: Int = 0,
     var errorContent: String? = null,
+    var isUpdated: Boolean = true
 )
 
