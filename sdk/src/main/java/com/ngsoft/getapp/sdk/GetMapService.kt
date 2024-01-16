@@ -79,6 +79,16 @@ interface GetMapService {
     fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?
 
     /**
+     * Download updated map
+     *
+     * @param id Map id
+     * @param downloadStatusHandler delivery progress handler
+     * @receiver see [MapDownloadData]
+     * @return map download id
+     */
+    fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String?
+
+    /**
      * Synchronize Map data by reading the files from storage, and syncing them against the DB
      */
     fun synchronizeMapData()

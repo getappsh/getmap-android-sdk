@@ -28,13 +28,22 @@ import com.ngsoft.tilescache.models.TilePkg
 abstract class TilesDatabase : RoomDatabase() {
 
     companion object {
-        fun connect(ctx: Context) : TilesDatabase {
-            return Room.databaseBuilder(ctx, TilesDatabase::class.java, "tiles-DB")
-                //no migration support currently. 4 migration see:
-                //https://developer.android.com/training/data-storage/room/migrating-db-versions
-                .addMigrations(MIGRATION_4_5)
-                .fallbackToDestructiveMigration()
-                .build()
+        @Volatile private var INSTANCE: TilesDatabase? = null
+        fun getInstance(ctx: Context) : TilesDatabase {
+            synchronized(this){
+                var instance = INSTANCE
+                
+                if (instance == null){
+                    instance =  Room.databaseBuilder(ctx, TilesDatabase::class.java, "tiles-DB")
+                        //no migration support currently. 4 migration see:
+                        //https://developer.android.com/training/data-storage/room/migrating-db-versions
+                        .addMigrations(MIGRATION_4_5)
+                        .fallbackToDestructiveMigration()
+                        .build()
+                    INSTANCE = instance
+                }
+                return instance
+            }
         }
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {

@@ -20,15 +20,21 @@ internal class MapRepo(ctx: Context) {
     private val db: TilesDatabase
     private val dao: MapDAO
 
-    private val mapMutableLiveHase = MutableLiveData<HashMap<String, MapDownloadData>>()
-    private val mapLiveList: LiveData<List<MapDownloadData>> =  Transformations.map(mapMutableLiveHase){
+    private val mapMutableLiveHase = MutableLiveData(hashMapOf<String, MapDownloadData>())
+    private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
         it.values.toList().sortedByDescending{ map -> map.id }
     }
 
     init {
         Log.d(_tag,"MapRepo init...")
-        db = TilesDatabase.connect(ctx)
+        db = TilesDatabase.getInstance(ctx)
         dao = db.mapDap()
+    }
+
+    fun purge(){
+        dao.nukeTable()
+        //reset auto-increments
+//        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
     fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapDownloadData) -> Unit): String{
@@ -40,23 +46,13 @@ internal class MapRepo(ctx: Context) {
             statusMessage = statusMessage,
             downloadStart = LocalDateTime.now(ZoneOffset.UTC))).toString()
 
-        downloadStatusHandlers[id] = dsh;
-        return id
-    }
-
-    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
         downloadStatusHandlers[id] = dsh
+        return id
     }
     fun save(mapPkg: MapPkg): String{
         val id = dao.insert(mapPkg)
         return id.toString()
     }
-    fun purge(){
-        dao.nukeTable()
-        //reset auto-increments
-//        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
-    }
-
     fun getAll(): List<MapPkg>{
         return dao
             .getAll()
@@ -68,10 +64,15 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
-        if (mapMutableLiveHase.value == null){
-            Thread{mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap)}.start()
+        Log.i(_tag, "getAllMapsLiveData")
+        if (mapMutableLiveHase.value?.isEmpty() != false){
+            Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
         }
         return mapLiveList
+    }
+
+    fun getByBBox(bBox: String): List<MapPkg>{
+        return this.getAll().filter { it.bBox == bBox }
     }
 
     fun update(
@@ -234,8 +235,14 @@ internal class MapRepo(ctx: Context) {
         if (map != null) {
             downloadStatusHandlers[id]?.invoke(map)
 
-            mapMutableLiveHase.value?.set(id, map)
-            mapMutableLiveHase.postValue(mapMutableLiveHase.value)
+            if (mapMutableLiveHase.value?.isEmpty() != false){
+                Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
+            }else{
+                mapMutableLiveHase.value?.set(id, map)
+                mapMutableLiveHase.postValue(mapMutableLiveHase.value)
+
+            }
+
         }else{
             Log.e(_tag, "invoke: not found map id: $id", )
         }
@@ -276,6 +283,10 @@ internal class MapRepo(ctx: Context) {
             errorContent = map.errorContent,
             isUpdated = map.isUpdated,
         )
+    }
+
+    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
+        downloadStatusHandlers[id] = dsh
     }
 
     companion object {

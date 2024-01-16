@@ -76,7 +76,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         storagePath = configuration.storagePath
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
 
-        mapFileManager = MapFileManager(appCtx, downloadPath, storagePath)
+        mapFileManager = MapFileManager(appCtx, downloader, downloadPath, storagePath)
 
         cache = TilesCache(appCtx)
 
@@ -122,6 +122,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String? {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 

@@ -16,7 +16,7 @@ internal class TilesCache(ctx: Context)  {
     private val dao: TilesDAO
     init {
         Log.d(_tag,"TilesCache init...")
-        db = TilesDatabase.connect(ctx)
+        db = TilesDatabase.getInstance(ctx)
         dao = db.tilesDao()
     }
 
