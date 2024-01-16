@@ -31,6 +31,12 @@ internal class MapRepo(ctx: Context) {
         dao = db.mapDap()
     }
 
+    fun purge(){
+        dao.nukeTable()
+        //reset auto-increments
+//        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
+    }
+
     fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapDownloadData) -> Unit): String{
         val id = dao.insert(MapPkg(
             pId=pId,
@@ -43,20 +49,10 @@ internal class MapRepo(ctx: Context) {
         downloadStatusHandlers[id] = dsh;
         return id
     }
-
-    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
-        downloadStatusHandlers[id] = dsh
-    }
     fun save(mapPkg: MapPkg): String{
         val id = dao.insert(mapPkg)
         return id.toString()
     }
-    fun purge(){
-        dao.nukeTable()
-        //reset auto-increments
-//        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
-    }
-
     fun getAll(): List<MapPkg>{
         return dao
             .getAll()
@@ -72,6 +68,10 @@ internal class MapRepo(ctx: Context) {
             Thread{mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap)}.start()
         }
         return mapLiveList
+    }
+
+    fun getByBBox(bBox: String): List<MapPkg>{
+        return this.getAll().filter { it.bBox == bBox }
     }
 
     fun update(
@@ -276,6 +276,10 @@ internal class MapRepo(ctx: Context) {
             errorContent = map.errorContent,
             isUpdated = map.isUpdated,
         )
+    }
+
+    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
+        downloadStatusHandlers[id] = dsh
     }
 
     companion object {

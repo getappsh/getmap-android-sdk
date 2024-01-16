@@ -115,25 +115,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             return null
         }
 
-        val newId = this.mapRepo.create(mapPkg.pId, mapPkg.bBox,
-            MapDeliveryState.START, appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START
-        ) {
-//            TODO temp solution
-            if (it.deliveryStatus == MapDeliveryState.DONE) {
-                Log.d(_tag, "downloadUpdatedMap - new map finished with status Done, delete ths old Map")
-                this.deleteMap(id)
-            }
-            downloadStatusHandler.invoke(it)
-        }
+        val mp = MapProperties(mapPkg.pId, mapPkg.bBox, false)
 
-        Log.d(_tag, "downloadUpdatedMap - new map id: $id")
-        if (isEnoughSpace(id, storagePath, minAvailableSpaceMb)){
-
-            Thread{
-                executeDeliveryFlow(newId)
-            }.start()
-        }
-        return newId
+        return this.downloadMap(mp, downloadStatusHandler)
     }
 
 
@@ -637,6 +621,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 statusMessage = appCtx.getString(R.string.delivery_status_done),
                 errorContent = ""
             )
+            this.findAndRemoveDuplicates(id)
         }else{
             if (mapPkg.metadata.validationAttempt < 1){
                 mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
@@ -661,6 +646,18 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.sendDeliveryStatus(id)
 
         return isValid
+    }
+    private fun findAndRemoveDuplicates(id: String){
+        Log.i(_tag, "findAndRemoveDuplicate")
+        val mapPkg = this.mapRepo.getById(id) ?: return
+        val duplicates = this.mapRepo.getByBBox(mapPkg.bBox).toMutableList()
+        duplicates.removeIf { it.id.toString() == id }
+
+        Log.d(_tag, "findAndRemoveDuplicate - found ${duplicates.size} duplicates")
+        duplicates.forEach {
+            Log.d(_tag, "findAndRemoveDuplicate - remove: ${it.id}")
+            this.deleteMap(it.id.toString())
+        }
     }
     private fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null) {
         val mapPkg = this.mapRepo.getById(id) ?: return
@@ -858,16 +855,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return qrManager.generateQrCode(json.toString(), width, height)
     }
 
-    override fun fetchInventoryUpdates(): List<String> {
-        Log.i(_tag, "fetchInventoryUpdates")
-        return InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
-    }
-
-    override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
-        Log.i(_tag, "setOnInventoryUpdatesListener")
-        MapRepo.onInventoryUpdatesListener = listener
-    }
-
     override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
         Log.i(_tag, "processQrCodeData")
 
@@ -902,7 +889,16 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return id
     }
+    
+    override fun fetchInventoryUpdates(): List<String> {
+        Log.i(_tag, "fetchInventoryUpdates")
+        return InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
+    }
 
+    override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
+        Log.i(_tag, "setOnInventoryUpdatesListener")
+        MapRepo.onInventoryUpdatesListener = listener
+    }
     override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
         Log.i(_tag, "registerDownloadHandler, downloadId: $id")
         this.mapRepo.setListener(id, downloadStatusHandler)
