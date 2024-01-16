@@ -20,8 +20,8 @@ internal class MapRepo(ctx: Context) {
     private val db: TilesDatabase
     private val dao: MapDAO
 
-    private val mapMutableLiveHase = MutableLiveData<HashMap<String, MapDownloadData>>()
-    private val mapLiveList: LiveData<List<MapDownloadData>> =  Transformations.map(mapMutableLiveHase){
+    private val mapMutableLiveHase = MutableLiveData(hashMapOf<String, MapDownloadData>())
+    private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
         it.values.toList().sortedByDescending{ map -> map.id }
     }
 
@@ -64,8 +64,9 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
-        if (mapMutableLiveHase.value == null){
-            Thread{mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap)}.start()
+        Log.i(_tag, "getAllMapsLiveData")
+        if (mapMutableLiveHase.value?.isEmpty() != false){
+            Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
         }
         return mapLiveList
     }
@@ -234,8 +235,14 @@ internal class MapRepo(ctx: Context) {
         if (map != null) {
             downloadStatusHandlers[id]?.invoke(map)
 
-            mapMutableLiveHase.value?.set(id, map)
-            mapMutableLiveHase.postValue(mapMutableLiveHase.value)
+            if (mapMutableLiveHase.value?.isEmpty() != false){
+                Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
+            }else{
+                mapMutableLiveHase.value?.set(id, map)
+                mapMutableLiveHase.postValue(mapMutableLiveHase.value)
+
+            }
+
         }else{
             Log.e(_tag, "invoke: not found map id: $id", )
         }

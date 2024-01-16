@@ -614,6 +614,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             true
         }
         if (isValid){
+            this.findAndRemoveDuplicates(id)
             this.mapRepo.update(
                 id = id,
                 state =  MapDeliveryState.DONE,
@@ -621,7 +622,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 statusMessage = appCtx.getString(R.string.delivery_status_done),
                 errorContent = ""
             )
-            this.findAndRemoveDuplicates(id)
         }else{
             if (mapPkg.metadata.validationAttempt < 1){
                 mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
@@ -656,7 +656,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.d(_tag, "findAndRemoveDuplicate - found ${duplicates.size} duplicates")
         duplicates.forEach {
             Log.d(_tag, "findAndRemoveDuplicate - remove: ${it.id}")
-            this.deleteMap(it.id.toString())
+            try {
+                this.deleteMap(it.id.toString())
+            }catch (error: Exception){
+                Log.e(_tag, "findAndRemoveDuplicates - failed to delete the map, error: ${error.message.toString()}", )
+            }
         }
     }
     private fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null) {
@@ -684,7 +688,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "syncDatabase")
         val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.DONE ||
                     it.state == MapDeliveryState.ERROR || it.state == MapDeliveryState.CANCEL ||
-                    it.state == MapDeliveryState.PAUSE || it.state == MapDeliveryState.DELETED}
+                    it.state == MapDeliveryState.PAUSE || it.state == MapDeliveryState.DELETED ||
+                    it.state == MapDeliveryState.DOWNLOAD}
 
         for (map in mapsData) {
             Log.d(_tag, "syncDatabase  - map id: ${map.id}, state: ${map.state}")
@@ -694,7 +699,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 continue
             }
 
-            val rMap = mapFileManager.refreshMapState(map)
+            val rMap = mapFileManager.refreshMapState(map.copy())
             if(map.state == MapDeliveryState.DOWNLOAD || map.state == MapDeliveryState.CONTINUE){
                 if ((rMap.metadata.mapDone ||!downloader.isDownloadFailed(map.MDID)) &&
                     (rMap.metadata.jsonDone || !downloader.isDownloadFailed(map.JDID))){
@@ -702,7 +707,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 }
             }
 
-            this.mapRepo.update(rMap.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
+            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
                 statusMessage = rMap.statusMessage, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
     }
@@ -913,14 +918,18 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val id = map.id.toString()
             when(map.flowState){
                 DeliveryFlowState.DOWNLOAD -> {
-                    if((!map.metadata.mapDone && downloader.isDownloadFailed(map.MDID)) ||
-                        (!map.metadata.jsonDone && downloader.isDownloadFailed(map.JDID))){
+                    val rMap = mapFileManager.refreshMapState(map.copy())
+
+                    if((!rMap.metadata.mapDone && downloader.isDownloadFailed(map.MDID)) ||
+                        (!rMap.metadata.jsonDone && downloader.isDownloadFailed(map.JDID))){
                         Log.d(_tag, "updateMapsStatusOnStart - Map download failed, set state to pause")
                         this.mapRepo.update(id = id, state = MapDeliveryState.PAUSE,
                             flowState = DeliveryFlowState.IMPORT_DELIVERY,
                             statusMessage = appCtx.getString(R.string.delivery_status_paused))
                         continue
                     }
+                    this.mapRepo.update(map.id.toString(), flowState = rMap.flowState,
+                        mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
                     Thread{ executeDeliveryFlow(id)}.start()
                 }
                 DeliveryFlowState.MOVE_FILES, DeliveryFlowState.DOWNLOAD_DONE -> {
