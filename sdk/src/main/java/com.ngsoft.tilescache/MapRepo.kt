@@ -46,7 +46,7 @@ internal class MapRepo(ctx: Context) {
             statusMessage = statusMessage,
             downloadStart = LocalDateTime.now(ZoneOffset.UTC))).toString()
 
-        downloadStatusHandlers[id] = dsh;
+        downloadStatusHandlers[id] = dsh
         return id
     }
     fun save(mapPkg: MapPkg): String{

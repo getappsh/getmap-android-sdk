@@ -9,7 +9,7 @@ import com.ngsoft.tilescache.models.MapPkg
 import java.io.File
 import java.io.IOException
 
-internal class MapFileManager(private val appCtx: Context, private val downloadPath: String, private val storagePath: String) {
+internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader, private val downloadPath: String, private val storagePath: String) {
     private val _tag = "MapManager"
 
 
@@ -68,6 +68,21 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             Log.e(_tag, "refreshMapState - failed to delete file: ${file.path}", )
         }
     }
+
+    fun isFileDownloadDone(downloadId: Long?, fileName: String?): Boolean{
+        val downloadFile = fileName?.let { File(downloadPath, it) }
+        val targetFile = fileName?.let{ File(storagePath, it) }
+
+        return if (targetFile?.exists() == true){
+            true
+        }else if(downloadFile?.exists() == true){
+            downloader.isDownloadDone(downloadId)
+        }else{
+            false
+        }
+
+
+    }
     fun refreshMapState(mapPkg: MapPkg): MapPkg {
         val downloadMapFile = mapPkg.fileName?.let { File(downloadPath, it) }
         val downloadJsonFile = mapPkg.jsonName?.let { File(downloadPath, it) }
@@ -99,9 +114,15 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             }
         }
 
-        mapPkg.flowState = if (downloadMapFile?.exists() == true && downloadJsonFile?.exists() == true){
+        val mapDone = isFileDownloadDone(mapPkg.MDID, mapPkg.fileName)
+        val jsonDone = isFileDownloadDone(mapPkg.JDID, mapPkg.fileName)
+
+
+        mapPkg.flowState = if (mapDone && jsonDone){
             DeliveryFlowState.DOWNLOAD_DONE
-        }else if(mapPkg.url != null) {
+        }else if (!downloader.isDownloadFailed(mapPkg.MDID) && !downloader.isDownloadFailed(mapPkg.JDID)){
+            DeliveryFlowState.DOWNLOAD
+        } else if(mapPkg.url != null) {
             DeliveryFlowState.IMPORT_DELIVERY
         }else if(mapPkg.reqId != null){
             DeliveryFlowState.IMPORT_CREATE
@@ -114,8 +135,8 @@ internal class MapFileManager(private val appCtx: Context, private val downloadP
             mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_failed)
         }
 
-        mapPkg.metadata.mapDone = downloadMapFile?.exists() == true || targetMapFile?.exists() == true
-        mapPkg.metadata.jsonDone = downloadJsonFile?.exists() == true || targetJsonFile?.exists() == true
+        mapPkg.metadata.mapDone = mapDone
+        mapPkg.metadata.jsonDone = jsonDone
 
         return mapPkg
     }

@@ -71,8 +71,11 @@ internal class PackageDownloader(private val context: Context, private val downl
     fun cancelDownload(vararg ids: Long): Int{
         return downloadManager.remove(*ids)
     }
-
-    fun isDownloadFailed(downloadId: Long?):Boolean{
+    fun isDownloadDone(downloadId: Long?): Boolean{
+        val info = downloadId?.let { queryStatus(it) }
+        return info == null || info.status == DownloadManager.STATUS_SUCCESSFUL
+    }
+    fun isDownloadFailed(downloadId: Long?): Boolean{
         val info = downloadId?.let { queryStatus(it) }
         return info == null || info.status == DownloadManager.STATUS_FAILED
     }

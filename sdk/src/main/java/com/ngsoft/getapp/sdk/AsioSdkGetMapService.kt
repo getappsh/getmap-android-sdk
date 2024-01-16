@@ -145,7 +145,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 DeliveryFlowState.IMPORT_CREATE -> checkImportStatus(id)
                 DeliveryFlowState.IMPORT_STATUS -> importDelivery(id)
                 DeliveryFlowState.IMPORT_DELIVERY -> downloadImport(id)
-                DeliveryFlowState.DOWNLOAD -> false // startProgressWatcher(id)
+                DeliveryFlowState.DOWNLOAD ->  watchDownloadImport(id)
                 DeliveryFlowState.DOWNLOAD_DONE -> moveImportFiles(id)
                 DeliveryFlowState.MOVE_FILES -> validateImport(id)
                 DeliveryFlowState.DONE -> false
@@ -425,9 +425,30 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return false
     }
 
-    private fun downloadFile(id: String, url: String, isJson: Boolean): Long{
+    private fun downloadFile(id: String, url: String, isJson: Boolean): Long {
+        Log.i(_tag, "downloadFile")
         val downloadId = downloader.downloadFile(url, completionHandler);
+        watchDownloadProgress(downloadId, id, url, isJson)
+        return downloadId
+    }
 
+    private fun watchDownloadImport(id: String): Boolean{
+        Log.i(_tag, "watchDownloadImport")
+        val mapPkg = this.mapRepo.getById(id) ?: return false
+
+        val pkgUrl = mapPkg.url ?: return false
+        val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
+
+        mapPkg.MDID?.let {
+            watchDownloadProgress(it, id, pkgUrl, false)
+        }
+        mapPkg.JDID?.let{
+            watchDownloadProgress(it, id, jsonUrl, true)
+        }
+        return false
+    }
+    private fun watchDownloadProgress(downloadId: Long, id: String, url: String, isJson: Boolean): Long{
+        Log.i(_tag, "watchDownloadProgress, isJson: $isJson")
         timer(initialDelay = 100, period = 2000) {
 //            todo heck what happen when cancel the download in the download manager
             val mapPkg = mapRepo.getById(id) ?: return@timer
@@ -920,17 +941,17 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 DeliveryFlowState.DOWNLOAD -> {
                     val rMap = mapFileManager.refreshMapState(map.copy())
 
-                    if((!rMap.metadata.mapDone && downloader.isDownloadFailed(map.MDID)) ||
-                        (!rMap.metadata.jsonDone && downloader.isDownloadFailed(map.JDID))){
+                    if (rMap.flowState <= DeliveryFlowState.IMPORT_DELIVERY) {
                         Log.d(_tag, "updateMapsStatusOnStart - Map download failed, set state to pause")
-                        this.mapRepo.update(id = id, state = MapDeliveryState.PAUSE,
-                            flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                            statusMessage = appCtx.getString(R.string.delivery_status_paused))
-                        continue
+                        this.mapRepo.update(id = id, state = MapDeliveryState.PAUSE, flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                            jsonDone = rMap.metadata.jsonDone, mapDone = rMap.metadata.mapDone, statusMessage = appCtx.getString(R.string.delivery_status_paused))
+                    }else{
+                        Log.d(_tag, "updateMapsStatusOnStart - Map download in progress")
+                        this.mapRepo.update(id, mapDone = rMap.metadata.mapDone,
+                            jsonDone = rMap.metadata.jsonDone, flowState = rMap.flowState)
+                        Thread{executeDeliveryFlow(id)}.start()
                     }
-                    this.mapRepo.update(map.id.toString(), flowState = rMap.flowState,
-                        mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
-                    Thread{ executeDeliveryFlow(id)}.start()
+
                 }
                 DeliveryFlowState.MOVE_FILES, DeliveryFlowState.DOWNLOAD_DONE -> {
                     Log.d(_tag, "updateMapsStatusOnStart - map id: $id, is on ${map.flowState} continue the flow")
