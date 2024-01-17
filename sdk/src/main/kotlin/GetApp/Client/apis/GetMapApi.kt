@@ -26,6 +26,7 @@ import GetApp.Client.models.ImportStatusResDto
 import GetApp.Client.models.InventoryUpdatesReqDto
 import GetApp.Client.models.InventoryUpdatesResDto
 import GetApp.Client.models.MapDto
+import GetApp.Client.models.MapConfigDto
 import GetApp.Client.models.OfferingMapResDto
 
 import com.squareup.moshi.Json
@@ -404,9 +405,9 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     *
+     * 
      * This service message allows the to get map by catalog id with its all devices
-     * @param catalogId
+     * @param catalogId 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -434,9 +435,9 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     *
+     * 
      * This service message allows the to get map by catalog id with its all devices
-     * @param catalogId
+     * @param catalogId 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -453,14 +454,14 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     /**
      * To obtain the request config of the operation getMapControllerGetMap
      *
-     * @param catalogId
+     * @param catalogId 
      * @return RequestConfig
      */
     fun getMapControllerGetMapRequestConfig(catalogId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-
+        
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/map/map/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
@@ -544,6 +545,74 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     *
+     * This service message return on object of maps config
+     * @return MapConfigDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getMapControllerGetMapConfig() : MapConfigDto {
+        val localVarResponse = getMapControllerGetMapConfigWithHttpInfo()
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as MapConfigDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     *
+     * This service message return on object of maps config
+     * @return ApiResponse<MapConfigDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun getMapControllerGetMapConfigWithHttpInfo() : ApiResponse<MapConfigDto?> {
+        val localVariableConfig = getMapControllerGetMapConfigRequestConfig()
+
+        return request<Unit, MapConfigDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation getMapControllerGetMapConfig
+     *
+     * @return RequestConfig
+     */
+    fun getMapControllerGetMapConfigRequestConfig() : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/map/configs",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * 
      * This service message allows the to get all offerings of maps
      * @return kotlin.collections.List<OfferingMapResDto>
@@ -612,7 +681,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
+     *
      * Set Import Status
      * @param importStatusDto 
      * @return void
@@ -642,7 +711,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
+     *
      * Set Import Status
      * @param importStatusDto 
      * @return ApiResponse<Unit?>
@@ -669,7 +738,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Content-Type"] = "application/json"
-        
+
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/api/map/import/status",
@@ -680,6 +749,74 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         )
     }
 
+    /**
+     *
+     * This service message get on object of maps config to set configuration
+     * @param mapConfigDto
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getMapControllerSetMapConfig(mapConfigDto: MapConfigDto) : Unit {
+        val localVarResponse = getMapControllerSetMapConfigWithHttpInfo(mapConfigDto = mapConfigDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     *
+     * This service message get on object of maps config to set configuration
+     * @param mapConfigDto
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun getMapControllerSetMapConfigWithHttpInfo(mapConfigDto: MapConfigDto) : ApiResponse<Unit?> {
+        val localVariableConfig = getMapControllerSetMapConfigRequestConfig(mapConfigDto = mapConfigDto)
+
+        return request<MapConfigDto, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation getMapControllerSetMapConfig
+     *
+     * @param mapConfigDto
+     * @return RequestConfig
+     */
+    fun getMapControllerSetMapConfigRequestConfig(mapConfigDto: MapConfigDto) : RequestConfig<MapConfigDto> {
+        val localVariableBody = mapConfigDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/map/configs",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
 
     private fun encodeURIComponent(uriComponent: kotlin.String): kotlin.String =
         HttpUrl.Builder().scheme("http").host("localhost").addPathSegment(uriComponent).build().encodedPathSegments[0]

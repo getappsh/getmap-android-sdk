@@ -39,6 +39,7 @@ import com.squareup.moshi.JsonClass
  * @param sensor 
  * @param precisionLevel 
  * @param resolution 
+ * @param inventory 
  */
 
 
@@ -93,7 +94,10 @@ data class DiscoveryMapDto (
     val precisionLevel: kotlin.String? = null,
 
     @Json(name = "resolution")
-    val resolution: kotlin.String? = null
+    val resolution: kotlin.String? = null,
+
+    @Json(name = "inventory")
+    val inventory: kotlin.collections.List<kotlin.String>? = null
 
 )
 
