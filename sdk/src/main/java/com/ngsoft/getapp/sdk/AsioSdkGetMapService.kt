@@ -71,6 +71,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
         instanceCount++
         JobScheduler().scheduleInventoryOfferingJob(appCtx)
+        JobScheduler().scheduleRemoteConfigJob(appCtx)
         return true
     }
 

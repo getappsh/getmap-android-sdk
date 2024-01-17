@@ -10,8 +10,10 @@ import java.lang.IllegalArgumentException
 
 internal class JobScheduler {
     companion object {
-        private const val INVENTORY_OFFERING_JOB_ID = 1
         private val _tag = "JobScheduler"
+
+        private const val INVENTORY_OFFERING_JOB_ID = 1
+        private const val REMOTE_CONFIG_JOB_ID = 2
     }
     fun scheduleInventoryOfferingJob(context: Context) {
         Log.i(_tag, "scheduleInventoryOfferingJob")
@@ -43,6 +45,29 @@ internal class JobScheduler {
         }
     }
 
+
+    fun scheduleRemoteConfigJob(context: Context){
+        Log.i(_tag, "scheduleRemoteConfigJob")
+        if(isJobScheduled(context, REMOTE_CONFIG_JOB_ID)){
+            return
+        }
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+
+        val jobInfo = JobInfo.Builder(REMOTE_CONFIG_JOB_ID, ComponentName(context, RemoteConfigService::class.java))
+            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setRequiresCharging(false)
+//            TODO make periodic configurable
+            .setPeriodic(24 * 60 * 60 * 1000L)
+            .setBackoffCriteria(30 * 60 * 1000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
+            .setPersisted(true)
+            .build()
+
+        try{
+            jobScheduler.schedule(jobInfo)
+        }catch (e: IllegalArgumentException){
+            Log.e(_tag, "scheduleInventoryOfferingJob - failed to schedule the service, error: ${e.message.toString()}")
+        }
+    }
 
     private fun isJobScheduled(context: Context, jobId: Int): Boolean {
         val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler

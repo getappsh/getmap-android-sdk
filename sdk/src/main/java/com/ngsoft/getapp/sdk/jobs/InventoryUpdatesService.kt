@@ -51,7 +51,7 @@ class InventoryUpdatesService: JobService() {
             jobFinished(params, false)
 
         }catch (e: Exception){
-            Log.e(_tag, "run - Failed to get inventory updates, error: ${e.message.toString()}")
+            Log.e(_tag, "runJob - Failed to get inventory updates, error: ${e.message.toString()}")
             jobFinished(params, true)
         }
     }
