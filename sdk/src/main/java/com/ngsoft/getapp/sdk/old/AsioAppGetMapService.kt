@@ -1,9 +1,11 @@
-package com.ngsoft.getapp.sdk
+package com.ngsoft.getapp.sdk.old
 
 import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import android.content.Context
 import android.util.Log
+import com.ngsoft.getapp.sdk.Configuration
+import com.ngsoft.getapp.sdk.DefaultGetMapService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties

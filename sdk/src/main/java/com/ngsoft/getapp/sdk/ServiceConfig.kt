@@ -4,19 +4,19 @@ import GetApp.Client.models.MapConfigDto
 import android.content.Context
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
 
-internal class MapServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
+internal class ServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
 
     private var pref = Pref.getInstance(appContext)
 
     companion object {
         @Volatile
-        private var instance: MapServiceConfig? = null
+        private var instance: ServiceConfig? = null
 
-        fun getInstance(appContext: Context): MapServiceConfig {
+        fun getInstance(appContext: Context): ServiceConfig {
             if (instance == null) {
                 synchronized(this) {
                     if (instance == null) {
-                        instance = MapServiceConfig(appContext)
+                        instance = ServiceConfig(appContext)
                     }
                 }
             }

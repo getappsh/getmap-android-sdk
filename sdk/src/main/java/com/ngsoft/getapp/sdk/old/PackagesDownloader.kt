@@ -1,7 +1,8 @@
-package com.ngsoft.getapp.sdk
+package com.ngsoft.getapp.sdk.old
 
 import android.content.Context
 import android.util.Log
+import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import java.util.Timer
 import kotlin.concurrent.timer

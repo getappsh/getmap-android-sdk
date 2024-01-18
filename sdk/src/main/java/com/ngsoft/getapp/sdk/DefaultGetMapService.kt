@@ -35,6 +35,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
+import com.ngsoft.getapp.sdk.old.DownloadProgress
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
@@ -58,7 +59,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
 
-    override val config: GetMapService.GeneralConfig = MapServiceConfig.getInstance(appCtx)
+    override val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
 
     open fun init(configuration: Configuration): Boolean {
         Log.i(_tag, "Init GetMapService" )

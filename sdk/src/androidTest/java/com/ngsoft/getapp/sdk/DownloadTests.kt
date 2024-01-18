@@ -3,6 +3,8 @@ package com.ngsoft.getapp.sdk
 import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.ngsoft.getapp.sdk.old.DownloadProgress
+import com.ngsoft.getapp.sdk.old.PackagesDownloader
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith

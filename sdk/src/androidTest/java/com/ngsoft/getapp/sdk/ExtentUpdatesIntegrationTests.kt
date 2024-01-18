@@ -3,6 +3,7 @@ package com.ngsoft.getapp.sdk
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.old.ExtentUpdates
 import com.ngsoft.tilescache.TilesCache
 import com.ngsoft.tilescache.models.BBox
 import com.ngsoft.tilescache.models.Tile

@@ -12,7 +12,7 @@ import java.io.IOException
 internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader) {
     private val _tag = "MapManager"
 
-    val config: GetMapService.GeneralConfig = MapServiceConfig.getInstance(appCtx)
+    val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
 
 
     fun moveFileToTargetDir(fileName: String): String {

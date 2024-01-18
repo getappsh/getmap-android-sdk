@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
+import com.ngsoft.getapp.sdk.old.DownloadProgress
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Test

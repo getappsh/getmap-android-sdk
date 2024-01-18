@@ -9,6 +9,7 @@ import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
+import com.ngsoft.getapp.sdk.old.DownloadProgress
 import java.time.LocalDateTime
 
 interface GetMapService {
