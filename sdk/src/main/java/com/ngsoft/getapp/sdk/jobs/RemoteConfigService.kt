@@ -3,6 +3,7 @@ package com.ngsoft.getapp.sdk.jobs
 import android.app.job.JobParameters
 import android.app.job.JobService
 import android.util.Log
+import com.ngsoft.getapp.sdk.MapServiceConfig
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
@@ -30,8 +31,10 @@ class RemoteConfigService: JobService() {
 
     private fun runJob(params: JobParameters?){
         try {
-            val config = client.getMapApi.getMapControllerGetMapConfig(pref.deviceId)
-            Log.v(_tag, "runJob - config: $config")
+            val configRes = client.getMapApi.getMapControllerGetMapConfig(pref.deviceId)
+            MapServiceConfig.getInstance(this).updateFromConfigDto(configRes)
+
+            Log.v(_tag, "runJob - config: $configRes")
         }catch (e: Exception){
             jobFinished(params, true)
         }

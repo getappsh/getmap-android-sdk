@@ -62,8 +62,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             Thread{updateMapsStatusOnStart()}.start()
         }
         instanceCount++
-        JobScheduler().scheduleInventoryOfferingJob(appCtx)
-        JobScheduler().scheduleRemoteConfigJob(appCtx)
+        JobScheduler().scheduleInventoryOfferingJob(appCtx, config.periodicInventoryIntervalMins)
+        JobScheduler().scheduleRemoteConfigJob(appCtx, config.periodicConfIntervalMins)
         return true
     }
 
@@ -835,7 +835,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         mapPkg.state == MapDeliveryState.ERROR)
             ){
                 val errorMsg = "deleteMap: Unable to resume download map status is: ${mapPkg?.state}"
-                Log.e(_tag,  errorMsg)
+                Log.e(_tag, errorMsg)
                 this.mapRepo.update(id, state = MapDeliveryState.ERROR, errorContent = errorMsg)
             }
 

@@ -1,8 +1,10 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.content.Context
+import com.ngsoft.getapp.sdk.jobs.JobScheduler
 
-internal class MapServiceConfig private constructor(appContext: Context): GetMapService.GeneralConfig{
+internal class MapServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
 
     private var pref = Pref.getInstance(appContext)
 
@@ -74,12 +76,14 @@ internal class MapServiceConfig private constructor(appContext: Context): GetMap
         set(value) {
             field = value
             pref.periodicInventoryIntervalJob = value
+            JobScheduler().updateInventoryOfferingJob(appContext, value)
         }
 
     override var periodicConfIntervalMins: Int = pref.periodicConfIntervalJob
         set(value) {
             field = value
             pref.periodicConfIntervalJob = value
+            JobScheduler().updateRemoteConfigJob(appContext, value)
         }
 
     override var runConfJob: Boolean = pref.runConfJob
@@ -95,5 +99,17 @@ internal class MapServiceConfig private constructor(appContext: Context): GetMap
         }
 
 
+    internal fun updateFromConfigDto(newConfig: MapConfigDto){
+        deliveryTimeoutMins = newConfig.deliveryTimeoutMins?.toInt() ?: deliveryTimeoutMins
+//        TODO maxMapSizeInMeter
+        maxMapSizeInMB = newConfig.maxMapSizeInMB?.toLong() ?: maxMapSizeInMB
+        maxParallelDownloads = newConfig.maxParallelDownloads?.toInt() ?: maxParallelDownloads
+        downloadRetry = newConfig.downloadRetryTime?.toInt() ?: downloadRetry
+        downloadTimeoutMins = newConfig.downloadTimeoutMins?.toInt() ?: downloadTimeoutMins
+        periodicInventoryIntervalMins = newConfig.periodicInventoryIntervalMins?.toInt() ?: periodicInventoryIntervalMins
+        periodicConfIntervalMins = newConfig.periodicConfIntervalMins?.toInt() ?: periodicConfIntervalMins
+        minAvailableSpaceBytes = newConfig.minAvailableSpaceBytes?.toLong() ?: minAvailableSpaceBytes
+        matomoUrl = newConfig.matomoUrl ?: matomoUrl
+    }
 }
 
