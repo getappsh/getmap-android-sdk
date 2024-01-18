@@ -40,6 +40,9 @@ class Pref private constructor(context: Context) {
     var baseUrl: String
         get() = getString(BASE_URL, "")
         set(value) = setString(BASE_URL, value)
+    var matomoUrl: String
+        get() = getString(MATOMO_URL, "")
+        set(value) = setString(MATOMO_URL, value)
 
     var storagePath: String
         get() = getString(STORAGE_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path)
@@ -69,13 +72,17 @@ class Pref private constructor(context: Context) {
         get() = getInt(MAX_PARALLEL_DOWNLOADS, 1)
         set(value) = setInt(MAX_PARALLEL_DOWNLOADS, value)
 
-    var periodicForInventoryJob: Int
-        get() = getInt(PERIODIC_FOR_INVENTORY_JOB, 1440)
-        set(value) = setInt(PERIODIC_FOR_INVENTORY_JOB, value)
+    var periodicInventoryIntervalJob: Int
+        get() = getInt(PERIODIC_INVENTORY_INTERVAL_JOB, 1440)
+        set(value) = setInt(PERIODIC_INVENTORY_INTERVAL_JOB, value)
 
-    var periodicForMapConf: Int
-        get() = getInt(PERIODIC_FOR_MAP_CONF, 1440)
-        set(value) = setInt(PERIODIC_FOR_MAP_CONF, value)
+    var periodicConfIntervalJob: Int
+        get() = getInt(PERIODIC_CONF_INTERVAL_JOB, 1440)
+        set(value) = setInt(PERIODIC_CONF_INTERVAL_JOB, value)
+
+    var runConfJob: Boolean
+        get() = getBoolean(RUN_CONF_JOB, true)
+        set(value) = setBoolean(RUN_CONF_JOB, value)
 
     var minAvailableSpace: Long
         get() = getLong(MIN_AVAILABLE_SPACE, 250 * 1024L * 1024L)
@@ -106,6 +113,14 @@ class Pref private constructor(context: Context) {
         sharedPreferences.edit().putLong(key, value).apply()
     }
 
+    private fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+        return sharedPreferences.getBoolean(key, defaultValue)
+    }
+
+    private fun setBoolean(key: String, value: Boolean) {
+        sharedPreferences.edit().putBoolean(key, value).apply()
+    }
+
     @SuppressLint("HardwareIds")
     fun generateDeviceId():String {
         val newDeviceId = Secure.getString(contentResolver, Secure.ANDROID_ID).toString()
@@ -120,16 +135,18 @@ class Pref private constructor(context: Context) {
         private const val USERNAME = "username"
         private const val PASSWORD = "password"
 
-        const val STORAGE_PATH = "storagePath"
-        const val DOWNLOAD_PATH = "downloadPath"
-        const val DELIVERY_TIMEOUT = "deliveryTimeout"
-        const val DOWNLOAD_TIMEOUT = "downloadTimeout"
-        const val DOWNLOAD_RETRY = "downloadRetry"
-        const val MAX_MAP_SIZE_IN_MB = "maxMapSizeInMB"
-        const val MAX_PARALLEL_DOWNLOADS = "maxParallelDownloads"
-        const val PERIODIC_FOR_INVENTORY_JOB = "periodicForInventoryJob"
-        const val PERIODIC_FOR_MAP_CONF = "periodicForMapConf"
-        const val MIN_AVAILABLE_SPACE = "minAvailableSpace"
+        private const val MATOMO_URL = "matomo_url"
+        private const val STORAGE_PATH = "storagePath"
+        private const val DOWNLOAD_PATH = "downloadPath"
+        private const val DELIVERY_TIMEOUT = "deliveryTimeout"
+        private const val DOWNLOAD_TIMEOUT = "downloadTimeout"
+        private const val DOWNLOAD_RETRY = "downloadRetry"
+        private const val MAX_MAP_SIZE_IN_MB = "maxMapSizeInMB"
+        private const val MAX_PARALLEL_DOWNLOADS = "maxParallelDownloads"
+        private const val PERIODIC_INVENTORY_INTERVAL_JOB = "periodicInventorIntervalJob"
+        private const val RUN_CONF_JOB = "runConfJob"
+        private const val PERIODIC_CONF_INTERVAL_JOB = "periodicConfIntervalJob"
+        private const val MIN_AVAILABLE_SPACE = "minAvailableSpace"
 
 
         private var instance: Pref? = null

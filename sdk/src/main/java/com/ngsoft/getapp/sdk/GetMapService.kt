@@ -225,4 +225,73 @@ interface GetMapService {
      */
     fun setMapImportDeploy(inputImportRequestId: String?,inputState: MapDeployState?): MapDeployState?
 
+
+    interface GeneralConfig {
+
+        /**
+         * Base URL for map-related API endpoints.
+         */
+        var baseUrl: String
+
+        /**
+         * Matomo URL.
+         */
+        var matomoUrl: String
+
+        /**
+         * Path where maps are stored locally.
+         */
+        var storagePath: String
+
+        /**
+         * Path where downloaded maps are saved.
+         */
+        var downloadPath: String
+
+        /**
+         * Timeout duration for map delivery operations in minutest.
+         */
+        var deliveryTimeoutMins: Int
+
+        /**
+         * Timeout duration for map download operations in minutest.
+         */
+        var downloadTimeoutMins: Int
+
+        /**
+         * Number of retries allowed for map downloads.
+         */
+        var downloadRetry: Int
+
+        /**
+         * Maximum allowable size for a map in megabytes.
+         */
+        var maxMapSizeInMB: Long
+
+        /**
+         * Maximum number of parallel downloads allowed.
+         */
+        var maxParallelDownloads: Int
+
+        /**
+         * Interval for periodic inventory in execution in minuets.
+         */
+        var periodicInventoryIntervalMins: Int
+
+
+        /**
+         * Run config job, set to false when admin control the config
+         */
+        var runConfJob: Boolean
+
+        /**
+         * Interval for periodic map configuration updates in minuets.
+         */
+        var periodicConfIntervalMins: Int
+
+        /**
+         * Minimum available space required on the device for map operations.
+         */
+        var minAvailableSpace: Long
+    }
 }
