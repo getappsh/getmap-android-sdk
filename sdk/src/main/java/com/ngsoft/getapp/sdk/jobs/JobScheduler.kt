@@ -32,9 +32,8 @@ internal class JobScheduler {
         val jobInfo = JobInfo.Builder(INVENTORY_OFFERING_JOB_ID, ComponentName(context, InventoryUpdatesService::class.java))
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
             .setRequiresCharging(false)
-//            TODO make periodic configurable
             .setPeriodic(minutes2millis(intervalMins))
-            .setBackoffCriteria(30 * 60 * 1000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
+            .setBackoffCriteria(5 * 60 * 1000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
             .setPersisted(true)
             .build()
 
@@ -56,9 +55,8 @@ internal class JobScheduler {
         val jobInfo = JobInfo.Builder(REMOTE_CONFIG_JOB_ID, ComponentName(context, RemoteConfigService::class.java))
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
             .setRequiresCharging(false)
-//            TODO make periodic configurable
             .setPeriodic(minutes2millis(intervalMins))
-            .setBackoffCriteria(30 * 60 * 1000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
+            .setBackoffCriteria(5 * 60 * 1000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
             .setPersisted(true)
             .build()
 
