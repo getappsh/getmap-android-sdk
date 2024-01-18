@@ -870,6 +870,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         Log.d(_tag, "generateQrCode - append download url to json")
         json.put("downloadUrl", mapPkg.url)
+        json.put("reqId", mapPkg.reqId)
 
         return qrManager.generateQrCode(json.toString(), width, height)
     }
@@ -881,7 +882,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val json = JSONObject(jsonString)
 
         val url = json.getString("downloadUrl")
-        Log.d(_tag, "processQrCodeData - download url: $url")
+        val reqId = json.getString("reqId")
+
+        Log.d(_tag, "processQrCodeData - download url: $url, reqId: $reqId")
         var jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
         jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
         Log.d(_tag, "processQrCodeData - fileName: $jsonName")
@@ -889,6 +892,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val mapPkg = MapPkg(
                 pId = json.getString("id"),
                 bBox = json.getString("productBoundingBox"),
+                reqId = reqId,
                 jsonName = jsonName,
                 url = url,
                 metadata = DownloadMetadata(jsonDone = true),
