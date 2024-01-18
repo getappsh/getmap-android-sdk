@@ -13,6 +13,12 @@ import java.time.LocalDateTime
 
 interface GetMapService {
 
+
+    /**
+     * Configuration settings of the map service.
+     */
+    val config: GeneralConfig
+
     /**
      * Get Downloaded map by id
      *

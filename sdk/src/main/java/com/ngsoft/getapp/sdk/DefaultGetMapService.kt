@@ -60,7 +60,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
 
-
+    override val config = GeneralConfig.getInstance(appCtx)
 
     open fun init(configuration: Configuration): Boolean {
         Log.i(_tag, "Init GetMapService" )
