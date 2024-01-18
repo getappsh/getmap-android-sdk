@@ -416,29 +416,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun setMapImportDeliveryCancel(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        if(inputImportRequestId.isNullOrEmpty())
-            throw Exception("invalid inputImportRequestId")
-
-        val status = client.getMapApi.getMapControllerCancelImportCreate(inputImportRequestId)
-
-        val result = MapImportDeliveryStatus()
-        result.importRequestId = inputImportRequestId
-        result.message = Status()
-        result.message!!.statusCode = StatusCode.SUCCESS
-
-        when(status.status){
-            CreateImportResDto.Status.start -> result.state = MapDeliveryState.START
-            CreateImportResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
-            CreateImportResDto.Status.done -> result.state = MapDeliveryState.DONE
-            CreateImportResDto.Status.cancel -> result.state = MapDeliveryState.CANCEL
-            CreateImportResDto.Status.error -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.pause -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.pending -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.expired -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.archived -> result.state = MapDeliveryState.ERROR
-        }
-
-        return result
+        TODO("Not implemented in DefaultGetMapService")
     }
 
     @OptIn(ExperimentalTime::class)

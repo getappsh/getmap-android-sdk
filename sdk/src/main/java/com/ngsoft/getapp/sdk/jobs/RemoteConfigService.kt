@@ -30,7 +30,7 @@ class RemoteConfigService: JobService() {
 
     private fun runJob(params: JobParameters?){
         try {
-            val config = client.getMapApi.getMapControllerGetMapConfig()
+            val config = client.getMapApi.getMapControllerGetMapConfig(pref.deviceId)
             Log.v(_tag, "runJob - config: $config")
         }catch (e: Exception){
             jobFinished(params, true)

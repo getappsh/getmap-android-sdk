@@ -22,24 +22,29 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param deliveryTimeout 
+ * @param deliveryTimeoutMins 
  * @param maxMapSizeInMeter 
+ * @param maxMapSizeInMB 
  * @param maxParallelDownloads 
  * @param downloadRetryTime 
- * @param downloadTimeoutSec 
- * @param periodicForInventoryJob 
- * @param periodicForMapConf 
- * @param minSpaceByte 
+ * @param downloadTimeoutMins 
+ * @param periodicInventoryIntervalMins 
+ * @param periodicConfIntervalMins 
+ * @param minAvailableSpaceBytes 
+ * @param matomoUrl 
  */
 
 
 data class MapConfigDto (
 
-    @Json(name = "deliveryTimeout")
-    val deliveryTimeout: java.math.BigDecimal? = null,
+    @Json(name = "deliveryTimeoutMins")
+    val deliveryTimeoutMins: java.math.BigDecimal? = null,
 
     @Json(name = "maxMapSizeInMeter")
     val maxMapSizeInMeter: java.math.BigDecimal? = null,
+
+    @Json(name = "maxMapSizeInMB")
+    val maxMapSizeInMB: java.math.BigDecimal? = null,
 
     @Json(name = "maxParallelDownloads")
     val maxParallelDownloads: java.math.BigDecimal? = null,
@@ -47,17 +52,20 @@ data class MapConfigDto (
     @Json(name = "downloadRetryTime")
     val downloadRetryTime: java.math.BigDecimal? = null,
 
-    @Json(name = "downloadTimeoutSec")
-    val downloadTimeoutSec: java.math.BigDecimal? = null,
+    @Json(name = "downloadTimeoutMins")
+    val downloadTimeoutMins: java.math.BigDecimal? = null,
 
-    @Json(name = "periodicForInventoryJob")
-    val periodicForInventoryJob: java.math.BigDecimal? = null,
+    @Json(name = "periodicInventoryIntervalMins")
+    val periodicInventoryIntervalMins: java.math.BigDecimal? = null,
 
-    @Json(name = "periodicForMapConf")
-    val periodicForMapConf: java.math.BigDecimal? = null,
+    @Json(name = "periodicConfIntervalMins")
+    val periodicConfIntervalMins: java.math.BigDecimal? = null,
 
-    @Json(name = "minSpaceByte")
-    val minSpaceByte: java.math.BigDecimal? = null
+    @Json(name = "minAvailableSpaceBytes")
+    val minAvailableSpaceBytes: java.math.BigDecimal? = null,
+
+    @Json(name = "matomoUrl")
+    val matomoUrl: kotlin.String? = null
 
 )
 
