@@ -38,12 +38,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private val _tag = "AsioSdkGetMapService"
 
-    private var deliveryTimeoutMinutes: Int = 5
-    private var downloadTimeoutMinutes: Int = 5
-    private var downloadRetryAttempts: Int = 3
-
     private val checksumAlgorithm = "sha256"
-    private val minAvailableSpaceMb = 250 * 1024L * 1024L
 
     private lateinit var mapRepo: MapRepo
     private lateinit var qrManager: QRManager
@@ -59,9 +54,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun init(configuration: Configuration): Boolean {
         super.init(configuration)
 
-        deliveryTimeoutMinutes = configuration.deliveryTimeout
-        downloadTimeoutMinutes = configuration.downloadTimeout
-        downloadRetryAttempts = configuration.downloadRetry
 
         mapRepo = MapRepo(appCtx)
         qrManager = QRManager(appCtx)
@@ -101,7 +93,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "downloadMap: id: $id")
         Log.d(_tag, "downloadMap: bBox - ${mp.boundingBox}")
 
-        if (isEnoughSpace(id, storagePath, minAvailableSpaceMb)){
+        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceBytes)){
             Thread{executeDeliveryFlow(id)}.start()
         }
 
@@ -245,7 +237,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "checkImportStatue")
 
         val reqId = this.mapRepo.getReqId(id)!!;
-        var timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+        var timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
 
         var stat : CreateMapImportStatus? = null
         var lastProgress : Int? = null
@@ -318,7 +310,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         errorContent = ""
                     )
                     if (lastProgress != progress){
-                        timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+                        timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
                     }
                     lastProgress = progress
                 }
@@ -343,7 +335,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val reqId = this.mapRepo.getReqId(id)!!;
 
         var retDelivery = setMapImportDeliveryStart(reqId)
-        val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+        val timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
 
         while (retDelivery?.state != MapDeliveryState.DONE) {
             when (retDelivery?.state) {
@@ -509,7 +501,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                     val downloadAttempts = if (isJson) mapPkg.metadata.jsonAttempt else mapPkg.metadata.mapAttempt
 
-                    if (downloadAttempts < downloadRetryAttempts) {
+                    if (downloadAttempts < config.downloadRetry) {
                         Log.d(_tag, "downloadFile - retry download")
                         downloader.cancelDownload(downloadId)
 
@@ -616,8 +608,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val isValid = try{
             Log.d(_tag, "validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
-            val mapFile = File(storagePath, mapPkg.fileName!!)
-            val jsonFile = File(storagePath, mapPkg.jsonName!!)
+            val mapFile = File(config.storagePath, mapPkg.fileName!!)
+            val jsonFile = File(config.storagePath, mapPkg.jsonName!!)
 
             val expectedHash = JsonUtils.getStringOrThrow(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
@@ -736,7 +728,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private fun syncStorage(){
         Log.i(_tag, "syncStorage")
-        val dir =  File(storagePath)
+        val dir =  File(config.storagePath)
         val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
         val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
         val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
@@ -873,7 +865,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             Log.e(_tag,  errorMsg)
             throw Exception(errorMsg)
         }
-        val file = File(storagePath, mapPkg.jsonName!!)
+        val file = File(config.storagePath, mapPkg.jsonName!!)
         val json = JsonUtils.readJson(file.path)
 
         Log.d(_tag, "generateQrCode - append download url to json")
@@ -891,7 +883,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val url = json.getString("downloadUrl")
         Log.d(_tag, "processQrCodeData - download url: $url")
         var jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
-        jsonName = FileUtils.writeFile(downloadPath, jsonName, jsonString)
+        jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
         Log.d(_tag, "processQrCodeData - fileName: $jsonName")
 
         val mapPkg = MapPkg(
@@ -909,7 +901,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.setListener(id, downloadStatusHandler)
         this.mapRepo.invoke(id)
 
-        if (isEnoughSpace(id, storagePath, minAvailableSpaceMb)){
+        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceBytes)){
             Log.d(_tag, "processQrCodeData - execute the auth delivery process")
             Thread{executeDeliveryFlow(id)}.start()
         }

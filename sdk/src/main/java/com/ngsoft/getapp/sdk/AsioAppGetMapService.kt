@@ -24,15 +24,12 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
     private lateinit var packagesDownloader: PackagesDownloader
     private lateinit var extentUpdates: ExtentUpdates
     private var zoomLevel: Int = 0
-    private var deliveryTimeoutMinutes: Int = 5
-    private var downloadTimeoutMinutes: Int = 5
+
 
 
     override fun init(configuration: Configuration): Boolean {
         super.init(configuration)
         zoomLevel = configuration.zoomLevel
-        deliveryTimeoutMinutes = configuration.deliveryTimeout
-        downloadTimeoutMinutes = configuration.downloadTimeout
 
         packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
         extentUpdates = ExtentUpdates(appCtx)
@@ -100,7 +97,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         packagesDownloader.downloadFiles(tiles2download.map { it.first }, downloadProgressHandler)
-        val timeoutTime = TimeSource.Monotonic.markNow() + downloadTimeoutMinutes.minutes
+        val timeoutTime = TimeSource.Monotonic.markNow() + config.downloadTimeoutMins.minutes
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             if(timeoutTime.hasPassedNow()){
@@ -180,7 +177,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
     @OptIn(ExperimentalTime::class)
     private fun checkImportStatus(requestId: String) : Boolean {
         var stat = getCreateMapImportStatus(requestId)
-        val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+        val timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
         while (stat?.state!! != MapImportState.DONE){
             TimeUnit.SECONDS.sleep(1)
             stat = getCreateMapImportStatus(requestId)
@@ -208,7 +205,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
     @OptIn(ExperimentalTime::class)
     private fun checkDeliveryStatus(requestId: String) : Boolean {
         var stat = getMapImportDeliveryStatus(requestId)
-        val timeoutTime = TimeSource.Monotonic.markNow() + deliveryTimeoutMinutes.minutes
+        val timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
         while (stat?.state != MapDeliveryState.DONE){
             TimeUnit.SECONDS.sleep(1)
             stat = getMapImportDeliveryStatus(requestId)

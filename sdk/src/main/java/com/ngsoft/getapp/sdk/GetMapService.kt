@@ -229,11 +229,6 @@ interface GetMapService {
     interface GeneralConfig {
 
         /**
-         * Base URL for map-related API endpoints.
-         */
-        var baseUrl: String
-
-        /**
          * Matomo URL.
          */
         var matomoUrl: String
@@ -292,6 +287,6 @@ interface GetMapService {
         /**
          * Minimum available space required on the device for map operations.
          */
-        var minAvailableSpace: Long
+        var minAvailableSpaceBytes: Long
     }
 }

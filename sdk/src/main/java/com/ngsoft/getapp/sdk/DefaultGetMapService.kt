@@ -54,8 +54,6 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var client: GetAppClient
     protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
-    protected lateinit var storagePath: String
-    protected lateinit var downloadPath: String
     private lateinit var batteryManager: BatteryManager
     protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
@@ -68,15 +66,13 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
         val dir = Environment.DIRECTORY_DOWNLOADS
-        downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
         downloader = PackageDownloader(appCtx, dir)
 
         pref = Pref.getInstance(appCtx)
 
-        storagePath = configuration.storagePath
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
 
-        mapFileManager = MapFileManager(appCtx, downloader, downloadPath, storagePath)
+        mapFileManager = MapFileManager(appCtx, downloader)
 
         cache = TilesCache(appCtx)
 
@@ -180,7 +176,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
                     pref.deviceId, pref.generateDeviceId(), "Yes",
-                    FileUtils.getAvailableSpace(storagePath).toString())
+                    FileUtils.getAvailableSpace(config.storagePath).toString())
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),

@@ -77,7 +77,6 @@ class MainActivity : AppCompatActivity() {
 //            File("/storage/1115-0C18/com.asio.gis").path,
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
             16,
-            5,5,
             null
         )
 

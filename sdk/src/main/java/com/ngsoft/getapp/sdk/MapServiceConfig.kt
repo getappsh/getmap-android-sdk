@@ -4,9 +4,7 @@ import android.content.Context
 
 internal class MapServiceConfig private constructor(appContext: Context): GetMapService.GeneralConfig{
 
-
     private var pref = Pref.getInstance(appContext)
-
 
     companion object {
         @Volatile
@@ -24,12 +22,6 @@ internal class MapServiceConfig private constructor(appContext: Context): GetMap
         }
     }
 
-
-    override var baseUrl: String = pref.baseUrl
-        set(value){
-            field = value
-            pref.baseUrl = value
-        }
 
     override var matomoUrl: String = pref.matomoUrl
         set(value) {
@@ -96,7 +88,7 @@ internal class MapServiceConfig private constructor(appContext: Context): GetMap
             pref.runConfJob = value
         }
 
-    override var minAvailableSpace: Long = pref.minAvailableSpace
+    override var minAvailableSpaceBytes: Long = pref.minAvailableSpace
         set(value) {
             field = value
             pref.minAvailableSpace = value

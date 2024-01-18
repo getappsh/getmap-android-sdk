@@ -43,7 +43,6 @@ class App4ASIOIntegrationTests {
                 //currently downloads file to a path within the public external storage directory
                 Environment.DIRECTORY_DOWNLOADS,
                 16,
-                5,5,
                 null
             )
 

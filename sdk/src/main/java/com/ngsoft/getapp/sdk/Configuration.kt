@@ -8,8 +8,8 @@ package com.ngsoft.getapp.sdk
  * @property password
  * @property storagePath for tiles
  * @property zoomLevel matrix grid zoom level
- * @property deliveryTimeout in minutes
- * @property downloadTimeout in minutes
+// * @property deliveryTimeout in minutes
+// * @property downloadTimeout in minutes
  * @constructor Create empty Configuration
  */
 data class Configuration (
@@ -18,8 +18,8 @@ data class Configuration (
     val password: String,
     val storagePath: String,
     val zoomLevel: Int,
-    val deliveryTimeout: Int,
-    val downloadTimeout: Int,
+//    val deliveryTimeout: Int,
+//    val downloadTimeout: Int,
     val imei: String?,
-    val downloadRetry: Int = 2,
+//    val downloadRetry: Int = 2,
     )
