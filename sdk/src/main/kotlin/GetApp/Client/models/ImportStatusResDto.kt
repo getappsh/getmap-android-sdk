@@ -15,6 +15,8 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.ErrorDto
+import GetApp.Client.models.MapMetadatatDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -22,38 +24,26 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param deviceId 
  * @param importRequestId 
- * @param packageUrl 
- * @param fileName 
- * @param createDate 
  * @param status 
- * @param messageLog 
+ * @param error 
+ * @param metaData 
  */
 
 
 data class ImportStatusResDto (
 
-    @Json(name = "deviceId")
-    val deviceId: kotlin.String? = null,
-
     @Json(name = "importRequestId")
     val importRequestId: kotlin.String? = null,
-
-    @Json(name = "packageUrl")
-    val packageUrl: kotlin.String? = null,
-
-    @Json(name = "fileName")
-    val fileName: kotlin.String? = null,
-
-    @Json(name = "createDate")
-    val createDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "status")
     val status: ImportStatusResDto.Status? = null,
 
-    @Json(name = "messageLog")
-    val messageLog: kotlin.String? = null
+    @Json(name = "error")
+    val error: ErrorDto? = null,
+
+    @Json(name = "metaData")
+    val metaData: MapMetadatatDto? = null
 
 ) {
 

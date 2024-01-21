@@ -15,6 +15,7 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.MapStateDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -22,29 +23,30 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
+ * @param maps 
  * @param id 
- * @param zadikNumber 
- * @param hardware 
- * @param formation 
+ * @param lastUpdatedDate 
+ * @param OS 
  * @param availableStorage 
  * @param power 
  * @param bandwidth 
+ * @param operativeState 
  */
 
 
 data class DeviceMapDto (
 
+    @Json(name = "maps")
+    val maps: kotlin.collections.List<MapStateDto>,
+
     @Json(name = "id")
     val id: kotlin.String? = null,
 
-    @Json(name = "zadikNumber")
-    val zadikNumber: kotlin.String? = null,
+    @Json(name = "lastUpdatedDate")
+    val lastUpdatedDate: java.time.OffsetDateTime? = null,
 
-    @Json(name = "hardware")
-    val hardware: kotlin.String? = null,
-
-    @Json(name = "formation")
-    val formation: kotlin.String? = null,
+    @Json(name = "OS")
+    val OS: kotlin.String? = null,
 
     @Json(name = "availableStorage")
     val availableStorage: kotlin.String? = null,
@@ -53,7 +55,10 @@ data class DeviceMapDto (
     val power: java.math.BigDecimal? = null,
 
     @Json(name = "bandwidth")
-    val bandwidth: java.math.BigDecimal? = null
+    val bandwidth: java.math.BigDecimal? = null,
+
+    @Json(name = "operativeState")
+    val operativeState: kotlin.Boolean? = null
 
 )
 

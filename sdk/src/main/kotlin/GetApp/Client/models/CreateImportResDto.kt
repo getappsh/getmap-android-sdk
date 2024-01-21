@@ -15,6 +15,8 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.ErrorDto
+import GetApp.Client.models.MapProductResDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -24,20 +26,24 @@ import com.squareup.moshi.JsonClass
  *
  * @param importRequestId 
  * @param status 
- * @param messageLog 
+ * @param error 
+ * @param product 
  */
 
 
 data class CreateImportResDto (
 
     @Json(name = "importRequestId")
-    val importRequestId: kotlin.String,
+    val importRequestId: kotlin.String? = null,
 
     @Json(name = "status")
-    val status: CreateImportResDto.Status,
+    val status: CreateImportResDto.Status? = null,
 
-    @Json(name = "messageLog")
-    val messageLog: kotlin.String? = null
+    @Json(name = "error")
+    val error: ErrorDto? = null,
+
+    @Json(name = "product")
+    val product: MapProductResDto? = null
 
 ) {
 

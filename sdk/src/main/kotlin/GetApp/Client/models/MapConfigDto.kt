@@ -30,8 +30,10 @@ import com.squareup.moshi.JsonClass
  * @param downloadTimeoutMins 
  * @param periodicInventoryIntervalMins 
  * @param periodicConfIntervalMins 
+ * @param periodicMatomoIntervalMins 
  * @param minAvailableSpaceBytes 
  * @param matomoUrl 
+ * @param lastUpdate 
  */
 
 
@@ -61,11 +63,17 @@ data class MapConfigDto (
     @Json(name = "periodicConfIntervalMins")
     val periodicConfIntervalMins: java.math.BigDecimal? = null,
 
+    @Json(name = "periodicMatomoIntervalMins")
+    val periodicMatomoIntervalMins: java.math.BigDecimal? = null,
+
     @Json(name = "minAvailableSpaceBytes")
     val minAvailableSpaceBytes: java.math.BigDecimal? = null,
 
     @Json(name = "matomoUrl")
-    val matomoUrl: kotlin.String? = null
+    val matomoUrl: kotlin.String? = null,
+
+    @Json(name = "lastUpdate")
+    val lastUpdate: java.time.OffsetDateTime? = null
 
 )
 
