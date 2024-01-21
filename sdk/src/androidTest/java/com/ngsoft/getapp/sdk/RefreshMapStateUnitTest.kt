@@ -152,7 +152,6 @@ class RefreshMapStateUnitTest {
                 "rony123",
                 path,
                 16,
-                5,5,
                 null
             )
 

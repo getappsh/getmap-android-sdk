@@ -42,7 +42,6 @@ class Sdk4ASIOIntegrationTest {
                 "rony123",
                 path,
                 16,
-                5,5,
                 null
             )
 
