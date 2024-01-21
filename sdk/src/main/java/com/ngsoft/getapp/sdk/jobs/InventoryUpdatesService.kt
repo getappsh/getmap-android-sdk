@@ -6,11 +6,13 @@ import android.app.job.JobService
 import android.util.Log
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
+import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getapp.sdk.helpers.InventoryClientHelper
 import com.ngsoft.getapp.sdk.helpers.NotificationHelper
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
+import java.time.OffsetDateTime
 
 
 class InventoryUpdatesService: JobService() {
@@ -38,7 +40,7 @@ class InventoryUpdatesService: JobService() {
 
     private fun runJob(params: JobParameters?){
         try{
-            val mapsToUpdate = InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
+            val mapsToUpdate = InventoryClientHelper.getUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
 
             if (mapsToUpdate.isNotEmpty()){
                 Log.d(_tag, "run - send notification")
@@ -51,7 +53,7 @@ class InventoryUpdatesService: JobService() {
             jobFinished(params, false)
 
         }catch (e: Exception){
-            Log.e(_tag, "run - Failed to get inventory updates, error: ${e.message.toString()}")
+            Log.e(_tag, "runJob - Failed to get inventory updates, error: ${e.message.toString()}")
             jobFinished(params, true)
         }
     }

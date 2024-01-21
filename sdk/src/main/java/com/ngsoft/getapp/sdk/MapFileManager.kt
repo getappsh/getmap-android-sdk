@@ -9,26 +9,28 @@ import com.ngsoft.tilescache.models.MapPkg
 import java.io.File
 import java.io.IOException
 
-internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader, private val downloadPath: String, private val storagePath: String) {
+internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader) {
     private val _tag = "MapManager"
+
+    val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
 
 
     fun moveFileToTargetDir(fileName: String): String {
-        val downloadFile = File(downloadPath, fileName)
+        val downloadFile = File(config.downloadPath, fileName)
 
 //        TODO fined better way to handle when file exist and have not been downloaded
         if (!downloadFile.exists()){
-            if(File(storagePath, fileName).exists()){
+            if(File(config.storagePath, fileName).exists()){
                 return fileName
             }
             throw IOException("File $downloadFile, doesn't exist")
         }
 
-        if (FileUtils.getAvailableSpace(storagePath) <= downloadFile.length()){
+        if (FileUtils.getAvailableSpace(config.storagePath) <= downloadFile.length()){
             throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
 
-        return FileUtils.moveFile(downloadPath, storagePath, fileName)
+        return FileUtils.moveFile(config.downloadPath, config.storagePath, fileName)
     }
 
     fun deleteMapFiles(mapName: String?, jsonName: String?){
@@ -45,7 +47,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
 
     private fun deleteFileFromAllLocations(fileName: String){
         Log.i(_tag, "deleteFile - fileName: $fileName")
-        for (path in arrayOf(downloadPath, storagePath)){
+        for (path in arrayOf(config.downloadPath, config.storagePath)){
             val file = File(path, fileName)
             Log.d(_tag, "deleteFile - File path: ${file.path}")
 
@@ -70,8 +72,8 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
     }
 
     fun isFileDownloadDone(downloadId: Long?, fileName: String?): Boolean{
-        val downloadFile = fileName?.let { File(downloadPath, it) }
-        val targetFile = fileName?.let{ File(storagePath, it) }
+        val downloadFile = fileName?.let { File(config.downloadPath, it) }
+        val targetFile = fileName?.let{ File(config.storagePath, it) }
 
         return if (targetFile?.exists() == true){
             true
@@ -84,11 +86,11 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
 
     }
     fun refreshMapState(mapPkg: MapPkg): MapPkg {
-        val downloadMapFile = mapPkg.fileName?.let { File(downloadPath, it) }
-        val downloadJsonFile = mapPkg.jsonName?.let { File(downloadPath, it) }
+        val downloadMapFile = mapPkg.fileName?.let { File(config.downloadPath, it) }
+        val downloadJsonFile = mapPkg.jsonName?.let { File(config.downloadPath, it) }
 
-        val targetMapFile = mapPkg.fileName?.let { File(storagePath, it) }
-        val targetJsonFile = mapPkg.jsonName?.let { File(storagePath, it) }
+        val targetMapFile = mapPkg.fileName?.let { File(config.storagePath, it) }
+        val targetJsonFile = mapPkg.jsonName?.let { File(config.storagePath, it) }
 
         if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true){
             if (mapPkg.state == MapDeliveryState.DONE){
@@ -104,7 +106,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         if(targetJsonFile?.exists() == true && targetMapFile?.exists() != true){
             if (downloadJsonFile?.exists() == false){
                 try {
-                    FileUtils.moveFile(storagePath, downloadPath, targetJsonFile.name)
+                    FileUtils.moveFile(config.storagePath, config.downloadPath, targetJsonFile.name)
                 }catch (e: Exception){
                     Log.e(_tag, "refreshMapState - failed to move json file to download dir, json: ${targetJsonFile.name}, error: ${e.message.toString()}")
                 }

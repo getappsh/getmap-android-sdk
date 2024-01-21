@@ -6,6 +6,7 @@ import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.DiscoveryMapDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoverySoftwareDto
+import GetApp.Client.models.ErrorDto
 import GetApp.Client.models.GeneralDiscoveryDto
 import GetApp.Client.models.GeoLocationDto
 import GetApp.Client.models.ImportStatusResDto
@@ -35,6 +36,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
+import com.ngsoft.getapp.sdk.old.DownloadProgress
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
@@ -54,29 +56,26 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var client: GetAppClient
     protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
-    protected lateinit var storagePath: String
-    protected lateinit var downloadPath: String
     private lateinit var batteryManager: BatteryManager
     protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
 
-
+    override val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
 
     open fun init(configuration: Configuration): Boolean {
         Log.i(_tag, "Init GetMapService" )
 
+        config.storagePath = configuration.storagePath
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
         val dir = Environment.DIRECTORY_DOWNLOADS
-        downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
         downloader = PackageDownloader(appCtx, dir)
 
         pref = Pref.getInstance(appCtx)
 
-        storagePath = configuration.storagePath
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
 
-        mapFileManager = MapFileManager(appCtx, downloader, downloadPath, storagePath)
+        mapFileManager = MapFileManager(appCtx, downloader)
 
         cache = TilesCache(appCtx)
 
@@ -98,6 +97,10 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun fetchInventoryUpdates(): List<String> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun fetchConfigUpdates() {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -180,7 +183,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
                     pref.deviceId, pref.generateDeviceId(), "Yes",
-                    FileUtils.getAvailableSpace(storagePath).toString())
+                    FileUtils.getAvailableSpace(config.storagePath).toString())
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),
@@ -196,13 +199,13 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         Log.v(_tag, "getDiscoveryCatalog - discovery object built")
 
-        val discoveries = client.deviceApi.deviceControllerDiscoveryCatalog(query)
+        val discoveries = client.deviceApi.discoveryControllerDiscoveryCatalog(query)
         Log.d(_tag, "getDiscoveryCatalog -  offering results: $discoveries ")
 
         val result = mutableListOf<DiscoveryItem>()
         if (discoveries.map?.status == OfferingMapResDto.Status.error){
-            Log.e(_tag, "getDiscoveryCatalog: get-map offering error ${discoveries.map.reason}")
-            throw Exception("get-map offering error ${discoveries.map.reason}")
+            Log.e(_tag, "getDiscoveryCatalog: get-map offering error ${discoveries.map.error?.message}")
+            throw Exception("get-map offering error ${discoveries.map.error?.message}")
         }
 
         discoveries.map?.products?.forEach {
@@ -238,6 +241,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         result.importRequestId = inputImportRequestId
         result.statusCode = Status()
 
+        result.progress = status.metaData?.progress
+
         when(status.status) {
             ImportStatusResDto.Status.start -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
@@ -249,7 +254,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             }
             ImportStatusResDto.Status.inProgress -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.messageLog
+                result.statusCode!!.messageLog = status.error?.message
                 result.state = MapImportState.IN_PROGRESS
             }
             ImportStatusResDto.Status.pending -> {
@@ -258,31 +263,31 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             }
             ImportStatusResDto.Status.cancel -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.messageLog
+                result.statusCode!!.messageLog = status.error?.message
                 result.state = MapImportState.CANCEL
             }
             ImportStatusResDto.Status.error -> {
                 result.statusCode!!.statusCode = StatusCode.NOT_FOUND
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
 
-                if(status.fileName == "Request not found")
+                if(status.error?.errorCode == ErrorDto.ErrorCode.notFound)
                     result.statusCode!!.statusCode = StatusCode.REQUEST_ID_NOT_FOUND
 
                 result.state = MapImportState.ERROR
             }
             ImportStatusResDto.Status.pause -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             ImportStatusResDto.Status.expired -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             ImportStatusResDto.Status.archived -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             else -> {
@@ -311,17 +316,14 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         when(status.status) {
             CreateImportResDto.Status.start -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.START
             }
             CreateImportResDto.Status.done -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.DONE
             }
             CreateImportResDto.Status.inProgress -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.messageLog
                 result.state = MapImportState.IN_PROGRESS
             }
             CreateImportResDto.Status.pending -> {
@@ -334,23 +336,30 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             }
             CreateImportResDto.Status.error -> {
                 result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             CreateImportResDto.Status.pause -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             CreateImportResDto.Status.expired -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             CreateImportResDto.Status.archived -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.messageLog ?: status.importRequestId)
+                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
+            }
+
+            else -> {
+                result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
+                result.statusCode!!.messageLog = status.error?.message
+                result.state = MapImportState.ERROR
+
             }
         }
 
@@ -420,29 +429,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun setMapImportDeliveryCancel(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        if(inputImportRequestId.isNullOrEmpty())
-            throw Exception("invalid inputImportRequestId")
-
-        val status = client.getMapApi.getMapControllerCancelImportCreate(inputImportRequestId)
-
-        val result = MapImportDeliveryStatus()
-        result.importRequestId = inputImportRequestId
-        result.message = Status()
-        result.message!!.statusCode = StatusCode.SUCCESS
-
-        when(status.status){
-            CreateImportResDto.Status.start -> result.state = MapDeliveryState.START
-            CreateImportResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
-            CreateImportResDto.Status.done -> result.state = MapDeliveryState.DONE
-            CreateImportResDto.Status.cancel -> result.state = MapDeliveryState.CANCEL
-            CreateImportResDto.Status.error -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.pause -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.pending -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.expired -> result.state = MapDeliveryState.ERROR
-            CreateImportResDto.Status.archived -> result.state = MapDeliveryState.ERROR
-        }
-
-        return result
+        TODO("Not implemented in DefaultGetMapService")
     }
 
     @OptIn(ExperimentalTime::class)

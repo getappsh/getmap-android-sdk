@@ -9,9 +9,17 @@ import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
+import com.ngsoft.getapp.sdk.old.DownloadProgress
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 interface GetMapService {
+
+
+    /**
+     * Configuration settings of the map service.
+     */
+    val config: GeneralConfig
 
     /**
      * Get Downloaded map by id
@@ -107,6 +115,13 @@ interface GetMapService {
     @Throws(Exception::class)
     fun fetchInventoryUpdates(): List<String>
 
+    /**
+     * Fetch config Updates from the server
+     * @return
+     * @throws Exception when the request to server failed for some reason
+     */
+    @Throws(Exception::class)
+    fun fetchConfigUpdates()
     /**
      * Set listener to get notified when there is a new map update
      */
@@ -219,4 +234,85 @@ interface GetMapService {
      */
     fun setMapImportDeploy(inputImportRequestId: String?,inputState: MapDeployState?): MapDeployState?
 
+
+    interface GeneralConfig {
+
+        /**
+         * Path where maps are stored locally.
+         */
+        var storagePath: String
+
+        /**
+         * Path where downloaded maps are saved.
+         */
+        var downloadPath: String
+
+        /**
+         * Timeout duration for map delivery operations in minutest.
+         */
+        var deliveryTimeoutMins: Int
+
+        /**
+         * Timeout duration for map download operations in minutest.
+         */
+        var downloadTimeoutMins: Int
+
+        /**
+         * Number of retries allowed for map downloads.
+         */
+        var downloadRetry: Int
+
+        /**
+         * Maximum allowable size for a map in megabytes.
+         */
+        var maxMapSizeInMB: Long
+
+
+        var maxMapSizeInMerer: Long
+
+        /**
+         * Maximum number of parallel downloads allowed.
+         */
+        var maxParallelDownloads: Int
+
+        /**
+         * Interval for periodic inventory in execution in minuets.
+         */
+        var periodicInventoryIntervalMins: Int
+
+
+        /**
+         * Run config job, set to false when admin control the config
+         */
+        var runConfJob: Boolean
+
+        /**
+         * Interval for periodic map configuration updates in minuets.
+         */
+        var periodicConfIntervalMins: Int
+
+        /**
+         * Matomo URL.
+         */
+        var matomoUrl: String
+
+        /**
+         * Interval for Matomo  updates in minuets.
+         */
+        var matomoUpdateIntervalMins: Int
+
+        /**
+         * Minimum available space required on the device for map operations.
+         */
+        var minAvailableSpaceBytes: Long
+
+
+        var lastConfigCheck: OffsetDateTime
+
+        var lastInventoryCheck: OffsetDateTime
+
+        var lastServerConfigUpdate: OffsetDateTime
+
+
+    }
 }

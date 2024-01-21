@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.sdk
 
 import android.content.Context
+import com.ngsoft.getapp.sdk.old.AsioAppGetMapService
 
 class GetMapServiceFactory {
     companion object {

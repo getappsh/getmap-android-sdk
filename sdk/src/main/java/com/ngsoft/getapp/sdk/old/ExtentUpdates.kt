@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk
+package com.ngsoft.getapp.sdk.old
 
 import android.content.Context
 import com.ngsoft.getapp.sdk.models.MapProperties

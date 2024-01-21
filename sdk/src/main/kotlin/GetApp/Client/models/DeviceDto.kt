@@ -38,7 +38,7 @@ data class DeviceDto (
     val id: kotlin.String? = null,
 
     @Json(name = "lastUpdatedDate")
-    val lastUpdatedDate: kotlin.String? = null,
+    val lastUpdatedDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "OS")
     val OS: kotlin.String? = null,

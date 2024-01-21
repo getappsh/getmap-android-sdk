@@ -19,10 +19,9 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
-import GetApp.Client.models.DeviceContentResDto
-import GetApp.Client.models.DeviceDto
-import GetApp.Client.models.DeviceMapDto
-import GetApp.Client.models.DeviceRegisterDto
+import GetApp.Client.models.DeviceDiscoverResDto
+import GetApp.Client.models.DiscoveryMessageDto
+import GetApp.Client.models.DiscoveryResDto
 
 import com.squareup.moshi.Json
 
@@ -40,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -50,9 +49,9 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
-     * This service message allow receiving the information for the installations carried out on the device using GetApp services. This message is sent by the device during init phase in order to check compatibility between the existing installations on this device.
-     * @param deviceId 
-     * @return DeviceContentResDto
+     * This service message allow to device post the discovery context for getting offers softwares and maps for GetApp agent. 
+     * @param discoveryMessageDto 
+     * @return DiscoveryResDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -61,11 +60,11 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun deviceControllerGetDeviceContentInstalled(deviceId: kotlin.String) : DeviceContentResDto {
-        val localVarResponse = deviceControllerGetDeviceContentInstalledWithHttpInfo(deviceId = deviceId)
+    fun discoveryControllerDiscoveryCatalog(discoveryMessageDto: DiscoveryMessageDto) : DiscoveryResDto {
+        val localVarResponse = discoveryControllerDiscoveryCatalogWithHttpInfo(discoveryMessageDto = discoveryMessageDto)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceContentResDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DiscoveryResDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -81,37 +80,38 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
-     * This service message allow receiving the information for the installations carried out on the device using GetApp services. This message is sent by the device during init phase in order to check compatibility between the existing installations on this device.
-     * @param deviceId 
-     * @return ApiResponse<DeviceContentResDto?>
+     * This service message allow to device post the discovery context for getting offers softwares and maps for GetApp agent. 
+     * @param discoveryMessageDto 
+     * @return ApiResponse<DiscoveryResDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun deviceControllerGetDeviceContentInstalledWithHttpInfo(deviceId: kotlin.String) : ApiResponse<DeviceContentResDto?> {
-        val localVariableConfig = deviceControllerGetDeviceContentInstalledRequestConfig(deviceId = deviceId)
+    fun discoveryControllerDiscoveryCatalogWithHttpInfo(discoveryMessageDto: DiscoveryMessageDto) : ApiResponse<DiscoveryResDto?> {
+        val localVariableConfig = discoveryControllerDiscoveryCatalogRequestConfig(discoveryMessageDto = discoveryMessageDto)
 
-        return request<Unit, DeviceContentResDto>(
+        return request<DiscoveryMessageDto, DiscoveryResDto>(
             localVariableConfig
         )
     }
 
     /**
-     * To obtain the request config of the operation deviceControllerGetDeviceContentInstalled
+     * To obtain the request config of the operation discoveryControllerDiscoveryCatalog
      *
-     * @param deviceId 
+     * @param discoveryMessageDto 
      * @return RequestConfig
      */
-    fun deviceControllerGetDeviceContentInstalledRequestConfig(deviceId: kotlin.String) : RequestConfig<Unit> {
-        val localVariableBody = null
+    fun discoveryControllerDiscoveryCatalogRequestConfig(discoveryMessageDto: DiscoveryMessageDto) : RequestConfig<DiscoveryMessageDto> {
+        val localVariableBody = discoveryMessageDto
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
         localVariableHeaders["Accept"] = "application/json"
 
         return RequestConfig(
-            method = RequestMethod.GET,
-            path = "/api/device/info/installed/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            method = RequestMethod.POST,
+            path = "/api/device/discover",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -121,9 +121,9 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
-     * This service message allow received all registered maps on the given devices
-     * @param deviceId 
-     * @return DeviceMapDto
+     * This service message allow to IM device pull the discovery context of other agents.
+     * @param requestBody 
+     * @return kotlin.collections.List<DeviceDiscoverResDto>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -132,11 +132,11 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun deviceControllerGetDeviceMaps(deviceId: kotlin.String) : DeviceMapDto {
-        val localVarResponse = deviceControllerGetDeviceMapsWithHttpInfo(deviceId = deviceId)
+    fun discoveryControllerImPullDiscoveryDevices(requestBody: kotlin.collections.List<kotlin.String>) : kotlin.collections.List<DeviceDiscoverResDto> {
+        val localVarResponse = discoveryControllerImPullDiscoveryDevicesWithHttpInfo(requestBody = requestBody)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceMapDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as kotlin.collections.List<DeviceDiscoverResDto>
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -152,37 +152,38 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
-     * This service message allow received all registered maps on the given devices
-     * @param deviceId 
-     * @return ApiResponse<DeviceMapDto?>
+     * This service message allow to IM device pull the discovery context of other agents.
+     * @param requestBody 
+     * @return ApiResponse<kotlin.collections.List<DeviceDiscoverResDto>?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun deviceControllerGetDeviceMapsWithHttpInfo(deviceId: kotlin.String) : ApiResponse<DeviceMapDto?> {
-        val localVariableConfig = deviceControllerGetDeviceMapsRequestConfig(deviceId = deviceId)
+    fun discoveryControllerImPullDiscoveryDevicesWithHttpInfo(requestBody: kotlin.collections.List<kotlin.String>) : ApiResponse<kotlin.collections.List<DeviceDiscoverResDto>?> {
+        val localVariableConfig = discoveryControllerImPullDiscoveryDevicesRequestConfig(requestBody = requestBody)
 
-        return request<Unit, DeviceMapDto>(
+        return request<kotlin.collections.List<kotlin.String>, kotlin.collections.List<DeviceDiscoverResDto>>(
             localVariableConfig
         )
     }
 
     /**
-     * To obtain the request config of the operation deviceControllerGetDeviceMaps
+     * To obtain the request config of the operation discoveryControllerImPullDiscoveryDevices
      *
-     * @param deviceId 
+     * @param requestBody 
      * @return RequestConfig
      */
-    fun deviceControllerGetDeviceMapsRequestConfig(deviceId: kotlin.String) : RequestConfig<Unit> {
-        val localVariableBody = null
+    fun discoveryControllerImPullDiscoveryDevicesRequestConfig(requestBody: kotlin.collections.List<kotlin.String>) : RequestConfig<kotlin.collections.List<kotlin.String>> {
+        val localVariableBody = requestBody
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
         localVariableHeaders["Accept"] = "application/json"
 
         return RequestConfig(
-            method = RequestMethod.GET,
-            path = "/api/device/{deviceId}/maps".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            method = RequestMethod.POST,
+            path = "/api/device/im/pull/discovery",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -192,76 +193,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
-     * This service message allow received all registered devices
-     * @return DeviceDto
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun deviceControllerGetRegisteredDevices() : DeviceDto {
-        val localVarResponse = deviceControllerGetRegisteredDevicesWithHttpInfo()
-
-        return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceDto
-            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
-            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
-            ResponseType.ClientError -> {
-                val localVarError = localVarResponse as ClientError<*>
-                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
-            }
-            ResponseType.ServerError -> {
-                val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
-            }
-        }
-    }
-
-    /**
-     * 
-     * This service message allow received all registered devices
-     * @return ApiResponse<DeviceDto?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(IllegalStateException::class, IOException::class)
-    fun deviceControllerGetRegisteredDevicesWithHttpInfo() : ApiResponse<DeviceDto?> {
-        val localVariableConfig = deviceControllerGetRegisteredDevicesRequestConfig()
-
-        return request<Unit, DeviceDto>(
-            localVariableConfig
-        )
-    }
-
-    /**
-     * To obtain the request config of the operation deviceControllerGetRegisteredDevices
-     *
-     * @return RequestConfig
-     */
-    fun deviceControllerGetRegisteredDevicesRequestConfig() : RequestConfig<Unit> {
-        val localVariableBody = null
-        val localVariableQuery: MultiValueMap = mutableMapOf()
-        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders["Accept"] = "application/json"
-
-        return RequestConfig(
-            method = RequestMethod.GET,
-            path = "/api/device/devices",
-            query = localVariableQuery,
-            headers = localVariableHeaders,
-            requiresAuthentication = true,
-            body = localVariableBody
-        )
-    }
-
-    /**
-     * 
-     * This service message allow to device registration process for GetApp services.
-     * @param deviceRegisterDto 
+     * This service message allow to IM device push the discovery context of other agents.
+     * @param requestBody 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -270,8 +203,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
      * @throws ServerException If the API returns a server error response
      */
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun deviceControllerRegister(deviceRegisterDto: DeviceRegisterDto) : Unit {
-        val localVarResponse = deviceControllerRegisterWithHttpInfo(deviceRegisterDto = deviceRegisterDto)
+    fun discoveryControllerImPushDiscoveryDevices(requestBody: kotlin.collections.List<kotlin.String>) : Unit {
+        val localVarResponse = discoveryControllerImPushDiscoveryDevicesWithHttpInfo(requestBody = requestBody)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> Unit
@@ -290,36 +223,36 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
     /**
      * 
-     * This service message allow to device registration process for GetApp services.
-     * @param deviceRegisterDto 
+     * This service message allow to IM device push the discovery context of other agents.
+     * @param requestBody 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Throws(IllegalStateException::class, IOException::class)
-    fun deviceControllerRegisterWithHttpInfo(deviceRegisterDto: DeviceRegisterDto) : ApiResponse<Unit?> {
-        val localVariableConfig = deviceControllerRegisterRequestConfig(deviceRegisterDto = deviceRegisterDto)
+    fun discoveryControllerImPushDiscoveryDevicesWithHttpInfo(requestBody: kotlin.collections.List<kotlin.String>) : ApiResponse<Unit?> {
+        val localVariableConfig = discoveryControllerImPushDiscoveryDevicesRequestConfig(requestBody = requestBody)
 
-        return request<DeviceRegisterDto, Unit>(
+        return request<kotlin.collections.List<kotlin.String>, Unit>(
             localVariableConfig
         )
     }
 
     /**
-     * To obtain the request config of the operation deviceControllerRegister
+     * To obtain the request config of the operation discoveryControllerImPushDiscoveryDevices
      *
-     * @param deviceRegisterDto 
+     * @param requestBody 
      * @return RequestConfig
      */
-    fun deviceControllerRegisterRequestConfig(deviceRegisterDto: DeviceRegisterDto) : RequestConfig<DeviceRegisterDto> {
-        val localVariableBody = deviceRegisterDto
+    fun discoveryControllerImPushDiscoveryDevicesRequestConfig(requestBody: kotlin.collections.List<kotlin.String>) : RequestConfig<kotlin.collections.List<kotlin.String>> {
+        val localVariableBody = requestBody
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Content-Type"] = "application/json"
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/device/register",
+            path = "/api/device/im/push/discovery",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
