@@ -6,7 +6,7 @@ import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
 
 internal object InventoryClientHelper {
-    private val _tag = "InventoryClientHelper"
+    private const val _tag = "InventoryClientHelper"
 
     fun getUpdates(mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
         Log.i(_tag, "getUpdates")

@@ -1,6 +1,5 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.MapConfigDto
 import android.content.Context
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
 
@@ -97,19 +96,5 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.minAvailableSpace = value
         }
-
-
-    internal fun updateFromConfigDto(newConfig: MapConfigDto){
-        deliveryTimeoutMins = newConfig.deliveryTimeoutMins?.toInt() ?: deliveryTimeoutMins
-//        TODO maxMapSizeInMeter
-        maxMapSizeInMB = newConfig.maxMapSizeInMB?.toLong() ?: maxMapSizeInMB
-        maxParallelDownloads = newConfig.maxParallelDownloads?.toInt() ?: maxParallelDownloads
-        downloadRetry = newConfig.downloadRetryTime?.toInt() ?: downloadRetry
-        downloadTimeoutMins = newConfig.downloadTimeoutMins?.toInt() ?: downloadTimeoutMins
-        periodicInventoryIntervalMins = newConfig.periodicInventoryIntervalMins?.toInt() ?: periodicInventoryIntervalMins
-        periodicConfIntervalMins = newConfig.periodicConfIntervalMins?.toInt() ?: periodicConfIntervalMins
-        minAvailableSpaceBytes = newConfig.minAvailableSpaceBytes?.toLong() ?: minAvailableSpaceBytes
-        matomoUrl = newConfig.matomoUrl ?: matomoUrl
-    }
 }
 

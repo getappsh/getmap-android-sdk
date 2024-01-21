@@ -115,6 +115,13 @@ interface GetMapService {
     fun fetchInventoryUpdates(): List<String>
 
     /**
+     * Fetch config Updates from the server
+     * @return
+     * @throws Exception when the request to server failed for some reason
+     */
+    @Throws(Exception::class)
+    fun fetchConfigUpdates()
+    /**
      * Set listener to get notified when there is a new map update
      */
     fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit)
