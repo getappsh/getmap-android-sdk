@@ -40,8 +40,7 @@ class InventoryUpdatesService: JobService() {
 
     private fun runJob(params: JobParameters?){
         try{
-            val mapsToUpdate = InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
-            ServiceConfig.getInstance(this).lastInventoryCheck = OffsetDateTime.now()
+            val mapsToUpdate = InventoryClientHelper.getUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
 
             if (mapsToUpdate.isNotEmpty()){
                 Log.d(_tag, "run - send notification")

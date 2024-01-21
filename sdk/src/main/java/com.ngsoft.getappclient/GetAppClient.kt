@@ -1,7 +1,7 @@
 package com.ngsoft.getappclient
 
 import GetApp.Client.apis.DeliveryApi
-import GetApp.Client.apis.DeviceApi
+import GetApp.Client.apis.DeviceDiscoveryApi
 import GetApp.Client.apis.GetMapApi
 import android.util.Log
 import okhttp3.Interceptor
@@ -15,7 +15,7 @@ internal class GetAppClient(config: ConnectionConfig) {
 
     private val TAG = "GetAppClient"
 
-    val deviceApi: DeviceApi
+    val deviceApi: DeviceDiscoveryApi
     val getMapApi: GetMapApi
     val deliveryApi: DeliveryApi
 
@@ -42,7 +42,7 @@ internal class GetAppClient(config: ConnectionConfig) {
             })
             .build()
 
-        deviceApi = DeviceApi(config.baseUrl, client)
+        deviceApi = DeviceDiscoveryApi(config.baseUrl, client)
         getMapApi = GetMapApi(config.baseUrl, client)
         deliveryApi = DeliveryApi(config.baseUrl, client)
 

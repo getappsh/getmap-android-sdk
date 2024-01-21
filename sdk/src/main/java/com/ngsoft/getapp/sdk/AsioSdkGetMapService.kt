@@ -192,7 +192,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         when(retCreate?.state){
             MapImportState.START, MapImportState.IN_PROGRESS, MapImportState.DONE,  ->{
                 Log.d(_tag,"deliverTile - createMapImport -> OK, state: ${retCreate.state} message: ${retCreate.statusCode?.messageLog}")
-                val progress = try {retCreate.statusCode?.messageLog?.toInt()}catch (e: Exception) {0}
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate.importRequestId,
@@ -200,7 +199,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     flowState = DeliveryFlowState.IMPORT_CREATE,
                     statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress),
                     errorContent = retCreate.statusCode?.messageLog ?: "",
-                    downloadProgress = progress
+                    downloadProgress = retCreate.progress
                 )
                 this.sendDeliveryStatus(id)
                 return true
@@ -302,18 +301,17 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                 }
                 MapImportState.IN_PROGRESS -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.statusCode?.messageLog}")
-                    val progress = try {stat.statusCode?.messageLog?.toInt()}catch (e: Exception) {0}
+                    Log.w(_tag,"checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.progress}")
                     this.mapRepo.update(
                         id = id,
-                        downloadProgress = progress,
+                        downloadProgress = stat.progress,
                         statusMessage = appCtx.getString(R.string.delivery_status_req_in_progress),
                         errorContent = ""
                     )
-                    if (lastProgress != progress){
+                    if (lastProgress != stat.progress){
                         timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
                     }
-                    lastProgress = progress
+                    lastProgress = stat.progress
                 }
                 else -> {}
             }
@@ -916,7 +914,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     
     override fun fetchInventoryUpdates(): List<String> {
         Log.i(_tag, "fetchInventoryUpdates")
-        return InventoryClientHelper.getUpdates(mapRepo, client, pref.deviceId)
+        return InventoryClientHelper.getUpdates(config, mapRepo, client, pref.deviceId)
     }
 
     override fun fetchConfigUpdates() {

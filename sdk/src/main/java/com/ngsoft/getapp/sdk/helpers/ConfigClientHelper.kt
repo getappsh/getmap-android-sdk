@@ -31,9 +31,9 @@ internal object ConfigClientHelper {
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
         config.minAvailableSpaceBytes = configDto.minAvailableSpaceBytes?.toLong() ?: config.minAvailableSpaceBytes
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
+        config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
 
         config.lastServerConfigUpdate = OffsetDateTime.now()
-//        TODO set last updated date
     }
 
 
