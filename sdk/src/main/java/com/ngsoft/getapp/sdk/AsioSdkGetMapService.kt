@@ -500,20 +500,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
                     val downloadAttempts = if (isJson) mapPkg.metadata.jsonAttempt else mapPkg.metadata.mapAttempt
 
-                    if (downloadAttempts < config.downloadRetry) {
+                    if (statusInfo?.status == DownloadManager.STATUS_FAILED && (statusInfo.reasonCode == 403 || statusInfo.reasonCode == 404)){
+                        Log.e(_tag, "watchDownloadProgress - download status is ${statusInfo.reasonCode}, set as obsolete")
+                        mapRepo.setMapUpdated(id, false)
+                        mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = appCtx.getString(R.string.delivery_status_failed), errorContent = statusInfo.reason)
+
+                    }else if (downloadAttempts < config.downloadRetry) {
                         Log.d(_tag, "downloadFile - retry download")
                         downloader.cancelDownload(downloadId)
 
                         mapRepo.update(id, statusMessage = appCtx.getString(R.string.delivery_status_failed_verification_try_again),
                             errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file")
-
                         handelDownloadRetry(id, url, isJson, downloadAttempts)
-
                     }else{
-                        mapRepo.update(
-                            id = id,
-                            state = MapDeliveryState.ERROR,
-                            statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                        mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = appCtx.getString(R.string.delivery_status_failed),
                             errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file"
                         )
                     }
