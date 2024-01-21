@@ -60,9 +60,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.maxMapSizeInMB = value
         }
-    override var maxMapSizeInMerer: Long = 405573000L
+    override var maxMapSizeInMerer: Long = pref.maxMapSizeInMerer
         set(value) {
             field = value
+            pref.maxMapSizeInMerer = value
         }
 
     override var maxParallelDownloads: Int = pref.maxParallelDownloads
@@ -96,10 +97,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.matomoUrl = value
         }
-    override var matomoUpdateIntervalMins: Int = 60
+    override var matomoUpdateIntervalMins: Int = pref.matomoUpdateIntervalMins
         set(value) {
-//            TODO save it to the pref
             field = value
+            pref.matomoUpdateIntervalMins = value
         }
 
     override var minAvailableSpaceBytes: Long = pref.minAvailableSpace
@@ -107,20 +108,20 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.minAvailableSpace = value
         }
-    override var lastConfigCheck: OffsetDateTime = OffsetDateTime.now()
+    override var lastConfigCheck: OffsetDateTime = pref.lastConfigCheck
         set(value) {
-//            TODO save it to the pref
             field = value
+            pref.lastConfigCheck = value
         }
-    override var lastInventoryCheck: OffsetDateTime = OffsetDateTime.now()
+    override var lastInventoryCheck: OffsetDateTime = pref.lastInventoryCheck
         set(value) {
-//            TODO save it to the pref
             field = value
+            pref.lastInventoryCheck = value
         }
-    override var lastServerConfigUpdate: OffsetDateTime = OffsetDateTime.now()
+    override var lastServerConfigUpdate: OffsetDateTime = pref.lastServerConfigUpdate
         set(value) {
-//            TODO save it to the pref
             field = value
+            pref.lastServerConfigUpdate = value
         }
 }
 

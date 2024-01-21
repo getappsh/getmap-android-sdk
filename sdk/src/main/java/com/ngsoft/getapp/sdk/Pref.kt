@@ -7,6 +7,8 @@ import android.content.SharedPreferences
 import android.os.Environment
 
 import android.provider.Settings.Secure;
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 
 class Pref private constructor(context: Context) {
@@ -44,6 +46,10 @@ class Pref private constructor(context: Context) {
         get() = getString(MATOMO_URL, "")
         set(value) = setString(MATOMO_URL, value)
 
+    var matomoUpdateIntervalMins: Int
+        get() = getInt(MATOMO_UPDATE_INTERVAL, 60)
+        set(value) = setInt(MATOMO_UPDATE_INTERVAL, value)
+
     var storagePath: String
         get() = getString(STORAGE_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path)
         set(value) = setString(STORAGE_PATH, value)
@@ -68,6 +74,10 @@ class Pref private constructor(context: Context) {
         get() = getLong(MAX_MAP_SIZE_IN_MB, 500)
         set(value) = setLong(MAX_MAP_SIZE_IN_MB, value)
 
+    var maxMapSizeInMerer: Long
+        get() = getLong(MAX_MAP_SIZE_IN_METER, 405573000)
+        set(value) = setLong(MAX_MAP_SIZE_IN_METER, value)
+
     var maxParallelDownloads: Int
         get() = getInt(MAX_PARALLEL_DOWNLOADS, 1)
         set(value) = setInt(MAX_PARALLEL_DOWNLOADS, value)
@@ -76,9 +86,22 @@ class Pref private constructor(context: Context) {
         get() = getInt(PERIODIC_INVENTORY_INTERVAL_JOB, 1440)
         set(value) = setInt(PERIODIC_INVENTORY_INTERVAL_JOB, value)
 
+    var lastInventoryCheck: OffsetDateTime
+        get() = getOffsetDateTime(LAST_INVENTORY_CHECK, OffsetDateTime.MIN)
+        set(value) = setOffsetDateTime(LAST_INVENTORY_CHECK, value)
+
     var periodicConfIntervalJob: Int
         get() = getInt(PERIODIC_CONF_INTERVAL_JOB, 1440)
         set(value) = setInt(PERIODIC_CONF_INTERVAL_JOB, value)
+
+    var lastConfigCheck: OffsetDateTime
+        get() = getOffsetDateTime(LAST_CONFIG_CHECK, OffsetDateTime.MIN)
+        set(value) = setOffsetDateTime(LAST_CONFIG_CHECK, value)
+
+    var lastServerConfigUpdate: OffsetDateTime
+        get() = getOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, OffsetDateTime.MIN)
+        set(value) = setOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, value)
+
 
     var runConfJob: Boolean
         get() = getBoolean(RUN_CONF_JOB, true)
@@ -121,6 +144,16 @@ class Pref private constructor(context: Context) {
         sharedPreferences.edit().putBoolean(key, value).apply()
     }
 
+    private fun setOffsetDateTime(key: String, value: OffsetDateTime){
+        val valueString = value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        setString(key, valueString)
+    }
+
+    private fun getOffsetDateTime(key: String, defaultValue: OffsetDateTime): OffsetDateTime{
+        val valueString = getString(key, defaultValue.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+        return OffsetDateTime.parse(valueString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    }
+
     @SuppressLint("HardwareIds")
     fun generateDeviceId():String {
         val newDeviceId = Secure.getString(contentResolver, Secure.ANDROID_ID).toString()
@@ -136,16 +169,21 @@ class Pref private constructor(context: Context) {
         private const val PASSWORD = "password"
 
         private const val MATOMO_URL = "matomo_url"
+        private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
         private const val STORAGE_PATH = "storagePath"
         private const val DOWNLOAD_PATH = "downloadPath"
         private const val DELIVERY_TIMEOUT = "deliveryTimeout"
         private const val DOWNLOAD_TIMEOUT = "downloadTimeout"
         private const val DOWNLOAD_RETRY = "downloadRetry"
         private const val MAX_MAP_SIZE_IN_MB = "maxMapSizeInMB"
+        private const val MAX_MAP_SIZE_IN_METER = "maxMapSizeInMeter"
         private const val MAX_PARALLEL_DOWNLOADS = "maxParallelDownloads"
         private const val PERIODIC_INVENTORY_INTERVAL_JOB = "periodicInventorIntervalJob"
+        private const val LAST_CONFIG_CHECK = "lastConfigCheck"
+        private const val LAST_INVENTORY_CHECK = "lastInventoryCheck"
         private const val RUN_CONF_JOB = "runConfJob"
         private const val PERIODIC_CONF_INTERVAL_JOB = "periodicConfIntervalJob"
+        private const val LAST_SERVER_CONFIG_UPDATED = "lastServerConfigUpdate"
         private const val MIN_AVAILABLE_SPACE = "minAvailableSpace"
 
 
