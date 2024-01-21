@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import android.content.Context
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import java.time.OffsetDateTime
 
 internal class ServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
 
@@ -24,11 +25,6 @@ internal class ServiceConfig private constructor(private var appContext: Context
     }
 
 
-    override var matomoUrl: String = pref.matomoUrl
-        set(value) {
-            field = value
-            pref.matomoUrl = value
-        }
     override var storagePath: String = pref.storagePath
         set(value) {
             field = value
@@ -64,6 +60,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.maxMapSizeInMB = value
         }
+    override var maxMapSizeInMerer: Long = 405573000L
+        set(value) {
+            field = value
+        }
 
     override var maxParallelDownloads: Int = pref.maxParallelDownloads
         set(value) {
@@ -91,10 +91,36 @@ internal class ServiceConfig private constructor(private var appContext: Context
             pref.runConfJob = value
         }
 
+    override var matomoUrl: String = pref.matomoUrl
+        set(value) {
+            field = value
+            pref.matomoUrl = value
+        }
+    override var matomoUpdateIntervalMins: Int = 60
+        set(value) {
+//            TODO save it to the pref
+            field = value
+        }
+
     override var minAvailableSpaceBytes: Long = pref.minAvailableSpace
         set(value) {
             field = value
             pref.minAvailableSpace = value
+        }
+    override var lastConfigCheck: OffsetDateTime = OffsetDateTime.now()
+        set(value) {
+//            TODO save it to the pref
+            field = value
+        }
+    override var lastInventoryCheck: OffsetDateTime = OffsetDateTime.now()
+        set(value) {
+//            TODO save it to the pref
+            field = value
+        }
+    override var lastServerConfigUpdate: OffsetDateTime = OffsetDateTime.now()
+        set(value) {
+//            TODO save it to the pref
+            field = value
         }
 }
 

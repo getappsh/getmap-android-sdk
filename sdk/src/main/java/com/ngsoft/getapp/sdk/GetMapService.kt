@@ -11,6 +11,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.old.DownloadProgress
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 interface GetMapService {
 
@@ -237,11 +238,6 @@ interface GetMapService {
     interface GeneralConfig {
 
         /**
-         * Matomo URL.
-         */
-        var matomoUrl: String
-
-        /**
          * Path where maps are stored locally.
          */
         var storagePath: String
@@ -271,6 +267,9 @@ interface GetMapService {
          */
         var maxMapSizeInMB: Long
 
+
+        var maxMapSizeInMerer: Long
+
         /**
          * Maximum number of parallel downloads allowed.
          */
@@ -293,8 +292,27 @@ interface GetMapService {
         var periodicConfIntervalMins: Int
 
         /**
+         * Matomo URL.
+         */
+        var matomoUrl: String
+
+        /**
+         * Interval for Matomo  updates in minuets.
+         */
+        var matomoUpdateIntervalMins: Int
+
+        /**
          * Minimum available space required on the device for map operations.
          */
         var minAvailableSpaceBytes: Long
+
+
+        var lastConfigCheck: OffsetDateTime
+
+        var lastInventoryCheck: OffsetDateTime
+
+        var lastServerConfigUpdate: OffsetDateTime
+
+
     }
 }
