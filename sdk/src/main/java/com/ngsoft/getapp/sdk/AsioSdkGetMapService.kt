@@ -14,6 +14,7 @@ import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getapp.sdk.qr.QRManager
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
@@ -279,6 +280,10 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             when(stat?.state){
                 MapImportState.ERROR -> {
                     Log.e(_tag,"checkImportStatus - MapImportState -> ERROR, error:  ${stat.statusCode?.messageLog}")
+                    if (stat.statusCode?.statusCode == StatusCode.REQUEST_ID_NOT_FOUND){
+                        Log.e(_tag, "checkImportStatus - status code is REQUEST_ID_NOT_FOUND, set as obsolete")
+                        this.mapRepo.setMapUpdated(id, false)
+                    }
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.ERROR,
