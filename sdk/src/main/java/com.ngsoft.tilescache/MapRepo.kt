@@ -22,7 +22,7 @@ internal class MapRepo(ctx: Context) {
 
     private val mapMutableLiveHase = MutableLiveData(hashMapOf<String, MapDownloadData>())
     private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
-        it.values.toList().sortedByDescending{ map -> map.id }
+        it.values.toList().sortedWith(comparator)
     }
 
     init {
@@ -60,7 +60,7 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun getAllMaps(): List<MapDownloadData>{
-        return getAll().map { mapPkg2DownloadData(it) }
+        return getAll().map { mapPkg2DownloadData(it) }.sortedWith(comparator)
     }
 
     fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
@@ -252,6 +252,12 @@ internal class MapRepo(ctx: Context) {
         return this.getById(id)?.isUpdated
     }
 
+    fun setMapUpdated(id: String, isUpdated: Boolean){
+        this.getById(id)?.let {
+            it.isUpdated = isUpdated
+            dao.update(it)
+        }
+    }
     fun getMapsToUpdate(): List<String>{
         return this.getAll().filter { !it.isUpdated }.map { it.id.toString() }
     }
@@ -293,6 +299,12 @@ internal class MapRepo(ctx: Context) {
         val downloadStatusHandlers = ConcurrentHashMap<String, (MapDownloadData) -> Unit>()
         var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
 
+        private val customOrder = listOf(MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE)
+
+        private val comparator = compareBy<MapDownloadData> {
+            // Get the index of the state in the custom order; default to Int.MAX_VALUE if not found
+            customOrder.indexOf(it.deliveryStatus).let { index -> if (index == -1) Int.MAX_VALUE else index }
+        }.thenByDescending{ it.id }
     }
 
 }

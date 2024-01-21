@@ -23,6 +23,7 @@ internal class PackageDownloader(private val context: Context, private val downl
         val totalBytes: Long,
         val downloadBytes: Long,
         val reason: String,
+        val reasonCode: Int?,
         val fileName: String?
     )
     private val _tag = "PackageDownloader"
@@ -87,7 +88,8 @@ internal class PackageDownloader(private val context: Context, private val downl
 
             val totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
             val downloadedBytes = if (totalBytes <=  0) 0 else cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-            val reason = getReasonErrorMessage(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)))
+            val reasonCode = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))
+            val reason = getReasonErrorMessage(reasonCode)
             var fileName: String? = null
             val fileUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
             if (fileUri != null){
@@ -99,6 +101,7 @@ internal class PackageDownloader(private val context: Context, private val downl
                 totalBytes =  totalBytes,
                 downloadBytes = downloadedBytes,
                 reason = reason,
+                reasonCode= reasonCode,
                 fileName = fileName
             )
         }
