@@ -33,6 +33,7 @@ import com.squareup.moshi.JsonClass
  * @param periodicMatomoIntervalMins 
  * @param minAvailableSpaceBytes 
  * @param matomoUrl 
+ * @param mapMinInclusionInPercentages 
  * @param lastUpdate 
  */
 
@@ -71,6 +72,9 @@ data class MapConfigDto (
 
     @Json(name = "matomoUrl")
     val matomoUrl: kotlin.String? = null,
+
+    @Json(name = "mapMinInclusionInPercentages")
+    val mapMinInclusionInPercentages: java.math.BigDecimal? = null,
 
     @Json(name = "lastUpdate")
     val lastUpdate: java.time.OffsetDateTime? = null
