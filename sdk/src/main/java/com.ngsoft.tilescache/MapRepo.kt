@@ -72,7 +72,11 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun getByBBox(bBox: String): List<MapPkg>{
-        return this.getAll().filter { it.bBox == bBox }
+        fun toList(value: String): List<Double> = value.split(",").map { it.toDouble() }
+
+        val bBoxList = toList(bBox)
+        return this.getAll().filter {
+            toList(it.bBox) == bBoxList }
     }
 
     fun update(

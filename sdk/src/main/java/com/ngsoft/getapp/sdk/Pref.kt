@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.Environment
 
 import android.provider.Settings.Secure;
+import com.ngsoft.getapp.sdk.utils.DateHelper
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -151,7 +152,7 @@ class Pref private constructor(context: Context) {
 
     private fun getOffsetDateTime(key: String, defaultValue: OffsetDateTime): OffsetDateTime{
         val valueString = getString(key, defaultValue.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-        return OffsetDateTime.parse(valueString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        return DateHelper.parse(valueString, DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: defaultValue
     }
 
     @SuppressLint("HardwareIds")
