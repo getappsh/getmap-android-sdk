@@ -248,12 +248,12 @@ interface GetMapService {
         var downloadPath: String
 
         /**
-         * Timeout duration for map delivery operations in minutest.
+         * Timeout duration for map delivery operations in minutes.
          */
         var deliveryTimeoutMins: Int
 
         /**
-         * Timeout duration for map download operations in minutest.
+         * Timeout duration for map download operations in minutes.
          */
         var downloadTimeoutMins: Int
 
@@ -267,8 +267,10 @@ interface GetMapService {
          */
         var maxMapSizeInMB: Long
 
-
-        var maxMapSizeInMerer: Long
+        /**
+         * Maximum allowable size for a map in meters.
+         */
+        var maxMapSizeInMeter: Long
 
         /**
          * Maximum number of parallel downloads allowed.
@@ -276,18 +278,17 @@ interface GetMapService {
         var maxParallelDownloads: Int
 
         /**
-         * Interval for periodic inventory in execution in minuets.
+         * Interval for periodic inventory execution in minutes.
          */
         var periodicInventoryIntervalMins: Int
 
-
         /**
-         * Run config job, set to false when admin control the config
+         * Run config job, set to false when admin controls the config.
          */
         var runConfJob: Boolean
 
         /**
-         * Interval for periodic map configuration updates in minuets.
+         * Interval for periodic map configuration updates in minutes.
          */
         var periodicConfIntervalMins: Int
 
@@ -297,7 +298,7 @@ interface GetMapService {
         var matomoUrl: String
 
         /**
-         * Interval for Matomo  updates in minuets.
+         * Interval for Matomo updates in minutes.
          */
         var matomoUpdateIntervalMins: Int
 
@@ -306,13 +307,24 @@ interface GetMapService {
          */
         var minAvailableSpaceBytes: Long
 
+        /**
+         * Minimum Inclusion of footprint in a map product in percentages.
+         */
+        var mapMinInclusionPct: Int
 
+        /**
+         * Last configuration check timestamp.
+         */
         var lastConfigCheck: OffsetDateTime
 
+        /**
+         * Last inventory check timestamp.
+         */
         var lastInventoryCheck: OffsetDateTime
 
+        /**
+         * Last server configuration update timestamp.
+         */
         var lastServerConfigUpdate: OffsetDateTime
-
-
     }
 }

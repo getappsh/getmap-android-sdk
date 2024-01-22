@@ -75,7 +75,7 @@ class Pref private constructor(context: Context) {
         get() = getLong(MAX_MAP_SIZE_IN_MB, 500)
         set(value) = setLong(MAX_MAP_SIZE_IN_MB, value)
 
-    var maxMapSizeInMerer: Long
+    var maxMapSizeInMeter: Long
         get() = getLong(MAX_MAP_SIZE_IN_METER, 405573000)
         set(value) = setLong(MAX_MAP_SIZE_IN_METER, value)
 
@@ -111,6 +111,10 @@ class Pref private constructor(context: Context) {
     var minAvailableSpace: Long
         get() = getLong(MIN_AVAILABLE_SPACE, 250 * 1024L * 1024L)
         set(value) = setLong(MIN_AVAILABLE_SPACE, value)
+
+    var mapMinInclusionPct: Int
+        get() = getInt(MAP_MIN_INCLUSION, 60)
+        set(value) = setInt(MAP_MIN_INCLUSION, value)
 
     private fun getString(key: String, defValue: String): String{
         return sharedPreferences.getString(key, defValue) ?: defValue
@@ -186,6 +190,7 @@ class Pref private constructor(context: Context) {
         private const val PERIODIC_CONF_INTERVAL_JOB = "periodicConfIntervalJob"
         private const val LAST_SERVER_CONFIG_UPDATED = "lastServerConfigUpdate"
         private const val MIN_AVAILABLE_SPACE = "minAvailableSpace"
+        private const val MAP_MIN_INCLUSION= "mapMinInclusionPct"
 
 
         private var instance: Pref? = null

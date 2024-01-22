@@ -60,10 +60,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.maxMapSizeInMB = value
         }
-    override var maxMapSizeInMerer: Long = pref.maxMapSizeInMerer
+    override var maxMapSizeInMeter: Long = pref.maxMapSizeInMeter
         set(value) {
             field = value
-            pref.maxMapSizeInMerer = value
+            pref.maxMapSizeInMeter = value
         }
 
     override var maxParallelDownloads: Int = pref.maxParallelDownloads
@@ -107,6 +107,11 @@ internal class ServiceConfig private constructor(private var appContext: Context
         set(value) {
             field = value
             pref.minAvailableSpace = value
+        }
+    override var mapMinInclusionPct: Int = pref.mapMinInclusionPct
+        set(value){
+            field = value
+            pref.mapMinInclusionPct = value
         }
     override var lastConfigCheck: OffsetDateTime = pref.lastConfigCheck
         set(value) {
