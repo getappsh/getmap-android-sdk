@@ -20,6 +20,7 @@
 
     <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>
     <string name="error_qr_code_file_size_to_large">יצירת קוד QR נכשלה: גודל הנתונים %d בייט, גדול מדי</string>
+    <string name="error_qr_map_already_exists">בול מפה זהה או חדש יותר כבר קיים</string>
 
     <string name="notification_update_map_title">עדכוני מיפוי ענן</string>
     <string name="notification_update_map_description">יש גרסה חדשה ל- %d בולים שהורדת\n(על מנת לעדכן יש להכנס למסך מיפוי ענן בעמוד)</string>

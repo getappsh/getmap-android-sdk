@@ -16,6 +16,7 @@ import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getapp.sdk.qr.QRManager
+import com.ngsoft.getapp.sdk.utils.DateHelper
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
@@ -29,6 +30,7 @@ import java.io.File
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
@@ -887,22 +889,29 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val url = json.getString("downloadUrl")
         val reqId = json.getString("reqId")
+        val bBox = json.getString("productBoundingBox")
+        val pid = json.getString("id")
+        val ingestionDate = json.getString("ingestionDate")
+
+        val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        this.mapRepo.getByBBox(bBox).toMutableList().forEach {
+            val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
+            val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
+            if(dIngDate >= qrIngDate){
+                Log.e(_tag, "processQrCodeData - map with the same or grater ingestion date already exist", )
+                throw Exception(appCtx.getString(R.string.error_qr_map_already_exists))
+            }
+        }
+
 
         Log.d(_tag, "processQrCodeData - download url: $url, reqId: $reqId")
         var jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
         jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
         Log.d(_tag, "processQrCodeData - fileName: $jsonName")
 
-        val mapPkg = MapPkg(
-                pId = json.getString("id"),
-                bBox = json.getString("productBoundingBox"),
-                reqId = reqId,
-                jsonName = jsonName,
-                url = url,
-                metadata = DownloadMetadata(jsonDone = true),
-                state = MapDeliveryState.CONTINUE,
-                flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                statusMessage = appCtx.getString(R.string.delivery_status_continue))
+        val mapPkg = MapPkg(pId = pid, bBox = bBox, reqId = reqId, jsonName = jsonName, url = url,
+            metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
+            flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_continue))
 
 
         val id = this.mapRepo.save(mapPkg)

@@ -23,7 +23,7 @@ internal object ConfigClientHelper {
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
         config.deliveryTimeoutMins = configDto.deliveryTimeoutMins?.toInt() ?: config.deliveryTimeoutMins
         config.maxMapSizeInMB = configDto.maxMapSizeInMB?.toLong() ?: config.maxMapSizeInMB
-        config.maxMapSizeInMerer = configDto.maxMapSizeInMeter?.toLong() ?: config.maxMapSizeInMerer
+        config.maxMapSizeInMeter = configDto.maxMapSizeInMeter?.toLong() ?: config.maxMapSizeInMeter
         config.maxParallelDownloads = configDto.maxParallelDownloads?.toInt() ?: config.maxParallelDownloads
         config.downloadRetry = configDto.downloadRetryTime?.toInt() ?: config.downloadRetry
         config.downloadTimeoutMins = configDto.downloadTimeoutMins?.toInt() ?: config.downloadTimeoutMins
@@ -32,6 +32,7 @@ internal object ConfigClientHelper {
         config.minAvailableSpaceBytes = configDto.minAvailableSpaceBytes?.toLong() ?: config.minAvailableSpaceBytes
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
         config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
+        config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
 
         config.lastServerConfigUpdate = OffsetDateTime.now()
     }

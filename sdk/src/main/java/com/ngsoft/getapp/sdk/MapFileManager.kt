@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
+import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
+import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 
@@ -15,6 +17,19 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
     val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
 
 
+    fun getJsonString(jsonName: String?): JSONObject?{
+        jsonName ?: return null
+        val targetFile = File(config.storagePath, jsonName)
+        if (targetFile.exists()){
+            return JsonUtils.readJson(targetFile.path)
+        }
+        val downloadFile = File(config.downloadPath, jsonName)
+        if(downloadFile.exists()){
+            return JsonUtils.readJson(downloadFile.path)
+        }
+
+        return null
+    }
     fun moveFileToTargetDir(fileName: String): String {
         val downloadFile = File(config.downloadPath, fileName)
 
