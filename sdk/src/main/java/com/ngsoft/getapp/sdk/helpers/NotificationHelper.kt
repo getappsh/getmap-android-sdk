@@ -12,6 +12,11 @@ internal class NotificationHelper(private val appCtx: Context) {
         private const val CHANNEL_ID = "GetApp-1"
         private const val CHANNEL_NAME = "GetApp Notification"
         private const val CHANNEL_DESCRIPTION = "GetApp Notification Channel"
+
+        const val INVENTORY_UPDATES_NTF_ID = 1
+        const val INVENTORY_JOB_FAILED_NTF_ID = 2
+        const val CONFIG_JOB_FAILED_NTF_ID = 3
+
     }
 
     private val notificationManager: NotificationManager =
