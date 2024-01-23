@@ -537,8 +537,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val mapPkg = this.mapRepo.getById(id) ?: return
         mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
         this.mapRepo.update(id=id, flowState = DeliveryFlowState.START, state = MapDeliveryState.ERROR,
-            statusMessage = appCtx.getString(R.string.delivery_status_failed_not_exists_on_server), jsonName = "",
-            fileName = "", url = "", reqId = "", downloadProgress = 0, errorContent = "", mapDone = false,
+            statusMessage = appCtx.getString(R.string.delivery_status_error), errorContent = appCtx.getString(R.string.delivery_status_description_failed_not_exists_on_server),
+            jsonName = "", fileName = "", url = "", reqId = "", downloadProgress = 0, mapDone = false,
             jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0,)
     }
     private fun handelDownloadRetry(id: String, url: String, isJson: Boolean, downloadAttempts: Int) {
