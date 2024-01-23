@@ -33,7 +33,7 @@ data class InventoryUpdatesReqDto (
     val deviceId: kotlin.String,
 
     @Json(name = "inventory")
-    val inventory: InventoryUpdatesReqDto.Inventory
+    val inventory: kotlin.collections.Map<kotlin.String,InventoryUpdatesReqDto.Inventory>
 
 ) {
 
