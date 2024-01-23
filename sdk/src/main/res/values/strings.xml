@@ -17,6 +17,7 @@
     <string name="delivery_status_in_verification">באימות</string>
     <string name="delivery_status_failed_verification">נכשל באימות</string>
     <string name="delivery_status_failed_verification_try_again">נכשל באימות - מוריד שוב</string>
+    <string name="delivery_status_failed_not_exists_on_server">נכשל - בול מפה לא קיים בשרת, הורד שוב</string>
 
     <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>
     <string name="error_qr_code_file_size_to_large">יצירת קוד QR נכשלה: גודל הנתונים %d בייט, גדול מדי</string>

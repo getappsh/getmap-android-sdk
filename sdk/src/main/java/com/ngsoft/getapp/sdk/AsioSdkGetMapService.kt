@@ -284,14 +284,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     Log.e(_tag,"checkImportStatus - MapImportState -> ERROR, error:  ${stat.statusCode?.messageLog}")
                     if (stat.statusCode?.statusCode == StatusCode.REQUEST_ID_NOT_FOUND){
                         Log.e(_tag, "checkImportStatus - status code is REQUEST_ID_NOT_FOUND, set as obsolete")
-                        this.mapRepo.setMapUpdated(id, false)
+                        handleMapNotExistsOnServer(id)
+                    }else{
+                        this.mapRepo.update(
+                            id = id,
+                            state = MapDeliveryState.ERROR,
+                            statusMessage = appCtx.getString(R.string.delivery_status_failed),
+                            errorContent = stat.statusCode?.messageLog
+                        )
                     }
-                    this.mapRepo.update(
-                        id = id,
-                        state = MapDeliveryState.ERROR,
-                        statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                        errorContent = stat.statusCode?.messageLog
-                    )
                     this.sendDeliveryStatus(id)
                     return false
                 }
@@ -508,9 +509,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     val downloadAttempts = if (isJson) mapPkg.metadata.jsonAttempt else mapPkg.metadata.mapAttempt
 
                     if (statusInfo?.status == DownloadManager.STATUS_FAILED && (statusInfo.reasonCode == 403 || statusInfo.reasonCode == 404)){
-                        Log.e(_tag, "watchDownloadProgress - download status is ${statusInfo.reasonCode}, set as obsolete")
-                        mapRepo.setMapUpdated(id, false)
-                        mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = appCtx.getString(R.string.delivery_status_failed), errorContent = statusInfo.reason)
+                        Log.e(_tag, "watchDownloadProgress - download status is ${statusInfo.reasonCode}")
+                        handleMapNotExistsOnServer(id)
 
                     }else if (downloadAttempts < config.downloadRetry) {
                         Log.d(_tag, "downloadFile - retry download")
@@ -532,6 +532,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return downloadId
     }
 
+    private fun handleMapNotExistsOnServer(id: String){
+        Log.i(_tag, "handleMapNotExistsOnServer")
+        val mapPkg = this.mapRepo.getById(id) ?: return
+        mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
+        this.mapRepo.update(id=id, flowState = DeliveryFlowState.START, state = MapDeliveryState.ERROR,
+            statusMessage = appCtx.getString(R.string.delivery_status_failed_not_exists_on_server), jsonName = "",
+            fileName = "", url = "", reqId = "", downloadProgress = 0, errorContent = "", mapDone = false,
+            jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0,)
+    }
     private fun handelDownloadRetry(id: String, url: String, isJson: Boolean, downloadAttempts: Int) {
         Log.i(_tag, "handelDownloadRetry, id: $id, isJson: $isJson ")
         val waitTime = TimeUnit.MINUTES.toMillis(if (downloadAttempts == 1) 5 else 10)
