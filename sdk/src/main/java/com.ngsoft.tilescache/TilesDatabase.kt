@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.ngsoft.tilescache.convertes.TimeStampConverter
+import com.ngsoft.tilescache.converters.TimeStampConverter
 import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.dao.TilesDAO
 import com.ngsoft.tilescache.models.MapPkg
