@@ -26,4 +26,13 @@ internal object InventoryClientHelper {
         Log.i(_tag, "getUpdates - Found ${mapsToUpdate.size} maps to update")
         return mapsToUpdate
     }
+
+    fun getNewUpdates(config: GetMapService.GeneralConfig, mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
+        Log.i(_tag, "getNewUpdates")
+        val mapsToUpdateBefore = mapRepo.getMapsToUpdate()
+        val mapsToUpdateAfter = getUpdates(config, mapRepo, client, deviceId)
+        val mapsToUpdateNew = mapsToUpdateAfter.subtract(mapsToUpdateBefore.toSet()).toList()
+        Log.i(_tag, "getNewUpdates - Found ${mapsToUpdateNew.size} new maps to update")
+        return mapsToUpdateNew
+    }
 }

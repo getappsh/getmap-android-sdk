@@ -42,7 +42,7 @@ class InventoryUpdatesService: JobService() {
         repeat(3){index ->
             try{
                 Log.d(_tag, "runJob - retry $index")
-                val mapsToUpdate = InventoryClientHelper.getUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
+                val mapsToUpdate = InventoryClientHelper.getNewUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
                 if (mapsToUpdate.isNotEmpty()){
                     Log.d(_tag, "run - send notification")
                     NotificationHelper(this)
