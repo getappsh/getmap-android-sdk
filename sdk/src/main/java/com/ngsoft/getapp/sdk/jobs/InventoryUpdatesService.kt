@@ -12,7 +12,7 @@ import com.ngsoft.getapp.sdk.helpers.NotificationHelper
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
-import java.time.OffsetDateTime
+import java.util.concurrent.TimeUnit
 
 
 class InventoryUpdatesService: JobService() {
@@ -39,22 +39,32 @@ class InventoryUpdatesService: JobService() {
 
 
     private fun runJob(params: JobParameters?){
-        try{
-            val mapsToUpdate = InventoryClientHelper.getUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
-
-            if (mapsToUpdate.isNotEmpty()){
-                Log.d(_tag, "run - send notification")
-                NotificationHelper(this)
-                    .sendNotification(
-                        getString(R.string.notification_update_map_title),
-                        getString(R.string.notification_update_map_description, mapsToUpdate.size),
-                        1)
+        repeat(3){index ->
+            try{
+                Log.d(_tag, "runJob - retry $index")
+                val mapsToUpdate = InventoryClientHelper.getNewUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
+                if (mapsToUpdate.isNotEmpty()){
+                    Log.d(_tag, "run - send notification")
+                    NotificationHelper(this)
+                        .sendNotification(
+                            getString(R.string.notification_update_map_title),
+                            getString(R.string.notification_update_map_description, mapsToUpdate.size),
+                            NotificationHelper.INVENTORY_UPDATES_NTF_ID)
+                }
+                jobFinished(params, false)
+                return
+            }catch (e: Exception){
+                Log.e(_tag, "runJob - Failed to get inventory updates, error: ${e.message.toString()}")
+                TimeUnit.SECONDS.sleep(5L  * (index + 1))
             }
-            jobFinished(params, false)
-
-        }catch (e: Exception){
-            Log.e(_tag, "runJob - Failed to get inventory updates, error: ${e.message.toString()}")
-            jobFinished(params, true)
         }
+        Log.e(_tag, "runJob - job failed, abort")
+        NotificationHelper(this)
+            .sendNotification(
+                this.getString(R.string.notification_error_title),
+                this.getString(R.string.notification_inventory_job_failed),
+                NotificationHelper.INVENTORY_JOB_FAILED_NTF_ID
+            )
+        jobFinished(params, false)
     }
 }

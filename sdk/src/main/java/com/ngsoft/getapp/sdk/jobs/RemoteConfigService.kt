@@ -5,9 +5,12 @@ import android.app.job.JobService
 import android.util.Log
 import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getapp.sdk.Pref
+import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.helpers.ConfigClientHelper
+import com.ngsoft.getapp.sdk.helpers.NotificationHelper
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
+import java.util.concurrent.TimeUnit
 
 class RemoteConfigService: JobService() {
 
@@ -31,12 +34,26 @@ class RemoteConfigService: JobService() {
     }
 
     private fun runJob(params: JobParameters?){
-        try {
-            ConfigClientHelper.fetchUpdates(ServiceConfig.getInstance(this), client, pref.deviceId)
-        }catch (e: Exception){
-            jobFinished(params, true)
+
+        repeat(3){index->
+            try {
+                Log.d(_tag, "runJob - retry $index")
+                ConfigClientHelper.fetchUpdates(ServiceConfig.getInstance(this), client, pref.deviceId)
+                jobFinished(params, false)
+                return
+            }catch (e: Exception){
+                Log.e(_tag, "runJob - Failed to get config updates, error ${e.message.toString()}")
+                TimeUnit.SECONDS.sleep(5L  * (index + 1))
+            }
         }
+        Log.e(_tag, "runJob - job failed, abort")
+
+        NotificationHelper(this)
+            .sendNotification(
+                this.getString(R.string.notification_error_title),
+                this.getString(R.string.notification_config_job_failed),
+                NotificationHelper.CONFIG_JOB_FAILED_NTF_ID
+            )
+        jobFinished(params, false)
     }
-
-
 }

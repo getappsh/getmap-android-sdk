@@ -33,7 +33,21 @@ data class InventoryUpdatesReqDto (
     val deviceId: kotlin.String,
 
     @Json(name = "inventory")
-    val inventory: kotlin.collections.List<kotlin.String>
+    val inventory: kotlin.collections.Map<kotlin.String,InventoryUpdatesReqDto.Inventory>
 
-)
+) {
+
+    /**
+     * 
+     *
+     * Values: `import`,delivery,installed,uninstalled
+     */
+    @JsonClass(generateAdapter = false)
+    enum class Inventory(val value: kotlin.String) {
+        @Json(name = "import") `import`("import"),
+        @Json(name = "delivery") delivery("delivery"),
+        @Json(name = "installed") installed("installed"),
+        @Json(name = "uninstalled") uninstalled("uninstalled");
+    }
+}
 

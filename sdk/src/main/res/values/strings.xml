@@ -24,6 +24,11 @@
 
     <string name="notification_update_map_title">עדכוני מיפוי ענן</string>
     <string name="notification_update_map_description">יש גרסה חדשה ל- %d בולים שהורדת\n(על מנת לעדכן יש להכנס למסך מיפוי ענן בעמוד)</string>
+    <string name="notification_error_title">אירעה שגיאה</string>
+    <string name="notification_config_job_failed">עמוד נכשל בקבלת עדכוני הגדרות</string>
+    <string name="notification_inventory_job_failed">עמוד נכשל בקבלת עדכוני מפות</string>
+
+
 
 
 
