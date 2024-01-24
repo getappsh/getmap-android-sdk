@@ -107,10 +107,9 @@ class Pref private constructor(context: Context) {
         get() = getOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, OffsetDateTime.MIN)
         set(value) = setOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, value)
 
-
-    var runConfJob: Boolean
-        get() = getBoolean(RUN_CONF_JOB, true)
-        set(value) = setBoolean(RUN_CONF_JOB, value)
+    var applyServerConfig: Boolean
+        get() = getBoolean(APPLY_SERVER_CONFIG, true)
+        set(value) = setBoolean(APPLY_SERVER_CONFIG, value)
 
     var minAvailableSpaceMB: Long
         get() = getLong(MIN_AVAILABLE_SPACE, 500)
@@ -191,7 +190,7 @@ class Pref private constructor(context: Context) {
         private const val PERIODIC_INVENTORY_INTERVAL_JOB = "periodicInventorIntervalJob"
         private const val LAST_CONFIG_CHECK = "lastConfigCheck"
         private const val LAST_INVENTORY_CHECK = "lastInventoryCheck"
-        private const val RUN_CONF_JOB = "runConfJob"
+        private const val APPLY_SERVER_CONFIG = "applyServerConfig"
         private const val PERIODIC_CONF_INTERVAL_JOB = "periodicConfIntervalJob"
         private const val LAST_SERVER_CONFIG_UPDATED = "lastServerConfigUpdate"
         private const val MIN_AVAILABLE_SPACE = "minAvailableSpace"

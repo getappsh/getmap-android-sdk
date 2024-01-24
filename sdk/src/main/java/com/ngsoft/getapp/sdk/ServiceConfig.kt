@@ -86,10 +86,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             JobScheduler().updateRemoteConfigJob(appContext, value)
         }
 
-    override var runConfJob: Boolean = pref.runConfJob
+    override var applyServerConfig: Boolean = pref.applyServerConfig
         set(value) {
             field = value
-            pref.runConfJob = value
+            pref.applyServerConfig = value
         }
 
     override var matomoUrl: String = pref.matomoUrl

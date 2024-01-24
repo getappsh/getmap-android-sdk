@@ -285,7 +285,7 @@ interface GetMapService {
         /**
          * Run config job, set to false when admin controls the config.
          */
-        var runConfJob: Boolean
+        var applyServerConfig: Boolean
 
         /**
          * Interval for periodic map configuration updates in minutes.

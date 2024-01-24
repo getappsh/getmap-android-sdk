@@ -11,16 +11,21 @@ internal object ConfigClientHelper {
 
     fun fetchUpdates(config: GetMapService.GeneralConfig, client: GetAppClient, deviceId: String){
         Log.i(_tag, "getUpdates")
-        if (!config.runConfJob){
-            Log.d(_tag, "fetchUpdates -  runConfJob: ${config.runConfJob}, abort request")
-            return
-        }
+
         val configRes = client.getMapApi.getMapControllerGetMapConfig(deviceId)
         Log.v(_tag, "fetchUpdates - config: $configRes")
         updateConfigFromDto(config, configRes)
     }
 
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
+        Log.d(_tag, "fetchUpdates -  runConfJob: ${config.applyServerConfig}")
+
+        config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
+        config.lastConfigCheck = OffsetDateTime.now()
+
+        if (!config.applyServerConfig)
+            return
+
         config.deliveryTimeoutMins = configDto.deliveryTimeoutMins?.toInt() ?: config.deliveryTimeoutMins
         config.maxMapSizeInMB = configDto.maxMapSizeInMB?.toLong() ?: config.maxMapSizeInMB
         config.maxMapAreaSqKm = configDto.maxMapAreaSqKm?.toLong() ?: config.maxMapAreaSqKm
@@ -31,11 +36,8 @@ internal object ConfigClientHelper {
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
         config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
-        config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
 
-        config.lastServerConfigUpdate = OffsetDateTime.now()
     }
-
 
 }
