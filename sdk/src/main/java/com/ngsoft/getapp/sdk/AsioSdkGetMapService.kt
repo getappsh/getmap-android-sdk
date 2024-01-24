@@ -597,8 +597,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return try {
             Log.d(_tag, "moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
-            val fileName = mapFileManager.moveFileToTargetDir(mapPkg.fileName!!)
-            val jsonName = mapFileManager.moveFileToTargetDir(mapPkg.jsonName!!)
+            var (fileName, jsonName) = mapFileManager.moveFilesToTargetDir(mapPkg.fileName!!, mapPkg.jsonName!!)
+//            fileName = mapFileManager.moveFileToTargetDir(fileName)
+//            jsonName = mapFileManager.moveFileToTargetDir(jsonName)
             this.mapRepo.update(id, flowState = DeliveryFlowState.MOVE_FILES, fileName = fileName, jsonName = jsonName)
             true
         }catch (e: Exception){
