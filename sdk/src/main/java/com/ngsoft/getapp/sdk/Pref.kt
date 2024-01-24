@@ -44,7 +44,7 @@ class Pref private constructor(context: Context) {
         get() = getString(BASE_URL, "")
         set(value) = setString(BASE_URL, value)
     var matomoUrl: String
-        get() = getString(MATOMO_URL, "")
+        get() = getString(MATOMO_URL, "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php")
         set(value) = setString(MATOMO_URL, value)
 
     var matomoUpdateIntervalMins: Int
@@ -75,9 +75,9 @@ class Pref private constructor(context: Context) {
         get() = getLong(MAX_MAP_SIZE_IN_MB, 500)
         set(value) = setLong(MAX_MAP_SIZE_IN_MB, value)
 
-    var maxMapSizeInMeter: Long
-        get() = getLong(MAX_MAP_SIZE_IN_METER, 405573000)
-        set(value) = setLong(MAX_MAP_SIZE_IN_METER, value)
+    var maxMapAreaSqKm: Long
+        get() = getLong(MAX_MAP_AREA_SQ_KM, 100)
+        set(value) = setLong(MAX_MAP_AREA_SQ_KM, value)
 
     var maxParallelDownloads: Int
         get() = getInt(MAX_PARALLEL_DOWNLOADS, 1)
@@ -108,8 +108,8 @@ class Pref private constructor(context: Context) {
         get() = getBoolean(RUN_CONF_JOB, true)
         set(value) = setBoolean(RUN_CONF_JOB, value)
 
-    var minAvailableSpace: Long
-        get() = getLong(MIN_AVAILABLE_SPACE, 250 * 1024L * 1024L)
+    var minAvailableSpaceMB: Long
+        get() = getLong(MIN_AVAILABLE_SPACE, 500)
         set(value) = setLong(MIN_AVAILABLE_SPACE, value)
 
     var mapMinInclusionPct: Int
@@ -181,7 +181,7 @@ class Pref private constructor(context: Context) {
         private const val DOWNLOAD_TIMEOUT = "downloadTimeout"
         private const val DOWNLOAD_RETRY = "downloadRetry"
         private const val MAX_MAP_SIZE_IN_MB = "maxMapSizeInMB"
-        private const val MAX_MAP_SIZE_IN_METER = "maxMapSizeInMeter"
+        private const val MAX_MAP_AREA_SQ_KM = "maxMapSizeInMeter"
         private const val MAX_PARALLEL_DOWNLOADS = "maxParallelDownloads"
         private const val PERIODIC_INVENTORY_INTERVAL_JOB = "periodicInventorIntervalJob"
         private const val LAST_CONFIG_CHECK = "lastConfigCheck"

@@ -268,9 +268,9 @@ interface GetMapService {
         var maxMapSizeInMB: Long
 
         /**
-         * Maximum allowable size for a map in meters.
+         * Maximum allowable size for a map in Square Kilometer.
          */
-        var maxMapSizeInMeter: Long
+        var maxMapAreaSqKm: Long
 
         /**
          * Maximum number of parallel downloads allowed.
@@ -305,7 +305,7 @@ interface GetMapService {
         /**
          * Minimum available space required on the device for map operations.
          */
-        var minAvailableSpaceBytes: Long
+        var minAvailableSpaceMB: Long
 
         /**
          * Minimum Inclusion of footprint in a map product in percentages.

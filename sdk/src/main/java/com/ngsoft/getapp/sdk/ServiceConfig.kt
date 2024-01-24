@@ -60,10 +60,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.maxMapSizeInMB = value
         }
-    override var maxMapSizeInMeter: Long = pref.maxMapSizeInMeter
+    override var maxMapAreaSqKm: Long = pref.maxMapAreaSqKm
         set(value) {
             field = value
-            pref.maxMapSizeInMeter = value
+            pref.maxMapAreaSqKm = value
         }
 
     override var maxParallelDownloads: Int = pref.maxParallelDownloads
@@ -103,10 +103,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             pref.matomoUpdateIntervalMins = value
         }
 
-    override var minAvailableSpaceBytes: Long = pref.minAvailableSpace
+    override var minAvailableSpaceMB: Long = pref.minAvailableSpaceMB
         set(value) {
             field = value
-            pref.minAvailableSpace = value
+            pref.minAvailableSpaceMB = value
         }
     override var mapMinInclusionPct: Int = pref.mapMinInclusionPct
         set(value){

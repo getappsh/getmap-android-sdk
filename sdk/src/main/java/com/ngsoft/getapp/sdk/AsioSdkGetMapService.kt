@@ -106,7 +106,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "downloadMap: id: $id")
         Log.d(_tag, "downloadMap: bBox - ${mp.boundingBox}")
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceBytes)){
+        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
             Thread{executeDeliveryFlow(id)}.start()
         }
 
@@ -127,11 +127,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
 
-    private fun isEnoughSpace(id: String, path: String, requiredSpace: Long): Boolean{
+    private fun isEnoughSpace(id: String, path: String, requiredSpaceMB: Long): Boolean{
         Log.i(_tag, "isEnoughSpace")
         val availableSpace = FileUtils.getAvailableSpace(path)
-        if (requiredSpace >= availableSpace){
-            Log.e(_tag, "isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpace", )
+        if ((requiredSpaceMB * 1024 * 1024) >= availableSpace){
+            Log.e(_tag, "isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpaceMB", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
@@ -938,7 +938,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.setListener(id, downloadStatusHandler)
         this.mapRepo.invoke(id)
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceBytes)){
+        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
             Log.d(_tag, "processQrCodeData - execute the auth delivery process")
             Thread{executeDeliveryFlow(id)}.start()
         }

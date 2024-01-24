@@ -23,13 +23,13 @@ internal object ConfigClientHelper {
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
         config.deliveryTimeoutMins = configDto.deliveryTimeoutMins?.toInt() ?: config.deliveryTimeoutMins
         config.maxMapSizeInMB = configDto.maxMapSizeInMB?.toLong() ?: config.maxMapSizeInMB
-        config.maxMapSizeInMeter = configDto.maxMapSizeInMeter?.toLong() ?: config.maxMapSizeInMeter
+        config.maxMapAreaSqKm = configDto.maxMapAreaSqKm?.toLong() ?: config.maxMapAreaSqKm
         config.maxParallelDownloads = configDto.maxParallelDownloads?.toInt() ?: config.maxParallelDownloads
         config.downloadRetry = configDto.downloadRetryTime?.toInt() ?: config.downloadRetry
         config.downloadTimeoutMins = configDto.downloadTimeoutMins?.toInt() ?: config.downloadTimeoutMins
         config.periodicInventoryIntervalMins = configDto.periodicInventoryIntervalMins?.toInt() ?: config.periodicInventoryIntervalMins
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
-        config.minAvailableSpaceBytes = configDto.minAvailableSpaceBytes?.toLong() ?: config.minAvailableSpaceBytes
+        config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
         config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
