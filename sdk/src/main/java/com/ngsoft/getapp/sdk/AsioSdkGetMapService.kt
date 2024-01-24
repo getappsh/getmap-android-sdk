@@ -896,6 +896,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.d(_tag, "generateQrCode - append download url to json")
         json.put("downloadUrl", mapPkg.url)
         json.put("reqId", mapPkg.reqId)
+        json.put("requestedBBox", mapPkg.bBox)
 
         return qrManager.generateQrCode(json.toString(), width, height)
     }
@@ -908,12 +909,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val url = json.getString("downloadUrl")
         val reqId = json.getString("reqId")
-        val bBox = json.getString("productBoundingBox")
+        val bBox = json.getString("requestedBBox")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
 
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        this.mapRepo.getByBBox(bBox).toMutableList().forEach {
+        this.mapRepo.getByBBox(bBox).forEach {
             val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
