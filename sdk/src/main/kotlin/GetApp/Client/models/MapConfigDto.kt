@@ -23,7 +23,7 @@ import com.squareup.moshi.JsonClass
  * 
  *
  * @param deliveryTimeoutMins 
- * @param maxMapSizeInMeter 
+ * @param maxMapAreaSqKm 
  * @param maxMapSizeInMB 
  * @param maxParallelDownloads 
  * @param downloadRetryTime 
@@ -31,7 +31,7 @@ import com.squareup.moshi.JsonClass
  * @param periodicInventoryIntervalMins 
  * @param periodicConfIntervalMins 
  * @param periodicMatomoIntervalMins 
- * @param minAvailableSpaceBytes 
+ * @param minAvailableSpaceMB 
  * @param matomoUrl 
  * @param mapMinInclusionInPercentages 
  * @param lastUpdate 
@@ -43,8 +43,8 @@ data class MapConfigDto (
     @Json(name = "deliveryTimeoutMins")
     val deliveryTimeoutMins: java.math.BigDecimal? = null,
 
-    @Json(name = "maxMapSizeInMeter")
-    val maxMapSizeInMeter: java.math.BigDecimal? = null,
+    @Json(name = "MaxMapAreaSqKm")
+    val maxMapAreaSqKm: java.math.BigDecimal? = null,
 
     @Json(name = "maxMapSizeInMB")
     val maxMapSizeInMB: java.math.BigDecimal? = null,
@@ -67,8 +67,8 @@ data class MapConfigDto (
     @Json(name = "periodicMatomoIntervalMins")
     val periodicMatomoIntervalMins: java.math.BigDecimal? = null,
 
-    @Json(name = "minAvailableSpaceBytes")
-    val minAvailableSpaceBytes: java.math.BigDecimal? = null,
+    @Json(name = "minAvailableSpaceMB")
+    val minAvailableSpaceMB: java.math.BigDecimal? = null,
 
     @Json(name = "matomoUrl")
     val matomoUrl: kotlin.String? = null,

@@ -44,8 +44,12 @@ class Pref private constructor(context: Context) {
         get() = getString(BASE_URL, "")
         set(value) = setString(BASE_URL, value)
     var matomoUrl: String
-        get() = getString(MATOMO_URL, "")
+        get() = getString(MATOMO_URL, "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php")
         set(value) = setString(MATOMO_URL, value)
+
+    var matomoClientName: String
+        get() = getString(MATOMO_CLIENT_NAME, "Amud")
+        set(value) = setString(MATOMO_CLIENT_NAME, value)
 
     var matomoUpdateIntervalMins: Int
         get() = getInt(MATOMO_UPDATE_INTERVAL, 60)
@@ -75,9 +79,9 @@ class Pref private constructor(context: Context) {
         get() = getLong(MAX_MAP_SIZE_IN_MB, 500)
         set(value) = setLong(MAX_MAP_SIZE_IN_MB, value)
 
-    var maxMapSizeInMeter: Long
-        get() = getLong(MAX_MAP_SIZE_IN_METER, 405573000)
-        set(value) = setLong(MAX_MAP_SIZE_IN_METER, value)
+    var maxMapAreaSqKm: Long
+        get() = getLong(MAX_MAP_AREA_SQ_KM, 100)
+        set(value) = setLong(MAX_MAP_AREA_SQ_KM, value)
 
     var maxParallelDownloads: Int
         get() = getInt(MAX_PARALLEL_DOWNLOADS, 1)
@@ -103,13 +107,12 @@ class Pref private constructor(context: Context) {
         get() = getOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, OffsetDateTime.MIN)
         set(value) = setOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, value)
 
+    var applyServerConfig: Boolean
+        get() = getBoolean(APPLY_SERVER_CONFIG, true)
+        set(value) = setBoolean(APPLY_SERVER_CONFIG, value)
 
-    var runConfJob: Boolean
-        get() = getBoolean(RUN_CONF_JOB, true)
-        set(value) = setBoolean(RUN_CONF_JOB, value)
-
-    var minAvailableSpace: Long
-        get() = getLong(MIN_AVAILABLE_SPACE, 250 * 1024L * 1024L)
+    var minAvailableSpaceMB: Long
+        get() = getLong(MIN_AVAILABLE_SPACE, 500)
         set(value) = setLong(MIN_AVAILABLE_SPACE, value)
 
     var mapMinInclusionPct: Int
@@ -174,6 +177,7 @@ class Pref private constructor(context: Context) {
         private const val PASSWORD = "password"
 
         private const val MATOMO_URL = "matomo_url"
+        private const val MATOMO_CLIENT_NAME = "matomoClientName"
         private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
         private const val STORAGE_PATH = "storagePath"
         private const val DOWNLOAD_PATH = "downloadPath"
@@ -181,12 +185,12 @@ class Pref private constructor(context: Context) {
         private const val DOWNLOAD_TIMEOUT = "downloadTimeout"
         private const val DOWNLOAD_RETRY = "downloadRetry"
         private const val MAX_MAP_SIZE_IN_MB = "maxMapSizeInMB"
-        private const val MAX_MAP_SIZE_IN_METER = "maxMapSizeInMeter"
+        private const val MAX_MAP_AREA_SQ_KM = "maxMapSizeInMeter"
         private const val MAX_PARALLEL_DOWNLOADS = "maxParallelDownloads"
         private const val PERIODIC_INVENTORY_INTERVAL_JOB = "periodicInventorIntervalJob"
         private const val LAST_CONFIG_CHECK = "lastConfigCheck"
         private const val LAST_INVENTORY_CHECK = "lastInventoryCheck"
-        private const val RUN_CONF_JOB = "runConfJob"
+        private const val APPLY_SERVER_CONFIG = "applyServerConfig"
         private const val PERIODIC_CONF_INTERVAL_JOB = "periodicConfIntervalJob"
         private const val LAST_SERVER_CONFIG_UPDATED = "lastServerConfigUpdate"
         private const val MIN_AVAILABLE_SPACE = "minAvailableSpace"

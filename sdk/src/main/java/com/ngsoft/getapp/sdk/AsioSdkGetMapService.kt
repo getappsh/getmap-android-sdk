@@ -88,7 +88,16 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+        Log.i(_tag, "downloadMap")
+
+        this.mapRepo.getByBBox(mp.boundingBox).forEach{
+            if (it.isUpdated){
+                Log.e(_tag, "downloadMap map is already exit, abort request", )
+                return null
+            }
+        }
+
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,
             appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START, downloadStatusHandler)
@@ -97,7 +106,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.i(_tag, "downloadMap: id: $id")
         Log.d(_tag, "downloadMap: bBox - ${mp.boundingBox}")
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceBytes)){
+        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
             Thread{executeDeliveryFlow(id)}.start()
         }
 
@@ -118,11 +127,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
 
-    private fun isEnoughSpace(id: String, path: String, requiredSpace: Long): Boolean{
+    private fun isEnoughSpace(id: String, path: String, requiredSpaceMB: Long): Boolean{
         Log.i(_tag, "isEnoughSpace")
         val availableSpace = FileUtils.getAvailableSpace(path)
-        if (requiredSpace >= availableSpace){
-            Log.e(_tag, "isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpace", )
+        if ((requiredSpaceMB * 1024 * 1024) >= availableSpace){
+            Log.e(_tag, "isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpaceMB", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
@@ -588,8 +597,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return try {
             Log.d(_tag, "moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
-            val fileName = mapFileManager.moveFileToTargetDir(mapPkg.fileName!!)
-            val jsonName = mapFileManager.moveFileToTargetDir(mapPkg.jsonName!!)
+            var (fileName, jsonName) = mapFileManager.moveFilesToTargetDir(mapPkg.fileName!!, mapPkg.jsonName!!)
+//            fileName = mapFileManager.moveFileToTargetDir(fileName)
+//            jsonName = mapFileManager.moveFileToTargetDir(jsonName)
             this.mapRepo.update(id, flowState = DeliveryFlowState.MOVE_FILES, fileName = fileName, jsonName = jsonName)
             true
         }catch (e: Exception){
@@ -886,6 +896,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Log.d(_tag, "generateQrCode - append download url to json")
         json.put("downloadUrl", mapPkg.url)
         json.put("reqId", mapPkg.reqId)
+        json.put("requestedBBox", mapPkg.bBox)
 
         return qrManager.generateQrCode(json.toString(), width, height)
     }
@@ -898,12 +909,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val url = json.getString("downloadUrl")
         val reqId = json.getString("reqId")
-        val bBox = json.getString("productBoundingBox")
+        val bBox = json.getString("requestedBBox")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
 
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        this.mapRepo.getByBBox(bBox).toMutableList().forEach {
+        this.mapRepo.getByBBox(bBox).forEach {
             val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
@@ -927,7 +938,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.setListener(id, downloadStatusHandler)
         this.mapRepo.invoke(id)
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceBytes)){
+        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
             Log.d(_tag, "processQrCodeData - execute the auth delivery process")
             Thread{executeDeliveryFlow(id)}.start()
         }

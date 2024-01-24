@@ -49,6 +49,18 @@ object FileUtils {
         return uniqueFileName
     }
 
+    fun getUniqueFilesName(path: String, fileName1: String, fileName2: String): Pair<String, String>{
+        var fileNumber = 0
+        var uniqueFileName1 = fileName1
+        var uniqueFileName2 = fileName2
+
+        while (File(path, uniqueFileName1).exists() || File(path, uniqueFileName2).exists()){
+            fileNumber++
+            uniqueFileName1 = incrementFileName(fileName1, fileNumber)
+            uniqueFileName2 = incrementFileName(fileName2, fileNumber)
+        }
+        return Pair(uniqueFileName1, uniqueFileName2)
+    }
     fun getUniqueFileName(path: String, fileName: String): String{
         var fileNumber = 0
         var uniqueFileName = fileName

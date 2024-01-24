@@ -10,6 +10,9 @@ import com.ngsoft.tilescache.models.MapPkg
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader) {
     private val _tag = "MapManager"
@@ -29,6 +32,46 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         }
 
         return null
+    }
+
+//    TODO clean this
+    fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<String, String>{
+        //        TODO fined better way to handle when file exist and have not been downloaded
+        val pkgFile = File(config.downloadPath, pkgName)
+        if (!pkgFile.exists() && !File(config.storagePath, pkgName).exists()){
+            throw IOException("File $pkgName, doesn't exist")
+        }
+        val jsonFile = File(config.downloadPath, jsonName)
+        if (!jsonFile.exists() && !File(config.storagePath, jsonName).exists()){
+            throw IOException("File $jsonName, doesn't exist")
+        }
+
+        val newJsonName = FileUtils.changeFileExtensionToJson(pkgName)
+        val names = FileUtils.getUniqueFilesName(config.storagePath, pkgName, newJsonName)
+
+        if (!(File(config.storagePath, pkgName).exists() && names.first == pkgName)){
+            if (FileUtils.getAvailableSpace(config.storagePath) <= pkgFile.length()){
+                throw IOException(appCtx.getString(R.string.error_not_enough_space))
+            }
+            Files.move(
+                Paths.get(config.downloadPath, pkgName),
+                Paths.get(config.storagePath, names.first),
+                StandardCopyOption.REPLACE_EXISTING)
+        }
+
+
+        if (!(File(config.storagePath, jsonName).exists() && names.second == jsonName)) {
+            if (FileUtils.getAvailableSpace(config.storagePath) <= jsonFile.length()){
+                throw IOException(appCtx.getString(R.string.error_not_enough_space))
+            }
+            Files.move(
+                Paths.get(config.downloadPath, jsonName),
+                Paths.get(config.storagePath, names.second),
+                StandardCopyOption.REPLACE_EXISTING
+            )
+
+        }
+        return names
     }
     fun moveFileToTargetDir(fileName: String): String {
         val downloadFile = File(config.downloadPath, fileName)

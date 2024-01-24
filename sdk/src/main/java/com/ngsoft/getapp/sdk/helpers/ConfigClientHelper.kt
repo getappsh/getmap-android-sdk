@@ -11,31 +11,33 @@ internal object ConfigClientHelper {
 
     fun fetchUpdates(config: GetMapService.GeneralConfig, client: GetAppClient, deviceId: String){
         Log.i(_tag, "getUpdates")
-        if (!config.runConfJob){
-            Log.d(_tag, "fetchUpdates -  runConfJob: ${config.runConfJob}, abort request")
-            return
-        }
+
         val configRes = client.getMapApi.getMapControllerGetMapConfig(deviceId)
         Log.v(_tag, "fetchUpdates - config: $configRes")
         updateConfigFromDto(config, configRes)
     }
 
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
+        Log.d(_tag, "fetchUpdates -  runConfJob: ${config.applyServerConfig}")
+
+        config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
+        config.lastConfigCheck = OffsetDateTime.now()
+
+        if (!config.applyServerConfig)
+            return
+
         config.deliveryTimeoutMins = configDto.deliveryTimeoutMins?.toInt() ?: config.deliveryTimeoutMins
         config.maxMapSizeInMB = configDto.maxMapSizeInMB?.toLong() ?: config.maxMapSizeInMB
-        config.maxMapSizeInMeter = configDto.maxMapSizeInMeter?.toLong() ?: config.maxMapSizeInMeter
+        config.maxMapAreaSqKm = configDto.maxMapAreaSqKm?.toLong() ?: config.maxMapAreaSqKm
         config.maxParallelDownloads = configDto.maxParallelDownloads?.toInt() ?: config.maxParallelDownloads
         config.downloadRetry = configDto.downloadRetryTime?.toInt() ?: config.downloadRetry
         config.downloadTimeoutMins = configDto.downloadTimeoutMins?.toInt() ?: config.downloadTimeoutMins
         config.periodicInventoryIntervalMins = configDto.periodicInventoryIntervalMins?.toInt() ?: config.periodicInventoryIntervalMins
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
-        config.minAvailableSpaceBytes = configDto.minAvailableSpaceBytes?.toLong() ?: config.minAvailableSpaceBytes
+        config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
-        config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
 
-        config.lastServerConfigUpdate = OffsetDateTime.now()
     }
-
 
 }
