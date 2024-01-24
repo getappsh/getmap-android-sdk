@@ -88,7 +88,16 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+        Log.i(_tag, "downloadMap")
+
+        this.mapRepo.getByBBox(mp.boundingBox).forEach{
+            if (it.isUpdated){
+                Log.e(_tag, "downloadMap map is already exit, abort request", )
+                return null
+            }
+        }
+
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,
             appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START, downloadStatusHandler)
