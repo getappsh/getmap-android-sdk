@@ -97,6 +97,11 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.matomoUrl = value
         }
+    override var matomoClientName: String = pref.matomoClientName
+        set(value) {
+            field  = value
+            pref.matomoClientName = value
+        }
     override var matomoUpdateIntervalMins: Int = pref.matomoUpdateIntervalMins
         set(value) {
             field = value
