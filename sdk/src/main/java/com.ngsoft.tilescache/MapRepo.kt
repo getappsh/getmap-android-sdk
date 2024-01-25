@@ -178,6 +178,12 @@ internal class MapRepo(ctx: Context) {
             }else if(state == MapDeliveryState.DONE){
                 this.downloadDone = LocalDateTime.now(ZoneOffset.UTC)
             }
+            if ((state == MapDeliveryState.START ||
+                        state == MapDeliveryState.CONTINUE ||
+                        state == MapDeliveryState.DOWNLOAD) &&
+                this.downloadStart == null){
+                this.downloadStart = LocalDateTime.now(ZoneOffset.UTC)
+            }
             dao.update(this)
         }
     }
@@ -292,6 +298,9 @@ internal class MapRepo(ctx: Context) {
             downloadProgress = map.downloadProgress,
             errorContent = map.errorContent,
             isUpdated = map.isUpdated,
+            downloadStart = map.downloadStart,
+            downloadStop = map.downloadStop,
+            downloadDone = map.downloadDone
         )
     }
 

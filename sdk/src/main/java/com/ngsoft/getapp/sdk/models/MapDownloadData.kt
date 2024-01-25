@@ -1,5 +1,7 @@
 package com.ngsoft.getapp.sdk.models
 
+import java.time.LocalDateTime
+
 class MapDownloadData(
     var id: String? = null,
     val bBox: String? = null,
@@ -10,6 +12,9 @@ class MapDownloadData(
     var statusMessage: String? = null,
     var downloadProgress: Int = 0,
     var errorContent: String? = null,
-    var isUpdated: Boolean = true
+    var isUpdated: Boolean = true,
+    var downloadStart: LocalDateTime?,
+    var downloadStop: LocalDateTime?,
+    var downloadDone: LocalDateTime?,
 )
 
