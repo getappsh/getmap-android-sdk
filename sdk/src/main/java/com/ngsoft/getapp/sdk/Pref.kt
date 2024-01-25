@@ -47,9 +47,13 @@ class Pref private constructor(context: Context) {
         get() = getString(MATOMO_URL, "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php")
         set(value) = setString(MATOMO_URL, value)
 
-    var matomoClientName: String
-        get() = getString(MATOMO_CLIENT_NAME, "Amud")
-        set(value) = setString(MATOMO_CLIENT_NAME, value)
+    var matomoGoalId: String
+        get() = getString(MATOMO_GOAL_ID, "1")
+        set(value) = setString(MATOMO_GOAL_ID, value)
+
+    var matomoSiteId: String
+        get() = getString(MATOMO_SITE_ID, "2")
+        set(value) = setString(MATOMO_SITE_ID, value)
 
     var matomoUpdateIntervalMins: Int
         get() = getInt(MATOMO_UPDATE_INTERVAL, 60)
@@ -177,7 +181,8 @@ class Pref private constructor(context: Context) {
         private const val PASSWORD = "password"
 
         private const val MATOMO_URL = "matomo_url"
-        private const val MATOMO_CLIENT_NAME = "matomoClientName"
+        private const val MATOMO_GOAL_ID = "matomoGoalId"
+        private const val MATOMO_SITE_ID = "matomoSiteId"
         private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
         private const val STORAGE_PATH = "storagePath"
         private const val DOWNLOAD_PATH = "downloadPath"
