@@ -10,6 +10,7 @@ import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.ngsoft.getapp.sdk.R
 
 import com.ngsoft.getapp.sdk.utils.CompressionUtils
+import com.ngsoft.getapp.sdk.utils.EncryptionUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import org.json.JSONObject
 import java.io.IOException
@@ -34,7 +35,14 @@ internal class QRManager(private val appCtx: Context) {
         }
         Log.d(_tag, "compressAndHashJson - Compressed size: ${compressed.size}")
 
-        val encoded =  Base64.encodeToString(compressed, Base64.DEFAULT)
+        val (encrypted, iv) = EncryptionUtils.encrypt(compressed)
+        val ivEncoded = Base64.encodeToString(iv, Base64.DEFAULT)
+        Log.d(_tag, "compressAndHashJson - iv size: ${ivEncoded.length}")
+        Log.d(_tag, "compressAndHashJson - encrypted size: ${encrypted.size}")
+
+        val hash = HashUtils.getCheckSumFromByteArray(checksumAlgorithm, encrypted){}
+
+        val encoded = Base64.encodeToString(encrypted, Base64.DEFAULT)
         val finalSize = encoded.toByteArray().size
         Log.d(_tag, "compressAndHashJson - Encoded size: $finalSize")
 
@@ -42,10 +50,10 @@ internal class QRManager(private val appCtx: Context) {
             Log.e(_tag, "compressAndHashJson - Final size: $finalSize, is Higher then required: $maxBytesSize.", )
             throw Exception(appCtx.getString(R.string.error_qr_code_file_size_to_large, finalSize))
         }
-        val hash = HashUtils.getCheckSumFromByteArray(checksumAlgorithm, compressed){}
 
         val jsonContainer = JSONObject()
         jsonContainer.put("data", encoded)
+        jsonContainer.put("iv", ivEncoded)
         jsonContainer.put(checksumAlgorithm, hash)
 
         return jsonContainer.toString()
@@ -69,7 +77,7 @@ internal class QRManager(private val appCtx: Context) {
 
         val expectedHash = jsonContainer.getString(checksumAlgorithm)
 
-        val decoded =  Base64.decode(data, Base64.DEFAULT)
+        val decoded = Base64.decode(data, Base64.DEFAULT)
         Log.v(_tag, "decompressAndValidateJson - decoded: $decoded")
 
         val actualHash = HashUtils.getCheckSumFromByteArray(checksumAlgorithm, decoded){
@@ -81,8 +89,11 @@ internal class QRManager(private val appCtx: Context) {
             Log.e(_tag, "decompressAndValidateJson - Checksum failed", )
             throw Exception("Checksum failed")
         }
+        val ivEncoded = jsonContainer.getString("iv")
+        val iv = Base64.decode(ivEncoded, Base64.DEFAULT)
+        val decrypted = EncryptionUtils.decrypt(decoded, iv)
         try {
-            return CompressionUtils.decompress(decoded)
+            return CompressionUtils.decompress(decrypted)
         } catch (io: IOException) {
             Log.e(_tag, "decompressAndValidateJson - Failed to decompress the json: ${io.message.toString()}",)
             throw io
