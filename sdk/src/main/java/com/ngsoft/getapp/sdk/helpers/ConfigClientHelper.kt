@@ -18,7 +18,7 @@ internal object ConfigClientHelper {
     }
 
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
-        Log.d(_tag, "fetchUpdates -  runConfJob: ${config.applyServerConfig}")
+        Log.d(_tag, "fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
 
         config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
         config.lastConfigCheck = OffsetDateTime.now()
@@ -36,8 +36,9 @@ internal object ConfigClientHelper {
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
         config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
+        config.matomoGoalId = configDto.matomoGoalId ?: config.matomoGoalId
+        config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
-
     }
 
 }

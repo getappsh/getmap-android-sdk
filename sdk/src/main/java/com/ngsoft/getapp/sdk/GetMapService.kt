@@ -298,9 +298,16 @@ interface GetMapService {
         var matomoUrl: String
 
         /**
-         * Matomo Client Name
+         * Matomo Goal id
          */
-        var matomoClientName: String
+        var matomoGoalId: String
+
+
+        /**
+         * Matomo Site id
+         */
+        var matomoSiteId: String
+
 
         /**
          * Interval for Matomo updates in minutes.

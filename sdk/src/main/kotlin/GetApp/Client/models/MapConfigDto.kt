@@ -24,7 +24,7 @@ import com.squareup.moshi.JsonClass
  *
  * @param deliveryTimeoutMins 
  * @param maxMapAreaSqKm 
- * @param maxMapSizeInMB 
+ * @param maxMapSizeInMB
  * @param maxParallelDownloads 
  * @param downloadRetryTime 
  * @param downloadTimeoutMins 
@@ -33,9 +33,9 @@ import com.squareup.moshi.JsonClass
  * @param periodicMatomoIntervalMins 
  * @param minAvailableSpaceMB 
  * @param mapMinInclusionInPercentages 
- * @param matomoUrl 
+ * @param matomoUrl
  * @param matomoGoalId 
- * @param matomoSiteId 
+ * @param matomoSiteId
  * @param lastUpdate 
  */
 
