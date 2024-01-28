@@ -13,7 +13,7 @@ internal object ConfigClientHelper {
         Log.i(_tag, "getUpdates")
 
         val configRes = client.getMapApi.getMapControllerGetMapConfig(deviceId)
-        Log.v(_tag, "fetchUpdates - config: $configRes")
+        Log.v(_tag, "fetchUpdates - configDto: $configRes")
         updateConfigFromDto(config, configRes)
     }
 
@@ -36,9 +36,11 @@ internal object ConfigClientHelper {
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
         config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
-        config.matomoGoalId = configDto.matomoGoalId ?: config.matomoGoalId
+        config.matomoDimensionId = configDto.matomoGoalId ?: config.matomoDimensionId
         config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
+
+        Log.v(_tag, "updateConfigFromDto - config: $config")
     }
 
 }

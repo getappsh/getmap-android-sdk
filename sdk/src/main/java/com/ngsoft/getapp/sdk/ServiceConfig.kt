@@ -97,10 +97,10 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.matomoUrl = value
         }
-    override var matomoGoalId: String = pref.matomoGoalId
+    override var matomoDimensionId: String = pref.matomoDimensionId
         set(value) {
             field  = value
-            pref.matomoGoalId = value
+            pref.matomoDimensionId = value
         }
 
     override var matomoSiteId: String = pref.matomoSiteId
@@ -124,20 +124,24 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.mapMinInclusionPct = value
         }
-    override var lastConfigCheck: OffsetDateTime = pref.lastConfigCheck
+    override var lastConfigCheck: OffsetDateTime? = pref.lastConfigCheck
         set(value) {
             field = value
             pref.lastConfigCheck = value
         }
-    override var lastInventoryCheck: OffsetDateTime = pref.lastInventoryCheck
+    override var lastInventoryCheck: OffsetDateTime? = pref.lastInventoryCheck
         set(value) {
             field = value
             pref.lastInventoryCheck = value
         }
-    override var lastServerConfigUpdate: OffsetDateTime = pref.lastServerConfigUpdate
+    override var lastServerConfigUpdate: OffsetDateTime? = pref.lastServerConfigUpdate
         set(value) {
             field = value
             pref.lastServerConfigUpdate = value
         }
+
+    override fun toString(): String {
+        return "ServiceConfig(storagePath='$storagePath', downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate)"
+    }
 }
 
