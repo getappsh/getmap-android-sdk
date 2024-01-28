@@ -298,9 +298,9 @@ interface GetMapService {
         var matomoUrl: String
 
         /**
-         * Matomo Goal id
+         * Matomo Dimension id
          */
-        var matomoGoalId: String
+        var matomoDimensionId: String
 
 
         /**
@@ -327,16 +327,16 @@ interface GetMapService {
         /**
          * Last configuration check timestamp.
          */
-        var lastConfigCheck: OffsetDateTime
+        var lastConfigCheck: OffsetDateTime?
 
         /**
          * Last inventory check timestamp.
          */
-        var lastInventoryCheck: OffsetDateTime
+        var lastInventoryCheck: OffsetDateTime?
 
         /**
          * Last server configuration update timestamp.
          */
-        var lastServerConfigUpdate: OffsetDateTime
+        var lastServerConfigUpdate: OffsetDateTime?
     }
 }

@@ -47,9 +47,9 @@ class Pref private constructor(context: Context) {
         get() = getString(MATOMO_URL, "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php")
         set(value) = setString(MATOMO_URL, value)
 
-    var matomoGoalId: String
-        get() = getString(MATOMO_GOAL_ID, "1")
-        set(value) = setString(MATOMO_GOAL_ID, value)
+    var matomoDimensionId: String
+        get() = getString(MATOMO_DIMENSION_ID, "1")
+        set(value) = setString(MATOMO_DIMENSION_ID, value)
 
     var matomoSiteId: String
         get() = getString(MATOMO_SITE_ID, "2")
@@ -95,20 +95,20 @@ class Pref private constructor(context: Context) {
         get() = getInt(PERIODIC_INVENTORY_INTERVAL_JOB, 1440)
         set(value) = setInt(PERIODIC_INVENTORY_INTERVAL_JOB, value)
 
-    var lastInventoryCheck: OffsetDateTime
-        get() = getOffsetDateTime(LAST_INVENTORY_CHECK, OffsetDateTime.MIN)
+    var lastInventoryCheck: OffsetDateTime?
+        get() = getOffsetDateTime(LAST_INVENTORY_CHECK)
         set(value) = setOffsetDateTime(LAST_INVENTORY_CHECK, value)
 
     var periodicConfIntervalJob: Int
         get() = getInt(PERIODIC_CONF_INTERVAL_JOB, 1440)
         set(value) = setInt(PERIODIC_CONF_INTERVAL_JOB, value)
 
-    var lastConfigCheck: OffsetDateTime
-        get() = getOffsetDateTime(LAST_CONFIG_CHECK, OffsetDateTime.MIN)
+    var lastConfigCheck: OffsetDateTime?
+        get() = getOffsetDateTime(LAST_CONFIG_CHECK)
         set(value) = setOffsetDateTime(LAST_CONFIG_CHECK, value)
 
-    var lastServerConfigUpdate: OffsetDateTime
-        get() = getOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, OffsetDateTime.MIN)
+    var lastServerConfigUpdate: OffsetDateTime?
+        get() = getOffsetDateTime(LAST_SERVER_CONFIG_UPDATED)
         set(value) = setOffsetDateTime(LAST_SERVER_CONFIG_UPDATED, value)
 
     var applyServerConfig: Boolean
@@ -156,14 +156,14 @@ class Pref private constructor(context: Context) {
         sharedPreferences.edit().putBoolean(key, value).apply()
     }
 
-    private fun setOffsetDateTime(key: String, value: OffsetDateTime){
-        val valueString = value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    private fun setOffsetDateTime(key: String, value: OffsetDateTime?){
+        val valueString = value?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return
         setString(key, valueString)
     }
 
-    private fun getOffsetDateTime(key: String, defaultValue: OffsetDateTime): OffsetDateTime{
-        val valueString = getString(key, defaultValue.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-        return DateHelper.parse(valueString, DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: defaultValue
+    private fun getOffsetDateTime(key: String): OffsetDateTime?{
+        val valueString = getString(key, "")
+        return DateHelper.parse(valueString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     }
 
     @SuppressLint("HardwareIds")
@@ -181,7 +181,7 @@ class Pref private constructor(context: Context) {
         private const val PASSWORD = "password"
 
         private const val MATOMO_URL = "matomo_url"
-        private const val MATOMO_GOAL_ID = "matomoGoalId"
+        private const val MATOMO_DIMENSION_ID = "matomoDimensionId"
         private const val MATOMO_SITE_ID = "matomoSiteId"
         private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
         private const val STORAGE_PATH = "storagePath"
