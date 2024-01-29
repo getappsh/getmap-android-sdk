@@ -948,7 +948,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     
     override fun fetchInventoryUpdates(): List<String> {
         Log.i(_tag, "fetchInventoryUpdates")
-        return InventoryClientHelper.getUpdates(config, mapRepo, client, pref.deviceId)
+        return InventoryClientHelper.getDoneMapsToUpdate(config, mapRepo, client, pref.deviceId)
     }
 
     override fun fetchConfigUpdates() {
