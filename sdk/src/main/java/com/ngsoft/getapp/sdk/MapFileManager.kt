@@ -91,6 +91,23 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         return FileUtils.moveFile(config.downloadPath, config.storagePath, fileName)
     }
 
+    @Throws(Exception::class)
+    fun deleteMap(mapPkg: MapPkg?){
+        if (mapPkg == null ||
+            mapPkg.state == MapDeliveryState.START ||
+            mapPkg.state == MapDeliveryState.DOWNLOAD ||
+            mapPkg.state == MapDeliveryState.CONTINUE){
+
+            val errorMsg = "deleteMap: Unable to delete map when status is: ${mapPkg?.state}"
+            Log.e(_tag,  errorMsg)
+            throw Exception(errorMsg)
+        }
+
+        mapPkg.JDID?.let { downloader.cancelDownload(it) }
+        mapPkg.MDID?.let { downloader.cancelDownload(it) }
+
+        this.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
+    }
     fun deleteMapFiles(mapName: String?, jsonName: String?){
         if (mapName != null){
             deleteFileFromAllLocations(mapName)
