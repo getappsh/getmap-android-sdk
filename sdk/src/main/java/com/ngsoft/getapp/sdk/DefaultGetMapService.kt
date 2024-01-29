@@ -24,6 +24,7 @@ import android.os.BatteryManager
 import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.helpers.GlobalExceptionHandler
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -64,6 +65,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
     open fun init(configuration: Configuration): Boolean {
         Log.i(_tag, "Init GetMapService" )
+
+        Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler())
 
         config.storagePath = configuration.storagePath
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
@@ -507,7 +510,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             try {
                 client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
             } catch (exc: Exception) {
-                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}",)
+                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}")
                 exc.printStackTrace()
             }
         }.start()

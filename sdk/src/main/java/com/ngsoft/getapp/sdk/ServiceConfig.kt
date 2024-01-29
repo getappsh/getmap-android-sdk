@@ -74,14 +74,14 @@ internal class ServiceConfig private constructor(private var appContext: Context
 
     override var periodicInventoryIntervalMins: Int = pref.periodicInventoryIntervalJob
         set(value) {
-            field = value
-            pref.periodicInventoryIntervalJob = value
-            JobScheduler().updateInventoryOfferingJob(appContext, value)
+            field = if (value < 15) 15 else value
+            pref.periodicInventoryIntervalJob = field
+            JobScheduler().updateInventoryOfferingJob(appContext, field)
         }
 
     override var periodicConfIntervalMins: Int = pref.periodicConfIntervalJob
         set(value) {
-            field = value
+            field = if (value < 15) 15 else value
             pref.periodicConfIntervalJob = value
             JobScheduler().updateRemoteConfigJob(appContext, value)
         }

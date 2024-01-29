@@ -52,7 +52,7 @@ class Pref private constructor(context: Context) {
         set(value) = setString(MATOMO_DIMENSION_ID, value)
 
     var matomoSiteId: String
-        get() = getString(MATOMO_SITE_ID, "2")
+        get() = getString(MATOMO_SITE_ID, "1")
         set(value) = setString(MATOMO_SITE_ID, value)
 
     var matomoUpdateIntervalMins: Int

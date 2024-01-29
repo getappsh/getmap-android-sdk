@@ -175,7 +175,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         }
 
         val mapDone = isFileDownloadDone(mapPkg.MDID, mapPkg.fileName)
-        val jsonDone = isFileDownloadDone(mapPkg.JDID, mapPkg.fileName)
+        val jsonDone = isFileDownloadDone(mapPkg.JDID, mapPkg.jsonName)
 
 
         mapPkg.flowState = if (mapDone && jsonDone){

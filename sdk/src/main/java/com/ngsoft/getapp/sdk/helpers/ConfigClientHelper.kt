@@ -22,6 +22,9 @@ internal object ConfigClientHelper {
 
         config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
         config.lastConfigCheck = OffsetDateTime.now()
+        config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
+        config.matomoDimensionId = configDto.matomoGoalId ?: config.matomoDimensionId
+
 
         if (!config.applyServerConfig)
             return
@@ -36,8 +39,6 @@ internal object ConfigClientHelper {
         config.periodicConfIntervalMins = configDto.periodicConfIntervalMins?.toInt() ?: config.periodicConfIntervalMins
         config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
-        config.matomoDimensionId = configDto.matomoGoalId ?: config.matomoDimensionId
-        config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
 
         Log.v(_tag, "updateConfigFromDto - config: $config")
