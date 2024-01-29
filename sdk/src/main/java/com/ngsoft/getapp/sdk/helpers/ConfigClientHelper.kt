@@ -20,10 +20,13 @@ internal object ConfigClientHelper {
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
         Log.d(_tag, "fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
 
-        config.lastServerConfigUpdate = configDto.lastUpdate ?: config.lastServerConfigUpdate
+        config.lastServerConfigUpdate = configDto.lastConfigUpdateDate ?: config.lastServerConfigUpdate
+//        TODO
+        configDto.lastCheckingMapUpdatesDate
+
         config.lastConfigCheck = OffsetDateTime.now()
         config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
-        config.matomoDimensionId = configDto.matomoGoalId ?: config.matomoDimensionId
+        config.matomoDimensionId = configDto.matomoDimensionId ?: config.matomoDimensionId
 
 
         if (!config.applyServerConfig)
