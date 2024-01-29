@@ -24,7 +24,7 @@ import com.squareup.moshi.JsonClass
  *
  * @param deliveryTimeoutMins 
  * @param maxMapAreaSqKm 
- * @param maxMapSizeInMB
+ * @param maxMapSizeInMB 
  * @param maxParallelDownloads 
  * @param downloadRetryTime 
  * @param downloadTimeoutMins 
@@ -33,10 +33,11 @@ import com.squareup.moshi.JsonClass
  * @param periodicMatomoIntervalMins 
  * @param minAvailableSpaceMB 
  * @param mapMinInclusionInPercentages 
- * @param matomoUrl
- * @param matomoGoalId 
- * @param matomoSiteId
- * @param lastUpdate 
+ * @param matomoUrl 
+ * @param matomoDimensionId 
+ * @param matomoSiteId 
+ * @param lastCheckingMapUpdatesDate 
+ * @param lastConfigUpdateDate 
  */
 
 
@@ -78,14 +79,17 @@ data class MapConfigDto (
     @Json(name = "matomoUrl")
     val matomoUrl: kotlin.String? = null,
 
-    @Json(name = "matomoGoalId")
-    val matomoGoalId: kotlin.String? = null,
+    @Json(name = "matomoDimensionId")
+    val matomoDimensionId: kotlin.String? = null,
 
     @Json(name = "matomoSiteId")
     val matomoSiteId: kotlin.String? = null,
 
-    @Json(name = "lastUpdate")
-    val lastUpdate: java.time.OffsetDateTime? = null
+    @Json(name = "lastCheckingMapUpdatesDate")
+    val lastCheckingMapUpdatesDate: java.time.OffsetDateTime? = null,
+
+    @Json(name = "lastConfigUpdateDate")
+    val lastConfigUpdateDate: java.time.OffsetDateTime? = null
 
 )
 
