@@ -20,11 +20,6 @@ internal class MapRepo(ctx: Context) {
     private val db: TilesDatabase
     private val dao: MapDAO
 
-    private val mapMutableLiveHase = MutableLiveData(hashMapOf<String, MapDownloadData>())
-    private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
-        it.values.toList().sortedWith(comparator)
-    }
-
     init {
         Log.d(_tag,"MapRepo init...")
         db = TilesDatabase.getInstance(ctx)
@@ -318,6 +313,11 @@ internal class MapRepo(ctx: Context) {
             // Get the index of the state in the custom order; default to Int.MAX_VALUE if not found
             customOrder.indexOf(it.deliveryStatus).let { index -> if (index == -1) Int.MAX_VALUE else index }
         }.thenByDescending{ it.id }
+
+        private val mapMutableLiveHase = MutableLiveData(hashMapOf<String, MapDownloadData>())
+        private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
+            it.values.toList().sortedWith(comparator)
+        }
     }
 
 }

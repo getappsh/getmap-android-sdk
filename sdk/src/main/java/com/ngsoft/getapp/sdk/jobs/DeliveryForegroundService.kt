@@ -69,8 +69,18 @@ class DeliveryForegroundService: Service() {
     }
 
     override fun onDestroy() {
-        Log.i(_tag, "onDestroy")
+        Log.d(_tag, "onDestroy")
         super.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        Log.d(_tag, "onLowMemory")
+        super.onLowMemory()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        Log.d(_tag, "onTrimMemory - level: $level")
+        super.onTrimMemory(level)
     }
     private fun startDelivery(id: String){
         Log.i(_tag, "startDelivery - for id: $id")
