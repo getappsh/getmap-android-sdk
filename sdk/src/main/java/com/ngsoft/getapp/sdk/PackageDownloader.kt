@@ -7,10 +7,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import com.ngsoft.getapp.sdk.utils.FileUtils
+import timber.log.Timber
 import java.io.File
 
 
@@ -36,7 +36,7 @@ internal class PackageDownloader(private val context: Context, private val downl
         override fun onReceive(contxt: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
             if(id != -1L) {
-                Log.d(_tag, "Download with ID = $id finished!")
+                Timber.d("Download with ID = $id finished!")
                 downloadCompletedHandler?.invoke(id!!)
             }
         }
@@ -48,7 +48,7 @@ internal class PackageDownloader(private val context: Context, private val downl
     }
 
     protected fun finalize() {
-        Log.d(_tag, "PackageDownloader finalizer - unregistering receiver...")
+        Timber.d("PackageDownloader finalizer - unregistering receiver...")
         context.unregisterReceiver(broadCastReceiver)
     }
 

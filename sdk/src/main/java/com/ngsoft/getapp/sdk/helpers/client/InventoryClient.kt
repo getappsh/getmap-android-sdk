@@ -1,7 +1,7 @@
 package com.ngsoft.getapp.sdk.helpers.client
 
 import GetApp.Client.models.InventoryUpdatesReqDto
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getappclient.GetAppClient
@@ -13,7 +13,7 @@ internal object InventoryClient {
     private const val _tag = "InventoryClientHelper"
 
     private fun getUpdates(config: GetMapService.GeneralConfig, mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
-        Log.i(_tag, "getUpdates")
+        Timber.i("getUpdates")
 
         val inventory = mapRepo.getAll()
             .filter { it.reqId != null }
@@ -28,7 +28,7 @@ internal object InventoryClient {
                         InventoryUpdatesReqDto.Inventory.installed
                 }
         }
-        Log.d(_tag, "getUpdates - send ${inventory.size} maps")
+        Timber.d("getUpdates - send ${inventory.size} maps")
 
         val req = InventoryUpdatesReqDto(deviceId = deviceId , inventory = inventory)
         val res = client.getMapApi.getMapControllerGetInventoryUpdates(req).updates
@@ -37,25 +37,25 @@ internal object InventoryClient {
 
         mapRepo.setMapsUpdatedValue(res)
         val mapsToUpdate = mapRepo.getMapsToUpdate()
-        Log.i(_tag, "getUpdates - Found ${mapsToUpdate.size} possible maps updates")
+        Timber.i("getUpdates - Found ${mapsToUpdate.size} possible maps updates")
         return mapsToUpdate
     }
 
     fun getDoneMapsToUpdate(client: GetAppClient, mapRepo: MapRepo, config: GetMapService.GeneralConfig, deviceId: String): List<String>{
-        Log.i(_tag, "getDoneMapsToUpdate")
+        Timber.i("getDoneMapsToUpdate")
         val mapsDone = mapRepo.getAll().filter { it.state != MapDeliveryState.DONE }.map { it.id.toString() }
         val mapsToUpdate = getUpdates(config, mapRepo, client, deviceId)
         val doneMapsToUpdate = mapsToUpdate.subtract(mapsDone.toSet()).toList()
-        Log.d(_tag, "getDoneMapsToUpdate - Found ${doneMapsToUpdate.size} maps to update")
+        Timber.d("getDoneMapsToUpdate - Found ${doneMapsToUpdate.size} maps to update")
         return doneMapsToUpdate
     }
 
     fun getNewUpdates(client: GetAppClient, mapRepo: MapRepo, config: GetMapService.GeneralConfig, deviceId: String): List<String>{
-        Log.i(_tag, "getNewUpdates")
+        Timber.i("getNewUpdates")
         val mapsToUpdateBefore = mapRepo.getMapsToUpdate()
         val mapsToUpdateAfter = getDoneMapsToUpdate(client, mapRepo, config, deviceId)
         val mapsToUpdateNew = mapsToUpdateAfter.subtract(mapsToUpdateBefore.toSet()).toList()
-        Log.i(_tag, "getNewUpdates - Found ${mapsToUpdateNew.size} new maps to update")
+        Timber.i("getNewUpdates - Found ${mapsToUpdateNew.size} new maps to update")
         return mapsToUpdateNew
     }
 }

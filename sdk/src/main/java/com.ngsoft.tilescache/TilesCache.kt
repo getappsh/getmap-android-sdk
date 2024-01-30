@@ -1,7 +1,7 @@
 package com.ngsoft.tilescache
 
 import android.content.Context
-import android.util.Log
+import timber.log.Timber
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.ngsoft.tilescache.dao.TilesDAO
 import com.ngsoft.tilescache.models.BBox
@@ -15,7 +15,7 @@ internal class TilesCache(ctx: Context)  {
     private val db: TilesDatabase
     private val dao: TilesDAO
     init {
-        Log.d(_tag,"TilesCache init...")
+        Timber.d("TilesCache init...")
         db = TilesDatabase.getInstance(ctx)
         dao = db.tilesDao()
     }

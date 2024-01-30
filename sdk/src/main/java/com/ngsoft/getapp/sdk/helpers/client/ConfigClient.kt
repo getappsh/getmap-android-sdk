@@ -1,7 +1,7 @@
 package com.ngsoft.getapp.sdk.helpers.client
 
 import GetApp.Client.models.MapConfigDto
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getappclient.GetAppClient
 import java.time.OffsetDateTime
@@ -10,15 +10,15 @@ internal object ConfigClient {
     private const val _tag = "ConfigClientHelper"
 
     fun fetchUpdates(client: GetAppClient, config: GetMapService.GeneralConfig, deviceId: String){
-        Log.i(_tag, "getUpdates")
+        Timber.i("getUpdates")
 
         val configRes = client.getMapApi.getMapControllerGetMapConfig(deviceId)
-        Log.v(_tag, "fetchUpdates - configDto: $configRes")
+        Timber.v("fetchUpdates - configDto: $configRes")
         updateConfigFromDto(config, configRes)
     }
 
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
-        Log.d(_tag, "fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
+        Timber.d("fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
 
         config.lastServerConfigUpdate = configDto.lastConfigUpdateDate ?: config.lastServerConfigUpdate
 //        TODO
@@ -44,7 +44,7 @@ internal object ConfigClient {
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
 
-        Log.v(_tag, "updateConfigFromDto - config: $config")
+        Timber.v("updateConfigFromDto - config: $config")
     }
 
 }

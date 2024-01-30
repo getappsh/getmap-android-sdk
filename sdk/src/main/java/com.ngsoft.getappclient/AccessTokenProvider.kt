@@ -2,7 +2,7 @@ package com.ngsoft.getappclient
 
 import GetApp.Client.apis.LoginApi
 import GetApp.Client.models.UserLoginDto
-import android.util.Log
+import timber.log.Timber
 import java.time.OffsetDateTime
 
 class AccessTokenProvider constructor(private val config: ConnectionConfig) {
@@ -26,14 +26,14 @@ class AccessTokenProvider constructor(private val config: ConnectionConfig) {
         return currentToken
     }
     private fun login(){
-        Log.d(TAG, "Login")
+        Timber.d("Login")
         val tokens = LoginApi(config.baseUrl).loginControllerGetToken(
             UserLoginDto(config.user, config.password)
         )
         currentToken = tokens.accessToken.toString()
         expiredAt = tokens.expireAt
-        Log.d(TAG,"Logged in, access token = $currentToken")
-        Log.d(TAG,"Logged in, token expire at = $expiredAt")
+        Timber.d("Logged in, access token = $currentToken")
+        Timber.d("Logged in, token expire at = $expiredAt")
 
     }
 
@@ -42,7 +42,7 @@ class AccessTokenProvider constructor(private val config: ConnectionConfig) {
         return expiredAt?.let {
             val isExpired = OffsetDateTime.now() > it
             if (isExpired) {
-                Log.i(TAG, "Token expired, expireAt = $it")
+                Timber.i("Token expired, expireAt = $it")
             }
             isExpired
         } ?: false

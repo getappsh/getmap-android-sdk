@@ -2,7 +2,7 @@ package com.ngsoft.getapp.sdk.jobs
 
 import android.app.job.JobParameters
 import android.app.job.JobService
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
@@ -19,7 +19,7 @@ class RemoteConfigService: JobService() {
     private lateinit var client: GetAppClient
 
     override fun onStartJob(params: JobParameters?): Boolean {
-        Log.i(_tag, "onStartJob")
+        Timber.i("onStartJob")
 
         pref = Pref.getInstance(this)
         client = GetAppClient(ConnectionConfig(pref.baseUrl, pref.username, pref.password))
@@ -29,7 +29,7 @@ class RemoteConfigService: JobService() {
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
-        Log.i(_tag, "onStopJob - start again later")
+        Timber.i("onStopJob - start again later")
         return true
     }
 
@@ -37,16 +37,16 @@ class RemoteConfigService: JobService() {
 
         repeat(3){index->
             try {
-                Log.d(_tag, "runJob - retry $index")
+                Timber.d("runJob - retry $index")
                 ConfigClient.fetchUpdates(client, ServiceConfig.getInstance(this), pref.deviceId)
                 jobFinished(params, false)
                 return
             }catch (e: Exception){
-                Log.e(_tag, "runJob - Failed to get config updates, error ${e.message.toString()}")
+                Timber.e("runJob - Failed to get config updates, error ${e.message.toString()}")
                 TimeUnit.SECONDS.sleep(5L  * (index + 1))
             }
         }
-        Log.e(_tag, "runJob - job failed, abort")
+        Timber.e("runJob - job failed, abort")
 
         NotificationHelper(this)
             .sendNotification(

@@ -4,7 +4,7 @@ import android.app.Application
 import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
-import android.util.Log
+import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.ngsoft.getapp.sdk.MapFileManager
@@ -15,7 +15,6 @@ import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
-import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapImportState
@@ -30,8 +29,6 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
 import java.io.IOException
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
@@ -40,7 +37,6 @@ import kotlin.time.TimeSource
 
 internal class DeliveryManager private constructor(appCtx: Context){
 
-    private val _tag = "DeliveryManager"
     private val checksumAlgorithm = "sha256"
 
     private var config = ServiceConfig.getInstance(appCtx)
@@ -71,7 +67,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
         }catch (e: IOException){
             var attempt = mapPkg?.metadata?.connectionAttempt ?: 5
             if (attempt < 5){
-                Log.e(_tag, "executeDeliveryFlow - IOException try again, attempt: $attempt, Error: ${e.message.toString()}")
+                Timber.e("executeDeliveryFlow - IOException try again, attempt: $attempt, Error: ${e.message.toString()}")
 
                 this.mapRepo.update(
                     id = id,
@@ -82,7 +78,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 TimeUnit.SECONDS.sleep(2)
                 executeDeliveryFlow(id)
             }else{
-                Log.e(_tag, "executeDeliveryFlow - exception:  ${e.message.toString()}")
+                Timber.e("executeDeliveryFlow - exception:  ${e.message.toString()}")
                 this.mapRepo.update(
                     id = id,
                     state = MapDeliveryState.ERROR,
@@ -96,10 +92,10 @@ internal class DeliveryManager private constructor(appCtx: Context){
     }
 
     private fun importCreate(id: String): Boolean{
-        Log.i(_tag, "importCreate")
+        Timber.i("importCreate")
 
         if (this.mapRepo.isDownloadCanceled(id)){
-            Log.d(_tag, "importCreate - Download $id, canceled by user")
+            Timber.d("importCreate - Download $id, canceled by user")
             mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
             this.sendDeliveryStatus(id)
             return false
@@ -108,10 +104,10 @@ internal class DeliveryManager private constructor(appCtx: Context){
         val mapProperties = MapProperties(productId = mapPkg.pId, boundingBox = mapPkg.bBox, isBest = false)
         val retCreate = MapImportClient.createMapImport(client, mapProperties, pref.deviceId)
 
-        Log.d(_tag, "importCreate - import request Id: ${retCreate?.importRequestId}")
+        Timber.d("importCreate - import request Id: ${retCreate?.importRequestId}")
         when(retCreate?.state){
             MapImportState.START, MapImportState.IN_PROGRESS, MapImportState.DONE,  ->{
-                Log.d(_tag,"deliverTile - createMapImport -> OK, state: ${retCreate.state} message: ${retCreate.statusCode?.messageLog}")
+                Timber.d("deliverTile - createMapImport -> OK, state: ${retCreate.state} message: ${retCreate.statusCode?.messageLog}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate.importRequestId,
@@ -125,7 +121,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 return true
             }
             MapImportState.CANCEL -> {
-                Log.w(_tag,"getDownloadData - createMapImport -> CANCEL, message: ${retCreate.statusCode?.messageLog}")
+                Timber.w("getDownloadData - createMapImport -> CANCEL, message: ${retCreate.statusCode?.messageLog}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate.importRequestId,
@@ -138,7 +134,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 return false
             }
             else -> {
-                Log.e(_tag,"getDownloadData - createMapImport failed: ${retCreate?.state}, error: ${retCreate?.statusCode?.messageLog}")
+                Timber.e("getDownloadData - createMapImport failed: ${retCreate?.state}, error: ${retCreate?.statusCode?.messageLog}")
                 this.mapRepo.update(
                     id = id,
                     reqId = retCreate?.importRequestId,
@@ -154,7 +150,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     @OptIn(ExperimentalTime::class)
     private fun checkImportStatus(id: String): Boolean{
-        Log.i(_tag, "checkImportStatue")
+        Timber.i("checkImportStatue")
 
         val reqId = this.mapRepo.getReqId(id)!!;
         var timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
@@ -163,7 +159,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
         var lastProgress : Int? = null
         do{
             if(timeoutTime.hasPassedNow()){
-                Log.w(_tag,"checkImportStatus - timed out")
+                Timber.w("checkImportStatus - timed out")
                 this.mapRepo.update(
                     id = id,
                     state = MapDeliveryState.ERROR,
@@ -177,7 +173,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
             TimeUnit.SECONDS.sleep(2)
             if (this.mapRepo.isDownloadCanceled(id)){
-                Log.d(_tag, "checkImportStatue: Download $id, canceled by user")
+                Timber.d("checkImportStatue: Download $id, canceled by user")
                 mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(
                     R.string.delivery_status_canceled))
                 this.sendDeliveryStatus(id)
@@ -188,7 +184,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
             try {
                 stat = MapImportClient.getCreateMapImportStatus(client, reqId)
             }catch (e: IOException){
-                Log.e(_tag, "checkImportStatue - SocketException, try again. error: ${e.message.toString()}" )
+                Timber.e("checkImportStatue - SocketException, try again. error: ${e.message.toString()}" )
                 this.mapRepo.update(
                     id = id,
                     statusMessage = app.getString(R.string.delivery_status_connection_issue_try_again),
@@ -199,9 +195,9 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
             when(stat?.state){
                 MapImportState.ERROR -> {
-                    Log.e(_tag,"checkImportStatus - MapImportState -> ERROR, error:  ${stat.statusCode?.messageLog}")
+                    Timber.e("checkImportStatus - MapImportState -> ERROR, error:  ${stat.statusCode?.messageLog}")
                     if (stat.statusCode?.statusCode == StatusCode.REQUEST_ID_NOT_FOUND){
-                        Log.e(_tag, "checkImportStatus - status code is REQUEST_ID_NOT_FOUND, set as obsolete")
+                        Timber.e("checkImportStatus - status code is REQUEST_ID_NOT_FOUND, set as obsolete")
                         handleMapNotExistsOnServer(id)
                     }else{
                         this.mapRepo.update(
@@ -215,7 +211,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                     return false
                 }
                 MapImportState.CANCEL -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState -> CANCEL, message: ${stat.statusCode?.messageLog}")
+                    Timber.w("checkImportStatus - MapImportState -> CANCEL, message: ${stat.statusCode?.messageLog}")
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.CANCEL,
@@ -227,7 +223,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
                 }
                 MapImportState.IN_PROGRESS -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.progress}")
+                    Timber.w("checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.progress}")
                     this.mapRepo.update(
                         id = id,
                         downloadProgress = stat.progress,
@@ -244,7 +240,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
         }while (stat == null || stat.state!! != MapImportState.DONE)
 
-        Log.d(_tag, "checkImportStatue: MapImportState.Done")
+        Timber.d("checkImportStatue: MapImportState.Done")
         this.mapRepo.update(
             id = id,
             downloadProgress = 100,
@@ -255,7 +251,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     @OptIn(ExperimentalTime::class)
     private fun importDelivery(id: String): Boolean{
-        Log.i(_tag, "importDelivery")
+        Timber.i("importDelivery")
 
         val reqId = this.mapRepo.getReqId(id)!!;
 
@@ -271,14 +267,14 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 }
 
                 MapDeliveryState.CANCEL, MapDeliveryState.PAUSE -> {
-                    Log.w(_tag, "importDelivery - setMapImportDeliveryStart => CANCEL")
+                    Timber.w("importDelivery - setMapImportDeliveryStart => CANCEL")
                     this.mapRepo.update(id = id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(
                         R.string.delivery_status_canceled))
                     this.sendDeliveryStatus(id)
                     return false
                 }
                 else -> {
-                    Log.e(_tag, "importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}")
+                    Timber.e("importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}")
                     this.mapRepo.update(id = id,
                         state = MapDeliveryState.ERROR,
                         statusMessage = app.getString(R.string.delivery_status_failed),
@@ -289,7 +285,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 }
             }
             if(timeoutTime.hasPassedNow()){
-                Log.e(_tag,"importDelivery - timed out")
+                Timber.e("importDelivery - timed out")
                 this.mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = app.getString(
                     R.string.delivery_status_failed), errorContent = "ImportDelivery- timed out")
                 this.sendDeliveryStatus(id)
@@ -297,7 +293,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
             }
 
             if (this.mapRepo.isDownloadCanceled(id)){
-                Log.d(_tag, "importDelivery: Download $id, canceled by user")
+                Timber.d("importDelivery: Download $id, canceled by user")
                 mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(
                     R.string.delivery_status_canceled))
                 this.sendDeliveryStatus(id)
@@ -308,7 +304,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
         }
 
         if (retDelivery.url == null){
-            Log.e(_tag, "importDelivery- download url is null", )
+            Timber.e("importDelivery- download url is null", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
@@ -320,12 +316,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
         }
 
-        Log.d(_tag, "importDelivery - delivery is ready, download url: ${retDelivery.url} ")
+        Timber.d("importDelivery - delivery is ready, download url: ${retDelivery.url} ")
         this.mapRepo.update(id = id, url = retDelivery.url, flowState = DeliveryFlowState.IMPORT_DELIVERY, errorContent = "")
         return true
     }
     private fun downloadImport(id: String): Boolean{
-        Log.i(_tag, "downloadImport")
+        Timber.i("downloadImport")
 
         val mapPkg = this.mapRepo.getById(id)!!
         val pkgUrl = mapPkg.url!!
@@ -333,7 +329,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
         val jsonDownloadId = if(!mapPkg.metadata.jsonDone) downloadFile(id, jsonUrl, true) else null
         val pkgDownloadId = if(!mapPkg.metadata.mapDone) downloadFile(id, pkgUrl, false) else null
-        Log.d(_tag, "downloadImport - jsonDownloadId: $jsonDownloadId, pkgDownloadId: $pkgDownloadId")
+        Timber.d("downloadImport - jsonDownloadId: $jsonDownloadId, pkgDownloadId: $pkgDownloadId")
 
         val statusMessage = if(mapPkg.metadata.validationAttempt <= 0) app.getString(R.string.delivery_status_download) else app.getString(
             R.string.delivery_status_failed_verification_try_again)
@@ -348,16 +344,16 @@ internal class DeliveryManager private constructor(appCtx: Context){
     }
 
     private fun downloadFile(id: String, url: String, isJson: Boolean): Long {
-        Log.i(_tag, "downloadFile")
+        Timber.i("downloadFile")
         val downloadId = downloader.downloadFile(url){
-            Log.d(_tag, "downloadImport - completionHandler: processing download ID=$it completion event...")
+            Timber.d("downloadImport - completionHandler: processing download ID=$it completion event...")
         }
         watchDownloadProgress(downloadId, id, url, isJson)
         return downloadId
     }
 
     private fun watchDownloadImport(id: String): Boolean{
-        Log.i(_tag, "watchDownloadImport")
+        Timber.i("watchDownloadImport")
         val mapPkg = this.mapRepo.getById(id) ?: return false
 
         val pkgUrl = mapPkg.url ?: return false
@@ -372,12 +368,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
         return false
     }
     private fun watchDownloadProgress(downloadId: Long, id: String, url: String, isJson: Boolean): Long{
-        Log.i(_tag, "watchDownloadProgress, isJson: $isJson")
+        Timber.i("watchDownloadProgress, isJson: $isJson")
         timer(initialDelay = 100, period = 2000) {
 //            todo heck what happen when cancel the download in the download manager
             val mapPkg = mapRepo.getById(id) ?: return@timer
             if (mapPkg.cancelDownload){
-                Log.d(_tag, "downloadFile - Download $id, canceled by user")
+                Timber.d("downloadFile - Download $id, canceled by user")
                 downloader.cancelDownload(downloadId)
                 if (!isJson){
                     mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = app.getString(
@@ -394,7 +390,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 }
                 DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_SUCCESSFUL -> {
                     val progress = (statusInfo.downloadBytes * 100 / statusInfo.totalBytes).toInt()
-                    Log.d(_tag, "downloadFile - DownloadId: $downloadId -> process: $progress ")
+                    Timber.d("downloadFile - DownloadId: $downloadId -> process: $progress ")
 
                     if (!isJson && !mapPkg.metadata.mapDone){
                         mapRepo.update(
@@ -416,7 +412,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                         }
 
                         if (updatedMapPkg?.metadata?.mapDone == true && updatedMapPkg.metadata.jsonDone){
-                            Log.d(_tag, "downloadFile - downloading Done")
+                            Timber.d("downloadFile - downloading Done")
                             mapRepo.update(
                                 id = id,
                                 flowState = DeliveryFlowState.DOWNLOAD_DONE,
@@ -429,16 +425,16 @@ internal class DeliveryManager private constructor(appCtx: Context){
                     }
                 }
                 else -> {
-                    Log.e(_tag, "downloadFile -  DownloadManager failed to download file. id: $downloadId, reason: ${statusInfo?.reason}")
+                    Timber.e("downloadFile -  DownloadManager failed to download file. id: $downloadId, reason: ${statusInfo?.reason}")
 
                     val downloadAttempts = if (isJson) mapPkg.metadata.jsonAttempt else mapPkg.metadata.mapAttempt
 
                     if (statusInfo?.status == DownloadManager.STATUS_FAILED && (statusInfo.reasonCode == 403 || statusInfo.reasonCode == 404)){
-                        Log.e(_tag, "watchDownloadProgress - download status is ${statusInfo.reasonCode}")
+                        Timber.e("watchDownloadProgress - download status is ${statusInfo.reasonCode}")
                         handleMapNotExistsOnServer(id)
 
                     }else if (downloadAttempts < config.downloadRetry) {
-                        Log.d(_tag, "downloadFile - retry download")
+                        Timber.d("downloadFile - retry download")
                         downloader.cancelDownload(downloadId)
 
                         mapRepo.update(id, statusMessage = app.getString(R.string.delivery_status_failed_verification_try_again),
@@ -459,7 +455,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
     }
 
     private fun handleMapNotExistsOnServer(id: String){
-        Log.i(_tag, "handleMapNotExistsOnServer")
+        Timber.i("handleMapNotExistsOnServer")
         val mapPkg = this.mapRepo.getById(id) ?: return
         mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
         this.mapRepo.update(id=id, flowState = DeliveryFlowState.START, state = MapDeliveryState.ERROR,
@@ -469,15 +465,15 @@ internal class DeliveryManager private constructor(appCtx: Context){
             jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0,)
     }
     private fun handelDownloadRetry(id: String, url: String, isJson: Boolean, downloadAttempts: Int) {
-        Log.i(_tag, "handelDownloadRetry, id: $id, isJson: $isJson ")
+        Timber.i("handelDownloadRetry, id: $id, isJson: $isJson ")
         val waitTime = TimeUnit.MINUTES.toMillis(if (downloadAttempts == 1) 5 else 10)
         val startTime = System.currentTimeMillis()
 
-        Log.d(_tag, "handelDownloadRetry try again in: ${TimeUnit.MILLISECONDS.toMinutes(waitTime)} minutes")
+        Timber.d("handelDownloadRetry try again in: ${TimeUnit.MILLISECONDS.toMinutes(waitTime)} minutes")
         timer(initialDelay = 100, period = 2000) {
             val diff = System.currentTimeMillis() - startTime
             if (diff > waitTime){
-                Log.d(_tag, "handelDownloadRetry - try again id: $id, isJson: $isJson")
+                Timber.d("handelDownloadRetry - try again id: $id, isJson: $isJson")
                 this.cancel()
                 val mapPkg = mapRepo.getById(id) ?: return@timer
 
@@ -495,7 +491,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
             }else {
                 if (mapRepo.isDownloadCanceled(id)) {
-                    Log.d(_tag, "handelDownloadRetry - Download $id, canceled by user")
+                    Timber.d("handelDownloadRetry - Download $id, canceled by user")
                     if (!isJson) {
                         mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = app.getString(
                             R.string.delivery_status_canceled))
@@ -510,19 +506,19 @@ internal class DeliveryManager private constructor(appCtx: Context){
         }
     }
     private fun moveImportFiles(id: String): Boolean{
-        Log.i(_tag, "moveImportFiles - id: $id")
+        Timber.i("moveImportFiles - id: $id")
 
         val mapPkg = this.mapRepo.getById(id)!!
 
         return try {
-            Log.d(_tag, "moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
+            Timber.d("moveImportFiles - fileName ${mapPkg.fileName} jsonName: ${mapPkg.jsonName}")
             val (fileName, jsonName) = mapFileManager.moveFilesToTargetDir(mapPkg.fileName!!, mapPkg.jsonName!!)
 //            fileName = mapFileManager.moveFileToTargetDir(fileName)
 //            jsonName = mapFileManager.moveFileToTargetDir(jsonName)
             this.mapRepo.update(id, flowState = DeliveryFlowState.MOVE_FILES, fileName = fileName, jsonName = jsonName)
             true
         }catch (e: Exception){
-            Log.e(_tag, "moveImportFiles - move file failed: ${e.message.toString()}", )
+            Timber.e("moveImportFiles - move file failed: ${e.message.toString()}", )
             mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
@@ -536,7 +532,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
     }
 
     private fun validateImport(id: String): Boolean{
-        Log.i(_tag, "validateImport - id: $id")
+        Timber.i("validateImport - id: $id")
         this.mapRepo.update(
             id = id,
             statusMessage = app.getString(R.string.delivery_status_in_verification),
@@ -544,31 +540,31 @@ internal class DeliveryManager private constructor(appCtx: Context){
         )
 
         if (this.mapRepo.isDownloadCanceled(id)){
-            Log.d(_tag, "validateImport - Download $id, canceled by user")
+            Timber.d("validateImport - Download $id, canceled by user")
             mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
             return false
         }
         val mapPkg = this.mapRepo.getById(id)!!
 
         val isValid = try{
-            Log.d(_tag, "validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
+            Timber.d("validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
             val mapFile = File(config.storagePath, mapPkg.fileName!!)
             val jsonFile = File(config.storagePath, mapPkg.jsonName!!)
 
             val expectedHash = JsonUtils.getStringOrThrow(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
-                Log.d(_tag, "validateImport - progress: $it")
+                Timber.d("validateImport - progress: $it")
                 this.mapRepo.update(id, downloadProgress = it, statusMessage = app.getString(R.string.delivery_status_in_verification), errorContent = "")
             }
-            Log.d(_tag, "validateImport - expectedHash: $expectedHash, actualHash: $actualHash")
+            Timber.d("validateImport - expectedHash: $expectedHash, actualHash: $actualHash")
 
             val isValid = expectedHash == actualHash
-            Log.d(_tag, "validateImport - validation result for id: $id is: $isValid")
+            Timber.d("validateImport - validation result for id: $id is: $isValid")
 
             isValid
 
         }catch (e: Exception){
-            Log.e(_tag, "validateImport - Failed to validate map, error: ${e.message.toString()} ")
+            Timber.e("validateImport - Failed to validate map, error: ${e.message.toString()} ")
             true
         }
         if (isValid){
@@ -591,7 +587,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                     statusMessage = app.getString(R.string.delivery_status_failed_verification_try_again),
                     errorContent = "Checksum validation Failed try downloading again",
                 )
-                Log.d(_tag, "validateImport - Failed downloading again")
+                Timber.d("validateImport - Failed downloading again")
                 return true
             }
             mapRepo.update(
@@ -606,18 +602,18 @@ internal class DeliveryManager private constructor(appCtx: Context){
         return isValid
     }
     private fun findAndRemoveDuplicates(id: String){
-        Log.i(_tag, "findAndRemoveDuplicate")
+        Timber.i("findAndRemoveDuplicate")
         val mapPkg = this.mapRepo.getById(id) ?: return
         val duplicates = this.mapRepo.getByBBox(mapPkg.bBox).toMutableList()
         duplicates.removeIf { it.id.toString() == id }
 
-        Log.d(_tag, "findAndRemoveDuplicate - found ${duplicates.size} duplicates")
+        Timber.d("findAndRemoveDuplicate - found ${duplicates.size} duplicates")
         duplicates.forEach {
-            Log.d(_tag, "findAndRemoveDuplicate - remove: ${it.id}")
+            Timber.d("findAndRemoveDuplicate - remove: ${it.id}")
             try {
                 mapFileManager.deleteMap(it)
             }catch (error: Exception){
-                Log.e(_tag, "findAndRemoveDuplicates - failed to delete the map, error: ${error.message.toString()}", )
+                Timber.e("findAndRemoveDuplicates - failed to delete the map, error: ${error.message.toString()}", )
             }
         }
     }
@@ -637,12 +633,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
     }
 
     fun cancelDelivery(id: String){
-        Log.i(_tag, "cancelDelivery - for id $id")
+        Timber.i("cancelDelivery - for id $id")
         Thread{
             try{
                 this.mapRepo.setCancelDownload(id)
             }catch (e: Exception){
-                Log.e(_tag, "cancelDownload - failed to candle, error: $e", )
+                Timber.e("cancelDownload - failed to candle, error: $e", )
             }
         }.start()
     }

@@ -1,7 +1,7 @@
 package com.ngsoft.getapp.sdk.old
 
 import android.content.Context
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import java.util.Timer
@@ -57,7 +57,7 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
         val downloads = HashMap<Long, DownloadTrack>()
 
         val downloadCompletionHandler: (Long) -> Unit = {
-            Log.d(_tag,"completion for download id = $it...")
+            Timber.d("completion for download id = $it...")
             downloads[it]?.isCompleted = true
             downloads[it]?.progress = 100
 
@@ -73,7 +73,7 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
             isCompleted = total == completed
             if(isCompleted) {
                 totalProgress = 100
-                Log.d(_tag,"stopping progress watcher...")
+                Timber.d("stopping progress watcher...")
                 tmr?.cancel()
             }
 
@@ -83,12 +83,12 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
 
         for (file in files2download){
             val downloadId = downloader?.downloadFile(file, downloadCompletionHandler)
-            Log.d(_tag,"adding downloadId = $downloadId...")
+            Timber.d("adding downloadId = $downloadId...")
             downloads[downloadId!!] = DownloadTrack(FileUtils.getFileNameFromUri(file),0, false)
         }
 
-        Log.d(_tag,"queued ${downloads.count()} downloads...")
-        Log.d(_tag,"starting progress watcher...")
+        Timber.d("queued ${downloads.count()} downloads...")
+        Timber.d("starting progress watcher...")
 
         tmr = timer(initialDelay = 100, period = 500 ) {
             var downloadedBytes = 0L

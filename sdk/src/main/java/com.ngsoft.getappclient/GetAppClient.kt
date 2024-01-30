@@ -3,7 +3,7 @@ package com.ngsoft.getappclient
 import GetApp.Client.apis.DeliveryApi
 import GetApp.Client.apis.DeviceDiscoveryApi
 import GetApp.Client.apis.GetMapApi
-import android.util.Log
+import timber.log.Timber
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import kotlin.reflect.KMutableProperty
@@ -27,8 +27,8 @@ internal class GetAppClient(config: ConnectionConfig) {
         if (config.password.isEmpty())
             throw Exception("Password is empty")
 
-        Log.i(TAG, "GetApp base url = ${config.baseUrl}")
-        Log.i(TAG, "GetApp user = ${config.user}")
+        Timber.i("GetApp base url = ${config.baseUrl}")
+        Timber.i("GetApp user = ${config.user}")
 
         val tokenProvider = AccessTokenProvider(config);
 

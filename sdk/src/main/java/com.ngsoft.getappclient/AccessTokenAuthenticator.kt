@@ -1,6 +1,6 @@
 package com.ngsoft.getappclient
 
-import android.util.Log
+import timber.log.Timber
 import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
@@ -12,14 +12,14 @@ class AccessTokenAuthenticator(
 
     private val TAG = "AccessTokenAuthenticator"
     override fun authenticate(route: Route?, response: Response): Request? {
-        Log.e(TAG, "authenticate response status: ${response.code}")
+        Timber.e("authenticate response status: ${response.code}")
         // We need to have a token in order to refresh it.
         val token = tokenProvider.token()
-        Log.d(TAG, "current token: $token")
+        Timber.d("current token: $token")
 
         synchronized(this) {
             val newToken = tokenProvider.token()
-            Log.d(TAG, "synchronized token: $newToken")
+            Timber.d("synchronized token: $newToken")
 
             // Check if the request made was previously made as an authenticated request.
             if (response.request.header("Authorization") != null) {
@@ -34,7 +34,7 @@ class AccessTokenAuthenticator(
                 }
 
                 val updatedToken = tokenProvider.refreshToken()
-                Log.d(TAG, "updated token: $updatedToken")
+                Timber.d("updated token: $updatedToken")
 
 
                 // Retry the request with the new token.
