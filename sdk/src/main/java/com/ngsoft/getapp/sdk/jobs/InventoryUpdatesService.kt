@@ -7,7 +7,7 @@ import android.util.Log
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.ServiceConfig
-import com.ngsoft.getapp.sdk.helpers.InventoryClientHelper
+import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.NotificationHelper
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
@@ -42,7 +42,7 @@ class InventoryUpdatesService: JobService() {
         repeat(3){index ->
             try{
                 Log.d(_tag, "runJob - retry $index")
-                val mapsToUpdate = InventoryClientHelper.getNewUpdates(ServiceConfig.getInstance(this), mapRepo, client, pref.deviceId)
+                val mapsToUpdate = InventoryClient.getNewUpdates(client, mapRepo, ServiceConfig.getInstance(this), pref.deviceId)
                 if (mapsToUpdate.isNotEmpty()){
                     Log.d(_tag, "run - send notification")
                     NotificationHelper(this)

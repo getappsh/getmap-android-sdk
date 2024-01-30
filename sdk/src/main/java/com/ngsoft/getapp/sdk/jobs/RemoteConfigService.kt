@@ -6,7 +6,7 @@ import android.util.Log
 import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
-import com.ngsoft.getapp.sdk.helpers.ConfigClientHelper
+import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
 import com.ngsoft.getapp.sdk.helpers.NotificationHelper
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
@@ -38,7 +38,7 @@ class RemoteConfigService: JobService() {
         repeat(3){index->
             try {
                 Log.d(_tag, "runJob - retry $index")
-                ConfigClientHelper.fetchUpdates(ServiceConfig.getInstance(this), client, pref.deviceId)
+                ConfigClient.fetchUpdates(client, ServiceConfig.getInstance(this), pref.deviceId)
                 jobFinished(params, false)
                 return
             }catch (e: Exception){

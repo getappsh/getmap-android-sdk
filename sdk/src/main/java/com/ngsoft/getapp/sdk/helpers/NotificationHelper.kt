@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk.helpers
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -16,6 +17,7 @@ internal class NotificationHelper(private val appCtx: Context) {
         const val INVENTORY_UPDATES_NTF_ID = 1
         const val INVENTORY_JOB_FAILED_NTF_ID = 2
         const val CONFIG_JOB_FAILED_NTF_ID = 3
+        const val DELIVERY_SERVICE_NFT_ID = 4
 
     }
 
@@ -30,14 +32,18 @@ internal class NotificationHelper(private val appCtx: Context) {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun sendNotification(title: String, content: String, notificationId: Int) {
-        val builder = NotificationCompat.Builder(appCtx, CHANNEL_ID)
+    fun createNotification(title: String, content: String): Notification {
+        return NotificationCompat.Builder(appCtx, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
             .setContentTitle(title)
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .build()
+    }
 
-        notificationManager.notify(notificationId, builder.build())
+    fun sendNotification(title: String, content: String, notificationId: Int) {
+        val notification = createNotification(title, content)
+        notificationManager.notify(notificationId, notification)
     }
 }

@@ -30,8 +30,8 @@
     <string name="notification_error_title">שגיאת מיפוי ענן</string>
     <string name="notification_config_job_failed">ארעה שגיאה בבדיקת עדכניות הגדרות מול הענן, אם הודעה זו חוזרת שוב צור קשר עם הקשר״ג</string>
     <string name="notification_inventory_job_failed">ארעה שגיאה בבדיקת עדכניות מפות מול הענן, אם הודעה זו חוזרת שוב צור קשר עם הקשר״ג</string>
-
-
+    <string name="notification_delivery_service_title">מיבא מפות</string>
+    <string name="notification_delivery_service_description">בתהליך יבוא מפות</string>
 
 
 
