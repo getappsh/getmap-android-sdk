@@ -6,8 +6,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.ngsoft.getapp.sdk.helpers.ConfigClientHelper
-import com.ngsoft.getapp.sdk.helpers.InventoryClientHelper
+import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
+import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
@@ -333,12 +333,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     
     override fun fetchInventoryUpdates(): List<String> {
         Log.i(_tag, "fetchInventoryUpdates")
-        return InventoryClientHelper.getDoneMapsToUpdate(config, mapRepo, client, pref.deviceId)
+        return InventoryClient.getDoneMapsToUpdate(client, mapRepo, config, pref.deviceId)
     }
 
     override fun fetchConfigUpdates() {
         Log.i(_tag, "fetchConfigUpdates")
-        ConfigClientHelper.fetchUpdates(config, client, pref.deviceId)
+        ConfigClient.fetchUpdates(client, config, pref.deviceId)
     }
 
     override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {

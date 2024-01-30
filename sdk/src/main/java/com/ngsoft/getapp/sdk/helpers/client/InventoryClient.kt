@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk.helpers
+package com.ngsoft.getapp.sdk.helpers.client
 
 import GetApp.Client.models.InventoryUpdatesReqDto
 import android.util.Log
@@ -9,7 +9,7 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.time.OffsetDateTime
 
-internal object InventoryClientHelper {
+internal object InventoryClient {
     private const val _tag = "InventoryClientHelper"
 
     private fun getUpdates(config: GetMapService.GeneralConfig, mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
@@ -41,7 +41,7 @@ internal object InventoryClientHelper {
         return mapsToUpdate
     }
 
-    fun getDoneMapsToUpdate(config: GetMapService.GeneralConfig, mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
+    fun getDoneMapsToUpdate(client: GetAppClient, mapRepo: MapRepo, config: GetMapService.GeneralConfig, deviceId: String): List<String>{
         Log.i(_tag, "getDoneMapsToUpdate")
         val mapsDone = mapRepo.getAll().filter { it.state != MapDeliveryState.DONE }.map { it.id.toString() }
         val mapsToUpdate = getUpdates(config, mapRepo, client, deviceId)
@@ -50,10 +50,10 @@ internal object InventoryClientHelper {
         return doneMapsToUpdate
     }
 
-    fun getNewUpdates(config: GetMapService.GeneralConfig, mapRepo: MapRepo, client: GetAppClient, deviceId: String): List<String>{
+    fun getNewUpdates(client: GetAppClient, mapRepo: MapRepo, config: GetMapService.GeneralConfig, deviceId: String): List<String>{
         Log.i(_tag, "getNewUpdates")
         val mapsToUpdateBefore = mapRepo.getMapsToUpdate()
-        val mapsToUpdateAfter = getDoneMapsToUpdate(config, mapRepo, client, deviceId)
+        val mapsToUpdateAfter = getDoneMapsToUpdate(client, mapRepo, config, deviceId)
         val mapsToUpdateNew = mapsToUpdateAfter.subtract(mapsToUpdateBefore.toSet()).toList()
         Log.i(_tag, "getNewUpdates - Found ${mapsToUpdateNew.size} new maps to update")
         return mapsToUpdateNew

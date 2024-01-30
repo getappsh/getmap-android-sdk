@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk.helpers
+package com.ngsoft.getapp.sdk.helpers.client
 
 import GetApp.Client.models.MapConfigDto
 import android.util.Log
@@ -6,10 +6,10 @@ import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getappclient.GetAppClient
 import java.time.OffsetDateTime
 
-internal object ConfigClientHelper {
+internal object ConfigClient {
     private const val _tag = "ConfigClientHelper"
 
-    fun fetchUpdates(config: GetMapService.GeneralConfig, client: GetAppClient, deviceId: String){
+    fun fetchUpdates(client: GetAppClient, config: GetMapService.GeneralConfig, deviceId: String){
         Log.i(_tag, "getUpdates")
 
         val configRes = client.getMapApi.getMapControllerGetMapConfig(deviceId)
