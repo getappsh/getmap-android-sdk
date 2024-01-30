@@ -10,7 +10,9 @@ import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getappclient.GetAppClient
+import com.ngsoft.tilescache.MapRepo
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 internal object MapDeliveryClient {
 
@@ -64,7 +66,23 @@ internal object MapDeliveryClient {
         return result
     }
 
-    fun pushDeliveryStatus(client: GetAppClient, deliveryStatus: DeliveryStatus, deviceId: String){
+    fun sendDeliveryStatus(client: GetAppClient, mapRepo: MapRepo, id: String, deviceId: String, state: MapDeliveryState?=null) {
+        val mapPkg = mapRepo.getById(id) ?: return
+        val deliveryStatus = DeliveryStatus(
+            state = state ?: mapPkg.state,
+            reqId = mapPkg.reqId ?: "-1",
+            progress = mapPkg.downloadProgress,
+            start = mapPkg.downloadStart?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            stop = mapPkg.downloadStop?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) }
+        )
+
+        Log.d(_tag, "sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
+
+        pushDeliveryStatus(client, deliveryStatus, deviceId)
+    }
+
+    private fun pushDeliveryStatus(client: GetAppClient, deliveryStatus: DeliveryStatus, deviceId: String){
         val status = when(deliveryStatus.state){
             MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
             MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done

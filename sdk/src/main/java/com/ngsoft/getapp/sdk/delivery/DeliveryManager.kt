@@ -622,19 +622,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
         }
     }
     private fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null) {
-        val mapPkg = this.mapRepo.getById(id) ?: return
-        val deliveryStatus = DeliveryStatus(
-            state = state ?: mapPkg.state,
-            reqId = mapPkg.reqId ?: "-1",
-            progress = mapPkg.downloadProgress,
-            start = mapPkg.downloadStart?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
-            stop = mapPkg.downloadStop?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
-            done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) }
-        )
-
-        Log.d(_tag, "sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
-
-        MapDeliveryClient.pushDeliveryStatus(client, deliveryStatus, pref.deviceId)
+        MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, state)
     }
 
     fun getMapsOnDownload(): LiveData<List<MapDownloadData>>{
