@@ -1,13 +1,13 @@
 package com.ngsoft.getapp.sdk
 
 import android.content.Context
-import android.util.Log
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import org.json.JSONObject
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -99,7 +99,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
             mapPkg.state == MapDeliveryState.CONTINUE){
 
             val errorMsg = "deleteMap: Unable to delete map when status is: ${mapPkg?.state}"
-            Log.e(_tag,  errorMsg)
+            Timber.e( errorMsg)
             throw Exception(errorMsg)
         }
 
@@ -121,19 +121,19 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
     }
 
     private fun deleteFileFromAllLocations(fileName: String){
-        Log.i(_tag, "deleteFile - fileName: $fileName")
+        Timber.i("deleteFile - fileName: $fileName")
         for (path in arrayOf(config.downloadPath, config.storagePath)){
             val file = File(path, fileName)
-            Log.d(_tag, "deleteFile - File path: ${file.path}")
+            Timber.d("deleteFile - File path: ${file.path}")
 
             if (!file.exists()){
-                Log.d(_tag, "deleteFile - File dose not exist. $fileName")
+                Timber.d("deleteFile - File dose not exist. $fileName")
                 continue
             }
             if (file.delete()) {
-                Log.d(_tag, "deleteFile - File deleted successfully. $fileName")
+                Timber.d("deleteFile - File deleted successfully. $fileName")
             } else {
-                Log.d(_tag, "deleteFile - Failed to delete the file. $fileName")
+                Timber.d("deleteFile - Failed to delete the file. $fileName")
             }
         }
     }
@@ -142,7 +142,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         try {
             file.delete()
         }catch (e: Exception){
-            Log.e(_tag, "refreshMapState - failed to delete file: ${file.path}", )
+            Timber.e("refreshMapState - failed to delete file: ${file.path}", )
         }
     }
 
@@ -183,7 +183,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
                 try {
                     FileUtils.moveFile(config.storagePath, config.downloadPath, targetJsonFile.name)
                 }catch (e: Exception){
-                    Log.e(_tag, "refreshMapState - failed to move json file to download dir, json: ${targetJsonFile.name}, error: ${e.message.toString()}")
+                    Timber.e("refreshMapState - failed to move json file to download dir, json: ${targetJsonFile.name}, error: ${e.message.toString()}")
                 }
                 deleteFile(targetJsonFile)
             }else{

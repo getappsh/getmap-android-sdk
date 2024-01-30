@@ -1,7 +1,7 @@
 package com.ngsoft.getapp.sdk.helpers
 
 import android.os.Environment
-import android.util.Log
+import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -49,7 +49,7 @@ class GlobalExceptionHandler: Thread.UncaughtExceptionHandler {
 
             writer.close()
         } catch (e: Exception) {
-            Log.e("GlobalExceptionHandler", "Error writing exception to file", e)
+            Timber.e("Error writing exception to file: ${e.message}")
         }
 
 

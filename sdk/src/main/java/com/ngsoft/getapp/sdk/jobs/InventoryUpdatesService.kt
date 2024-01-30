@@ -3,7 +3,7 @@ package com.ngsoft.getapp.sdk.jobs
 import android.app.job.JobParameters
 import android.app.job.JobService
 
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.ServiceConfig
@@ -23,7 +23,7 @@ class InventoryUpdatesService: JobService() {
     private lateinit var pref: Pref
     private lateinit var client: GetAppClient
     override fun onStartJob(params: JobParameters?): Boolean {
-        Log.i(_tag, "onStartJob")
+        Timber.i("onStartJob")
 
         mapRepo = MapRepo(this)
         pref = Pref.getInstance(this)
@@ -33,7 +33,7 @@ class InventoryUpdatesService: JobService() {
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
-        Log.i(_tag, "onStopJob - start again later")
+        Timber.i("onStopJob - start again later")
         return true
     }
 
@@ -41,10 +41,10 @@ class InventoryUpdatesService: JobService() {
     private fun runJob(params: JobParameters?){
         repeat(3){index ->
             try{
-                Log.d(_tag, "runJob - retry $index")
+                Timber.d("runJob - retry $index")
                 val mapsToUpdate = InventoryClient.getNewUpdates(client, mapRepo, ServiceConfig.getInstance(this), pref.deviceId)
                 if (mapsToUpdate.isNotEmpty()){
-                    Log.d(_tag, "run - send notification")
+                    Timber.d("run - send notification")
                     NotificationHelper(this)
                         .sendNotification(
                             getString(R.string.notification_update_map_title),
@@ -54,11 +54,11 @@ class InventoryUpdatesService: JobService() {
                 jobFinished(params, false)
                 return
             }catch (e: Exception){
-                Log.e(_tag, "runJob - Failed to get inventory updates, error: ${e.message.toString()}")
+                Timber.e("runJob - Failed to get inventory updates, error: ${e.message.toString()}")
                 TimeUnit.SECONDS.sleep(5L  * (index + 1))
             }
         }
-        Log.e(_tag, "runJob - job failed, abort")
+        Timber.e("runJob - job failed, abort")
         NotificationHelper(this)
             .sendNotification(
                 this.getString(R.string.notification_error_title),

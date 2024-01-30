@@ -3,7 +3,7 @@ package com.ngsoft.getapp.sdk.old
 import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import android.content.Context
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.DefaultGetMapService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -45,13 +45,13 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
     override fun getExtentUpdates(extent: MapProperties, updateDate: LocalDateTime): List<MapTile> {
         val result = extentUpdates.getExtentUpdates(extent, zoomLevel, updateDate)
-        Log.i(_tag,"getExtentUpdates - got ${result.count()} extent updates")
+        Timber.i("getExtentUpdates - got ${result.count()} extent updates")
         return result
     }
 
     @OptIn(ExperimentalTime::class)
     override fun deliverExtentTiles(extentTiles: List<MapTile>, onProgress: (DownloadProgress) -> Unit): List<MapTile> {
-        Log.i(_tag,"deliverExtentTiles - delivering tiles...")
+        Timber.i("deliverExtentTiles - delivering tiles...")
 
         val tiles2download = mutableListOf<Pair<String, MapTile>>()
         val deliveryMapsStatus = mutableListOf<Pair<String, DeliveryStatusDto>>()
@@ -63,11 +63,11 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                 sendDeliveryStatus(dlv)
                 deliveryMapsStatus.add(Pair(tileFile.url, dlv))
             } else {
-                Log.w(_tag,"deliverExtentTiles - failed to import/deliver tile: $it")
+                Timber.w("deliverExtentTiles - failed to import/deliver tile: $it")
             }
         }
 
-        Log.i(_tag,"deliverExtentTiles - downloading tiles...")
+        Timber.i("deliverExtentTiles - downloading tiles...")
         val downloadedTiles = mutableListOf<MapTile>()
         var completed = false
         val downloadProgressHandler: (DownloadProgress) -> Unit = { progress ->
@@ -103,7 +103,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             if(timeoutTime.hasPassedNow()){
-                Log.w(_tag,"deliverExtentTiles - tiles download timed out...")
+                Timber.w("deliverExtentTiles - tiles download timed out...")
 
                 val filteredDeliveryMapsStatus = deliveryMapsStatus.filter { (url, _) ->
                     downloadedTiles.none { it.fileName ==  FileUtils.getFileNameFromUri(url) }
@@ -121,7 +121,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             }
         }
 
-        Log.i(_tag,"deliverExtentTiles - registering delivered tiles in cache...")
+        Timber.i("deliverExtentTiles - registering delivered tiles in cache...")
         downloadedTiles.forEach{
             println("reg. tile: ${it.fileName!!} | ${it.boundingBox}")
             cache.registerTilePkg(it.productId, it.fileName!!,
@@ -130,46 +130,46 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             )
         }
 
-        Log.i(_tag,"deliverExtentTiles - tiles delivery completed...")
+        Timber.i("deliverExtentTiles - tiles delivery completed...")
         return downloadedTiles
     }
 
     private fun deliverTile(tile: MapTile): PrepareDeliveryResDto? {
         val retCreate = createMapImport(MapProperties(tile.productId, tile.boundingBox, false))
         when(retCreate?.state){
-            MapImportState.IN_PROGRESS -> Log.d(_tag,"deliverTile - createMapImport => IN_PROGRESS")
+            MapImportState.IN_PROGRESS -> Timber.d("deliverTile - createMapImport => IN_PROGRESS")
             MapImportState.START -> if( !checkImportStatus(retCreate.importRequestId!!)) return null
-            MapImportState.DONE -> Log.d(_tag,"deliverTile - createMapImport => DONE")
+            MapImportState.DONE -> Timber.d("deliverTile - createMapImport => DONE")
             MapImportState.CANCEL -> {
-                Log.w(_tag,"deliverTile - createMapImport => CANCEL")
+                Timber.w("deliverTile - createMapImport => CANCEL")
                 return null
             }
             else -> {
-                Log.e(_tag,"deliverTile - createMapImport failed: ${retCreate?.state}")
+                Timber.e("deliverTile - createMapImport failed: ${retCreate?.state}")
                 return null
             }
         }
 
         val retDelivery = setMapImportDeliveryStart(retCreate.importRequestId!!)
         when(retDelivery?.state){
-            MapDeliveryState.DONE -> Log.d(_tag,"deliverTile - setMapImportDeliveryStart => DONE")
+            MapDeliveryState.DONE -> Timber.d("deliverTile - setMapImportDeliveryStart => DONE")
             MapDeliveryState.START -> if( !checkDeliveryStatus(retCreate.importRequestId!!)) return null
             MapDeliveryState.DOWNLOAD,
             MapDeliveryState.CONTINUE,
-            MapDeliveryState.PAUSE ->  Log.d(_tag,"deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
+            MapDeliveryState.PAUSE ->  Timber.d("deliverTile - setMapImportDeliveryStart => ${retDelivery.state}")
             MapDeliveryState.CANCEL -> {
-                Log.w(_tag,"deliverTile - setMapImportDeliveryStart => CANCEL")
+                Timber.w("deliverTile - setMapImportDeliveryStart => CANCEL")
                 return null
             }
             else -> {
-                Log.e(_tag,"deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
+                Timber.e("deliverTile - setMapImportDeliveryStart failed: ${retDelivery?.state}")
                 return null
             }
         }
 
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(retCreate.importRequestId!!)
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
-            Log.e(_tag,"deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
+            Timber.e("deliverTile - prepared delivery status => ${deliveryStatus.status} is not done!")
             return null
         }
 
@@ -186,18 +186,18 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
             when(stat?.state){
                 MapImportState.ERROR -> {
-                    Log.e(_tag,"checkImportStatus - MapImportState.ERROR")
+                    Timber.e("checkImportStatus - MapImportState.ERROR")
                     return false
                 }
                 MapImportState.CANCEL -> {
-                    Log.w(_tag,"checkImportStatus - MapImportState.CANCEL")
+                    Timber.w("checkImportStatus - MapImportState.CANCEL")
                     return false
                 }
                 else -> {}
             }
 
             if(timeoutTime.hasPassedNow()){
-                Log.w(_tag,"checkImportStatus - timed out")
+                Timber.w("checkImportStatus - timed out")
                 return false
             }
         }
@@ -213,17 +213,17 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             stat = getMapImportDeliveryStatus(requestId)
             when(stat?.state){
                 MapDeliveryState.ERROR -> {
-                    Log.e(_tag,"checkDeliveryStatus - MapDeliveryState.ERROR")
+                    Timber.e("checkDeliveryStatus - MapDeliveryState.ERROR")
                     return false
                 }
                 MapDeliveryState.CANCEL -> {
-                    Log.w(_tag,"checkDeliveryStatus - MapDeliveryState.CANCEL")
+                    Timber.w("checkDeliveryStatus - MapDeliveryState.CANCEL")
                     return false
                 }
                 else -> {}
             }
             if(timeoutTime.hasPassedNow()){
-                Log.w(_tag,"checkDeliveryStatus - timed out")
+                Timber.w("checkDeliveryStatus - timed out")
                 return false
             }
         }
@@ -236,7 +236,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
             try{
                 client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
             }catch (exc: Exception){
-                Log.e(_tag, "sendDeliveryStatus failed error: $exc", )
+                Timber.e("sendDeliveryStatus failed error: $exc", )
             }
         }.start()
     }

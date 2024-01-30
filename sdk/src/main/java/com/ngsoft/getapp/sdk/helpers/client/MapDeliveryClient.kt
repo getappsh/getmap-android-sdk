@@ -3,7 +3,7 @@ package com.ngsoft.getapp.sdk.helpers.client
 import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
-import android.util.Log
+import timber.log.Timber
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
@@ -24,7 +24,7 @@ internal object MapDeliveryClient {
         val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, deviceId, PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
 
-        Log.d(_tag,"setMapImportDeliveryStart | download url: ${status.url}")
+        Timber.d("setMapImportDeliveryStart | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = inputImportRequestId
@@ -48,7 +48,7 @@ internal object MapDeliveryClient {
 
         val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
-        Log.d(_tag,"getMapImportDeliveryStatus | download url: ${status.url}")
+        Timber.d("getMapImportDeliveryStatus | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = status.catalogId
@@ -77,7 +77,7 @@ internal object MapDeliveryClient {
             done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) }
         )
 
-        Log.d(_tag, "sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
+        Timber.d("sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
 
         pushDeliveryStatus(client, deliveryStatus, deviceId)
     }
@@ -109,7 +109,7 @@ internal object MapDeliveryClient {
             try {
                 client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
             } catch (exc: Exception) {
-                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}")
+                Timber.e("sendDeliveryStatus failed error: ${exc.message.toString()}")
                 exc.printStackTrace()
             }
         }.start()

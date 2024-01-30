@@ -4,7 +4,7 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
+import timber.log.Timber
 import java.lang.IllegalArgumentException
 
 //TODO send notification after X request failed
@@ -16,7 +16,7 @@ internal class JobScheduler {
         private const val REMOTE_CONFIG_JOB_ID = 2
     }
     fun scheduleInventoryOfferingJob(context: Context, intervalMins: Int) {
-        Log.i(_tag, "scheduleInventoryOfferingJob")
+        Timber.i("scheduleInventoryOfferingJob")
         if(isJobScheduled(context, INVENTORY_OFFERING_JOB_ID)){
             return
         }
@@ -40,13 +40,13 @@ internal class JobScheduler {
         try{
             jobScheduler.schedule(jobInfo)
         }catch (e: IllegalArgumentException){
-            Log.e(_tag, "scheduleInventoryOfferingJob - failed to schedule the service, error: ${e.message.toString()}")
+            Timber.e("scheduleInventoryOfferingJob - failed to schedule the service, error: ${e.message.toString()}")
         }
     }
 
 
     fun scheduleRemoteConfigJob(context: Context, intervalMins: Int){
-        Log.i(_tag, "scheduleRemoteConfigJob")
+        Timber.i("scheduleRemoteConfigJob")
         if(isJobScheduled(context, REMOTE_CONFIG_JOB_ID)){
             return
         }
@@ -63,7 +63,7 @@ internal class JobScheduler {
         try{
             jobScheduler.schedule(jobInfo)
         }catch (e: IllegalArgumentException){
-            Log.e(_tag, "scheduleInventoryOfferingJob - failed to schedule the service, error: ${e.message.toString()}")
+            Timber.e("scheduleInventoryOfferingJob - failed to schedule the service, error: ${e.message.toString()}")
         }
     }
 
@@ -71,7 +71,7 @@ internal class JobScheduler {
         val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         val jobInfo = jobScheduler.getPendingJob(INVENTORY_OFFERING_JOB_ID) ?: return
         if (jobInfo.intervalMillis != minutes2millis(intervalMins)){
-            Log.i(_tag, "updateInventoryOfferingJob - Update job interval to: $intervalMins minutes ")
+            Timber.i("updateInventoryOfferingJob - Update job interval to: $intervalMins minutes ")
             jobScheduler.cancel(INVENTORY_OFFERING_JOB_ID)
             scheduleInventoryOfferingJob(context, intervalMins)
         }
@@ -81,7 +81,7 @@ internal class JobScheduler {
         val jobInfo = jobScheduler.getPendingJob(REMOTE_CONFIG_JOB_ID) ?: return
 
         if (jobInfo.intervalMillis != minutes2millis(intervalMins)){
-            Log.i(_tag, "updateRemoteConfigJob - Update job interval to: $intervalMins minutes")
+            Timber.i("updateRemoteConfigJob - Update job interval to: $intervalMins minutes")
             jobScheduler.cancel(REMOTE_CONFIG_JOB_ID)
             scheduleRemoteConfigJob(context, intervalMins)
         }

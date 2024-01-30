@@ -4,7 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
+import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.ngsoft.getapp.sdk.R
@@ -43,7 +43,7 @@ class DeliveryForegroundService: Service() {
     private var mapsOnDownload: LiveData<List<MapDownloadData>>? = null
     override fun onCreate() {
         super.onCreate()
-        Log.i(_tag, "onCreate")
+        Timber.i("onCreate")
         deliveryManager = DeliveryManager.getInstance(this)
         notificationHelper = NotificationHelper(this)
 
@@ -53,9 +53,9 @@ class DeliveryForegroundService: Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(_tag, "onStartCommand")
+        Timber.i("onStartCommand")
         val id  = intent?.getStringExtra(MAP_ID_EXTRA) ?: return START_STICKY
-        Log.d(_tag, "onStartCommand - mapId: $id")
+        Timber.d("onStartCommand - mapId: $id")
         when(intent.action){
             START_DELIVERY ->{
                 startDelivery(id)
@@ -69,34 +69,35 @@ class DeliveryForegroundService: Service() {
     }
 
     override fun onDestroy() {
-        Log.d(_tag, "onDestroy")
+        Timber.d("onDestroy")
+//        TODO call function from delivery manager to stop all process
         super.onDestroy()
     }
 
     override fun onLowMemory() {
-        Log.d(_tag, "onLowMemory")
+        Timber.d("onLowMemory")
         super.onLowMemory()
     }
 
     override fun onTrimMemory(level: Int) {
-        Log.d(_tag, "onTrimMemory - level: $level")
+        Timber.d("onTrimMemory - level: $level")
         super.onTrimMemory(level)
     }
     private fun startDelivery(id: String){
-        Log.i(_tag, "startDelivery - for id: $id")
+        Timber.i("startDelivery - for id: $id")
         Thread{deliveryManager.executeDeliveryFlow(id)}.start()
         waitToAllProcessToStop()
     }
 
     private fun stopDelivery(id: String){
-        Log.i(_tag, "stopDelivery - for id: $id")
+        Timber.i("stopDelivery - for id: $id")
         deliveryManager.cancelDelivery(id)
         waitToAllProcessToStop()
     }
 
     private fun waitToAllProcessToStop(){
         if (mapsOnDownload == null){
-            Log.d(_tag, "waitToAllProcessToStop")
+            Timber.d("waitToAllProcessToStop")
             mapsOnDownload = deliveryManager.getMapsOnDownload()
 
             val observer = Observer<List<MapDownloadData>> {data ->

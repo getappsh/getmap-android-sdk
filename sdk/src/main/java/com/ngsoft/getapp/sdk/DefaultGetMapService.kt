@@ -22,9 +22,9 @@ import android.content.Context.BATTERY_SERVICE
 import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Environment
-import android.util.Log
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.helpers.GlobalExceptionHandler
+import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -42,6 +42,7 @@ import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.TilesCache
+import timber.log.Timber
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -64,9 +65,9 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     override val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
 
     open fun init(configuration: Configuration): Boolean {
-        Log.i(_tag, "Init GetMapService" )
-
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler())
+        TimberLogger.initTimber()
+        Timber.i("Init GetMapService")
 
         config.storagePath = configuration.storagePath
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
@@ -90,7 +91,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         pref.password = configuration.password
         pref.baseUrl = configuration.baseUrl
 
-        Log.d(_tag, "init - Device ID: ${pref.deviceId}")
+        Timber.d("init - Device ID: ${pref.deviceId}")
 
         return true
     }
@@ -170,7 +171,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 //==================================================================================================
 
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
-        Log.i(_tag, "getDiscoveryCatalog")
+        Timber.i("getDiscoveryCatalog")
 
         val batteryPower = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
@@ -200,14 +201,14 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             )
         )
 
-        Log.v(_tag, "getDiscoveryCatalog - discovery object built")
+        Timber.v("getDiscoveryCatalog - discovery object built")
 
         val discoveries = client.deviceApi.discoveryControllerDiscoveryCatalog(query)
-        Log.d(_tag, "getDiscoveryCatalog -  offering results: $discoveries ")
+        Timber.d("getDiscoveryCatalog -  offering results: $discoveries ")
 
         val result = mutableListOf<DiscoveryItem>()
         if (discoveries.map?.status == OfferingMapResDto.Status.error){
-            Log.e(_tag, "getDiscoveryCatalog: get-map offering error ${discoveries.map.error?.message}")
+            Timber.e("getDiscoveryCatalog: get-map offering error ${discoveries.map.error?.message}")
             throw Exception("get-map offering error ${discoveries.map.error?.message}")
         }
 
@@ -230,7 +231,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             ))
         }
 
-        Log.d(_tag, "getDiscoveryCatalog - results $result")
+        Timber.d("getDiscoveryCatalog - results $result")
         return result
     }
 
@@ -379,7 +380,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
-        Log.d(_tag,"getMapImportDeliveryStatus | download url: ${status.url}")
+        Timber.d("getMapImportDeliveryStatus | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = status.catalogId
@@ -404,7 +405,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, pref.deviceId, PrepareDeliveryReqDto.ItemType.map)
         val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
 
-        Log.d(_tag,"setMapImportDeliveryStart | download url: ${status.url}")
+        Timber.d("setMapImportDeliveryStart | download url: ${status.url}")
 
         val result = MapImportDeliveryStatus()
         result.importRequestId = inputImportRequestId
@@ -448,7 +449,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val deliveryStatus = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
 
         if(deliveryStatus.status != PrepareDeliveryResDto.Status.done) {
-            Log.d(_tag,"setMapImportDeploy - delivery not finished yet, nothing 2 download")
+            Timber.d("setMapImportDeploy - delivery not finished yet, nothing 2 download")
             return MapDeployState.ERROR
         }
 
@@ -460,7 +461,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         var downloadId: Long = -1
 
         val downloadCompletionHandler: (Long) -> Unit = {
-            Log.d(_tag,"processing download ID=$it completion event...")
+            Timber.d("processing download ID=$it completion event...")
             completed = it == downloadId
         }
 
@@ -470,15 +471,15 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
-            Log.d(_tag,"awaiting download completion...")
+            Timber.d("awaiting download completion...")
 
             if(timeoutTime.hasPassedNow()){
-                Log.d(_tag,"download wait loop - timed out")
+                Timber.d("download wait loop - timed out")
                 break
             }
         }
 
-        Log.d(_tag,"download completed...")
+        Timber.d("download completed...")
 
         return MapDeployState.DONE
     }
@@ -510,7 +511,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             try {
                 client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
             } catch (exc: Exception) {
-                Log.e(_tag, "sendDeliveryStatus failed error: ${exc.message.toString()}")
+                Timber.e("sendDeliveryStatus failed error: ${exc.message.toString()}")
                 exc.printStackTrace()
             }
         }.start()

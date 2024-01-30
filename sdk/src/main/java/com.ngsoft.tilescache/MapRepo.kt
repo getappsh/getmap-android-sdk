@@ -1,7 +1,7 @@
 package com.ngsoft.tilescache
 
 import android.content.Context
-import android.util.Log
+import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -21,7 +21,7 @@ internal class MapRepo(ctx: Context) {
     private val dao: MapDAO
 
     init {
-        Log.d(_tag,"MapRepo init...")
+        Timber.d("MapRepo init...")
         db = TilesDatabase.getInstance(ctx)
         dao = db.mapDap()
     }
@@ -59,7 +59,7 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
-        Log.i(_tag, "getAllMapsLiveData")
+        Timber.i("getAllMapsLiveData")
         if (mapMutableLiveHase.value?.isEmpty() != false){
             Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
         }
@@ -249,7 +249,7 @@ internal class MapRepo(ctx: Context) {
             }
 
         }else{
-            Log.e(_tag, "invoke: not found map id: $id", )
+            Timber.e("invoke: not found map id: $id", )
         }
     }
 
