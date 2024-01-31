@@ -6,7 +6,7 @@ import java.io.InputStream
 import java.security.MessageDigest
 
 
-object HashUtils {
+internal object HashUtils {
 
     private const val STREAM_BUFFER_LENGTH = 1024
     private const val UPDATE_INTERVAL = 1024 * 1024 * 5

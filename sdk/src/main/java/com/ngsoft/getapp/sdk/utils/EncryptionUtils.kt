@@ -6,8 +6,8 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import com.ngsoft.getapp.sdk.BuildConfig
 
-object EncryptionUtils {
-//CBC, ECB
+internal object EncryptionUtils {
+
     private const val TRANSFORMATION = "AES/CBC/PKCS5PADDING"
     fun encrypt(dataToEncrypt: ByteArray): Pair<ByteArray, ByteArray> {
         val cipher = Cipher.getInstance(TRANSFORMATION)

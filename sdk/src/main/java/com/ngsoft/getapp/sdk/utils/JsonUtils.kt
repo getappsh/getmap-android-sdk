@@ -4,7 +4,7 @@ import org.json.JSONObject
 import java.nio.file.Files
 import java.nio.file.Paths
 
-object JsonUtils {
+internal object JsonUtils {
 
     fun readJson(jsonPath: String): JSONObject{
         val file = Files.readAllBytes(Paths.get(jsonPath))
