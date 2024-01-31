@@ -315,7 +315,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
         Timber.d("processQrCodeData - fileName: $jsonName")
 
-        val mapPkg = MapPkg(pId = pid, bBox = footprint, reqId = reqId, jsonName = jsonName, url = url,
+        val mapPkg = MapPkg(pId = pid, bBox = footprint, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
             metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
             flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_continue))
 

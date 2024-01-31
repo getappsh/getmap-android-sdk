@@ -28,6 +28,7 @@ import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.ngsoft.tilescache.models.MapPkg
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
@@ -401,8 +402,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
                     if (progress >= 100 || statusInfo.status == DownloadManager.STATUS_SUCCESSFUL){
                         val updatedMapPkg  = if (isJson){
-                            handleJsonDone(id, statusInfo.fileName)
-                            mapRepo.updateAndReturn(id, jsonDone = true, jsonName = statusInfo.fileName)
+                            handleJsonDone(id, statusInfo.fileName) ?: mapPkg
                         }else{
                             mapRepo.updateAndReturn(id, mapDone = true)
                         }
@@ -448,26 +448,30 @@ internal class DeliveryManager private constructor(appCtx: Context){
         return downloadId
     }
 
-    private fun handleJsonDone(id: String, jsonName: String?){
-        try {
-            val mapPkg = this.mapRepo.getById(id) ?: return
+    private fun handleJsonDone(id: String, jsonName: String?): MapPkg?{
+        val mapPkg = this.mapRepo.getById(id) ?: return null
 
+        return try {
             val json = JsonUtils.readJson(Paths.get(config.downloadPath, jsonName).toString())
             val footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
             this.mapRepo.getByBBox(footprint).forEach{ pkg ->
                 if (pkg.id.toString() != id && pkg.isUpdated){
                     Timber.e("handleJsonDone - map already exists, set to error", )
-                    this.mapRepo.update(id, state = MapDeliveryState.ERROR, statusMessage = app.getString(R.string.error_map_already_exists))
+                    this.mapRepo.update(id, state = MapDeliveryState.ERROR,
+                        statusMessage = app.getString(R.string.error_map_already_exists),
+                        jsonName = "fail.json", fileName ="fail.gpkg")
                     mapPkg.JDID?.let { downloader.cancelDownload(it) }
                     mapPkg.MDID?.let { downloader.cancelDownload(it) }
-                    return
+
+                    return null
                 }
             }
             mapRepo.setFootprint(id, footprint)
-
+            mapRepo.updateAndReturn(id, jsonDone = true, jsonName = jsonName)
 
         }catch (e: Exception){
             Timber.e("Failed to get footprint from json, error: ${e.message.toString()}")
+            null
         }
 
     }
