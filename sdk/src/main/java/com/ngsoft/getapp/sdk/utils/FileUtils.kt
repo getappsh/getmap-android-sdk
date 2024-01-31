@@ -6,7 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-object FileUtils {
+internal object FileUtils {
 
     const val MAP_EXTENSION = ".gpkg"
     const val JSON_EXTENSION = ".json"

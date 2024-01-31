@@ -1,6 +1,6 @@
 package com.ngsoft.getapp.sdk.utils
 
-object StringUtils {
+internal object StringUtils {
 
     /**
      * Used to build output as Hex

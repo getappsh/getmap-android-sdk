@@ -8,7 +8,7 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 
-object CompressionUtils {
+internal object CompressionUtils {
 
     fun compress(string: String): ByteArray {
         val data = string.toByteArray(charset("UTF-8"))

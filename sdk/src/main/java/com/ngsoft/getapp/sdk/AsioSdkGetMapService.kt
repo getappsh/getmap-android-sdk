@@ -16,6 +16,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.qr.QRManager
 import com.ngsoft.getapp.sdk.utils.DateHelper
 import com.ngsoft.getapp.sdk.utils.FileUtils
+import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
@@ -71,7 +72,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
             if (it.isUpdated){
-                Timber.e("downloadMap map is already exit, abort request", )
+                Timber.e("downloadMap map already exists, abort request", )
                 return null
             }
         }
@@ -99,7 +100,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             return null
         }
 
-        val mp = MapProperties(mapPkg.pId, mapPkg.bBox, false)
+        val mp = MapProperties(mapPkg.pId, mapPkg.footprint ?: mapPkg.bBox, false)
 
         return this.downloadMap(mp, downloadStatusHandler)
     }
@@ -280,7 +281,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Timber.d("generateQrCode - append download url to json")
         json.put("downloadUrl", mapPkg.url)
         json.put("reqId", mapPkg.reqId)
-        json.put("requestedBBox", mapPkg.bBox)
 
         return qrManager.generateQrCode(json.toString(), width, height)
     }
@@ -293,17 +293,19 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val url = json.getString("downloadUrl")
         val reqId = json.getString("reqId")
-        val bBox = json.getString("requestedBBox")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
 
+        val footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
+
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        this.mapRepo.getByBBox(bBox).forEach {
+        this.mapRepo.getByBBox(footprint).forEach {
+//            TODO put ingestionDate in the DB Table
             val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
                 Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )
-                throw Exception(appCtx.getString(R.string.error_qr_map_already_exists))
+                throw Exception(appCtx.getString(R.string.error_map_already_exists))
             }
         }
 
@@ -313,7 +315,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
         Timber.d("processQrCodeData - fileName: $jsonName")
 
-        val mapPkg = MapPkg(pId = pid, bBox = bBox, reqId = reqId, jsonName = jsonName, url = url,
+        val mapPkg = MapPkg(pId = pid, bBox = footprint, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
             metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
             flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_continue))
 

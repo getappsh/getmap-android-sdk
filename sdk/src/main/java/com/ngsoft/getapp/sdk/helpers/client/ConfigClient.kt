@@ -5,6 +5,7 @@ import timber.log.Timber
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getappclient.GetAppClient
 import java.time.OffsetDateTime
+import java.time.ZoneId
 
 internal object ConfigClient {
     private const val _tag = "ConfigClientHelper"
@@ -20,7 +21,9 @@ internal object ConfigClient {
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
         Timber.d("fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
 
-        config.lastServerConfigUpdate = configDto.lastConfigUpdateDate ?: config.lastServerConfigUpdate
+        config.lastServerConfigUpdate = configDto.lastConfigUpdateDate
+            ?.atZoneSameInstant(ZoneId.systemDefault())
+            ?.toOffsetDateTime() ?: config.lastServerConfigUpdate
 //        TODO
         configDto.lastCheckingMapUpdatesDate
 

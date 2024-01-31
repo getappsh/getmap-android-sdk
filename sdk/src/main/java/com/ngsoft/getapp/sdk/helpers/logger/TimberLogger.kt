@@ -8,6 +8,7 @@ import timber.log.Timber.*
 
 internal object TimberLogger {
      fun initTimber(){
+         Timber.uprootAll()
          val maxFileSize = 1024 * 1024 * 2// 2 MB
          val maxFiles = 5
 

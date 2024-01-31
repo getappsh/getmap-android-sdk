@@ -15,12 +15,13 @@ import com.ngsoft.tilescache.models.MapPkg
 import com.ngsoft.tilescache.models.TilePkg
 
 @Database(
-    version = 7,
+    version = 8,
     entities = [TilePkg::class, MapPkg::class],
     autoMigrations = [
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 5, to = 6),
-        AutoMigration(from = 6, to = 7)
+        AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8)
     ]
     //, exportSchema = false
 )
