@@ -182,16 +182,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 return false
             }
 
-
             try {
                 stat = MapImportClient.getCreateMapImportStatus(client, reqId)
             }catch (e: IOException){
                 Timber.e("checkImportStatue - SocketException, try again. error: ${e.message.toString()}" )
-                this.mapRepo.update(
-                    id = id,
-                    statusMessage = app.getString(R.string.delivery_status_connection_issue_try_again),
-                    errorContent = e.message.toString()
-                )
+                this.mapRepo.update(id = id,
+                    statusMessage = app.getString(R.string.delivery_status_connection_issue_try_again), errorContent = e.message.toString())
                 continue
             }
 
@@ -202,36 +198,24 @@ internal class DeliveryManager private constructor(appCtx: Context){
                         Timber.e("checkImportStatus - status code is REQUEST_ID_NOT_FOUND, set as obsolete")
                         handleMapNotExistsOnServer(id)
                     }else{
-                        this.mapRepo.update(
-                            id = id,
-                            state = MapDeliveryState.ERROR,
-                            statusMessage = app.getString(R.string.delivery_status_failed),
-                            errorContent = stat.statusCode?.messageLog
-                        )
+                        this.mapRepo.update(id = id, state = MapDeliveryState.ERROR,
+                            statusMessage = app.getString(R.string.delivery_status_failed), errorContent = stat.statusCode?.messageLog)
                     }
                     this.sendDeliveryStatus(id)
                     return false
                 }
                 MapImportState.CANCEL -> {
                     Timber.w("checkImportStatus - MapImportState -> CANCEL, message: ${stat.statusCode?.messageLog}")
-                    this.mapRepo.update(
-                        id = id,
-                        state = MapDeliveryState.CANCEL,
-                        statusMessage = app.getString(R.string.delivery_status_canceled),
-                        errorContent = stat.statusCode?.messageLog
-                    )
+                    this.mapRepo.update(id = id, state = MapDeliveryState.CANCEL,
+                        statusMessage = app.getString(R.string.delivery_status_canceled), errorContent = stat.statusCode?.messageLog)
                     this.sendDeliveryStatus(id)
                     return false
 
                 }
                 MapImportState.IN_PROGRESS -> {
                     Timber.w("checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.progress}")
-                    this.mapRepo.update(
-                        id = id,
-                        downloadProgress = stat.progress,
-                        statusMessage = app.getString(R.string.delivery_status_req_in_progress),
-                        errorContent = ""
-                    )
+                    this.mapRepo.update(id = id, downloadProgress = stat.progress,
+                        statusMessage = app.getString(R.string.delivery_status_req_in_progress), errorContent = "")
                     if (lastProgress != stat.progress){
                         timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
                     }
@@ -370,12 +354,23 @@ internal class DeliveryManager private constructor(appCtx: Context){
         return false
     }
 
-//    TODO handle when on of the files failed
     private fun watchDownloadProgress(downloadId: Long, id: String, url: String, isJson: Boolean): Long{
         Timber.i("watchDownloadProgress, isJson: $isJson")
+        this.mapRepo.update(id, flowState = DeliveryFlowState.DOWNLOAD, errorContent = "", statusMessage = app.getString(R.string.delivery_status_download))
+
         timer(initialDelay = 100, period = 2000) {
-//            todo heck what happen when cancel the download in the download manager
-            val mapPkg = mapRepo.getById(id) ?: return@timer
+//            todo check what happen when cancel the download in the download manager
+            val mapPkg = mapRepo.getById(id)
+            if (mapPkg == null){
+                this.cancel()
+                return@timer
+            }
+            if (mapPkg.state == MapDeliveryState.ERROR){
+                Timber.e("watchDownloadProgress download status for $id, isJson: $isJson, is ERROR. abort the process" )
+                downloader.cancelDownload(downloadId)
+                this.cancel()
+                return@timer
+            }
             if (mapPkg.cancelDownload){
                 Timber.d("downloadFile - Download $id, canceled by user")
                 downloader.cancelDownload(downloadId)
@@ -387,6 +382,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 return@timer
             }
 
+//            TODO edge case of
             val statusInfo = downloader.queryStatus(downloadId)
             when(statusInfo?.status){
                 DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING -> {
@@ -398,35 +394,23 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
                     if (!isJson && !mapPkg.metadata.mapDone){
                         mapRepo.update(
-                            id = id,
-                            state = MapDeliveryState.DOWNLOAD,
-                            downloadProgress = progress,
-                            fileName = statusInfo.fileName,
-                            statusMessage = app.getString(R.string.delivery_status_download),
-                            errorContent = ""
-                        )
+                            id = id, downloadProgress = progress, fileName = statusInfo.fileName,
+                            state = MapDeliveryState.DOWNLOAD, statusMessage = app.getString(R.string.delivery_status_download), errorContent = "")
                         sendDeliveryStatus(id)
                     }
 
                     if (progress >= 100 || statusInfo.status == DownloadManager.STATUS_SUCCESSFUL){
                         val updatedMapPkg  = if (isJson){
-                            try {
-                                val json = JsonUtils.readJson(Paths.get(config.downloadPath, statusInfo.fileName).toString())
-                                mapRepo.setFootprint(id, FootprintUtils.toString(json.getJSONObject("footprint")))
-                            }catch (e: Exception){ Timber.e("Failed to get footprint from json, error: ${e.message.toString()}")}
-
+                            handleJsonDone(id, statusInfo.fileName)
                             mapRepo.updateAndReturn(id, jsonDone = true, jsonName = statusInfo.fileName)
                         }else{
                             mapRepo.updateAndReturn(id, mapDone = true)
                         }
 
-                        if (updatedMapPkg?.metadata?.mapDone == true && updatedMapPkg.metadata.jsonDone){
+                        if (updatedMapPkg?.metadata?.mapDone == true && updatedMapPkg.metadata.jsonDone && updatedMapPkg.state != MapDeliveryState.ERROR){
                             Timber.d("downloadFile - downloading Done")
-                            mapRepo.update(
-                                id = id,
-                                flowState = DeliveryFlowState.DOWNLOAD_DONE,
-                                downloadProgress = 100,
-                                errorContent = "")
+                            mapRepo.update(id = id, flowState = DeliveryFlowState.DOWNLOAD_DONE,
+                                downloadProgress = 100, errorContent = "")
                             sendDeliveryStatus(id)
                             Thread{executeDeliveryFlow(id)}.start()
                         }
@@ -437,12 +421,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
                     Timber.e("downloadFile -  DownloadManager failed to download file. id: $downloadId, reason: ${statusInfo?.reason}")
 
                     val downloadAttempts = if (isJson) mapPkg.metadata.jsonAttempt else mapPkg.metadata.mapAttempt
-
+                    val isStatusError = mapRepo.getById(id)?.state == MapDeliveryState.ERROR
                     if (statusInfo?.status == DownloadManager.STATUS_FAILED && (statusInfo.reasonCode == 403 || statusInfo.reasonCode == 404)){
                         Timber.e("watchDownloadProgress - download status is ${statusInfo.reasonCode}")
                         handleMapNotExistsOnServer(id)
 
-                    }else if (downloadAttempts < config.downloadRetry) {
+                    }else if (downloadAttempts < config.downloadRetry && !isStatusError) {
                         Timber.d("downloadFile - retry download")
                         downloader.cancelDownload(downloadId)
 
@@ -450,9 +434,10 @@ internal class DeliveryManager private constructor(appCtx: Context){
                             errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file")
                         handelDownloadRetry(id, url, isJson, downloadAttempts)
                     }else{
+                        val error = if (isStatusError) null else statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file"
                         mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = app.getString(
                             R.string.delivery_status_failed),
-                            errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file"
+                            errorContent = error
                         )
                     }
                     sendDeliveryStatus(id)
@@ -463,6 +448,29 @@ internal class DeliveryManager private constructor(appCtx: Context){
         return downloadId
     }
 
+    private fun handleJsonDone(id: String, jsonName: String?){
+        try {
+            val mapPkg = this.mapRepo.getById(id) ?: return
+
+            val json = JsonUtils.readJson(Paths.get(config.downloadPath, jsonName).toString())
+            val footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
+            this.mapRepo.getByBBox(footprint).forEach{ pkg ->
+                if (pkg.id.toString() != id && pkg.isUpdated){
+                    Timber.e("handleJsonDone - map already exists, set to error", )
+                    this.mapRepo.update(id, state = MapDeliveryState.ERROR, statusMessage = app.getString(R.string.error_map_already_exists))
+                    mapPkg.JDID?.let { downloader.cancelDownload(it) }
+                    mapPkg.MDID?.let { downloader.cancelDownload(it) }
+                    return
+                }
+            }
+            mapRepo.setFootprint(id, footprint)
+
+
+        }catch (e: Exception){
+            Timber.e("Failed to get footprint from json, error: ${e.message.toString()}")
+        }
+
+    }
     private fun handleMapNotExistsOnServer(id: String){
         Timber.i("handleMapNotExistsOnServer")
         val mapPkg = this.mapRepo.getById(id) ?: return
@@ -470,9 +478,14 @@ internal class DeliveryManager private constructor(appCtx: Context){
         this.mapRepo.update(id=id, flowState = DeliveryFlowState.START, state = MapDeliveryState.ERROR,
             statusMessage = app.getString(R.string.delivery_status_error), errorContent = app.getString(
                 R.string.delivery_status_description_failed_not_exists_on_server),
-            jsonName = "", fileName = "", url = "", reqId = "", downloadProgress = 0, mapDone = false,
-            jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0,)
+            downloadProgress = 0, mapDone = false,
+            jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0)
+        this.mapRepo.setMapUpdated(id, false)
+        mapPkg.JDID?.let { downloader.cancelDownload(it) }
+        mapPkg.MDID?.let { downloader.cancelDownload(it) }
+
     }
+
     private fun handelDownloadRetry(id: String, url: String, isJson: Boolean, downloadAttempts: Int) {
         Timber.i("handelDownloadRetry, id: $id, isJson: $isJson ")
         val waitTime = TimeUnit.MINUTES.toMillis(if (downloadAttempts == 1) 5 else 10)
@@ -653,7 +666,6 @@ internal class DeliveryManager private constructor(appCtx: Context){
             }
         }.start()
     }
-
 
     companion object {
         @Volatile

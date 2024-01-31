@@ -72,7 +72,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
             if (it.isUpdated){
-                Timber.e("downloadMap map is already exit, abort request", )
+                Timber.e("downloadMap map already exists, abort request", )
                 return null
             }
         }
@@ -100,7 +100,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             return null
         }
 
-        val mp = MapProperties(mapPkg.pId, mapPkg.bBox, false)
+        val mp = MapProperties(mapPkg.pId, mapPkg.footprint ?: mapPkg.bBox, false)
 
         return this.downloadMap(mp, downloadStatusHandler)
     }
@@ -305,7 +305,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
                 Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )
-                throw Exception(appCtx.getString(R.string.error_qr_map_already_exists))
+                throw Exception(appCtx.getString(R.string.error_map_already_exists))
             }
         }
 
