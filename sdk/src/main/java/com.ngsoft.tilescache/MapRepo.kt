@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
@@ -67,11 +68,9 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun getByBBox(bBox: String): List<MapPkg>{
-        fun toList(value: String): List<Double> = value.split(",").map { it.toDouble() }
-
-        val bBoxList = toList(bBox)
+        val bBoxList = FootprintUtils.toList(bBox)
         return this.getAll().filter {
-            toList(it.bBox) == bBoxList }
+            FootprintUtils.toList(it.bBox) == bBoxList }
     }
 
     fun update(
@@ -195,6 +194,12 @@ internal class MapRepo(ctx: Context) {
         return dao.updateAndReturn(mapPkg)
     }
 
+    fun setFootprint(id: String, footprint: String){
+        this.getById(id)?.apply {
+            this.footprint = footprint
+            dao.update(this)
+        }
+    }
     fun getById(id: String): MapPkg?{
         return try{
             dao.getById(id.toInt())
@@ -284,7 +289,7 @@ internal class MapRepo(ctx: Context) {
     private fun mapPkg2DownloadData(map: MapPkg): MapDownloadData{
         return MapDownloadData(
             id = map.id.toString(),
-            bBox = map.bBox,
+            footprint = map.footprint,
             fileName = map.fileName,
             jsonName = map.jsonName,
             deliveryStatus = map.state,

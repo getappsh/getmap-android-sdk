@@ -31,6 +31,8 @@ data class DownloadMetadata(
 data class MapPkg (
     var pId: String,
     var bBox: String,
+//    real footprint from the json
+    var footprint: String? = null,
 
     @TypeConverters(DeliveryFlowStateConverter::class)
     var flowState: DeliveryFlowState = DeliveryFlowState.START,
