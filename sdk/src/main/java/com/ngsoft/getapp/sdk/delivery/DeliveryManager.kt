@@ -21,6 +21,7 @@ import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getapp.sdk.utils.FileUtils
+import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.getappclient.ConnectionConfig
@@ -29,6 +30,7 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import java.io.File
 import java.io.IOException
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
 import kotlin.time.Duration.Companion.minutes
@@ -367,6 +369,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
         }
         return false
     }
+
+//    TODO handle when on of the files failed
     private fun watchDownloadProgress(downloadId: Long, id: String, url: String, isJson: Boolean): Long{
         Timber.i("watchDownloadProgress, isJson: $isJson")
         timer(initialDelay = 100, period = 2000) {
@@ -406,6 +410,11 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
                     if (progress >= 100 || statusInfo.status == DownloadManager.STATUS_SUCCESSFUL){
                         val updatedMapPkg  = if (isJson){
+                            try {
+                                val json = JsonUtils.readJson(Paths.get(config.downloadPath, statusInfo.fileName).toString())
+                                mapRepo.setFootprint(id, FootprintUtils.toString(json.getJSONObject("footprint")))
+                            }catch (e: Exception){ Timber.e("Failed to get footprint from json, error: ${e.message.toString()}")}
+
                             mapRepo.updateAndReturn(id, jsonDone = true, jsonName = statusInfo.fileName)
                         }else{
                             mapRepo.updateAndReturn(id, mapDone = true)
@@ -604,7 +613,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
     private fun findAndRemoveDuplicates(id: String){
         Timber.i("findAndRemoveDuplicate")
         val mapPkg = this.mapRepo.getById(id) ?: return
-        val duplicates = this.mapRepo.getByBBox(mapPkg.bBox).toMutableList()
+        val duplicates = this.mapRepo.getByBBox(mapPkg.footprint ?: mapPkg.bBox).toMutableList()
         duplicates.removeIf { it.id.toString() == id }
 
         Timber.d("findAndRemoveDuplicate - found ${duplicates.size} duplicates")
@@ -612,6 +621,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
             Timber.d("findAndRemoveDuplicate - remove: ${it.id}")
             try {
                 mapFileManager.deleteMap(it)
+                MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, MapDeliveryState.DELETED)
+                this.mapRepo.remove(id)
             }catch (error: Exception){
                 Timber.e("findAndRemoveDuplicates - failed to delete the map, error: ${error.message.toString()}", )
             }

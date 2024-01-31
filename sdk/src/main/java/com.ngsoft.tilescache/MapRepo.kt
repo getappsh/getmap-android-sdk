@@ -69,8 +69,9 @@ internal class MapRepo(ctx: Context) {
 
     fun getByBBox(bBox: String): List<MapPkg>{
         val bBoxList = FootprintUtils.toList(bBox)
-        return this.getAll().filter {
-            FootprintUtils.toList(it.bBox) == bBoxList }
+        return this.getAll().filter { pkg ->
+            FootprintUtils.toList(pkg.bBox) == bBoxList ||
+                    pkg.footprint?.let { FootprintUtils.toList(it) } == bBoxList}
     }
 
     fun update(
