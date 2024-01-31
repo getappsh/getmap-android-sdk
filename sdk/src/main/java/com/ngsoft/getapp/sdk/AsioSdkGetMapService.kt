@@ -30,8 +30,6 @@ import java.time.format.DateTimeFormatter
 
 internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMapService(appCtx) {
 
-    private val _tag = "AsioSdkGetMapService"
-
     private lateinit var mapRepo: MapRepo
     private lateinit var qrManager: QRManager
 
@@ -249,6 +247,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 this.mapRepo.update(id, state = MapDeliveryState.ERROR, errorContent = errorMsg)
             }
 
+//            TODO set is cancel to false?
             this.mapRepo.update(id,
                 state = MapDeliveryState.CONTINUE,
                 statusMessage = appCtx.getString(R.string.delivery_status_continue),

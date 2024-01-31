@@ -17,7 +17,7 @@ internal object TimberLogger {
              .withDirName(Environment.getExternalStorageDirectory().toString() + "/GetApp/Logs")
              .withSizeLimit(maxFileSize)
              .withFileLimit(maxFiles)
-             .withMinPriority(Log.INFO)
+             .withMinPriority(Log.WARN)
              .appendToFile(true)
              .build()
          Timber.plant(

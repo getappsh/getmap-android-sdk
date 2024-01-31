@@ -12,6 +12,7 @@ import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.utils.CompressionUtils
 import com.ngsoft.getapp.sdk.utils.EncryptionUtils
 import com.ngsoft.getapp.sdk.utils.HashUtils
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 
@@ -71,7 +72,13 @@ internal class QRManager(private val appCtx: Context) {
     private fun decompressAndValidateJson(jsonString: String): String{
         Timber.i("decompressAndValidateJson")
 
-        val jsonContainer = JSONObject(jsonString)
+        val jsonContainer: JSONObject
+        try {
+            jsonContainer = JSONObject(jsonString)
+        }catch (e: JSONException){
+            Timber.e("decompressAndValidateJson - failed to Convert to JSONObject, error: ${e.message.toString()}", )
+            throw Exception(appCtx.getString(R.string.error_qr_failed_to_convert_to_json))
+        }
         val data = jsonContainer.getString("data")
         Timber.v("decompressAndValidateJson - data: $data")
 

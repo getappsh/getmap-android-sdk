@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk.helpers
+package com.ngsoft.getapp.sdk.helpers.logger
 
 import android.os.Environment
 import timber.log.Timber
@@ -16,11 +16,19 @@ class GlobalExceptionHandler: Thread.UncaughtExceptionHandler {
     private val logDirectory =
         File(Environment.getExternalStorageDirectory().toString() + "/GetApp/Logs")
 
-    private val logFileName = "error_log.txt"
+    private val logFileName = "exceptions.txt"
 
     private val maxFileSizeBytes = 1024 * 1024 // 1 MB
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
         logExceptionToFile(throwable)
+
+        Timber.e(throwable.stackTraceToString())
+
+        val methodName = StringBuilder("stackTrace: ")
+        val stacktrace = throwable.stackTrace
+        stacktrace.forEach { methodName.append(it.methodName + "->") }
+
+        Timber.e(methodName.toString())
         defaultExceptionHandler?.uncaughtException(thread, throwable)
     }
 

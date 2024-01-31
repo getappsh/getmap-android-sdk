@@ -23,7 +23,7 @@ import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
-import com.ngsoft.getapp.sdk.helpers.GlobalExceptionHandler
+import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
 import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DeliveryStatus
@@ -92,7 +92,6 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         pref.baseUrl = configuration.baseUrl
 
         Timber.d("init - Device ID: ${pref.deviceId}")
-
         return true
     }
 
