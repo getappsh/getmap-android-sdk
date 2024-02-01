@@ -183,16 +183,11 @@ internal class MapRepo(ctx: Context) {
         }
     }
 
-    fun updateAndReturn(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null): MapPkg?{
-        val mapPkg = this.getById(id) ?: return null
-        mapPkg.apply {
-            this.fileName = fileName ?: this.fileName
-            this.jsonName = jsonName ?: this.jsonName
 
-            this.metadata.mapDone = mapDone ?: this.metadata.mapDone
-            this.metadata.jsonDone = jsonDone ?: this.metadata.jsonDone
-        }
-        return dao.updateAndReturn(mapPkg)
+
+    fun updateAndReturn(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null): MapPkg?{
+        dao.updateFileDone(id, mapDone=mapDone, fileName=fileName, jsonDone=jsonDone, jsonName=jsonName)
+        return this.getById(id)
     }
 
     fun setFootprint(id: String, footprint: String){
