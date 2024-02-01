@@ -435,6 +435,23 @@ internal class DeliveryManager private constructor(appCtx: Context){
                                 downloadProgress = 100, errorContent = "")
                             sendDeliveryStatus(id)
                             Thread{executeDeliveryFlow(id)}.start()
+//                            make sure json did not done
+                        }else if(updatedMapPkg?.metadata?.mapDone == true && !updatedMapPkg.metadata.jsonDone && updatedMapPkg.state != MapDeliveryState.ERROR){
+                           updatedMapPkg.JDID?.let{
+                               val info = downloader.queryStatus(it)
+                               if (info?.status == DownloadManager.STATUS_SUCCESSFUL){
+                                   Timber.d("Download file - json is actually done")
+                                   if (handleJsonDone(id, info.fileName)?.metadata?.jsonDone == false){
+                                       this.cancel()
+                                       return@timer
+                                   }
+                                   Timber.d("downloadFile - downloading Done")
+                                   mapRepo.update(id = id, flowState = DeliveryFlowState.DOWNLOAD_DONE,
+                                       downloadProgress = 100, errorContent = "")
+                                   sendDeliveryStatus(id)
+                                   Thread{executeDeliveryFlow(id)}.start()
+                               }
+                           }
                         }
                         this.cancel()
                     }
