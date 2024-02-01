@@ -28,9 +28,6 @@ internal object ConfigClient {
         configDto.lastCheckingMapUpdatesDate
 
         config.lastConfigCheck = OffsetDateTime.now()
-        config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
-        config.matomoDimensionId = configDto.matomoDimensionId ?: config.matomoDimensionId
-
 
         if (!config.applyServerConfig)
             return
@@ -46,6 +43,8 @@ internal object ConfigClient {
         config.minAvailableSpaceMB = configDto.minAvailableSpaceMB?.toLong() ?: config.minAvailableSpaceMB
         config.matomoUrl = configDto.matomoUrl ?: config.matomoUrl
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
+        config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
+        config.matomoDimensionId = configDto.matomoDimensionId ?: config.matomoDimensionId
 
         Timber.v("updateConfigFromDto - config: $config")
     }
