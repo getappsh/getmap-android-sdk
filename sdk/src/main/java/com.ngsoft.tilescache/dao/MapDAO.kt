@@ -32,6 +32,9 @@ interface MapDAO {
         update(mapPkg)
         return getById(mapPkg.id)
     }
+
+    @Query("UPDATE MapPkg set mapDone = COALESCE(:mapDone, mapDone), jsonDone = COALESCE(:jsonDone, jsonDone), fileName = COALESCE(:fileName, fileName), jsonName = COALESCE(:jsonName, jsonName) where id = :id")
+    fun updateFileDone(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null)
     @Query("DELETE FROM MapPkg WHERE id = :id")
     fun deleteById(id: Int)
 

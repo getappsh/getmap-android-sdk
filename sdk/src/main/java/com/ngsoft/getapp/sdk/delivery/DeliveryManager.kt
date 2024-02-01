@@ -51,7 +51,10 @@ internal class DeliveryManager private constructor(appCtx: Context){
     private val app = appCtx as Application
 
     fun executeDeliveryFlow(id: String){
+        Timber.d("executeDeliveryFlow - for id: $id")
         val mapPkg = this.mapRepo.getById(id)
+        Timber.d("executeDeliveryFlow - id: &id Flow State: ${mapPkg?.flowState}")
+
         try{
             val toContinue = when(mapPkg?.flowState){
                 DeliveryFlowState.START -> importCreate(id)
@@ -64,6 +67,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 DeliveryFlowState.DONE -> false
                 else -> false
             }
+            Timber.d("executeDeliveryFlow - to continue: $toContinue")
+
             if (toContinue) {
                 executeDeliveryFlow(id)
             }
@@ -242,6 +247,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
         val reqId = this.mapRepo.getReqId(id)!!;
 
+//        TODO may throw exception
         var retDelivery = MapDeliveryClient.setMapImportDeliveryStart(client, reqId, pref.deviceId)
         val timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
 
@@ -406,7 +412,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                         }else{
                             mapRepo.updateAndReturn(id, mapDone = true)
                         }
-
+                        Timber.i("downloadFile - id: $id, Map Done: ${updatedMapPkg?.metadata?.mapDone}, Json Done: ${updatedMapPkg?.metadata?.jsonDone}, state: ${updatedMapPkg?.state} ")
                         if (updatedMapPkg?.metadata?.mapDone == true && updatedMapPkg.metadata.jsonDone && updatedMapPkg.state != MapDeliveryState.ERROR){
                             Timber.d("downloadFile - downloading Done")
                             mapRepo.update(id = id, flowState = DeliveryFlowState.DOWNLOAD_DONE,
@@ -466,6 +472,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                     return null
                 }
             }
+            Timber.d("handleJsonDone - for id: $id")
             mapRepo.setFootprint(id, footprint)
             mapRepo.updateAndReturn(id, jsonDone = true, jsonName = jsonName)
 
