@@ -17,6 +17,7 @@ import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.StatusCode
@@ -247,8 +248,23 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
         val reqId = this.mapRepo.getReqId(id)!!;
 
-//        TODO may throw exception
-        var retDelivery = MapDeliveryClient.setMapImportDeliveryStart(client, reqId, pref.deviceId)
+        var retDelivery: MapImportDeliveryStatus? =  MapImportDeliveryStatus()
+        for (i in 0 until 3){
+            try {
+                retDelivery = MapDeliveryClient.setMapImportDeliveryStart(client, reqId, pref.deviceId)
+                break
+            }catch (e: Exception){
+                Timber.e("importDelivery - error: ${e.message.toString()}")
+                if (i == 2){
+                    this.mapRepo.update(id = id,
+                        state = MapDeliveryState.ERROR,
+                        statusMessage = app.getString(R.string.delivery_status_failed),
+                        errorContent = "importDelivery - setMapImportDeliveryStart failed: ${e.message.toString()}")
+                    return false
+                }
+                TimeUnit.SECONDS.sleep(1)
+            }
+        }
         val timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
 
         while (retDelivery?.state != MapDeliveryState.DONE) {
