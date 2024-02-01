@@ -493,7 +493,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
         return try {
             val json = JsonUtils.readJson(Paths.get(config.downloadPath, jsonName).toString())
             val footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
-            this.mapRepo.getByBBox(footprint).forEach{ pkg ->
+            this.mapRepo.getByBBox(mapPkg.bBox, footprint).forEach{ pkg ->
                 if (pkg.id.toString() != id && pkg.isUpdated){
                     Timber.e("handleJsonDone - map already exists, set to error", )
                     this.mapRepo.update(id, state = MapDeliveryState.ERROR,
@@ -670,7 +670,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
     private fun findAndRemoveDuplicates(id: String){
         Timber.i("findAndRemoveDuplicate")
         val mapPkg = this.mapRepo.getById(id) ?: return
-        val duplicates = this.mapRepo.getByBBox(mapPkg.footprint ?: mapPkg.bBox).toMutableList()
+        val duplicates = this.mapRepo.getByBBox(mapPkg.bBox, mapPkg.footprint).toMutableList()
         duplicates.removeIf { it.id.toString() == id }
 
         Timber.d("findAndRemoveDuplicate - found ${duplicates.size} duplicates")
