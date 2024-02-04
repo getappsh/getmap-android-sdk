@@ -280,6 +280,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         Timber.d("generateQrCode - append download url to json")
         json.put("downloadUrl", mapPkg.url)
+        json.put("requestedBBox", mapPkg.bBox)
         json.put("reqId", mapPkg.reqId)
 
         return qrManager.generateQrCode(json.toString(), width, height)
@@ -292,6 +293,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val json = JSONObject(jsonString)
 
         val url = json.getString("downloadUrl")
+        val bBox = json.getString("requestedBBox")
         val reqId = json.getString("reqId")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
@@ -299,7 +301,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
 
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        this.mapRepo.getByBBox(footprint).forEach {
+        this.mapRepo.getByBBox(bBox, footprint).forEach {
 //            TODO put ingestionDate in the DB Table
             val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
@@ -315,7 +317,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
         Timber.d("processQrCodeData - fileName: $jsonName")
 
-        val mapPkg = MapPkg(pId = pid, bBox = footprint, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
+        val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
             metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
             flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_continue))
 
