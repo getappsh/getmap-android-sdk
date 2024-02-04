@@ -12,6 +12,8 @@ import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 
@@ -294,6 +296,7 @@ internal class MapRepo(ctx: Context) {
         return null
     }
     private fun mapPkg2DownloadData(map: MapPkg): MapDownloadData{
+        val localZone = ZoneId.systemDefault()
         return MapDownloadData(
             id = map.id.toString(),
             footprint = map.footprint,
@@ -305,9 +308,9 @@ internal class MapRepo(ctx: Context) {
             downloadProgress = map.downloadProgress,
             errorContent = map.errorContent,
             isUpdated = map.isUpdated,
-            downloadStart = map.downloadStart,
-            downloadStop = map.downloadStop,
-            downloadDone = map.downloadDone
+            downloadStart = map.downloadStart?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
+            downloadStop = map.downloadStop?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
+            downloadDone = map.downloadDone?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)}
         )
     }
 
