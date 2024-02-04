@@ -1,20 +1,14 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.CreateImportDto
-import GetApp.Client.models.CreateImportResDto
-import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.DiscoveryMapDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoverySoftwareDto
-import GetApp.Client.models.ErrorDto
 import GetApp.Client.models.GeneralDiscoveryDto
 import GetApp.Client.models.GeoLocationDto
-import GetApp.Client.models.ImportStatusResDto
 import GetApp.Client.models.OfferingMapResDto
 import GetApp.Client.models.PersonalDiscoveryDto
 import GetApp.Client.models.PhysicalDiscoveryDto
 import GetApp.Client.models.PlatformDto
-import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
@@ -23,16 +17,16 @@ import android.graphics.Bitmap
 import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
+import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
 import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
-import com.ngsoft.getapp.sdk.models.DeliveryStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
-import com.ngsoft.getapp.sdk.models.MapImportState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
@@ -235,191 +229,19 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     }
 
     override fun getCreateMapImportStatus(inputImportRequestId: String?): CreateMapImportStatus? {
-
-        if(inputImportRequestId.isNullOrEmpty())
-            throw Exception("invalid inputImportRequestId")
-
-        val status = client.getMapApi.getMapControllerGetImportStatus(inputImportRequestId)
-        val result = CreateMapImportStatus()
-        result.importRequestId = inputImportRequestId
-        result.statusCode = Status()
-
-        result.progress = status.metaData?.progress
-
-        when(status.status) {
-            ImportStatusResDto.Status.start -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.START
-            }
-            ImportStatusResDto.Status.done -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.DONE
-            }
-            ImportStatusResDto.Status.inProgress -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.error?.message
-                result.state = MapImportState.IN_PROGRESS
-            }
-            ImportStatusResDto.Status.pending -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.IN_PROGRESS
-            }
-            ImportStatusResDto.Status.cancel -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = status.error?.message
-                result.state = MapImportState.CANCEL
-            }
-            ImportStatusResDto.Status.error -> {
-                result.statusCode!!.statusCode = StatusCode.NOT_FOUND
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-
-                if(status.error?.errorCode == ErrorDto.ErrorCode.notFound)
-                    result.statusCode!!.statusCode = StatusCode.REQUEST_ID_NOT_FOUND
-
-                result.state = MapImportState.ERROR
-            }
-            ImportStatusResDto.Status.pause -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-            ImportStatusResDto.Status.expired -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-            ImportStatusResDto.Status.archived -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-            else -> {
-                result.state = MapImportState.ERROR
-                if(status.error?.errorCode == ErrorDto.ErrorCode.notFound)
-                    result.statusCode!!.statusCode = StatusCode.REQUEST_ID_NOT_FOUND
-                else
-                    result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
-
-            }
-        }
-
-        return result
+        return MapImportClient.getCreateMapImportStatus(client, inputImportRequestId)
     }
 
     override fun createMapImport(inputProperties: MapProperties?): CreateMapImportStatus? {
-        if(inputProperties == null)
-            throw Exception("invalid inputProperties")
-
-        val params = CreateImportDto(pref.deviceId, GetApp.Client.models.MapProperties(
-            BigDecimal(12), inputProperties.boundingBox,"dummy name", inputProperties.productId,
-            BigDecimal(0), BigDecimal(0)
-        ))
-
-        val status = client.getMapApi.getMapControllerCreateImport(params)
-        val result = CreateMapImportStatus()
-        result.importRequestId = status.importRequestId
-        result.statusCode = Status()
-
-        when(status.status) {
-            CreateImportResDto.Status.start -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.START
-            }
-            CreateImportResDto.Status.done -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.DONE
-            }
-            CreateImportResDto.Status.inProgress -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.IN_PROGRESS
-            }
-            CreateImportResDto.Status.pending -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.IN_PROGRESS
-            }
-            CreateImportResDto.Status.cancel -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.state = MapImportState.CANCEL
-            }
-            CreateImportResDto.Status.error -> {
-                result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-            CreateImportResDto.Status.pause -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-            CreateImportResDto.Status.expired -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-            CreateImportResDto.Status.archived -> {
-                result.statusCode!!.statusCode = StatusCode.SUCCESS
-                result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
-                result.state = MapImportState.ERROR
-            }
-
-            else -> {
-                result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
-                result.statusCode!!.messageLog = status.error?.message
-                result.state = MapImportState.ERROR
-
-            }
-        }
-
-        return result
+        return MapImportClient.createMapImport(client, inputProperties, pref.deviceId)
     }
 
     override fun getMapImportDeliveryStatus(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        if(inputImportRequestId.isNullOrEmpty())
-            throw Exception("invalid inputImportRequestId")
-
-        val status = client.deliveryApi.deliveryControllerGetPreparedDeliveryStatus(inputImportRequestId)
-
-        Timber.d("getMapImportDeliveryStatus | download url: ${status.url}")
-
-        val result = MapImportDeliveryStatus()
-        result.importRequestId = status.catalogId
-        result.message = Status()
-        result.message!!.statusCode = StatusCode.SUCCESS
-        result.url = status.url
-
-        when (status.status){
-            PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
-            PrepareDeliveryResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
-            PrepareDeliveryResDto.Status.done -> result.state = MapDeliveryState.DONE
-            PrepareDeliveryResDto.Status.error -> result.state = MapDeliveryState.ERROR
-        }
-
-        return result
+        return MapDeliveryClient.getMapImportDeliveryStatus(client, inputImportRequestId)
     }
 
     override fun setMapImportDeliveryStart(inputImportRequestId: String?): MapImportDeliveryStatus? {
-        if(inputImportRequestId.isNullOrEmpty())
-            throw Exception("invalid inputImportRequestId")
-
-        val prepareDelivery = PrepareDeliveryReqDto(inputImportRequestId, pref.deviceId, PrepareDeliveryReqDto.ItemType.map)
-        val status = client.deliveryApi.deliveryControllerPrepareDelivery(prepareDelivery)
-
-        Timber.d("setMapImportDeliveryStart | download url: ${status.url}")
-
-        val result = MapImportDeliveryStatus()
-        result.importRequestId = inputImportRequestId
-        result.message = Status()
-        result.message!!.statusCode = StatusCode.SUCCESS
-        result.url = status.url
-
-        when (status.status){
-            PrepareDeliveryResDto.Status.start -> result.state = MapDeliveryState.START
-            PrepareDeliveryResDto.Status.inProgress -> result.state = MapDeliveryState.CONTINUE
-            PrepareDeliveryResDto.Status.done -> result.state = MapDeliveryState.DONE
-            PrepareDeliveryResDto.Status.error -> result.state = MapDeliveryState.ERROR
-        }
-
-        return result
+        return MapDeliveryClient.setMapImportDeliveryStart(client, inputImportRequestId, pref.deviceId)
     }
 
     override fun setMapImportDeliveryPause(inputImportRequestId: String?): MapImportDeliveryStatus? {
@@ -481,38 +303,5 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Timber.d("download completed...")
 
         return MapDeployState.DONE
-    }
-
-    fun pushDeliveryStatus(deliveryStatus: DeliveryStatus){
-        val status = when(deliveryStatus.state){
-            MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
-            MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done
-            MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.error
-            MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.cancelled
-            MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
-            MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
-            MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
-            MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
-        }
-
-        val dlv = DeliveryStatusDto(
-            type = DeliveryStatusDto.Type.map,
-            deviceId = pref.deviceId,
-            deliveryStatus = status,
-            catalogId = deliveryStatus.reqId,
-            downloadData = deliveryStatus.progress?.toBigDecimal(),
-            downloadStart = deliveryStatus.start,
-            downloadStop = deliveryStatus.stop,
-            downloadDone = deliveryStatus.done,
-            currentTime = OffsetDateTime.now()
-        )
-        Thread {
-            try {
-                client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
-            } catch (exc: Exception) {
-                Timber.e("sendDeliveryStatus failed error: ${exc.message.toString()}")
-                exc.printStackTrace()
-            }
-        }.start()
     }
 }

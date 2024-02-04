@@ -167,25 +167,38 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         val targetMapFile = mapPkg.fileName?.let { File(config.storagePath, it) }
         val targetJsonFile = mapPkg.jsonName?.let { File(config.storagePath, it) }
 
-        if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true){
-            if (mapPkg.state == MapDeliveryState.DONE){
+        if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true) {
+            if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
                 mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_done)
-            }else{
+            } else {
                 mapPkg.flowState = DeliveryFlowState.MOVE_FILES
             }
             return mapPkg
         }
 
+        if(targetJsonFile?.exists() != true && targetMapFile?.exists() == true){
+            if (downloadMapFile?.exists() == false){
+                try {
+                    FileUtils.moveFile(config.storagePath, config.downloadPath, targetMapFile.name)
+                }catch (e: Exception){
+                    Timber.e("refreshMapState - failed to move gpkg file to download dir, file: ${targetMapFile.name}, error: ${e.message.toString()}")
+                    deleteFile(targetMapFile)
+                }
+            }else{
+                deleteFile(targetMapFile)
+
+            }
+        }
         if(targetJsonFile?.exists() == true && targetMapFile?.exists() != true){
             if (downloadJsonFile?.exists() == false){
                 try {
                     FileUtils.moveFile(config.storagePath, config.downloadPath, targetJsonFile.name)
                 }catch (e: Exception){
                     Timber.e("refreshMapState - failed to move json file to download dir, json: ${targetJsonFile.name}, error: ${e.message.toString()}")
+                    deleteFile(targetJsonFile)
                 }
-                deleteFile(targetJsonFile)
             }else{
                 deleteFile(targetJsonFile)
             }
@@ -197,7 +210,8 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
 
         mapPkg.flowState = if (mapDone && jsonDone){
             DeliveryFlowState.DOWNLOAD_DONE
-        }else if (!downloader.isDownloadFailed(mapPkg.MDID) && !downloader.isDownloadFailed(mapPkg.JDID)){
+        }else if (!downloader.isDownloadFailed(mapPkg.MDID) && !downloader.isDownloadFailed(mapPkg.JDID) &&
+            downloadJsonFile?.exists() == true && downloadMapFile?.exists() == true){
             DeliveryFlowState.DOWNLOAD
         } else if(mapPkg.url != null) {
             DeliveryFlowState.IMPORT_DELIVERY

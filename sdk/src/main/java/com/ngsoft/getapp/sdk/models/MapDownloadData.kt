@@ -1,6 +1,6 @@
 package com.ngsoft.getapp.sdk.models
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 class MapDownloadData(
     var id: String? = null,
@@ -13,8 +13,8 @@ class MapDownloadData(
     var downloadProgress: Int = 0,
     var errorContent: String? = null,
     var isUpdated: Boolean = true,
-    var downloadStart: LocalDateTime?,
-    var downloadStop: LocalDateTime?,
-    var downloadDone: LocalDateTime?,
+    var downloadStart: OffsetDateTime?,
+    var downloadStop: OffsetDateTime?,
+    var downloadDone: OffsetDateTime?,
 )
 
