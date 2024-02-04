@@ -338,5 +338,10 @@ interface GetMapService {
          * Last server configuration update timestamp.
          */
         var lastServerConfigUpdate: OffsetDateTime?
+
+        /**
+         * Last server inventory job
+         */
+        var lastServerInventoryJob: OffsetDateTime?
     }
 }

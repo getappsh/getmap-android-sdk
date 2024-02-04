@@ -21,11 +21,14 @@ internal object ConfigClient {
     private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
         Timber.d("fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
 
+        val localZone = ZoneId.systemDefault()
         config.lastServerConfigUpdate = configDto.lastConfigUpdateDate
-            ?.atZoneSameInstant(ZoneId.systemDefault())
+            ?.atZoneSameInstant(localZone)
             ?.toOffsetDateTime() ?: config.lastServerConfigUpdate
-//        TODO
-        configDto.lastCheckingMapUpdatesDate
+
+        config.lastServerInventoryJob = configDto.lastCheckingMapUpdatesDate
+            ?.atZoneSameInstant(localZone)
+            ?.toOffsetDateTime() ?: config.lastServerInventoryJob
 
         config.lastConfigCheck = OffsetDateTime.now()
 

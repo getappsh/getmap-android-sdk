@@ -140,8 +140,14 @@ internal class ServiceConfig private constructor(private var appContext: Context
             pref.lastServerConfigUpdate = value
         }
 
+    override var lastServerInventoryJob: OffsetDateTime? = pref.lastServerInventoryJob
+        set(value) {
+            field = value
+            pref.lastServerInventoryJob = value
+        }
+
     override fun toString(): String {
-        return "ServiceConfig(storagePath='$storagePath', downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate)"
+        return "ServiceConfig(storagePath='$storagePath', downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate, lastServerInventoryJob=$lastServerInventoryJob)"
     }
 }
 
