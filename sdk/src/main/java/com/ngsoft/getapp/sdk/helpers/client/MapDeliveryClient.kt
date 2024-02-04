@@ -110,7 +110,6 @@ internal object MapDeliveryClient {
                 client.deliveryApi.deliveryControllerUpdateDownloadStatus(dlv)
             } catch (exc: Exception) {
                 Timber.e("sendDeliveryStatus failed error: ${exc.message.toString()}")
-                exc.printStackTrace()
             }
         }.start()
     }
