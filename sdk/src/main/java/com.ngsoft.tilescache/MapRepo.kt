@@ -179,7 +179,8 @@ internal class MapRepo(ctx: Context) {
                 this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)
                 this.cancelDownload = false
             }
-            else if (state == MapDeliveryState.CANCEL ||state == MapDeliveryState.PAUSE){
+            else if (state == MapDeliveryState.CANCEL ||state == MapDeliveryState.PAUSE || state == MapDeliveryState.ERROR
+                && (this.state != MapDeliveryState.CANCEL && this.state != MapDeliveryState.PAUSE && this.state != MapDeliveryState.ERROR)){
                 this.downloadStop = LocalDateTime.now(ZoneOffset.UTC)
             }else if(state == MapDeliveryState.CONTINUE){
                 this.downloadStart = LocalDateTime.now(ZoneOffset.UTC)
