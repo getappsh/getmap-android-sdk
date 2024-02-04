@@ -122,7 +122,7 @@ internal class PackageDownloader(private val context: Context, private val downl
             DownloadManager.PAUSED_UNKNOWN -> "Download paused for an unknown reason."
             DownloadManager.PAUSED_WAITING_FOR_NETWORK -> "Download paused. Waiting for network connectivity."
             DownloadManager.PAUSED_WAITING_TO_RETRY -> "Download paused due to a network error. Retrying soon."
-            else -> "HTTP error occurred. HTTP Status Code: $reason."
+            else -> context.getString(R.string.error_access_to_the_server, reason)
         }
     }
     @SuppressLint("Range")
