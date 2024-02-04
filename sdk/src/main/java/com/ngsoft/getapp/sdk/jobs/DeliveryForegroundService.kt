@@ -15,7 +15,6 @@ import com.ngsoft.getapp.sdk.models.MapDownloadData
 class DeliveryForegroundService: Service() {
 
     companion object{
-        private const val _tag = "DeliveryForegroundService"
         const val START_DELIVERY = "startDelivery"
         const val CANCEL_DELIVERY = "cancelDelivery"
 
@@ -64,7 +63,6 @@ class DeliveryForegroundService: Service() {
                 stopDelivery(id)
             }
         }
-
         return START_STICKY
     }
 
@@ -72,16 +70,6 @@ class DeliveryForegroundService: Service() {
         Timber.d("onDestroy")
 //        TODO call function from delivery manager to stop all process
         super.onDestroy()
-    }
-
-    override fun onLowMemory() {
-        Timber.d("onLowMemory")
-        super.onLowMemory()
-    }
-
-    override fun onTrimMemory(level: Int) {
-        Timber.d("onTrimMemory - level: $level")
-        super.onTrimMemory(level)
     }
     private fun startDelivery(id: String){
         Timber.i("startDelivery - for id: $id")

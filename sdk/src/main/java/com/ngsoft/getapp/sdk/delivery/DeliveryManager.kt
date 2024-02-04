@@ -705,6 +705,14 @@ internal class DeliveryManager private constructor(appCtx: Context){
         Thread{
             try{
                 this.mapRepo.setCancelDownload(id)
+//                Force cancel
+                TimeUnit.SECONDS.sleep(7)
+                if (this.mapRepo.isDownloadCanceled(id)){
+                    Timber.e("cancelDelivery - Download $id, was not canceled after 6 sec, force cancel")
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
+                    this.sendDeliveryStatus(id)
+                }
+
             }catch (e: Exception){
                 Timber.e("cancelDownload - failed to candle, error: $e", )
             }
