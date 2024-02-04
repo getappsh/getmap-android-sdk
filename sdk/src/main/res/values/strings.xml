@@ -22,7 +22,7 @@
     <string name="delivery_status_description_failed_not_exists_on_server">הבול אינו זמין יותר בענן, הפק מחדש</string>
 
     <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>
-    <string name="error_map_already_exists">בול מפה זהה כבר קיים</string>
+    <string name="error_map_already_exists">בול מפה זהה כבר קיים (במספר בקשה: %d)</string>
     <string name="error_qr_code_file_size_to_large">יצירת קוד QR נכשלה: גודל הנתונים %d בייט, גדול מדי</string>
     <string name="error_qr_failed_to_convert_to_json">נכשל בסריקה, נסה שנית</string>
 

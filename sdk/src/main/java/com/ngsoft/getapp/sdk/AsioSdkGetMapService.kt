@@ -305,7 +305,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
                 Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )
-                throw Exception(appCtx.getString(R.string.error_map_already_exists))
+                throw Exception(appCtx.getString(R.string.error_map_already_exists, it.id))
             }
         }
 
