@@ -286,7 +286,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             completed = it == downloadId
         }
 
-        downloadId = downloader.downloadFile(file2download, downloadCompletionHandler)
+        downloadId = downloader.downloadFile(file2download, onDownloadCompleted = downloadCompletionHandler)
 
         val timeoutTime = TimeSource.Monotonic.markNow() + 15.minutes
 

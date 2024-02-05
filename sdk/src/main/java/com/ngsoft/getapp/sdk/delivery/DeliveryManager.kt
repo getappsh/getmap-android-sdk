@@ -354,7 +354,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     private fun downloadFile(id: String, url: String, isJson: Boolean): Long {
         Timber.i("downloadFile")
-        val downloadId = downloader.downloadFile(url){
+        val fileName = FileUtils.getUniqueFileName(config.storagePath, FileUtils.getFileNameFromUri(url))
+        val downloadId = downloader.downloadFile(url, fileName){
             Timber.d("downloadImport - completionHandler: processing download ID=$it completion event...")
         }
         watchDownloadProgress(downloadId, id, url, isJson)

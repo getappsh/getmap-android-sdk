@@ -82,7 +82,7 @@ internal class PackagesDownloader(context: Context, downloadDirectory: String, p
         }
 
         for (file in files2download){
-            val downloadId = downloader?.downloadFile(file, downloadCompletionHandler)
+            val downloadId = downloader?.downloadFile(file, onDownloadCompleted = downloadCompletionHandler)
             Timber.d("adding downloadId = $downloadId...")
             downloads[downloadId!!] = DownloadTrack(FileUtils.getFileNameFromUri(file),0, false)
         }
