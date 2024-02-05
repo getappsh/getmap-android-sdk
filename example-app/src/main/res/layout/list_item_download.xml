@@ -51,24 +51,41 @@
 
         <Button
             android:id="@+id/btnCancelResume"
+            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Cancel"/>
+            android:text="Cancel"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/btnDelete"
+            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Delete"/>
+            android:text="Delete"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/btnQRCode"
+            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:visibility="gone"
-            android:text="QR code"/>
+            android:text="QR code"
+            android:textSize="10sp"
+            android:visibility="gone" />
+
+
+        <Button
+            android:id="@+id/btnUpdate"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Update"
+            android:textSize="10sp"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

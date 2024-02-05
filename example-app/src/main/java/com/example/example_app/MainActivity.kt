@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity() {
                 DownloadListAdapter.CANCEL_BUTTON_CLICK -> onCancel(mapId)
                 DownloadListAdapter.DELETE_BUTTON_CLICK -> onDelete(mapId)
                 DownloadListAdapter.QR_CODE_BUTTON_CLICK -> generateQrCode(mapId)
+                DownloadListAdapter.UPDATE_BUTTON_CLICK -> updateMap(mapId)
             }
         }
         recyclerView.adapter = downloadListAdapter
@@ -241,6 +242,12 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
 
+        }
+    }
+
+    private fun updateMap(id: String){
+        GlobalScope.launch(Dispatchers.IO) {
+            service.downloadUpdatedMap(id,  downloadStatusHandler)
         }
     }
 
