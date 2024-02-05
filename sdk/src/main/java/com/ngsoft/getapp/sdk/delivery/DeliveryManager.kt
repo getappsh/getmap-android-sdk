@@ -354,7 +354,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     private fun downloadFile(id: String, url: String, isJson: Boolean): Long {
         Timber.i("downloadFile")
-        val downloadId = downloader.downloadFile(url){
+        val fileName = FileUtils.getUniqueFileName(config.storagePath, FileUtils.getFileNameFromUri(url))
+        val downloadId = downloader.downloadFile(url, fileName){
             Timber.d("downloadImport - completionHandler: processing download ID=$it completion event...")
         }
         watchDownloadProgress(downloadId, id, url, isJson)
@@ -678,8 +679,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
             Timber.d("findAndRemoveDuplicate - remove: ${it.id}")
             try {
                 mapFileManager.deleteMap(it)
-                MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, MapDeliveryState.DELETED)
-                this.mapRepo.remove(id)
+                MapDeliveryClient.sendDeliveryStatus(client, mapRepo, it.id.toString(), pref.deviceId, MapDeliveryState.DELETED)
+                this.mapRepo.remove(it.id.toString())
             }catch (error: Exception){
                 Timber.e("findAndRemoveDuplicates - failed to delete the map, error: ${error.message.toString()}", )
             }

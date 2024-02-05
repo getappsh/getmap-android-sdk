@@ -22,6 +22,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         val btnCancelResume: Button = itemView.findViewById(R.id.btnCancelResume)
         val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
         val btnQRCode: Button = itemView.findViewById(R.id.btnQRCode)
+        val btnUpdate: Button = itemView.findViewById(R.id.btnUpdate)
     }
 
 
@@ -115,6 +116,15 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         holder.btnQRCode.setOnClickListener {
             onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!)
         }
+
+        if (downloadData.isUpdated){
+            holder.btnUpdate.visibility = View.GONE
+        }else{
+            holder.btnUpdate.visibility = View.VISIBLE
+        }
+        holder.btnUpdate.setOnClickListener {
+            onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!)
+        }
     }
     override fun getItemCount(): Int {
         return asyncListDiffer.currentList.size
@@ -127,7 +137,9 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         const val RESUME_BUTTON_CLICK = 1
         const val CANCEL_BUTTON_CLICK = 2
         const val QR_CODE_BUTTON_CLICK = 3
-        const val DELETE_BUTTON_CLICK = 4    }
+        const val DELETE_BUTTON_CLICK = 4
+        const val UPDATE_BUTTON_CLICK = 5
+    }
 
 
 }

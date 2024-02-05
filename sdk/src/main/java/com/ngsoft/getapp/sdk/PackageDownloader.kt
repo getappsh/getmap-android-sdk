@@ -52,19 +52,20 @@ internal class PackageDownloader(private val context: Context, private val downl
         context.unregisterReceiver(broadCastReceiver)
     }
 
-    fun downloadFile(url: String, onDownloadCompleted: (Long) -> Unit): Long {
+    fun downloadFile(url: String, fileName: String?=null, onDownloadCompleted: (Long) -> Unit): Long {
         downloadCompletedHandler = onDownloadCompleted
-        val fileName= FileUtils.getFileNameFromUri(url)
+        val name = fileName ?: FileUtils.getFileNameFromUri(url)
         val request = DownloadManager.Request(url.toUri())
             .setMimeType(parseMimeType(url))
 
             .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE)
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setTitle(fileName)
+            .setTitle(name)
+
 
             //.addRequestHeader("Authorization", "Bearer <token>")
 
-            .setDestinationInExternalPublicDir(downloadDirectory, fileName)
+            .setDestinationInExternalPublicDir(downloadDirectory, name)
 
         return downloadManager.enqueue(request)
     }

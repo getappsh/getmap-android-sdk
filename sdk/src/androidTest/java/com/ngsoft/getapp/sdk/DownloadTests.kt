@@ -59,7 +59,7 @@ class DownloadTests {
         downloadId = downloader.downloadFile(
             //"http://getmap-dev.getapp.sh/api/Download/OrthophotoBest_jordan_crop_1_0_12_2023_08_17T14_43_55_716Z.gpkg",
             "http://getmap-dev.getapp.sh/api/Download/dwnld-test123.gpkg",
-            downloadCompletionHandler
+            onDownloadCompleted = downloadCompletionHandler
         )
 
         assertNotEquals(downloadId, 0)
