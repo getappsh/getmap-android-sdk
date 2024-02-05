@@ -678,8 +678,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
             Timber.d("findAndRemoveDuplicate - remove: ${it.id}")
             try {
                 mapFileManager.deleteMap(it)
-                MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, MapDeliveryState.DELETED)
-                this.mapRepo.remove(id)
+                MapDeliveryClient.sendDeliveryStatus(client, mapRepo, it.id.toString(), pref.deviceId, MapDeliveryState.DELETED)
+                this.mapRepo.remove(it.id.toString())
             }catch (error: Exception){
                 Timber.e("findAndRemoveDuplicates - failed to delete the map, error: ${error.message.toString()}", )
             }
