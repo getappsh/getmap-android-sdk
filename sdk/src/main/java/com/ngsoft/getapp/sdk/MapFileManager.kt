@@ -124,16 +124,14 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         Timber.i("deleteFile - fileName: $fileName")
         for (path in arrayOf(config.downloadPath, config.storagePath)){
             val file = File(path, fileName)
-            Timber.d("deleteFile - File path: ${file.path}")
-
             if (!file.exists()){
-                Timber.d("deleteFile - File dose not exist. $fileName")
+                Timber.d("deleteFile - File dose not exist. ${file.path}")
                 continue
             }
             if (file.delete()) {
-                Timber.d("deleteFile - File deleted successfully. $fileName")
+                Timber.d("deleteFile - File deleted successfully. ${file.path}")
             } else {
-                Timber.d("deleteFile - Failed to delete the file. $fileName")
+                Timber.d("deleteFile - Failed to delete the file. ${file.path}")
             }
         }
     }

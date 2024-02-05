@@ -72,19 +72,21 @@ internal class MapRepo(ctx: Context) {
     fun getByBBox(bBox: String, footprint: String?=null): List<MapPkg>{
         val bBoxList = FootprintUtils.toList(bBox)
 
-        var mapList = this.getAll()
-        mapList = mapList.filter { pkg ->
+        val mapList = this.getAll()
+        val result = mutableSetOf<MapPkg>()
+
+        result.addAll(mapList.filter { pkg ->
             FootprintUtils.toList(pkg.bBox) == bBoxList ||
-                    pkg.footprint?.let { FootprintUtils.toList(it) } == bBoxList}
+                    pkg.footprint?.let { FootprintUtils.toList(it) } == bBoxList})
 
         if (footprint != null){
             val footprintList = FootprintUtils.toList(footprint)
-            mapList = mapList.filter { pkg ->
+            result.addAll(mapList.filter { pkg ->
                 FootprintUtils.toList(pkg.bBox) == footprintList ||
-                        pkg.footprint?.let { FootprintUtils.toList(it) } == footprintList}
+                        pkg.footprint?.let { FootprintUtils.toList(it) } == footprintList})
         }
 
-        return mapList
+        return result.toList()
     }
 
     fun update(
