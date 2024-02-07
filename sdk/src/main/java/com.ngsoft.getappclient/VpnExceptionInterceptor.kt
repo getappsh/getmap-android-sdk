@@ -13,7 +13,7 @@ internal class VpnExceptionInterceptor: Interceptor {
             var ex = io
             if (io.message.toString().startsWith("failed to connect to")) {
 //                TODO find a way to get it from string resources
-                ex = IOException("נסה להדליק את ה-VPN", io)
+                ex = IOException("ודא שה-VPN פועל", io)
             }
             throw ex
         }
