@@ -2,6 +2,7 @@ package com.ngsoft.getappclient
 
 import GetApp.Client.apis.LoginApi
 import GetApp.Client.models.UserLoginDto
+import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.time.OffsetDateTime
 
@@ -27,7 +28,8 @@ class AccessTokenProvider constructor(private val config: ConnectionConfig) {
     }
     private fun login(){
         Timber.d("Login")
-        val tokens = LoginApi(config.baseUrl).loginControllerGetToken(
+        val client = OkHttpClient.Builder().addInterceptor(VpnExceptionInterceptor()).build()
+        val tokens = LoginApi(config.baseUrl, client).loginControllerGetToken(
             UserLoginDto(config.user, config.password)
         )
         currentToken = tokens.accessToken.toString()

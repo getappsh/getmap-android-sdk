@@ -1,13 +1,19 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.infrastructure.ClientException
+import GetApp.Client.infrastructure.ServerException
 import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.old.DownloadProgress
 import com.ngsoft.getapp.sdk.old.PackagesDownloader
+import com.ngsoft.getappclient.VpnExceptionInterceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.IOException
 import java.util.Timer
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timer
@@ -149,6 +155,74 @@ class DownloadTests {
 
         println("download completed...")
 
+    }
+
+
+
+    @Test
+    fun vpnInterceptorTest(){
+        val client = OkHttpClient.Builder()
+            .addInterceptor(VpnExceptionInterceptor())
+            .build()
+        val request = Request.Builder().url("http://even.np.pz/").build()
+
+        try {
+            val res = client.newCall(request).execute()
+            println(res)
+        }catch (e: IOException){
+            println("IOException")
+            println(e.message.toString())
+            e.printStackTrace()
+        }catch (e: UnsupportedOperationException){
+            println("UnsupportedOperationException")
+            println(e.message.toString())
+            e.printStackTrace()
+        }catch (e: ClientException){
+            println("ClientException")
+            println(e.message.toString())
+            e.printStackTrace()
+        }catch (e: ServerException){
+            println("ServerException")
+            println(e.message.toString())
+            e.printStackTrace()
+        }
+
+    }
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun vpnDownloadTest(){
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val downloader = PackageDownloader(appContext, Environment.DIRECTORY_DOWNLOADS)
+        var completed = false
+        val downloadId = downloader.downloadFile(
+     "http://even.np.pz/a.json"
+        ){
+            println("download info = ${downloader.queryStatus(it)}")
+            completed = true
+        }
+
+
+        val tmr = timer(initialDelay = 0, period = 250 ) {
+            val progress = downloader.queryProgress(downloadId)
+            println("download info = ${downloader.queryStatus(downloadId)}")
+
+        }
+
+
+        val timeoutTime = TimeSource.Monotonic.markNow() + 30.seconds
+
+        while(!completed){
+            TimeUnit.SECONDS.sleep(1)
+            println("awaiting download completion...")
+
+            if(timeoutTime.hasPassedNow()){
+                println("breaking wait loop")
+                break
+            }
+
+        }
+
+        tmr.cancel()
     }
 
 }

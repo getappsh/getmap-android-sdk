@@ -40,6 +40,7 @@ internal class GetAppClient(config: ConnectionConfig) {
                     .build()
                 chain.proceed(request)
             })
+            .addInterceptor(VpnExceptionInterceptor())
             .build()
 
         deviceApi = DeviceDiscoveryApi(config.baseUrl, client)
