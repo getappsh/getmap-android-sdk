@@ -24,8 +24,8 @@ class Pref private constructor(context: Context) {
     var deviceId: String
         get(){
             var currentDeviceId = getString(DEVICE_ID, "")
-            if (currentDeviceId.isNotEmpty()){
-                currentDeviceId =  generateDeviceId()
+            if (currentDeviceId.isEmpty()){
+                currentDeviceId = generateDeviceId()
             }
             return currentDeviceId
         }
