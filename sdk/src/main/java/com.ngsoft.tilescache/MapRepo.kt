@@ -64,7 +64,7 @@ internal class MapRepo(ctx: Context) {
     fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
         Timber.i("getAllMapsLiveData")
         if (mapMutableLiveHase.value?.isEmpty() != false){
-            Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
+            Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! }.toConcurrentHashMap()) }.start()
         }
         return mapLiveList
     }
@@ -258,7 +258,7 @@ internal class MapRepo(ctx: Context) {
             downloadStatusHandlers[id]?.invoke(map)
 
             if (mapMutableLiveHase.value?.isEmpty() != false){
-                Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! } as HashMap) }.start()
+                Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! }.toConcurrentHashMap()) }.start()
             }else{
                 mapMutableLiveHase.value?.set(id, map)
                 mapMutableLiveHase.postValue(mapMutableLiveHase.value)
@@ -321,6 +321,12 @@ internal class MapRepo(ctx: Context) {
         downloadStatusHandlers[id] = dsh
     }
 
+
+    private fun <K, V> Map<K, V>.toConcurrentHashMap(): ConcurrentHashMap<K, V> {
+        val concurrentHashMap = ConcurrentHashMap<K, V>()
+        concurrentHashMap.putAll(this)
+        return concurrentHashMap
+    }
     companion object {
         val downloadStatusHandlers = ConcurrentHashMap<String, (MapDownloadData) -> Unit>()
         var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
@@ -332,7 +338,7 @@ internal class MapRepo(ctx: Context) {
             customOrder.indexOf(it.deliveryStatus).let { index -> if (index == -1) Int.MAX_VALUE else index }
         }.thenByDescending{ it.id }
 
-        private val mapMutableLiveHase = MutableLiveData(hashMapOf<String, MapDownloadData>())
+        private val mapMutableLiveHase = MutableLiveData(ConcurrentHashMap<String, MapDownloadData>())
         private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
             it.values.toList().sortedWith(comparator)
         }
