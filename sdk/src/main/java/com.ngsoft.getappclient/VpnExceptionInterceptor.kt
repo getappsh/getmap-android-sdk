@@ -11,7 +11,7 @@ internal class VpnExceptionInterceptor: Interceptor {
         } catch (io: IOException) {
 //            TODO it's not good to check vpn error by string compare
             var ex = io
-            if (io.message.toString().startsWith("failed to connect to")) {
+            if (io.message.toString().lowercase().startsWith("unable to resolve host")) {
 //                TODO find a way to get it from string resources
                 ex = IOException("ודא שה-VPN פועל", io)
             }
