@@ -98,6 +98,7 @@ class MainActivity : AppCompatActivity() {
                 DownloadListAdapter.DELETE_BUTTON_CLICK -> onDelete(mapId)
                 DownloadListAdapter.QR_CODE_BUTTON_CLICK -> generateQrCode(mapId)
                 DownloadListAdapter.UPDATE_BUTTON_CLICK -> updateMap(mapId)
+                DownloadListAdapter.ITEM_VIEW_CLICK -> itemViewClick(mapId)
             }
         }
         recyclerView.adapter = downloadListAdapter
@@ -134,6 +135,12 @@ class MainActivity : AppCompatActivity() {
         scanQRButton.setOnClickListener {
             barcodeLauncher.launch(ScanOptions())
         }
+
+        Thread{
+            service.getDownloadedMaps().forEach {
+                service.registerDownloadHandler(it.id!!, downloadStatusHandler)
+            }
+        }.start()
 
 
     }
@@ -251,6 +258,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun itemViewClick(id: String){
+        Log.d(TAG, "itemViewClick - id $id")
+        GlobalScope.launch(Dispatchers.IO) {
+            val map = service.getDownloadedMap(id)
+            val str = map?.let {
+                        "id=${it.id}, \n" +
+//                        "footprint=${it.footprint}, \n" +
+//                        "fileName=${it.fileName}, \n" +
+//                        "jsonName=${it.jsonName}, \n" +
+//                        "deliveryStatus=${it.deliveryStatus}, \n" +
+//                        "url=${it.url}, \n" +
+                        "statusMessage=${it.statusMessage}, \n" +
+                        "downloadProgress=${it.downloadProgress}, \n" +
+//                        "errorContent=${it.errorContent}, \n" +
+                        "isUpdated=${it.isUpdated}, \n " +
+                        "downloadStart=${it.downloadStart}, \n" +
+                        "downloadStop=${it.downloadStop}, \n" +
+                        "downloadDone=${it.downloadDone}"
+            }.toString()
+            runOnUiThread { showDialog(str) }
+        }
+    }
 
     private fun showErrorDialog(msg: String) {
         val builder = AlertDialog.Builder(this)
@@ -265,6 +294,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun showDialog(msg: String){
+        val builder = AlertDialog.Builder(this)
+        builder.setMessage(msg)
+        val dialog = builder.create()
+        dialog.show()
+    }
     private fun showLoadingDialog(title: String, id: String? = null) {
         progressDialog = ProgressDialog(this)
         progressDialog?.setTitle(title)
