@@ -96,6 +96,15 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 )
                 this.sendDeliveryStatus(id)
             }
+        }catch (e: Exception){
+            Timber.e("executeDeliveryFlow - exception:  ${e.message.toString()}")
+            this.mapRepo.update(
+                id = id,
+                state = MapDeliveryState.ERROR,
+                statusMessage = app.getString(R.string.delivery_status_failed),
+                errorContent = e.message.toString()
+            )
+            this.sendDeliveryStatus(id)
         }
 
     }
