@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal class MapRepo(ctx: Context) {
 
-    private val _tag = "MapRepo"
     private val db: TilesDatabase
     private val dao: MapDAO
 
@@ -109,25 +108,25 @@ internal class MapRepo(ctx: Context) {
         jsonAttempt: Int? = null,
         jsonDone: Boolean? = null
     ) {
-        updateInternal(
+        this.dao.updateMapFields(
             id,
-            reqId,
-            JDID,
-            MDID,
-            state,
-            flowState,
-            statusMessage,
-            fileName,
-            jsonName,
-            url,
-            downloadProgress,
-            errorContent,
-            validationAttempt,
-            connectionAttempt,
-            mapAttempt,
-            mapDone,
-            jsonAttempt,
-            jsonDone
+            reqId=reqId,
+            JDID=JDID,
+            MDID=MDID,
+            state=state,
+            flowState=flowState,
+            statusMessage=statusMessage,
+            fileName=fileName,
+            jsonName=jsonName,
+            url=url,
+            downloadProgress=downloadProgress,
+            errorContent=errorContent,
+            validationAttempt=validationAttempt,
+            connectionAttempt=connectionAttempt,
+            mapAttempt=mapAttempt,
+            mapDone=mapDone,
+            jsonAttempt=jsonAttempt,
+            jsonDone=jsonDone
         )
         invoke(id)
     }
@@ -151,7 +150,7 @@ internal class MapRepo(ctx: Context) {
         mapDone: Boolean? = null,
         jsonAttempt: Int? = null,
         jsonDone: Boolean? = null,
-        cancelDownland: Boolean? = null
+        cancelDownload: Boolean? = null
     ){
         val mapPkg = this.getById(id);
         mapPkg?.apply {
@@ -166,7 +165,7 @@ internal class MapRepo(ctx: Context) {
             this.statusMessage = statusMessage ?: this.statusMessage
             this.downloadProgress = downloadProgress ?: this.downloadProgress
             this.errorContent = errorContent ?: this.errorContent
-            this.cancelDownload = cancelDownland ?: this.cancelDownload
+            this.cancelDownload = cancelDownload ?: this.cancelDownload
 
             this.metadata.validationAttempt = validationAttempt ?: this.metadata.validationAttempt
             this.metadata.connectionAttempt = connectionAttempt ?: this.metadata.connectionAttempt
@@ -202,15 +201,12 @@ internal class MapRepo(ctx: Context) {
 
 
     fun updateAndReturn(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null): MapPkg?{
-        dao.updateFileDone(id, mapDone=mapDone, fileName=fileName, jsonDone=jsonDone, jsonName=jsonName)
+        dao.updateMapFields(id, mapDone=mapDone, fileName=fileName, jsonDone=jsonDone, jsonName=jsonName)
         return this.getById(id)
     }
 
     fun setFootprint(id: String, footprint: String){
-        this.getById(id)?.apply {
-            this.footprint = footprint
-            dao.update(this)
-        }
+        this.dao.updateMapFields(id, footprint=footprint)
     }
     fun getById(id: String): MapPkg?{
         return try{
@@ -241,7 +237,7 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun setCancelDownload(id: String){
-        this.updateInternal(id, cancelDownland = true)
+        this.dao.updateMapFields(id, cancelDownload = true)
     }
 
     fun getReqId(id: String): String?{
@@ -275,10 +271,7 @@ internal class MapRepo(ctx: Context) {
     }
 
     fun setMapUpdated(id: String, isUpdated: Boolean){
-        this.getById(id)?.let {
-            it.isUpdated = isUpdated
-            dao.update(it)
-        }
+        this.dao.updateMapFields(id, isUpdated=isUpdated)
     }
     fun getMapsToUpdate(): List<String>{
         return this.getAll().filter { !it.isUpdated }.map { it.id.toString() }

@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import com.ngsoft.tilescache.models.DeliveryFlowState
 
 import com.ngsoft.tilescache.models.MapPkg
 
@@ -33,8 +35,6 @@ interface MapDAO {
         return getById(mapPkg.id)
     }
 
-    @Query("UPDATE MapPkg set mapDone = COALESCE(:mapDone, mapDone), jsonDone = COALESCE(:jsonDone, jsonDone), fileName = COALESCE(:fileName, fileName), jsonName = COALESCE(:jsonName, jsonName) where id = :id")
-    fun updateFileDone(id: String, mapDone: Boolean?=null, fileName: String?=null, jsonDone: Boolean?=null, jsonName: String?=null)
     @Query("DELETE FROM MapPkg WHERE id = :id")
     fun deleteById(id: Int)
 
@@ -46,4 +46,64 @@ interface MapDAO {
 
     @Query("DELETE FROM MapPkg")
     fun nukeTable()
+
+    @Query("UPDATE MapPkg SET " +
+            "reqId = COALESCE(:reqId, reqId), " +
+            "JDID = COALESCE(:JDID, JDID), " +
+            "MDID = COALESCE(:MDID, MDID), " +
+            "fileName = COALESCE(:fileName, fileName), " +
+            "jsonName = COALESCE(:jsonName, jsonName), " +
+            "url = COALESCE(:url, url), " +
+            "flowState = COALESCE(:flowState, flowState), " +
+            "statusMessage = COALESCE(:statusMessage, statusMessage), " +
+            "downloadProgress = COALESCE(:downloadProgress, downloadProgress), " +
+            "errorContent = COALESCE(:errorContent, errorContent), " +
+            "cancelDownload = CASE WHEN :state = 'CANCEL' AND cancelDownload = 1 THEN 0 ELSE COALESCE(:cancelDownload, cancelDownload) END, "+
+            "footprint = COALESCE(:footprint, footprint), "+
+            "isUpdated = COALESCE(:isUpdated, isUpdated), "+
+            "validationAttempt = COALESCE(:validationAttempt, validationAttempt), " +
+            "connectionAttempt = COALESCE(:connectionAttempt, connectionAttempt), " +
+            "mapAttempt = COALESCE(:mapAttempt, mapAttempt), " +
+            "mapDone = COALESCE(:mapDone, mapDone), " +
+            "jsonAttempt = COALESCE(:jsonAttempt, jsonAttempt), " +
+            "jsonDone = COALESCE(:jsonDone, jsonDone), " +
+            "downloadStop = CASE " +
+            "WHEN :state = 'CANCEL' AND cancelDownload = 1 THEN strftime('%s', 'now')  " +
+            "WHEN (:state = 'CANCEL' OR :state = 'PAUSE' OR :state = 'ERROR') AND state NOT IN ('CANCEL', 'PAUSE', 'ERROR') THEN strftime('%s', 'now')  " +
+            "ELSE downloadStop " +
+            "END, " +
+            "state = COALESCE(:state, state), " +
+            "downloadStart = CASE " +
+            "WHEN :state = 'CONTINUE' THEN strftime('%s', 'now')  " +
+            "WHEN :state IN ('START', 'CONTINUE', 'DOWNLOAD') AND downloadStart IS NULL THEN strftime('%s', 'now')  " +
+            "ELSE downloadStart " +
+            "END, " +
+            "downloadDone = CASE " +
+            "WHEN :state = 'DONE' THEN strftime('%s', 'now')  " +
+            "ELSE downloadDone " +
+            "END " +
+            "WHERE id = :id")
+    fun updateMapFields(
+        id: String,
+        reqId: String?=null,
+        JDID: Long?=null,
+        MDID: Long?=null,
+        state: MapDeliveryState?=null,
+        flowState: DeliveryFlowState?=null,
+        statusMessage: String?=null,
+        fileName: String?=null,
+        jsonName: String?=null,
+        url: String?=null,
+        downloadProgress: Int?=null,
+        errorContent: String?=null,
+        validationAttempt: Int?=null,
+        connectionAttempt: Int?=null,
+        mapAttempt: Int?=null,
+        mapDone: Boolean?=null,
+        jsonAttempt: Int?=null,
+        jsonDone: Boolean?=null,
+        footprint: String?=null,
+        isUpdated: Boolean?=null,
+        cancelDownload: Boolean?=null
+    )
 }
