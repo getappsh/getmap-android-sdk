@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
+        Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryStatus.name}")
     }
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {

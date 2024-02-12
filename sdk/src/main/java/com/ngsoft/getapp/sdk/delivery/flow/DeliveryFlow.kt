@@ -4,6 +4,7 @@ import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.delivery.DeliveryContext
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import timber.log.Timber
 
@@ -38,5 +39,15 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
         mapPkg.JDID?.let { downloader.cancelDownload(it) }
         mapPkg.MDID?.let { downloader.cancelDownload(it) }
 
+    }
+// TODO dose not need to be here
+    protected fun downloadFile(url: String): Long {
+        Timber.i("downloadFile")
+        val fileName = FileUtils.getUniqueFileName(config.storagePath, FileUtils.getFileNameFromUri(url))
+        val downloadId = downloader.downloadFile(url, fileName){
+            Timber.d("downloadImport - completionHandler: processing download ID=$it completion event...")
+        }
+
+        return downloadId
     }
 }
