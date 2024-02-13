@@ -125,6 +125,10 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         holder.btnUpdate.setOnClickListener {
             onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!)
         }
+
+        holder.itemView.setOnClickListener{
+            onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!)
+        }
     }
     override fun getItemCount(): Int {
         return asyncListDiffer.currentList.size
@@ -139,6 +143,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         const val QR_CODE_BUTTON_CLICK = 3
         const val DELETE_BUTTON_CLICK = 4
         const val UPDATE_BUTTON_CLICK = 5
+        const val ITEM_VIEW_CLICK = 6
     }
 
 

@@ -14,6 +14,7 @@ import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
 import android.content.Context.BATTERY_SERVICE
 import android.graphics.Bitmap
+import android.net.ConnectivityManager
 import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
@@ -163,6 +164,32 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
 //==================================================================================================
 
+
+    private fun getBandwidthQuality(): Int? {
+        val connectivityManager = appCtx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val network = connectivityManager.activeNetwork
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+
+        if (networkCapabilities != null) {
+            val downloadSpeedMbps = networkCapabilities.linkDownstreamBandwidthKbps / 1000 // Convert to Mbps
+//            return when {
+//                downloadSpeedMbps >= 50 -> 10
+//                downloadSpeedMbps >= 40 -> 9
+//                downloadSpeedMbps >= 30 -> 8
+//                downloadSpeedMbps >= 20 -> 7
+//                downloadSpeedMbps >= 10 -> 6
+//                downloadSpeedMbps >= 5 -> 5
+//                downloadSpeedMbps >= 3 -> 4
+//                downloadSpeedMbps >= 2 -> 3
+//                downloadSpeedMbps >= 1 -> 2
+//                else -> 1
+//            }
+            return downloadSpeedMbps
+        }
+
+        return null
+    }
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
         Timber.i("getDiscoveryCatalog")
 
@@ -172,7 +199,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusMap,
             GeneralDiscoveryDto(
                 PersonalDiscoveryDto("user-1","idNumber-123","personalNumber-123"),
-                SituationalDiscoveryDto( BigDecimal("23"), BigDecimal("2"),
+                SituationalDiscoveryDto( BigDecimal("23"), bandwidth=getBandwidthQuality()?.let { BigDecimal(it) },
                     OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), true,
                     batteryPower.toBigDecimal(),
                     GeoLocationDto("33.4","23.3", "344")
