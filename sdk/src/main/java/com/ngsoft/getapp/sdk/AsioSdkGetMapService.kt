@@ -10,8 +10,8 @@ import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
-import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
+import com.ngsoft.getapp.sdk.models.MapDownloadData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.qr.QRManager
 import com.ngsoft.getapp.sdk.utils.DateHelper
@@ -22,8 +22,13 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.DownloadMetadata
 import com.ngsoft.tilescache.models.MapPkg
+import com.ravtech.matomo.MatomoTracker
 import org.json.JSONException
 import org.json.JSONObject
+import org.matomo.sdk.QueryParams
+import org.matomo.sdk.TrackMe
+import org.matomo.sdk.Tracker
+import org.matomo.sdk.extra.TrackHelper
 import timber.log.Timber
 import java.io.File
 import java.time.format.DateTimeFormatter
@@ -33,12 +38,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private lateinit var mapRepo: MapRepo
     private lateinit var qrManager: QRManager
+//    private lateinit var tracker: Tracker
+
 
     override fun init(configuration: Configuration): Boolean {
         super.init(configuration)
 
         mapRepo = MapRepo(appCtx)
         qrManager = QRManager(appCtx)
+//        tracker = MatomoTracker.getTracker(appCtx)
 
         val isDeliveryServiceRunning = appCtx.isServiceRunning(DeliveryForegroundService::class.java)
         Timber.d("init - delivery service running: $isDeliveryServiceRunning")
@@ -65,7 +73,17 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return this.mapRepo.getAllMapsLiveData()
     }
     override fun purgeCache(){
-        mapRepo.purge()
+//        mapRepo.purge()
+
+        Timber.i("current-time")
+        try {
+            MatomoTracker.getTracker(appCtx).dispatchInterval = 1
+            TrackHelper.track().event("current-time", pref.deviceId).name("mills").value(System.currentTimeMillis().toFloat()).with(MatomoTracker.getTracker(appCtx));
+        }catch (e: Exception){
+            Timber.e("Error: ${e.message.toString()}")
+        }
+
+
     }
     override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
         Timber.i("downloadMap")
@@ -110,7 +128,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Timber.i("isEnoughSpace")
         val availableSpace = FileUtils.getAvailableSpace(path)
         if ((requiredSpaceMB * 1024 * 1024) >= availableSpace){
-            Timber.e("isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpaceMB", )
+            Timber.e("isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpaceMB")
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
@@ -223,12 +241,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
     override fun deleteMap(id: String){
-        Timber.d("deleteMap - id: $id")
-        val mapPkg = this.mapRepo.getById(id)
-        mapFileManager.deleteMap(mapPkg)
+        Timber.i("Hello World")
+        try {
+            MatomoTracker.getTracker(appCtx).dispatchInterval = 1
+            TrackHelper.track().event("Hello, World!", pref.deviceId).name("Hello, World!").value(System.currentTimeMillis().toFloat()).with(MatomoTracker.getTracker(appCtx));
+        }catch (e: Exception){
+            Timber.e("Error: ${e.message.toString()}")
+        }
 
-        MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, MapDeliveryState.DELETED)
-        this.mapRepo.remove(id)
+//        Timber.d("deleteMap - id: $id")
+//        val mapPkg = this.mapRepo.getById(id)
+//        mapFileManager.deleteMap(mapPkg)
+//
+//        MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, MapDeliveryState.DELETED)
+//        this.mapRepo.remove(id)
     }
 
     override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
@@ -306,7 +332,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
-                Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )
+                Timber.e("processQrCodeData - map with the same or grater ingestion date already exist")
                 throw Exception(appCtx.getString(R.string.error_map_already_exists, it.id))
             }
         }

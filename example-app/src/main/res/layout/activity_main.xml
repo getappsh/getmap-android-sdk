@@ -10,13 +10,13 @@
         android:id="@+id/discovery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Discovery"
+        android:text="Current Time"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.187"
+        app:layout_constraintHorizontal_bias="0.143"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.049" />
+        app:layout_constraintVertical_bias="0.061" />
 
     <TextView
         android:id="@+id/selectedProduct"
@@ -29,7 +29,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.528"
         app:layout_constraintStart_toEndOf="@+id/discovery"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        />
 
     <Button
         android:id="@+id/delivery"
@@ -41,7 +43,9 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/selectedProduct"
-        app:layout_constraintVertical_bias="0.057" />
+        app:layout_constraintVertical_bias="0.057"
+        android:visibility="gone"
+        />
 
     <Button
         android:id="@+id/d_test"
@@ -51,17 +55,20 @@
         app:layout_constraintEnd_toStartOf="@id/delivery"
         app:layout_constraintHorizontal_bias="0.363"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/delivery" />
+        app:layout_constraintTop_toTopOf="@+id/delivery"
+        android:visibility="gone"
+        />
 
     <Button
         android:id="@+id/scanQR"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Scan QR"
+        android:text="Hello, World!"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.363"
         app:layout_constraintStart_toEndOf="@+id/delivery"
-        app:layout_constraintTop_toTopOf="@+id/delivery" />
+        app:layout_constraintTop_toTopOf="@+id/delivery"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -74,5 +81,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/delivery"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"
+        android:visibility="gone"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import android.content.Context
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import com.ravtech.matomo.MatomoTracker
 import java.time.OffsetDateTime
 
 internal class ServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
@@ -96,18 +97,22 @@ internal class ServiceConfig private constructor(private var appContext: Context
         set(value) {
             field = value
             pref.matomoUrl = value
+            MatomoTracker.rebuildTracker(appContext)
         }
     override var matomoDimensionId: String = pref.matomoDimensionId
         set(value) {
             field  = value
             pref.matomoDimensionId = value
+            MatomoTracker.rebuildTracker(appContext)
         }
 
     override var matomoSiteId: String = pref.matomoSiteId
         set(value) {
             field  = value
             pref.matomoSiteId = value
+            MatomoTracker.rebuildTracker(appContext)
         }
+
     override var matomoUpdateIntervalMins: Int = pref.matomoUpdateIntervalMins
         set(value) {
             field = value

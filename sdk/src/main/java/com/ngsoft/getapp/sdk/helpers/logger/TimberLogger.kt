@@ -15,10 +15,10 @@ internal object TimberLogger {
 
          val fileTree = FileLoggerTree.Builder()
              .withFileName("file%g.log")
-             .withDirName(Environment.getExternalStorageDirectory().toString() + "/GetApp/Logs")
+             .withDirName(Environment.getExternalStorageDirectory().toString() + "/GetApp/All-Logs")
              .withSizeLimit(maxFileSize)
              .withFileLimit(maxFiles)
-             .withMinPriority(Log.WARN)
+             .withMinPriority(Log.VERBOSE)
              .appendToFile(true)
              .build()
          Timber.plant(

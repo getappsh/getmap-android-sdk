@@ -89,7 +89,7 @@ dependencies {
     ksp "androidx.room:room-compiler:$room_version"
 
     implementation 'junit:junit:4.12'
-
+    implementation 'com.github.matomo-org:matomo-sdk-android:4.1.4'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
