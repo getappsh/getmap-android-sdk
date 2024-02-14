@@ -12,10 +12,11 @@ internal object TimberLogger {
          val maxFileSize = 1024 * 1024 * 2// 2 MB
          val maxFiles = 5
 
+         val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString()  + "/GetApp/All-Logs"
 
          val fileTree = FileLoggerTree.Builder()
              .withFileName("file%g.log")
-             .withDirName(Environment.getExternalStorageDirectory().toString() + "/GetApp/All-Logs")
+             .withDirName(dir)
              .withSizeLimit(maxFileSize)
              .withFileLimit(maxFiles)
              .withMinPriority(Log.VERBOSE)
