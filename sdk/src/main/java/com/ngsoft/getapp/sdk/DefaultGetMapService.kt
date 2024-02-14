@@ -57,7 +57,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
 
-    override val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
+    override val config = ServiceConfig.getInstance(appCtx)
 
     open fun init(configuration: Configuration): Boolean {
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler())

@@ -2,7 +2,7 @@ package com.ngsoft.getapp.sdk.helpers.client
 
 import GetApp.Client.models.MapConfigDto
 import timber.log.Timber
-import com.ngsoft.getapp.sdk.GetMapService
+import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getappclient.GetAppClient
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -10,7 +10,7 @@ import java.time.ZoneId
 internal object ConfigClient {
     private const val _tag = "ConfigClientHelper"
 
-    fun fetchUpdates(client: GetAppClient, config: GetMapService.GeneralConfig, deviceId: String){
+    fun fetchUpdates(client: GetAppClient, config: ServiceConfig, deviceId: String){
         Timber.i("getUpdates")
 
         val configRes = client.getMapApi.getMapControllerGetMapConfig(deviceId)
@@ -18,7 +18,7 @@ internal object ConfigClient {
         updateConfigFromDto(config, configRes)
     }
 
-    private fun updateConfigFromDto(config: GetMapService.GeneralConfig, configDto: MapConfigDto){
+    private fun updateConfigFromDto(config: ServiceConfig, configDto: MapConfigDto){
         Timber.d("fetchUpdates -  applyServerConfig: ${config.applyServerConfig}")
 
         val localZone = ZoneId.systemDefault()

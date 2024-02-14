@@ -240,12 +240,12 @@ interface GetMapService {
         /**
          * Path where maps are stored locally.
          */
-        var storagePath: String
+        val storagePath: String
 
         /**
          * Path where downloaded maps are saved.
          */
-        var downloadPath: String
+        val downloadPath: String
 
         /**
          * Timeout duration for map delivery operations in minutes.
@@ -270,7 +270,7 @@ interface GetMapService {
         /**
          * Maximum allowable size for a map in Square Kilometer.
          */
-        var maxMapAreaSqKm: Long
+        val maxMapAreaSqKm: Long
 
         /**
          * Maximum number of parallel downloads allowed.
@@ -322,7 +322,7 @@ interface GetMapService {
         /**
          * Minimum Inclusion of footprint in a map product in percentages.
          */
-        var mapMinInclusionPct: Int
+        val mapMinInclusionPct: Int
 
         /**
          * Last configuration check timestamp.
