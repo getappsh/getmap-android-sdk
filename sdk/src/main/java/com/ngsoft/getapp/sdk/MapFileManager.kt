@@ -37,41 +37,41 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
 //    TODO clean this
     fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<String, String>{
         //        TODO fined better way to handle when file exist and have not been downloaded
-        val pkgFile = File(config.downloadPath, pkgName)
-        if (!pkgFile.exists() && !File(config.storagePath, pkgName).exists()){
-            throw IOException("File $pkgName, doesn't exist")
+        val pkgFileD = File(config.downloadPath, pkgName)
+        val pkgFileT = File(config.storagePath, pkgName)
+
+        val pkgPath = if (pkgFileD.exists()) pkgFileD.path else {
+            if (!pkgFileT.exists()) throw IOException("File $pkgName doesn't exist")
+            pkgFileT.path
         }
-        val jsonFile = File(config.downloadPath, jsonName)
-        if (!jsonFile.exists() && !File(config.storagePath, jsonName).exists()){
-            throw IOException("File $jsonName, doesn't exist")
+
+        val jsonFileD = File(config.downloadPath, jsonName)
+        val jsonFileT = File(config.storagePath, jsonName)
+
+        val jsonPath = if (jsonFileD.exists()) jsonFileD.path else {
+            if (!jsonFileT.exists()) throw IOException("File $jsonName doesn't exist")
+            jsonFileT.path
         }
 
         val newJsonName = FileUtils.changeFileExtensionToJson(pkgName)
         val names = FileUtils.getUniqueFilesName(config.storagePath, pkgName, newJsonName)
 
-        if (!(File(config.storagePath, pkgName).exists() && names.first == pkgName)){
-            if (FileUtils.getAvailableSpace(config.storagePath) <= pkgFile.length()){
+        moveFileIfRequired(pkgPath, pkgFileT, names.first)
+        moveFileIfRequired(jsonPath, jsonFileT, names.second)
+
+        return names
+    }
+    private fun moveFileIfRequired(filePath: String, targetFile: File, newName: String) {
+        if (!(targetFile.exists() && targetFile.name == newName)) {
+            if (FileUtils.getAvailableSpace(config.storagePath) <= File(filePath).length()) {
                 throw IOException(appCtx.getString(R.string.error_not_enough_space))
             }
             Files.move(
-                Paths.get(config.downloadPath, pkgName),
-                Paths.get(config.storagePath, names.first),
-                StandardCopyOption.REPLACE_EXISTING)
-        }
-
-
-        if (!(File(config.storagePath, jsonName).exists() && names.second == jsonName)) {
-            if (FileUtils.getAvailableSpace(config.storagePath) <= jsonFile.length()){
-                throw IOException(appCtx.getString(R.string.error_not_enough_space))
-            }
-            Files.move(
-                Paths.get(config.downloadPath, jsonName),
-                Paths.get(config.storagePath, names.second),
+                Paths.get(filePath),
+                Paths.get(config.storagePath, newName),
                 StandardCopyOption.REPLACE_EXISTING
             )
-
         }
-        return names
     }
     fun moveFileToTargetDir(fileName: String): String {
         val downloadFile = File(config.downloadPath, fileName)
