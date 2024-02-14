@@ -2,9 +2,13 @@ package com.example.example_app
 
 import android.app.ProgressDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
@@ -12,6 +16,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -55,17 +60,19 @@ class MainActivity : AppCompatActivity() {
 
     private val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
     }
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        if (!Environment.isExternalStorageManager()){
-//            val intent = Intent()
-//            intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
-//            val uri = Uri.fromParts("package", this.packageName, null)
-//            intent.data = uri
-//            startActivity(intent)
-//        }
+        if (!Environment.isExternalStorageManager()){
+            val intent = Intent()
+            intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
+            val uri = Uri.fromParts("package", this.packageName, null)
+            intent.data = uri
+            startActivity(intent)
+        }
+
 
         val cfg = Configuration(
             "http://getapp-test.getapp.sh:3000",
