@@ -48,6 +48,7 @@ internal object ConfigClient {
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
         config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
         config.matomoDimensionId = configDto.matomoDimensionId ?: config.matomoDimensionId
+        config.matomoUpdateIntervalMins = configDto.periodicMatomoIntervalMins?.toInt() ?: config.matomoUpdateIntervalMins
 
         Timber.v("updateConfigFromDto - config: $config")
     }
