@@ -37,7 +37,16 @@ class DownloadTests {
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"  tools:node="replace" />
     run test on device - it will fail on permission, then run:
     adb shell pm grant com.ngsoft.getapp.sdk.test android.permission.WRITE_EXTERNAL_STORAGE
+    adb shell -d pm grant com.ngsoft.getapp.sdk.test android.permission.WRITE_EXTERNAL_STORAGE
     and run again
+     or run this from an app
+    if (!Environment.isExternalStorageManager()){
+    val intent = Intent()
+    intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
+    val uri = Uri.fromParts("package", "com.ngsoft.getapp.sdk.test", null)
+    intent.data = uri
+    startActivity(intent)
+    }
     */
 //    @JvmField
 //    @get:Rule
