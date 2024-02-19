@@ -2,7 +2,6 @@ package com.ravtech.matomo
 
 import android.content.Context
 import com.ngsoft.getapp.sdk.Pref
-import com.ngsoft.getapp.sdk.ServiceConfig
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
@@ -34,6 +33,7 @@ class MatomoTracker private constructor(){
         fun rebuildTracker(context: Context){
             Timber.d("rebuildTracker")
             tracker?.dispatchInterval = -1
+            tracker?.dispatch()
             synchronized(this){
                 tracker = initTracker(context)
             }
