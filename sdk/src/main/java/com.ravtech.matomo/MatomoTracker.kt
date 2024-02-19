@@ -23,13 +23,16 @@ class MatomoTracker private constructor(){
         private fun initTracker(context: Context): Tracker{
             val pref = Pref.getInstance(context)
 //            TODO pref.matomoSiteId.toInt() catch error
-            return TrackerBuilder.createDefault(pref.matomoUrl, pref.matomoSiteId.toInt())
+            val tracker = TrackerBuilder.createDefault(pref.matomoUrl, pref.matomoSiteId.toInt())
                 .build(Matomo.getInstance(context))
+            tracker.dispatchInterval =  1000L * 60 * pref.matomoUpdateIntervalMins
+            Timber.d("1 Matomo dispatchInterval: ${tracker.dispatchInterval}")
+            return tracker
         }
 
         fun rebuildTracker(context: Context){
             Timber.d("rebuildTracker")
-            tracker?.dispatchInterval = 1000 * 1000 * 1000
+            tracker?.dispatchInterval = -1
             synchronized(this){
                 tracker = initTracker(context)
             }

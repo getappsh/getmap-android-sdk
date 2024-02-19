@@ -38,7 +38,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private lateinit var mapRepo: MapRepo
     private lateinit var qrManager: QRManager
-//    private lateinit var tracker: Tracker
 
 
     override fun init(configuration: Configuration): Boolean {
@@ -77,7 +76,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         Timber.i("current-time")
         try {
-            MatomoTracker.getTracker(appCtx).dispatchInterval = 1
             TrackHelper.track().event("current-time", pref.deviceId).name("mills").value(System.currentTimeMillis().toFloat()).with(MatomoTracker.getTracker(appCtx));
         }catch (e: Exception){
             Timber.e("Error: ${e.message.toString()}")
@@ -243,7 +241,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun deleteMap(id: String){
         Timber.i("Hello World")
         try {
-            MatomoTracker.getTracker(appCtx).dispatchInterval = 1
+            Timber.d("Matomo dispatchInterval: ${MatomoTracker.getTracker(appCtx).dispatchInterval}")
             TrackHelper.track().event("Hello, World!", pref.deviceId).name("Hello, World!").value(System.currentTimeMillis().toFloat()).with(MatomoTracker.getTracker(appCtx));
         }catch (e: Exception){
             Timber.e("Error: ${e.message.toString()}")

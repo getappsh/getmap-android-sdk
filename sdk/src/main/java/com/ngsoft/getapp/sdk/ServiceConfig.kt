@@ -117,6 +117,7 @@ internal class ServiceConfig private constructor(private var appContext: Context
         set(value) {
             field = value
             pref.matomoUpdateIntervalMins = value
+            MatomoTracker.getTracker(appContext).dispatchInterval = 1000L * 60 * value
         }
 
     override var minAvailableSpaceMB: Long = pref.minAvailableSpaceMB
