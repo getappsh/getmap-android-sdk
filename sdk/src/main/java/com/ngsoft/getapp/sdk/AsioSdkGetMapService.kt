@@ -1,13 +1,13 @@
 package com.ngsoft.getapp.sdk
 
 import android.app.ActivityManager
+import android.app.Application
 import android.app.Service
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
 import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
-import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
@@ -25,9 +25,6 @@ import com.ngsoft.tilescache.models.MapPkg
 import com.ravtech.matomo.MatomoTracker
 import org.json.JSONException
 import org.json.JSONObject
-import org.matomo.sdk.QueryParams
-import org.matomo.sdk.TrackMe
-import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import timber.log.Timber
 import java.io.File
@@ -45,7 +42,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         mapRepo = MapRepo(appCtx)
         qrManager = QRManager(appCtx)
-//        tracker = MatomoTracker.getTracker(appCtx)
 
         val isDeliveryServiceRunning = appCtx.isServiceRunning(DeliveryForegroundService::class.java)
         Timber.d("init - delivery service running: $isDeliveryServiceRunning")

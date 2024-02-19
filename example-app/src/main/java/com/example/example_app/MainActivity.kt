@@ -1,33 +1,17 @@
 package com.example.example_app
 
 import android.app.ProgressDialog
-import android.content.DialogInterface
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
-import android.view.LayoutInflater
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapDownloadData
-import com.ngsoft.getapp.sdk.models.MapProperties
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 
@@ -81,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             null
         )
 
-        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
+        service = GetMapServiceFactory.createAsioSdkSvc(this, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
 //            runOnUiThread{Toast.makeText(this, data, Toast.LENGTH_LONG).show()}

@@ -1,6 +1,8 @@
 package com.ravtech.matomo
 
+import android.content.ComponentCallbacks2
 import android.content.Context
+import android.content.res.Configuration
 import com.ngsoft.getapp.sdk.Pref
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
@@ -8,13 +10,14 @@ import org.matomo.sdk.TrackerBuilder
 import timber.log.Timber
 
 
-class MatomoTracker private constructor(){
+class MatomoTracker private constructor(): ComponentCallbacks2{
 
     companion object {
 
         @Volatile private var tracker: Tracker? = null
         fun getTracker(context: Context) =
             tracker ?: synchronized(this) {
+                context.registerComponentCallbacks(MatomoTracker())
                 tracker ?: initTracker(context).also { tracker = it }
             }
 
@@ -41,4 +44,16 @@ class MatomoTracker private constructor(){
     }
 
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+    }
+
+    override fun onLowMemory() {
+        tracker?.dispatch()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN || level == ComponentCallbacks2.TRIM_MEMORY_COMPLETE) {
+            tracker?.dispatch()
+        }
+    }
 }
