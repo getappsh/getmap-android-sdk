@@ -26,7 +26,8 @@ class MatomoTracker private constructor(){
             val tracker = TrackerBuilder.createDefault(pref.matomoUrl, pref.matomoSiteId.toInt())
                 .build(Matomo.getInstance(context))
             tracker.dispatchInterval =  1000L * 60 * pref.matomoUpdateIntervalMins
-            Timber.d("1 Matomo dispatchInterval: ${tracker.dispatchInterval}")
+            tracker.dispatchTimeout = 1000 * 15
+            Timber.d("Matomo dispatchInterval: ${tracker.dispatchInterval},timeout: ${tracker.dispatchTimeout}, sessionTimeout: ${tracker.sessionTimeout}")
             return tracker
         }
 

@@ -95,22 +95,28 @@ internal class ServiceConfig private constructor(private var appContext: Context
 
     override var matomoUrl: String = pref.matomoUrl
         set(value) {
-            field = value
-            pref.matomoUrl = value
-            MatomoTracker.rebuildTracker(appContext)
+            if(field != value){
+                field = value
+                pref.matomoUrl = value
+                MatomoTracker.rebuildTracker(appContext)
+            }
         }
     override var matomoDimensionId: String = pref.matomoDimensionId
         set(value) {
-            field  = value
-            pref.matomoDimensionId = value
-            MatomoTracker.rebuildTracker(appContext)
+            if (field != value){
+                field  = value
+                pref.matomoDimensionId = value
+                MatomoTracker.rebuildTracker(appContext)
+            }
         }
 
     override var matomoSiteId: String = pref.matomoSiteId
         set(value) {
-            field  = value
-            pref.matomoSiteId = value
-            MatomoTracker.rebuildTracker(appContext)
+            if (field != value){
+                field  = value
+                pref.matomoSiteId = value
+                MatomoTracker.rebuildTracker(appContext)
+            }
         }
 
     override var matomoUpdateIntervalMins: Int = pref.matomoUpdateIntervalMins
