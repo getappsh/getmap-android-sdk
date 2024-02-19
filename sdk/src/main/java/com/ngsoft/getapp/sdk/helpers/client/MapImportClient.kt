@@ -90,8 +90,8 @@ internal object MapImportClient {
             throw Exception("invalid inputProperties")
 
         val params = CreateImportDto(deviceId, GetApp.Client.models.MapProperties(
-            BigDecimal(12), inputProperties.boundingBox,"dummy name", inputProperties.productId,
-            BigDecimal(0), BigDecimal(0)
+            boundingBox=inputProperties.boundingBox, productName="dummy name", productId=inputProperties.productId,
+            zoomLevel = BigDecimal(12), targetResolution = BigDecimal(0), lastUpdateAfter=BigDecimal(0)
         ))
 
         val status = client.getMapApi.getMapControllerCreateImport(params)
