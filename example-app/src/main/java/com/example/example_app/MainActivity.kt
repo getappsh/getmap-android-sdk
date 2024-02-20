@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.os.Bundle
 import android.os.Environment
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -33,6 +34,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var downloadListAdapter: DownloadListAdapter
+
+
+    private lateinit var editTextMatomoUrl: EditText
+    private lateinit var editTextMatomoSiteId: EditText
+    private lateinit var editTextUpdateInterval: EditText
+    private lateinit var editTextDimensionId: EditText
+    private lateinit var buttonEdit: Button
+    private lateinit var buttonSave: Button
 
 
 
@@ -129,6 +138,29 @@ class MainActivity : AppCompatActivity() {
 //        }.start()
 //
 //
+
+        editTextMatomoUrl = findViewById(R.id.editTextMatomoUrl)
+        editTextMatomoSiteId = findViewById(R.id.editTextMatomoSiteId)
+        editTextUpdateInterval = findViewById(R.id.editTextUpdateInterval)
+        editTextDimensionId = findViewById(R.id.editTextDimensionId)
+        buttonEdit = findViewById(R.id.buttonEdit)
+        buttonSave = findViewById(R.id.buttonSave)
+
+        setEditingEnabled(false)
+
+        buttonEdit.setOnClickListener {
+            // Enable editing when the "Edit" button is clicked
+            setEditingEnabled(true)
+        }
+
+        buttonSave.setOnClickListener {
+            service.config.matomoUrl = editTextMatomoUrl.text.toString()
+            service.config.matomoSiteId = editTextMatomoSiteId.text.toString()
+            service.config.matomoUpdateIntervalMins = editTextUpdateInterval.text.toString().toIntOrNull() ?: 0
+            service.config.matomoDimensionId = editTextDimensionId.text.toString()
+            refreshMatomoParams()
+            setEditingEnabled(false)
+        }
     }
 //
 //    private fun onDiscovery(){
@@ -357,4 +389,32 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
 //    }
+
+
+    override fun onResume() {
+        super.onResume()
+        refreshMatomoParams()
+
+    }
+
+    private fun refreshMatomoParams(){
+        editTextMatomoUrl.setText(service.config.matomoUrl)
+        editTextMatomoSiteId.setText(service.config.matomoSiteId)
+        editTextUpdateInterval.setText(service.config.matomoUpdateIntervalMins.toString())
+        editTextDimensionId.setText(service.config.matomoDimensionId)
+    }
+    private fun setEditingEnabled(enabled: Boolean) {
+        editTextMatomoUrl.isEnabled = enabled
+        editTextMatomoSiteId.isEnabled = enabled
+        editTextUpdateInterval.isEnabled = enabled
+        editTextDimensionId.isEnabled = enabled
+
+        if (enabled) {
+            buttonEdit.visibility = TextView.GONE
+            buttonSave.visibility = TextView.VISIBLE
+        } else {
+            buttonEdit.visibility = TextView.VISIBLE
+            buttonSave.visibility = TextView.GONE
+        }
+    }
 }
