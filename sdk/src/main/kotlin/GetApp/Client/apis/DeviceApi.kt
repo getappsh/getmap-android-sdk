@@ -22,6 +22,7 @@ import okhttp3.HttpUrl
 import GetApp.Client.models.DeviceContentResDto
 import GetApp.Client.models.DeviceDto
 import GetApp.Client.models.DeviceMapDto
+import GetApp.Client.models.DevicePutDto
 import GetApp.Client.models.DeviceRegisterDto
 
 import com.squareup.moshi.Json
@@ -251,6 +252,81 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/device/devices",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * 
+     * This service message allow to update props of device
+     * @param deviceId 
+     * @param devicePutDto 
+     * @return DevicePutDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerPutDeviceName(deviceId: kotlin.String, devicePutDto: DevicePutDto) : DevicePutDto {
+        val localVarResponse = deviceControllerPutDeviceNameWithHttpInfo(deviceId = deviceId, devicePutDto = devicePutDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicePutDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * 
+     * This service message allow to update props of device
+     * @param deviceId 
+     * @param devicePutDto 
+     * @return ApiResponse<DevicePutDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerPutDeviceNameWithHttpInfo(deviceId: kotlin.String, devicePutDto: DevicePutDto) : ApiResponse<DevicePutDto?> {
+        val localVariableConfig = deviceControllerPutDeviceNameRequestConfig(deviceId = deviceId, devicePutDto = devicePutDto)
+
+        return request<DevicePutDto, DevicePutDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerPutDeviceName
+     *
+     * @param deviceId 
+     * @param devicePutDto 
+     * @return RequestConfig
+     */
+    fun deviceControllerPutDeviceNameRequestConfig(deviceId: kotlin.String, devicePutDto: DevicePutDto) : RequestConfig<DevicePutDto> {
+        val localVariableBody = devicePutDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/device/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
