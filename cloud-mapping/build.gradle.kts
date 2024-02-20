@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.elbit.nebula"
+    namespace = "com.elbit.cloud_mapping"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.elbit.nebula"
+        applicationId = "com.elbit.cloud_mapping"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

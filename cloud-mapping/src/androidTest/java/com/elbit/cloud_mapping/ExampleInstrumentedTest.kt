@@ -1,4 +1,4 @@
-package com.elbit.nebula
+package com.elbit.cloud_mapping
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.elbit.nebula", appContext.packageName)
+        assertEquals("com.elbit.cloud_mapping", appContext.packageName)
     }
 }
