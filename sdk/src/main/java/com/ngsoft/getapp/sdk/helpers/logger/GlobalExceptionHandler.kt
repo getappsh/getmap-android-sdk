@@ -14,7 +14,7 @@ class GlobalExceptionHandler: Thread.UncaughtExceptionHandler {
     private val defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
 
     private val logDirectory =
-        File(Environment.getExternalStorageDirectory().toString() + "/GetApp/Logs")
+        File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/GetApp/Logs")
 
     private val logFileName = "exceptions.txt"
 
