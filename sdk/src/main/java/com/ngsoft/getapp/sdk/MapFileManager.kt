@@ -169,7 +169,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
             if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
-                mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_done)
+                mapPkg.statusMsg = appCtx.getString(R.string.delivery_status_done)
             } else {
                 mapPkg.flowState = DeliveryFlowState.MOVE_FILES
             }
@@ -221,7 +221,7 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
 
         if (mapPkg.state != MapDeliveryState.CANCEL && mapPkg.state != MapDeliveryState.PAUSE){
             mapPkg.state = MapDeliveryState.ERROR
-            mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_failed)
+            mapPkg.statusMsg = appCtx.getString(R.string.delivery_status_failed)
         }
 
         mapPkg.metadata.mapDone = mapDone

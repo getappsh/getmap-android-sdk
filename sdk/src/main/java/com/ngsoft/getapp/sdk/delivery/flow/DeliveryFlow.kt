@@ -31,7 +31,7 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
         val mapPkg = this.mapRepo.getById(id) ?: return
         mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
         this.mapRepo.update(id=id, flowState = DeliveryFlowState.START, state = MapDeliveryState.ERROR,
-            statusMessage = app.getString(R.string.delivery_status_error), errorContent = app.getString(
+            statusMsg = app.getString(R.string.delivery_status_error), statusDescr = app.getString(
                 R.string.delivery_status_description_failed_not_exists_on_server),
             downloadProgress = 0, mapDone = false,
             jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0)

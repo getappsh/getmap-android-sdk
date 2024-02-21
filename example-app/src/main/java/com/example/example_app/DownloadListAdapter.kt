@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 
 class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
@@ -26,12 +26,12 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     }
 
 
-    private val diffUtil = object : DiffUtil.ItemCallback<MapDownloadData>() {
-        override fun areItemsTheSame(oldItem: MapDownloadData, newItem: MapDownloadData): Boolean {
+    private val diffUtil = object : DiffUtil.ItemCallback<MapData>() {
+        override fun areItemsTheSame(oldItem: MapData, newItem: MapData): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: MapDownloadData, newItem: MapDownloadData): Boolean {
+        override fun areContentsTheSame(oldItem: MapData, newItem: MapData): Boolean {
             return oldItem.toString() == newItem.toString()
         }
 
@@ -47,14 +47,14 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         val downloadData = asyncListDiffer.currentList[position]
 
         holder.textFileName.text = downloadData.fileName
-        holder.textStatus.text = downloadData.statusMessage
-        holder.textError.text = downloadData.errorContent
-        holder.progressBar.progress = downloadData.downloadProgress
+        holder.textStatus.text = downloadData.statusMsg
+        holder.textError.text = downloadData.statusDescr
+        holder.progressBar.progress = downloadData.progress
 
         holder.btnCancelResume.visibility = View.VISIBLE
         holder.btnCancelResume.isEnabled = true
 
-        when(downloadData.deliveryStatus){
+        when(downloadData.deliveryState){
             START -> {
                 holder.btnDelete.visibility = View.GONE
                 holder.btnCancelResume.text = "Cancel"
@@ -133,7 +133,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     override fun getItemCount(): Int {
         return asyncListDiffer.currentList.size
     }
-    fun saveData(dataResponse: List<MapDownloadData>){
+    fun saveData(dataResponse: List<MapData>){
         asyncListDiffer.submitList(dataResponse)
     }
 

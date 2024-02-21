@@ -28,7 +28,7 @@ import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -58,8 +58,8 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private val downloadStatusHandler :(MapDownloadData) -> Unit = { data ->
-        Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryStatus.name}")
+    private val downloadStatusHandler :(MapData) -> Unit = { data ->
+        Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
     }
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -277,8 +277,8 @@ class MainActivity : AppCompatActivity() {
 //                        "jsonName=${it.jsonName}, \n" +
 //                        "deliveryStatus=${it.deliveryStatus}, \n" +
 //                        "url=${it.url}, \n" +
-                        "statusMessage=${it.statusMessage}, \n" +
-                        "downloadProgress=${it.downloadProgress}, \n" +
+                        "statusMessage=${it.statusMsg}, \n" +
+                        "downloadProgress=${it.progress}, \n" +
 //                        "errorContent=${it.errorContent}, \n" +
                         "isUpdated=${it.isUpdated}, \n " +
                         "downloadStart=${it.downloadStart}, \n" +

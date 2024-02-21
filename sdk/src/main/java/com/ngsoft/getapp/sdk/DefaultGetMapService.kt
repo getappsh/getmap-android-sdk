@@ -24,7 +24,7 @@ import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
 import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
@@ -110,7 +110,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
+    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -122,11 +122,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String? {
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String? {
+    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -134,22 +134,22 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
+    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String {
         TODO("Not implemented in DefaultGetMapService")
     }
-    override fun getDownloadedMap(id: String): MapDownloadData? {
-        TODO("Not implemented in DefaultGetMapService")
-    }
-
-    override fun getDownloadedMaps(): List<MapDownloadData> {
+    override fun getDownloadedMap(id: String): MapData? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>> {
+    override fun getDownloadedMaps(): List<MapData> {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+    override fun getDownloadedMapsLive(): LiveData<List<MapData>> {
         TODO("Not implemented in DefaultGetMapService")
     }
 

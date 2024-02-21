@@ -44,12 +44,12 @@ data class MapPkg (
     @TypeConverters(MapDeliveryStateConverter::class)
     var state: MapDeliveryState,
 
-    var statusMessage: String,
+    var statusMsg: String,
     var fileName: String? = null,
     var jsonName: String? = null,
     var url: String? = null,
     var downloadProgress: Int = 0,
-    var errorContent: String? = null,
+    var statusDescr: String? = null,
     var cancelDownload: Boolean = false,
 
     @TypeConverters(TimeStampConverter::class)
