@@ -10,7 +10,7 @@ import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.qr.QRManager
@@ -50,24 +50,24 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
-    override fun getDownloadedMap(id: String): MapDownloadData? {
+    override fun getDownloadedMap(id: String): MapData? {
         Timber.i("getDownloadedMap - map id: $id")
         return this.mapRepo.getDownloadData(id)
     }
 
-    override fun getDownloadedMaps(): List<MapDownloadData> {
+    override fun getDownloadedMaps(): List<MapData> {
         Timber.i("getDownloadedMaps")
         return this.mapRepo.getAllMaps()
     }
 
-    override fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>> {
+    override fun getDownloadedMapsLive(): LiveData<List<MapData>> {
         Timber.i("getDownloadedMapsLive")
         return this.mapRepo.getAllMapsLiveData()
     }
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String?{
         Timber.i("downloadMap")
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
@@ -92,7 +92,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return id
     }
     
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String?{
         Timber.i("downloadUpdatedMap")
         val mapPkg  = this.mapRepo.getById(id)
         if (mapPkg == null){
@@ -231,7 +231,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.remove(id)
     }
 
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String{
         Timber.i("resumeDownload for id: $id")
 //        TODO all this needs to be as part of delivery manager
         Thread{
@@ -286,7 +286,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return qrManager.generateQrCode(json.toString(), width, height)
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String{
         Timber.i("processQrCodeData")
 
         val jsonString = qrManager.processQrCodeData(data)
@@ -348,7 +348,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Timber.i("setOnInventoryUpdatesListener")
         MapRepo.onInventoryUpdatesListener = listener
     }
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
         Timber.i("registerDownloadHandler, downloadId: $id")
         this.mapRepo.setListener(id, downloadStatusHandler)
     }

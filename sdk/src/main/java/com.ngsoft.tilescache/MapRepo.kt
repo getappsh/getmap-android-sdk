@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.tilescache.dao.MapDAO
 import com.ngsoft.tilescache.models.DeliveryFlowState
@@ -34,7 +34,7 @@ internal class MapRepo(ctx: Context) {
 //        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
-    fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapDownloadData) -> Unit): String{
+    fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapData) -> Unit): String{
         val id = dao.insert(MapPkg(
             pId=pId,
             bBox=bBox,
@@ -56,11 +56,11 @@ internal class MapRepo(ctx: Context) {
             .sortedBy { map-> map.downloadStart }
     }
 
-    fun getAllMaps(): List<MapDownloadData>{
+    fun getAllMaps(): List<MapData>{
         return getAll().map { mapPkg2DownloadData(it) }.sortedWith(comparator)
     }
 
-    fun getAllMapsLiveData(): LiveData<List<MapDownloadData>>{
+    fun getAllMapsLiveData(): LiveData<List<MapData>>{
         Timber.i("getAllMapsLiveData")
         if (mapMutableLiveHase.value?.isEmpty() != false){
             Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! }.toConcurrentHashMap()) }.start()
@@ -284,25 +284,25 @@ internal class MapRepo(ctx: Context) {
         }
         onInventoryUpdatesListener?.invoke(this.getMapsToUpdate())
     }
-    fun getDownloadData(id: String): MapDownloadData?{
+    fun getDownloadData(id: String): MapData?{
         val map = this.getById(id);
         if (map != null) {
             return mapPkg2DownloadData(map)
         }
         return null
     }
-    private fun mapPkg2DownloadData(map: MapPkg): MapDownloadData{
+    private fun mapPkg2DownloadData(map: MapPkg): MapData{
         val localZone = ZoneId.systemDefault()
-        return MapDownloadData(
+        return MapData(
             id = map.id.toString(),
             footprint = map.footprint,
             fileName = map.fileName,
             jsonName = map.jsonName,
-            deliveryStatus = map.state,
+            deliveryState = map.state,
             url = map.url,
-            statusMessage = map.statusMessage,
-            downloadProgress = map.downloadProgress,
-            errorContent = map.errorContent,
+            statusMsg = map.statusMessage,
+            progress = map.downloadProgress,
+            statusDescr = map.errorContent,
             isUpdated = map.isUpdated,
             downloadStart = map.downloadStart?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadStop = map.downloadStop?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
@@ -310,7 +310,7 @@ internal class MapRepo(ctx: Context) {
         )
     }
 
-    fun setListener(id: String, dsh: (MapDownloadData) -> Unit){
+    fun setListener(id: String, dsh: (MapData) -> Unit){
         downloadStatusHandlers[id] = dsh
     }
 
@@ -321,18 +321,18 @@ internal class MapRepo(ctx: Context) {
         return concurrentHashMap
     }
     companion object {
-        val downloadStatusHandlers = ConcurrentHashMap<String, (MapDownloadData) -> Unit>()
+        val downloadStatusHandlers = ConcurrentHashMap<String, (MapData) -> Unit>()
         var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
 
         private val customOrder = listOf(MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE)
 
-        private val comparator = compareBy<MapDownloadData> {
+        private val comparator = compareBy<MapData> {
             // Get the index of the state in the custom order; default to Int.MAX_VALUE if not found
-            customOrder.indexOf(it.deliveryStatus).let { index -> if (index == -1) Int.MAX_VALUE else index }
+            customOrder.indexOf(it.deliveryState).let { index -> if (index == -1) Int.MAX_VALUE else index }
         }.thenByDescending{ it.id }
 
-        private val mapMutableLiveHase = MutableLiveData(ConcurrentHashMap<String, MapDownloadData>())
-        private val mapLiveList: LiveData<List<MapDownloadData>> = Transformations.map(mapMutableLiveHase){
+        private val mapMutableLiveHase = MutableLiveData(ConcurrentHashMap<String, MapData>())
+        private val mapLiveList: LiveData<List<MapData>> = Transformations.map(mapMutableLiveHase){
             it.values.toList().sortedWith(comparator)
         }
     }

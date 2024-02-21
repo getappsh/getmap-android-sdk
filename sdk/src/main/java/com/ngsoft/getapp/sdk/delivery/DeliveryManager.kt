@@ -20,7 +20,7 @@ import com.ngsoft.getapp.sdk.delivery.flow.ValidateImportFlow
 import com.ngsoft.getapp.sdk.delivery.flow.WatchDownloadImportFlow
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
@@ -101,12 +101,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
         MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, state)
     }
 
-    fun getMapsOnDownload(): LiveData<List<MapDownloadData>>{
+    fun getMapsOnDownload(): LiveData<List<MapData>>{
         return Transformations.map(this.mapRepo.getAllMapsLiveData()){ maps ->
             val onDownloadList = maps.filter {
-                it.deliveryStatus == MapDeliveryState.DOWNLOAD
-                        || it.deliveryStatus == MapDeliveryState.CONTINUE
-                        || it.deliveryStatus == MapDeliveryState.START
+                it.deliveryState == MapDeliveryState.DOWNLOAD
+                        || it.deliveryState == MapDeliveryState.CONTINUE
+                        || it.deliveryState == MapDeliveryState.START
             }
             onDownloadList
         }
