@@ -114,8 +114,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                errorContent = appCtx.getString(R.string.error_not_enough_space)
+                statusMsg = appCtx.getString(R.string.delivery_status_failed),
+                statusDescr = appCtx.getString(R.string.error_not_enough_space)
             )
             return false
         }
@@ -150,8 +150,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 }
             }
 
-            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
-                statusMessage = rMap.statusMessage, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
+            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
+                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
     }
 
@@ -204,7 +204,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     url = url,
                     fileName = FileUtils.changeFileExtensionToMap(file.name),
                     jsonName = file.name,
-                    statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
+                    statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
                 ))
 
                 val id = this.mapRepo.save(mapPkg)
@@ -245,14 +245,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             ){
                 val errorMsg = "deleteMap: Unable to resume download map status is: ${mapPkg?.state}"
                 Timber.e(errorMsg)
-                this.mapRepo.update(id, state = MapDeliveryState.ERROR, errorContent = errorMsg)
+                this.mapRepo.update(id, state = MapDeliveryState.ERROR, statusDescr = errorMsg)
             }
 
 //            TODO set is cancel to false?
             this.mapRepo.update(id,
                 state = MapDeliveryState.CONTINUE,
-                statusMessage = appCtx.getString(R.string.delivery_status_continue),
-                errorContent = "")
+                statusMsg = appCtx.getString(R.string.delivery_status_continue),
+                statusDescr = "")
 
             DeliveryForegroundService.startForId(appCtx, id)
         }.start()
@@ -319,7 +319,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
             metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
-            flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_continue))
+            flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMsg = appCtx.getString(R.string.delivery_status_continue))
 
 
         val id = this.mapRepo.save(mapPkg)
@@ -374,7 +374,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     if (rMap.flowState <= DeliveryFlowState.IMPORT_DELIVERY) {
                         Timber.d("updateMapsStatusOnStart - Map download failed, set state to pause")
                         this.mapRepo.update(id = id, state = MapDeliveryState.PAUSE, flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                            jsonDone = rMap.metadata.jsonDone, mapDone = rMap.metadata.mapDone, statusMessage = appCtx.getString(R.string.delivery_status_paused))
+                            jsonDone = rMap.metadata.jsonDone, mapDone = rMap.metadata.mapDone, statusMsg = appCtx.getString(R.string.delivery_status_paused))
                     }else{
                         Timber.d("updateMapsStatusOnStart - Map download in progress")
                         this.mapRepo.update(id, mapDone = rMap.metadata.mapDone,
@@ -392,7 +392,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.PAUSE,
-                        statusMessage = appCtx.getString(R.string.delivery_status_paused)
+                        statusMsg = appCtx.getString(R.string.delivery_status_paused)
                     )
                 }
             }

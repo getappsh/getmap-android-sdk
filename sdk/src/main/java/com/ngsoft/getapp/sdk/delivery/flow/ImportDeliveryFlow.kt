@@ -29,8 +29,8 @@ internal class ImportDeliveryFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
                 if (i == 2){
                     this.mapRepo.update(id = id,
                         state = MapDeliveryState.ERROR,
-                        statusMessage = app.getString(R.string.delivery_status_failed),
-                        errorContent = "importDelivery - setMapImportDeliveryStart failed: ${e.message.toString()}")
+                        statusMsg = app.getString(R.string.delivery_status_failed),
+                        statusDescr = "importDelivery - setMapImportDeliveryStart failed: ${e.message.toString()}")
                     return false
                 }
                 TimeUnit.SECONDS.sleep(1)
@@ -42,13 +42,13 @@ internal class ImportDeliveryFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
             when (retDelivery?.state) {
                 MapDeliveryState.DONE, MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE -> {
                     this.mapRepo.update(id = id, flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                        statusMessage = app.getString(R.string.delivery_status_prepare_to_download), errorContent = "")
+                        statusMsg = app.getString(R.string.delivery_status_prepare_to_download), statusDescr = "")
 
                 }
 
                 MapDeliveryState.CANCEL, MapDeliveryState.PAUSE -> {
                     Timber.w("importDelivery - setMapImportDeliveryStart => CANCEL")
-                    this.mapRepo.update(id = id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(
+                    this.mapRepo.update(id = id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(
                         R.string.delivery_status_canceled))
                     this.sendDeliveryStatus(id)
                     return false
@@ -57,8 +57,8 @@ internal class ImportDeliveryFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
                     Timber.e("importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}")
                     this.mapRepo.update(id = id,
                         state = MapDeliveryState.ERROR,
-                        statusMessage = app.getString(R.string.delivery_status_failed),
-                        errorContent = "importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}"
+                        statusMsg = app.getString(R.string.delivery_status_failed),
+                        statusDescr = "importDelivery - setMapImportDeliveryStart failed: ${retDelivery?.state}"
                     )
                     this.sendDeliveryStatus(id)
                     return false
@@ -66,15 +66,15 @@ internal class ImportDeliveryFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
             }
             if(timeoutTime.hasPassedNow()){
                 Timber.e("importDelivery - timed out")
-                this.mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = app.getString(
-                    R.string.delivery_status_failed), errorContent = "ImportDelivery- timed out")
+                this.mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
+                    R.string.delivery_status_failed), statusDescr = "ImportDelivery- timed out")
                 this.sendDeliveryStatus(id)
                 return false
             }
 
             if (this.mapRepo.isDownloadCanceled(id)){
                 Timber.d("importDelivery: Download $id, canceled by user")
-                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(
+                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(
                     R.string.delivery_status_canceled))
                 this.sendDeliveryStatus(id)
                 return false
@@ -88,8 +88,8 @@ internal class ImportDeliveryFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = app.getString(R.string.delivery_status_failed),
-                errorContent = "importDelivery - download url is null"
+                statusMsg = app.getString(R.string.delivery_status_failed),
+                statusDescr = "importDelivery - download url is null"
             )
             this.sendDeliveryStatus(id)
             return false
@@ -97,7 +97,7 @@ internal class ImportDeliveryFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
         }
 
         Timber.d("importDelivery - delivery is ready, download url: ${retDelivery.url} ")
-        this.mapRepo.update(id = id, url = retDelivery.url, flowState = DeliveryFlowState.IMPORT_DELIVERY, errorContent = "")
+        this.mapRepo.update(id = id, url = retDelivery.url, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusDescr = "")
         return true
     }
 }

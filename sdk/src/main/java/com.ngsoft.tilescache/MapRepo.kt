@@ -40,7 +40,7 @@ internal class MapRepo(ctx: Context) {
             bBox=bBox,
             state=state,
             flowState=flowState,
-            statusMessage = statusMessage,
+            statusMsg = statusMessage,
             downloadStart = LocalDateTime.now(ZoneOffset.UTC))).toString()
 
         downloadStatusHandlers[id] = dsh
@@ -95,12 +95,12 @@ internal class MapRepo(ctx: Context) {
         MDID: Long? = null,
         state: MapDeliveryState? = null,
         flowState: DeliveryFlowState? = null,
-        statusMessage: String? = null,
+        statusMsg: String? = null,
         fileName: String? = null,
         jsonName: String? = null,
         url: String? = null,
         downloadProgress: Int? = null,
-        errorContent: String? = null,
+        statusDescr: String? = null,
         validationAttempt: Int? = null,
         connectionAttempt: Int? = null,
         mapAttempt: Int? = null,
@@ -115,12 +115,12 @@ internal class MapRepo(ctx: Context) {
             MDID=MDID,
             state=state,
             flowState=flowState,
-            statusMessage=statusMessage,
+            statusMsg=statusMsg,
             fileName=fileName,
             jsonName=jsonName,
             url=url,
             downloadProgress=downloadProgress,
-            errorContent=errorContent,
+            statusDescr=statusDescr,
             validationAttempt=validationAttempt,
             connectionAttempt=connectionAttempt,
             mapAttempt=mapAttempt,
@@ -138,12 +138,12 @@ internal class MapRepo(ctx: Context) {
         MDID: Long? = null,
         state: MapDeliveryState? = null,
         flowState: DeliveryFlowState? = null,
-        statusMessage: String? = null,
+        statusMsg: String? = null,
         fileName: String? = null,
         jsonName: String? = null,
         url: String? = null,
         downloadProgress: Int? = null,
-        errorContent: String? = null,
+        statusDescr: String? = null,
         validationAttempt: Int? = null,
         connectionAttempt: Int? = null,
         mapAttempt: Int? = null,
@@ -162,9 +162,9 @@ internal class MapRepo(ctx: Context) {
             this.url = url ?: this.url
             this.state = state ?: this.state
             this.flowState = flowState ?: this.flowState
-            this.statusMessage = statusMessage ?: this.statusMessage
+            this.statusMsg = statusMsg ?: this.statusMsg
             this.downloadProgress = downloadProgress ?: this.downloadProgress
-            this.errorContent = errorContent ?: this.errorContent
+            this.statusDescr = statusDescr ?: this.statusDescr
             this.cancelDownload = cancelDownload ?: this.cancelDownload
 
             this.metadata.validationAttempt = validationAttempt ?: this.metadata.validationAttempt
@@ -300,9 +300,9 @@ internal class MapRepo(ctx: Context) {
             jsonName = map.jsonName,
             deliveryState = map.state,
             url = map.url,
-            statusMsg = map.statusMessage,
+            statusMsg = map.statusMsg,
             progress = map.downloadProgress,
-            statusDescr = map.errorContent,
+            statusDescr = map.statusDescr,
             isUpdated = map.isUpdated,
             downloadStart = map.downloadStart?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadStop = map.downloadStop?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},

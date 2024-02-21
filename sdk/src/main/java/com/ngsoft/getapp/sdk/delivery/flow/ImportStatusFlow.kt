@@ -31,8 +31,8 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                 this.mapRepo.update(
                     id = id,
                     state = MapDeliveryState.ERROR,
-                    statusMessage = app.getString(R.string.delivery_status_failed),
-                    errorContent = "checkImportStatus - timed out"
+                    statusMsg = app.getString(R.string.delivery_status_failed),
+                    statusDescr = "checkImportStatus - timed out"
                 )
                 this.sendDeliveryStatus(id)
                 return false
@@ -42,7 +42,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
             TimeUnit.SECONDS.sleep(2)
             if (this.mapRepo.isDownloadCanceled(id)){
                 Timber.d("checkImportStatue: Download $id, canceled by user")
-                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(
+                mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(
                     R.string.delivery_status_canceled))
                 this.sendDeliveryStatus(id)
                 return false
@@ -53,7 +53,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
             }catch (e: IOException){
                 Timber.e("checkImportStatue - SocketException, try again. error: ${e.message.toString()}" )
                 this.mapRepo.update(id = id,
-                    statusMessage = app.getString(R.string.delivery_status_connection_issue_try_again), errorContent = e.message.toString())
+                    statusMsg = app.getString(R.string.delivery_status_connection_issue_try_again), statusDescr = e.message.toString())
                 continue
             }
 
@@ -65,7 +65,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                         handleMapNotExistsOnServer(id)
                     }else{
                         this.mapRepo.update(id = id, state = MapDeliveryState.ERROR,
-                            statusMessage = app.getString(R.string.delivery_status_failed), errorContent = stat.statusCode?.messageLog)
+                            statusMsg = app.getString(R.string.delivery_status_failed), statusDescr = stat.statusCode?.messageLog)
                     }
                     this.sendDeliveryStatus(id)
                     return false
@@ -73,7 +73,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                 MapImportState.CANCEL -> {
                     Timber.w("checkImportStatus - MapImportState -> CANCEL, message: ${stat.statusCode?.messageLog}")
                     this.mapRepo.update(id = id, state = MapDeliveryState.CANCEL,
-                        statusMessage = app.getString(R.string.delivery_status_canceled), errorContent = stat.statusCode?.messageLog)
+                        statusMsg = app.getString(R.string.delivery_status_canceled), statusDescr = stat.statusCode?.messageLog)
                     this.sendDeliveryStatus(id)
                     return false
 
@@ -81,7 +81,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                 MapImportState.IN_PROGRESS -> {
                     Timber.w("checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.progress}")
                     this.mapRepo.update(id = id, downloadProgress = stat.progress,
-                        statusMessage = app.getString(R.string.delivery_status_req_in_progress), errorContent = "")
+                        statusMsg = app.getString(R.string.delivery_status_req_in_progress), statusDescr = "")
                     if (lastProgress != stat.progress){
                         timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
                     }
@@ -97,7 +97,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
             id = id,
             downloadProgress = 100,
             flowState = DeliveryFlowState.IMPORT_STATUS,
-            errorContent = "")
+            statusDescr = "")
         return true
     }
 }

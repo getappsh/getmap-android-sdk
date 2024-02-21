@@ -43,7 +43,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 
     private fun watchDownloadProgress(downloadId: Long, id: String, url: String, isJson: Boolean): Long{
         Timber.i("watchDownloadProgress, isJson: $isJson")
-        this.mapRepo.update(id, flowState = DeliveryFlowState.DOWNLOAD, errorContent = "", statusMessage = app.getString(
+        this.mapRepo.update(id, flowState = DeliveryFlowState.DOWNLOAD, statusDescr = "", statusMsg = app.getString(
             R.string.delivery_status_download))
 
         var dId = downloadId
@@ -59,7 +59,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
             val statusInfo = downloader.queryStatus(dId)
             when(statusInfo?.status){
                 DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_PENDING -> {
-                    mapRepo.update(id = id, errorContent = statusInfo.reason)
+                    mapRepo.update(id = id, statusDescr = statusInfo.reason)
                 }
                 DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_SUCCESSFUL -> {
                     val progress = (statusInfo.downloadBytes * 100 / statusInfo.totalBytes).toInt()
@@ -67,7 +67,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 
                     if (!isJson && !mapPkg.metadata.mapDone){
                         mapRepo.update(id = id, downloadProgress = progress, fileName = statusInfo.fileName,
-                            state = MapDeliveryState.DOWNLOAD, statusMessage = app.getString(R.string.delivery_status_download), errorContent = "")
+                            state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_download), statusDescr = "")
                         sendDeliveryStatus(id)
                     }
 
@@ -113,8 +113,8 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     }else if (downloadAttempts < config.downloadRetry && !isStatusError) {
                         Timber.d("downloadFile - retry download")
                         downloader.cancelDownload(dId)
-                        mapRepo.update(id, statusMessage = app.getString(R.string.delivery_status_failed_verification_try_again),
-                            errorContent = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file")
+                        mapRepo.update(id, statusMsg = app.getString(R.string.delivery_status_failed_verification_try_again),
+                            statusDescr = statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file")
 //                        When download retry dose not return null, keep timer on and do not cancel
                         handelDownloadRetry(id, url, isJson, downloadAttempts)?.let {
                             dId = it
@@ -122,8 +122,8 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                         }
                     }else{
                         val error = if (isStatusError) null else statusInfo?.reason ?: "downloadFile - DownloadManager failed to download file"
-                        mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMessage = app.getString(
-                            R.string.delivery_status_failed), errorContent = error)
+                        mapRepo.update(id = id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
+                            R.string.delivery_status_failed), statusDescr = error)
                     }
                     sendDeliveryStatus(id)
                     cancelAndLatch(this@timer, latch)
@@ -140,7 +140,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
     }
     private fun handleDownloadDone(id: String){
         Timber.d("handleDownloadDone - downloading Done")
-        mapRepo.update(id = id, flowState = DeliveryFlowState.DOWNLOAD_DONE, downloadProgress = 100, errorContent = "")
+        mapRepo.update(id = id, flowState = DeliveryFlowState.DOWNLOAD_DONE, downloadProgress = 100, statusDescr = "")
         sendDeliveryStatus(id)
         toContinue = true
         latch.countDown()
@@ -156,7 +156,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 if (pkg.id.toString() != id && pkg.isUpdated){
                     Timber.e("handleJsonDone - map already exists, set to error", )
                     this.mapRepo.update(id, state = MapDeliveryState.ERROR,
-                        statusMessage = app.getString(R.string.error_map_already_exists),
+                        statusMsg = app.getString(R.string.error_map_already_exists),
                         jsonName = "fail.json", fileName ="fail.gpkg")
 
                     mapPkg.JDID?.let { downloader.cancelDownload(it) }
@@ -194,12 +194,12 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 dId = if (isJson) {
                     val downloadId = downloadFile(url)
                     val attempts = ++mapPkg.metadata.jsonAttempt
-                    mapRepo.update(id, JDID = downloadId, jsonAttempt = attempts, statusMessage = statusMessage)
+                    mapRepo.update(id, JDID = downloadId, jsonAttempt = attempts, statusMsg = statusMessage)
                     downloadId
                 } else {
                     val downloadId = downloadFile(url)
                     val attempts = ++mapPkg.metadata.mapAttempt
-                    mapRepo.update(id, MDID = downloadId, mapAttempt = attempts, statusMessage = statusMessage)
+                    mapRepo.update(id, MDID = downloadId, mapAttempt = attempts, statusMsg = statusMessage)
                     downloadId
                 }
                 cancelAndLatch(this@timer, cd)
@@ -208,13 +208,13 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     Timber.d("handelDownloadRetry - Download $id, canceled by user")
                     if (!isJson) {
                         mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                            statusMessage = app.getString(R.string.delivery_status_canceled))
+                            statusMsg = app.getString(R.string.delivery_status_canceled))
                         cancelAndLatch(this@timer, cd)
                     }
                 }
                 if (!isJson) {
                     val secToFinish = TimeUnit.MILLISECONDS.toSeconds(waitTime - diff)
-                    mapRepo.update(id, statusMessage = app.getString(R.string.delivery_status_failed_try_again_in, secToFinish))
+                    mapRepo.update(id, statusMsg = app.getString(R.string.delivery_status_failed_try_again_in, secToFinish))
                 }
             }
         }
@@ -236,7 +236,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
             downloader.cancelDownload(downloadId)
 
             if (!isJson){
-                mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = app.getString(
+                mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMsg = app.getString(
                     R.string.delivery_status_canceled),)
             }
             return null

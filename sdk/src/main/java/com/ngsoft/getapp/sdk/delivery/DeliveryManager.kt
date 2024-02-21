@@ -68,8 +68,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
                 this.mapRepo.update(
                     id = id,
-                    statusMessage = app.getString(R.string.delivery_status_connection_issue_try_again),
-                    errorContent = e.message.toString(),
+                    statusMsg = app.getString(R.string.delivery_status_connection_issue_try_again),
+                    statusDescr = e.message.toString(),
                     connectionAttempt = ++attempt
                 )
                 TimeUnit.SECONDS.sleep(2)
@@ -79,8 +79,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 this.mapRepo.update(
                     id = id,
                     state = MapDeliveryState.ERROR,
-                    statusMessage = app.getString(R.string.delivery_status_failed),
-                    errorContent = e.message.toString()
+                    statusMsg = app.getString(R.string.delivery_status_failed),
+                    statusDescr = e.message.toString()
                 )
                 this.sendDeliveryStatus(id)
             }
@@ -89,8 +89,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = app.getString(R.string.delivery_status_failed),
-                errorContent = e.message.toString()
+                statusMsg = app.getString(R.string.delivery_status_failed),
+                statusDescr = e.message.toString()
             )
             this.sendDeliveryStatus(id)
         }
@@ -121,7 +121,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 TimeUnit.SECONDS.sleep(7)
                 if (this.mapRepo.isDownloadCanceled(id)){
                     Timber.e("cancelDelivery - Download $id, was not canceled after 6 sec, force cancel")
-                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(R.string.delivery_status_canceled))
                     this.sendDeliveryStatus(id)
                 }
 
