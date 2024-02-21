@@ -20,7 +20,7 @@ import com.ngsoft.getapp.sdk.delivery.flow.ValidateImportFlow
 import com.ngsoft.getapp.sdk.delivery.flow.WatchDownloadImportFlow
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
@@ -68,8 +68,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
                 this.mapRepo.update(
                     id = id,
-                    statusMessage = app.getString(R.string.delivery_status_connection_issue_try_again),
-                    errorContent = e.message.toString(),
+                    statusMsg = app.getString(R.string.delivery_status_connection_issue_try_again),
+                    statusDescr = e.message.toString(),
                     connectionAttempt = ++attempt
                 )
                 TimeUnit.SECONDS.sleep(2)
@@ -79,8 +79,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 this.mapRepo.update(
                     id = id,
                     state = MapDeliveryState.ERROR,
-                    statusMessage = app.getString(R.string.delivery_status_failed),
-                    errorContent = e.message.toString()
+                    statusMsg = app.getString(R.string.delivery_status_failed),
+                    statusDescr = e.message.toString()
                 )
                 this.sendDeliveryStatus(id)
             }
@@ -89,8 +89,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = app.getString(R.string.delivery_status_failed),
-                errorContent = e.message.toString()
+                statusMsg = app.getString(R.string.delivery_status_failed),
+                statusDescr = e.message.toString()
             )
             this.sendDeliveryStatus(id)
         }
@@ -101,12 +101,12 @@ internal class DeliveryManager private constructor(appCtx: Context){
         MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, state)
     }
 
-    fun getMapsOnDownload(): LiveData<List<MapDownloadData>>{
+    fun getMapsOnDownload(): LiveData<List<MapData>>{
         return Transformations.map(this.mapRepo.getAllMapsLiveData()){ maps ->
             val onDownloadList = maps.filter {
-                it.deliveryStatus == MapDeliveryState.DOWNLOAD
-                        || it.deliveryStatus == MapDeliveryState.CONTINUE
-                        || it.deliveryStatus == MapDeliveryState.START
+                it.deliveryState == MapDeliveryState.DOWNLOAD
+                        || it.deliveryState == MapDeliveryState.CONTINUE
+                        || it.deliveryState == MapDeliveryState.START
             }
             onDownloadList
         }
@@ -121,7 +121,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 TimeUnit.SECONDS.sleep(7)
                 if (this.mapRepo.isDownloadCanceled(id)){
                     Timber.e("cancelDelivery - Download $id, was not canceled after 6 sec, force cancel")
-                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(R.string.delivery_status_canceled))
                     this.sendDeliveryStatus(id)
                 }
 

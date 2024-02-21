@@ -10,7 +10,7 @@ import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.qr.QRManager
@@ -50,24 +50,24 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
-    override fun getDownloadedMap(id: String): MapDownloadData? {
+    override fun getDownloadedMap(id: String): MapData? {
         Timber.i("getDownloadedMap - map id: $id")
         return this.mapRepo.getDownloadData(id)
     }
 
-    override fun getDownloadedMaps(): List<MapDownloadData> {
+    override fun getDownloadedMaps(): List<MapData> {
         Timber.i("getDownloadedMaps")
         return this.mapRepo.getAllMaps()
     }
 
-    override fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>> {
+    override fun getDownloadedMapsLive(): LiveData<List<MapData>> {
         Timber.i("getDownloadedMapsLive")
         return this.mapRepo.getAllMapsLiveData()
     }
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String?{
         Timber.i("downloadMap")
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
@@ -92,7 +92,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return id
     }
     
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String?{
+    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String?{
         Timber.i("downloadUpdatedMap")
         val mapPkg  = this.mapRepo.getById(id)
         if (mapPkg == null){
@@ -114,8 +114,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = appCtx.getString(R.string.delivery_status_failed),
-                errorContent = appCtx.getString(R.string.error_not_enough_space)
+                statusMsg = appCtx.getString(R.string.delivery_status_failed),
+                statusDescr = appCtx.getString(R.string.error_not_enough_space)
             )
             return false
         }
@@ -150,8 +150,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 }
             }
 
-            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
-                statusMessage = rMap.statusMessage, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
+            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
+                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
     }
 
@@ -204,7 +204,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     url = url,
                     fileName = FileUtils.changeFileExtensionToMap(file.name),
                     jsonName = file.name,
-                    statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
+                    statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
                 ))
 
                 val id = this.mapRepo.save(mapPkg)
@@ -231,7 +231,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.remove(id)
     }
 
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String{
         Timber.i("resumeDownload for id: $id")
 //        TODO all this needs to be as part of delivery manager
         Thread{
@@ -245,14 +245,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             ){
                 val errorMsg = "deleteMap: Unable to resume download map status is: ${mapPkg?.state}"
                 Timber.e(errorMsg)
-                this.mapRepo.update(id, state = MapDeliveryState.ERROR, errorContent = errorMsg)
+                this.mapRepo.update(id, state = MapDeliveryState.ERROR, statusDescr = errorMsg)
             }
 
 //            TODO set is cancel to false?
             this.mapRepo.update(id,
                 state = MapDeliveryState.CONTINUE,
-                statusMessage = appCtx.getString(R.string.delivery_status_continue),
-                errorContent = "")
+                statusMsg = appCtx.getString(R.string.delivery_status_continue),
+                statusDescr = "")
 
             DeliveryForegroundService.startForId(appCtx, id)
         }.start()
@@ -286,7 +286,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return qrManager.generateQrCode(json.toString(), width, height)
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String{
+    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String{
         Timber.i("processQrCodeData")
 
         val jsonString = qrManager.processQrCodeData(data)
@@ -319,7 +319,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
             metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
-            flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMessage = appCtx.getString(R.string.delivery_status_continue))
+            flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMsg = appCtx.getString(R.string.delivery_status_continue))
 
 
         val id = this.mapRepo.save(mapPkg)
@@ -348,7 +348,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Timber.i("setOnInventoryUpdatesListener")
         MapRepo.onInventoryUpdatesListener = listener
     }
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
         Timber.i("registerDownloadHandler, downloadId: $id")
         this.mapRepo.setListener(id, downloadStatusHandler)
     }
@@ -374,7 +374,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     if (rMap.flowState <= DeliveryFlowState.IMPORT_DELIVERY) {
                         Timber.d("updateMapsStatusOnStart - Map download failed, set state to pause")
                         this.mapRepo.update(id = id, state = MapDeliveryState.PAUSE, flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                            jsonDone = rMap.metadata.jsonDone, mapDone = rMap.metadata.mapDone, statusMessage = appCtx.getString(R.string.delivery_status_paused))
+                            jsonDone = rMap.metadata.jsonDone, mapDone = rMap.metadata.mapDone, statusMsg = appCtx.getString(R.string.delivery_status_paused))
                     }else{
                         Timber.d("updateMapsStatusOnStart - Map download in progress")
                         this.mapRepo.update(id, mapDone = rMap.metadata.mapDone,
@@ -392,7 +392,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                     this.mapRepo.update(
                         id = id,
                         state = MapDeliveryState.PAUSE,
-                        statusMessage = appCtx.getString(R.string.delivery_status_paused)
+                        statusMsg = appCtx.getString(R.string.delivery_status_paused)
                     )
                 }
             }

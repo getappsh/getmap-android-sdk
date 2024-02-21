@@ -10,7 +10,7 @@ import androidx.lifecycle.Observer
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.helpers.NotificationHelper
 import com.ngsoft.getapp.sdk.delivery.DeliveryManager
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 
 class DeliveryForegroundService: Service() {
 
@@ -39,7 +39,7 @@ class DeliveryForegroundService: Service() {
     }
     private lateinit var deliveryManager: DeliveryManager
     private lateinit var notificationHelper: NotificationHelper
-    private var mapsOnDownload: LiveData<List<MapDownloadData>>? = null
+    private var mapsOnDownload: LiveData<List<MapData>>? = null
     override fun onCreate() {
         super.onCreate()
         Timber.i("onCreate")
@@ -88,7 +88,7 @@ class DeliveryForegroundService: Service() {
             Timber.d("waitToAllProcessToStop")
             mapsOnDownload = deliveryManager.getMapsOnDownload()
 
-            val observer = Observer<List<MapDownloadData>> {data ->
+            val observer = Observer<List<MapData>> { data ->
                 if (data.isEmpty()){
                     stopService()
                 }

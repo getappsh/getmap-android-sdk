@@ -15,7 +15,7 @@ internal class ImportCreateFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
 
         if (this.mapRepo.isDownloadCanceled(id)){
             Timber.d("importCreate - Download $id, canceled by user")
-            this.mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
+            this.mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(R.string.delivery_status_canceled))
             this.sendDeliveryStatus(id)
             return false
         }
@@ -32,8 +32,8 @@ internal class ImportCreateFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                     reqId = retCreate.importRequestId,
                     state = MapDeliveryState.START,
                     flowState = DeliveryFlowState.IMPORT_CREATE,
-                    statusMessage = this.app.getString(R.string.delivery_status_req_in_progress),
-                    errorContent = retCreate.statusCode?.messageLog ?: "",
+                    statusMsg = this.app.getString(R.string.delivery_status_req_in_progress),
+                    statusDescr = retCreate.statusCode?.messageLog ?: "",
                     downloadProgress = retCreate.progress
                 )
                 this.sendDeliveryStatus(id)
@@ -45,8 +45,8 @@ internal class ImportCreateFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                     id = id,
                     reqId = retCreate.importRequestId,
                     state = MapDeliveryState.CANCEL,
-                    statusMessage = this.app.getString(R.string.delivery_status_canceled),
-                    errorContent = retCreate.statusCode?.messageLog
+                    statusMsg = this.app.getString(R.string.delivery_status_canceled),
+                    statusDescr = retCreate.statusCode?.messageLog
 
                 )
                 this.sendDeliveryStatus(id)
@@ -58,8 +58,8 @@ internal class ImportCreateFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                     id = id,
                     reqId = retCreate?.importRequestId,
                     state = MapDeliveryState.ERROR,
-                    statusMessage = this.app.getString(R.string.delivery_status_failed),
-                    errorContent = retCreate?.statusCode?.messageLog
+                    statusMsg = this.app.getString(R.string.delivery_status_failed),
+                    statusDescr = retCreate?.statusCode?.messageLog
                 )
                 this.sendDeliveryStatus(id)
                 return false
