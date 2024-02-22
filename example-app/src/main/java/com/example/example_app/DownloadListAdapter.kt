@@ -1,5 +1,6 @@
 package com.example.example_app
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         val textStatus: TextView = itemView.findViewById(R.id.textStatus)
         val textError: TextView = itemView.findViewById(R.id.textError)
         val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
+        val percentage:TextView = itemView.findViewById(R.id.Percentages)
         val btnCancelResume: Button = itemView.findViewById(R.id.btnCancelResume)
         val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
         val btnQRCode: Button = itemView.findViewById(R.id.btnQRCode)
@@ -44,6 +46,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
         val downloadData = asyncListDiffer.currentList[position]
 
         holder.textFileName.text = downloadData.fileName
@@ -51,6 +54,9 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         holder.textError.text = downloadData.statusDescr
         holder.progressBar.progress = downloadData.progress
 
+        holder.percentage.text = downloadData.progress.toString() + "%"
+
+//        Log.d("a", "maor " + downloadData.progress)
         holder.btnCancelResume.visibility = View.VISIBLE
         holder.btnCancelResume.isEnabled = true
 

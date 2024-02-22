@@ -32,6 +32,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         mapPkg.MDID?.let {
             watchDownloadProgress(it, id, pkgUrl, false)
         }
+
         mapPkg.JDID?.let{
             watchDownloadProgress(it, id, jsonUrl, true)
         }
@@ -40,6 +41,18 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         Timber.i("watchDownloadImport - toContinue: $toContinue")
         return toContinue
     }
+
+//     private fun receiveProgress(dId: Long): Int{
+//        val statusInfo = downloader.queryStatus(dId)
+//        var progress = 0
+//        when(statusInfo?.status){
+//            DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_SUCCESSFUL -> {
+//                progress = (statusInfo.downloadBytes * 100 / statusInfo.totalBytes).toInt()
+//            }
+//        }
+//
+//        return progress
+//    }
 
     private fun watchDownloadProgress(downloadId: Long, id: String, url: String, isJson: Boolean): Long{
         Timber.i("watchDownloadProgress, isJson: $isJson")
@@ -64,6 +77,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_SUCCESSFUL -> {
                     val progress = (statusInfo.downloadBytes * 100 / statusInfo.totalBytes).toInt()
                     Timber.d("downloadFile - DownloadId: $dId -> process: $progress ")
+
 
                     if (!isJson && !mapPkg.metadata.mapDone){
                         mapRepo.update(id = id, downloadProgress = progress, fileName = statusInfo.fileName,

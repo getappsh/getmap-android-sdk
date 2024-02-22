@@ -17,12 +17,12 @@ import com.ngsoft.tilescache.models.TilePkg
 @Database(
     version = 9,
     entities = [TilePkg::class, MapPkg::class],
-    autoMigrations = [
-        AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 5, to = 6),
-        AutoMigration(from = 6, to = 7),
-        AutoMigration(from = 7, to = 8)
-    ]
+//    autoMigrations = [
+//        AutoMigration(from = 3, to = 4),
+//        AutoMigration(from = 5, to = 6),
+//        AutoMigration(from = 6, to = 7),
+//        AutoMigration(from = 7, to = 8)
+//    ]
     //, exportSchema = false
 )
 @TypeConverters(TimeStampConverter::class)

@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -309,6 +310,12 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
     private fun showLoadingDialog(title: String, id: String? = null) {
+
+//        var percentages = findViewById<TextView>(R.id.Percentages)
+////        var percentages= R.id.Percentages
+//
+////        percentages = i
+//        Log.i("PROGRESSBAR", "showLoadingDialog: ")
         progressDialog = ProgressDialog(this)
         progressDialog?.setTitle(title)
         progressDialog?.setMessage("Loading...") // Set the message to be displayed
