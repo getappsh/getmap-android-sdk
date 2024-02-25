@@ -110,7 +110,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String {
+    override fun processQrCodeData(data: String): String {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -122,11 +122,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String? {
+    override fun downloadMap(mp: MapProperties): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String? {
+    override fun downloadUpdatedMap(id: String): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -134,11 +134,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
-        TODO("Not implemented in DefaultGetMapService")
-    }
-
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String {
+    override fun resumeDownload(id: String): String {
         TODO("Not implemented in DefaultGetMapService")
     }
     override fun getDownloadedMap(id: String): MapData? {
