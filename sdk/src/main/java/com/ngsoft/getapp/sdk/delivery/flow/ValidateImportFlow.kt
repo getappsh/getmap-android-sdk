@@ -15,13 +15,13 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
         Timber.i("validateImport - id: $id")
         this.mapRepo.update(
             id = id,
-            statusMessage = app.getString(R.string.delivery_status_in_verification),
-            downloadProgress = 0, errorContent = ""
+            statusMsg = app.getString(R.string.delivery_status_in_verification),
+            downloadProgress = 0, statusDescr = ""
         )
 
         if (this.mapRepo.isDownloadCanceled(id)){
             Timber.d("validateImport - Download $id, canceled by user")
-            mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMessage = app.getString(R.string.delivery_status_canceled))
+            mapRepo.update(id, state = MapDeliveryState.CANCEL, statusMsg = app.getString(R.string.delivery_status_canceled))
             return false
         }
         val mapPkg = this.mapRepo.getById(id)!!
@@ -34,7 +34,7 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
             val expectedHash = JsonUtils.getStringOrThrow(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
                 Timber.d("validateImport - progress: $it")
-                this.mapRepo.update(id, downloadProgress = it, statusMessage = app.getString(R.string.delivery_status_in_verification), errorContent = "")
+                this.mapRepo.update(id, downloadProgress = it, statusMsg = app.getString(R.string.delivery_status_in_verification), statusDescr = "")
             }
             Timber.d("validateImport - expectedHash: $expectedHash, actualHash: $actualHash")
 
@@ -53,8 +53,8 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
                 id = id,
                 state =  MapDeliveryState.DONE,
                 flowState = DeliveryFlowState.DONE,
-                statusMessage = app.getString(R.string.delivery_status_done),
-                errorContent = ""
+                statusMsg = app.getString(R.string.delivery_status_done),
+                statusDescr = ""
             )
         }else{
             if (mapPkg.metadata.validationAttempt < 1){
@@ -64,8 +64,8 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
                     id = id,
                     flowState = DeliveryFlowState.IMPORT_DELIVERY,
                     validationAttempt = ++mapPkg.metadata.validationAttempt,
-                    statusMessage = app.getString(R.string.delivery_status_failed_verification_try_again),
-                    errorContent = "Checksum validation Failed try downloading again",
+                    statusMsg = app.getString(R.string.delivery_status_failed_verification_try_again),
+                    statusDescr = "Checksum validation Failed try downloading again",
                 )
                 Timber.d("validateImport - Failed downloading again")
                 return true
@@ -73,8 +73,8 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
             mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = app.getString(R.string.delivery_status_failed_verification),
-                errorContent = "Checksum validation Failed"
+                statusMsg = app.getString(R.string.delivery_status_failed_verification),
+                statusDescr = "Checksum validation Failed"
             )
         }
         this.sendDeliveryStatus(id)

@@ -55,9 +55,9 @@ interface MapDAO {
             "jsonName = COALESCE(:jsonName, jsonName), " +
             "url = COALESCE(:url, url), " +
             "flowState = COALESCE(:flowState, flowState), " +
-            "statusMessage = COALESCE(:statusMessage, statusMessage), " +
+            "statusMsg = COALESCE(:statusMsg, statusMsg), " +
             "downloadProgress = COALESCE(:downloadProgress, downloadProgress), " +
-            "errorContent = COALESCE(:errorContent, errorContent), " +
+            "statusDescr = COALESCE(:statusDescr, statusDescr), " +
             "cancelDownload = CASE WHEN :state = 'CANCEL' AND cancelDownload = 1 THEN 0 ELSE COALESCE(:cancelDownload, cancelDownload) END, "+
             "footprint = COALESCE(:footprint, footprint), "+
             "isUpdated = COALESCE(:isUpdated, isUpdated), "+
@@ -90,12 +90,12 @@ interface MapDAO {
         MDID: Long?=null,
         state: MapDeliveryState?=null,
         flowState: DeliveryFlowState?=null,
-        statusMessage: String?=null,
+        statusMsg: String?=null,
         fileName: String?=null,
         jsonName: String?=null,
         url: String?=null,
         downloadProgress: Int?=null,
-        errorContent: String?=null,
+        statusDescr: String?=null,
         validationAttempt: Int?=null,
         connectionAttempt: Int?=null,
         mapAttempt: Int?=null,

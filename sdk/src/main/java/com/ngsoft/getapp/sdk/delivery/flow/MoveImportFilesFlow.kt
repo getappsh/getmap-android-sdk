@@ -24,8 +24,8 @@ internal class MoveImportFilesFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCt
             mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
-                statusMessage = app.getString(R.string.delivery_status_failed),
-                errorContent = e.message.toString()
+                statusMsg = app.getString(R.string.delivery_status_failed),
+                statusDescr = e.message.toString()
             )
             sendDeliveryStatus(id)
             false

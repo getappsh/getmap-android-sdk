@@ -1,5 +1,6 @@
 package com.example.example_app
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +11,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 
 class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
@@ -19,6 +20,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         val textStatus: TextView = itemView.findViewById(R.id.textStatus)
         val textError: TextView = itemView.findViewById(R.id.textError)
         val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
+        val percentage:TextView = itemView.findViewById(R.id.Percentages)
         val btnCancelResume: Button = itemView.findViewById(R.id.btnCancelResume)
         val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
         val btnQRCode: Button = itemView.findViewById(R.id.btnQRCode)
@@ -26,12 +28,12 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     }
 
 
-    private val diffUtil = object : DiffUtil.ItemCallback<MapDownloadData>() {
-        override fun areItemsTheSame(oldItem: MapDownloadData, newItem: MapDownloadData): Boolean {
+    private val diffUtil = object : DiffUtil.ItemCallback<MapData>() {
+        override fun areItemsTheSame(oldItem: MapData, newItem: MapData): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: MapDownloadData, newItem: MapDownloadData): Boolean {
+        override fun areContentsTheSame(oldItem: MapData, newItem: MapData): Boolean {
             return oldItem.toString() == newItem.toString()
         }
 
@@ -44,17 +46,21 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
         val downloadData = asyncListDiffer.currentList[position]
 
         holder.textFileName.text = downloadData.fileName
-        holder.textStatus.text = downloadData.statusMessage
-        holder.textError.text = downloadData.errorContent
-        holder.progressBar.progress = downloadData.downloadProgress
+        holder.textStatus.text = downloadData.statusMsg
+        holder.textError.text = downloadData.statusDescr
+        holder.progressBar.progress = downloadData.progress
 
+        holder.percentage.text = downloadData.progress.toString() + "%"
+
+//        Log.d("a", "maor " + downloadData.progress)
         holder.btnCancelResume.visibility = View.VISIBLE
         holder.btnCancelResume.isEnabled = true
 
-        when(downloadData.deliveryStatus){
+        when(downloadData.deliveryState){
             START -> {
                 holder.btnDelete.visibility = View.GONE
                 holder.btnCancelResume.text = "Cancel"
@@ -133,7 +139,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     override fun getItemCount(): Int {
         return asyncListDiffer.currentList.size
     }
-    fun saveData(dataResponse: List<MapDownloadData>){
+    fun saveData(dataResponse: List<MapData>){
         asyncListDiffer.submitList(dataResponse)
     }
 

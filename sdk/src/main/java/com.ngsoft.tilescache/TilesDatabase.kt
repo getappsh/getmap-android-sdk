@@ -15,7 +15,7 @@ import com.ngsoft.tilescache.models.MapPkg
 import com.ngsoft.tilescache.models.TilePkg
 
 @Database(
-    version = 8,
+    version = 9,
     entities = [TilePkg::class, MapPkg::class],
 //    autoMigrations = [
 //        AutoMigration(from = 3, to = 4),
@@ -38,7 +38,7 @@ abstract class TilesDatabase : RoomDatabase() {
                     instance =  Room.databaseBuilder(ctx, TilesDatabase::class.java, "tiles-DB")
                         //no migration support currently. 4 migration see:
                         //https://developer.android.com/training/data-storage/room/migrating-db-versions
-                        .addMigrations(MIGRATION_4_5)
+                        .addMigrations(MIGRATION_4_5, MIGRATION_8_9)
                         .fallbackToDestructiveMigration()
                         .build()
                     INSTANCE = instance
@@ -46,9 +46,16 @@ abstract class TilesDatabase : RoomDatabase() {
                 return instance
             }
         }
-        val MIGRATION_4_5 = object : Migration(4, 5) {
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("UPDATE MapPkg SET flowState = 'IMPORT_DELIVERY' WHERE flowState = 'IMPORT_DELIVERY_STATUS'")
+
+            }
+        }
+        private val MIGRATION_8_9 = object : Migration(8, 9){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE MapPkg RENAME COLUMN statusMessage TO statusMsg");
+                database.execSQL("ALTER TABLE MapPkg RENAME COLUMN errorContent TO statusDescr");
 
             }
         }

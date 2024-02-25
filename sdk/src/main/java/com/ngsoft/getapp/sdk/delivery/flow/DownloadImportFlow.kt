@@ -24,7 +24,7 @@ internal class DownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
         this.mapRepo.update(
             id = id, JDID = jsonDownloadId, MDID = pkgDownloadId,
             state =  MapDeliveryState.DOWNLOAD, flowState = DeliveryFlowState.DOWNLOAD,
-            statusMessage = statusMessage, errorContent = "", downloadProgress = 0
+            statusMsg = statusMessage, statusDescr = "", downloadProgress = 0
         )
         this.sendDeliveryStatus(id)
 
