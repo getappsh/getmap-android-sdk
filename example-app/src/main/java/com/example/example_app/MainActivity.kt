@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
             null
         )
 
-        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
+        service = GetMapServiceFactory.createAsioSdkSvc(this, cfg)
         service.setOnInventoryUpdatesListener {
             val data = it.joinToString()
             runOnUiThread{Toast.makeText(this, data, Toast.LENGTH_LONG).show()}
@@ -144,13 +144,6 @@ class MainActivity : AppCompatActivity() {
             barcodeLauncher.launch(ScanOptions())
         }
 
-        Thread{
-            service.getDownloadedMaps().forEach {
-                service.registerDownloadHandler(it.id!!, downloadStatusHandler)
-            }
-        }.start()
-
-
     }
 
     private fun onDiscovery(){
@@ -197,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                 "34.46087927,31.48921097,34.47834067,31.50156331",
                 false
             )
-            val id = service.downloadMap(props, downloadStatusHandler);
+            val id = service.downloadMap(props);
 
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }
@@ -244,7 +237,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onResume(id: String){
         GlobalScope.launch(Dispatchers.IO) {
-            service.resumeDownload(id, downloadStatusHandler)
+            service.resumeDownload(id)
         }
     }
 
@@ -262,7 +255,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateMap(id: String){
         GlobalScope.launch(Dispatchers.IO) {
-            service.downloadUpdatedMap(id,  downloadStatusHandler)
+            service.downloadUpdatedMap(id)
         }
     }
 
@@ -355,9 +348,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
             GlobalScope.launch(Dispatchers.IO) {
                 try{
-                    service.processQrCodeData(result.contents){
-                        Log.d(TAG, "on data change: $it")
-                    }
+                    service.processQrCodeData(result.contents)
                 }catch (e: Exception){
                     runOnUiThread { showErrorDialog(e.message.toString()) }
                 }
