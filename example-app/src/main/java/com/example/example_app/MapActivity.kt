@@ -210,7 +210,7 @@ class MapActivity : AppCompatActivity() {
                 "${pLeftTop.x},${pLeftTop.y},${pRightTop.x},${pRightTop.y},${pRightBottom.x},${pRightBottom.y},${pLeftBottom.x},${pLeftBottom.y},${pLeftTop.x},${pLeftTop.y}",
                 false
             )
-            val id = service.downloadMap(props)
+            val id = service.downloadMap(props, {})
             if (id == null) {
                 this@MapActivity.runOnUiThread {
                     // This is where your UI code goes.

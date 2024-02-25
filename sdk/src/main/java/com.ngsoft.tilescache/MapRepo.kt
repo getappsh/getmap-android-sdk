@@ -34,7 +34,7 @@ internal class MapRepo(ctx: Context) {
 //        db.runInTransaction { db.query(SimpleSQLiteQuery("DELETE FROM sqlite_sequence")) }
     }
 
-    fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState): String{
+    fun create(pId:String, bBox: String, state: MapDeliveryState, statusMessage: String, flowState: DeliveryFlowState , dsh: (MapData) -> Unit): String{
         val id = dao.insert(MapPkg(
             pId=pId,
             bBox=bBox,
@@ -43,6 +43,7 @@ internal class MapRepo(ctx: Context) {
             statusMsg = statusMessage,
             downloadStart = LocalDateTime.now(ZoneOffset.UTC))).toString()
 
+        downloadStatusHandlers[id] = dsh
         return id
     }
     fun save(mapPkg: MapPkg): String{
@@ -229,6 +230,7 @@ internal class MapRepo(ctx: Context) {
         try {
             update(id, state = MapDeliveryState.DELETED)
             dao.deleteById(id.toInt())
+            downloadStatusHandlers.remove(id)
 
             mapMutableLiveHase.value?.remove(id)
             mapMutableLiveHase.postValue(mapMutableLiveHase.value)
@@ -251,6 +253,8 @@ internal class MapRepo(ctx: Context) {
     fun invoke(id: String){
         val map = getDownloadData(id);
         if (map != null) {
+            downloadStatusHandlers[id]?.invoke(map)
+
             if (mapMutableLiveHase.value?.isEmpty() != false){
                 Thread{ mapMutableLiveHase.postValue(getAll().map { mapPkg2DownloadData(it) }.associateBy { it.id!! }.toConcurrentHashMap()) }.start()
             }else{
@@ -309,12 +313,18 @@ internal class MapRepo(ctx: Context) {
         )
     }
 
+    fun setListener(id: String, dsh: (MapData) -> Unit){
+        downloadStatusHandlers[id] = dsh
+    }
+
+
     private fun <K, V> Map<K, V>.toConcurrentHashMap(): ConcurrentHashMap<K, V> {
         val concurrentHashMap = ConcurrentHashMap<K, V>()
         concurrentHashMap.putAll(this)
         return concurrentHashMap
     }
     companion object {
+        val downloadStatusHandlers = ConcurrentHashMap<String, (MapData) -> Unit>()
         var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
 
         private val customOrder = listOf(MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE)

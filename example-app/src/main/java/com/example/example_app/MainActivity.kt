@@ -334,7 +334,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
                 false
             )
-            val id = mapServiceManager.service.downloadMap(props);
+            val id = mapServiceManager.service.downloadMap(props, {});
             if (id == null) {
                 this@MainActivity.runOnUiThread {
                     // This is where your UI code goes.
@@ -477,7 +477,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         TrackHelper.track().dimension(1, id).event("מיפוי ענן", "ניהול בקשות").name("אתחל")
             .with(tracker)
         GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.resumeDownload(id)
+            mapServiceManager.service.resumeDownload(id, {})
         }
 
     }
@@ -529,7 +529,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun updateMap(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.downloadUpdatedMap(id)
+            mapServiceManager.service.downloadUpdatedMap(id, {})
         }
     }
 
@@ -640,7 +640,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    mapServiceManager.service.processQrCodeData(result.contents)
+                    mapServiceManager.service.processQrCodeData(result.contents, {})
                     withContext(Dispatchers.Main) {
                         TrackHelper.track().dimension(1, result.contents)
                             .event("מיפוי ענן", "שיתוף")

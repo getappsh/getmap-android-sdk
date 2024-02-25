@@ -120,7 +120,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
             service.deleteMap(it.id.toString())
         }
 
-        val id = service.downloadMap(props);
+        val id = service.downloadMap(props, {});
         if (id == null){
             testReport[TEST_IMPORT]?.success = false
             testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD, false)

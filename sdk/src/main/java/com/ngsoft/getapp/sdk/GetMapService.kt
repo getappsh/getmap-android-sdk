@@ -60,31 +60,42 @@ interface GetMapService {
     fun cancelDownload(id: String)
 
     /**
+     * Register download handler to on going download
+     *
+     * @param id Map id
+     * @param downloadStatusHandler delivery progress handler
+     * @receiver see [MapData]
+     */
+    fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit)
+    /**
      * Resume download
      *
      * @param id Map id
+     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun resumeDownload(id: String): String
+    fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String
 
     /**
      * Deliver extent tiles
      *
      * @param mp map properties to deliver
+     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun downloadMap(mp: MapProperties): String?
+    fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String?
 
     /**
      * Download updated map
      *
      * @param id Map id
+     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun downloadUpdatedMap(id: String): String?
+    fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String?
 
     /**
      * Synchronize Map data by reading the files from storage, and syncing them against the DB
@@ -128,10 +139,11 @@ interface GetMapService {
     /**
      * Process QR code data.
      * @param data from the QR code
+     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun processQrCodeData(data: String): String
+    fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String
 
     /**
      * Get extent updates

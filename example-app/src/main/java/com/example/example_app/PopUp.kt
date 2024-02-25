@@ -89,7 +89,7 @@ class PopUp : DialogFragment() {
                     service.getDownloadedMaps().forEach { mapData ->
                         if (!mapData.isUpdated) {
                             service.downloadUpdatedMap(
-                                mapData.id!!)
+                                mapData.id!!, {})
                         }
                     }
                     recyclerView.smoothScrollToPosition(0)
@@ -99,7 +99,7 @@ class PopUp : DialogFragment() {
                 TrackHelper.track().dimension(1, mapId).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
-                    service.downloadUpdatedMap(mapId)
+                    service.downloadUpdatedMap(mapId, {})
                     recyclerView.smoothScrollToPosition(0)
                 }
             } else if (type == "cancelled") {
