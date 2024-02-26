@@ -1,10 +1,12 @@
 package com.example.example_app
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -33,6 +35,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
             return oldItem.id == newItem.id
         }
 
+        @SuppressLint("DiffUtilEquals")
         override fun areContentsTheSame(oldItem: MapData, newItem: MapData): Boolean {
             return oldItem.toString() == newItem.toString()
         }
@@ -54,6 +57,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         holder.textError.text = downloadData.statusDescr
         holder.progressBar.progress = downloadData.progress
 
+
         holder.percentage.text = downloadData.progress.toString() + "%"
 
 //        Log.d("a", "maor " + downloadData.progress)
@@ -67,8 +71,9 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
                 holder.btnQRCode.visibility = View.GONE
             }
             DONE -> {
+                holder.percentage.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.btnCancelResume.isEnabled = false
+                holder.btnCancelResume.visibility = View.GONE
                 holder.btnCancelResume.text = "Cancel"
                 holder.btnQRCode.visibility = View.VISIBLE
             }
