@@ -13,7 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -21,6 +20,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.journeyapps.barcodescanner.ScanContract
@@ -112,7 +112,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
         recyclerView.adapter = downloadListAdapter
-
+            //Separator code between each download, optional
+//        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+//        recyclerView.addItemDecoration(
+//            DividerItemDecoration(
+//                baseContext,
+//                layoutManager.orientation
+//            )
+//        )
         service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
@@ -196,10 +203,16 @@ class MainActivity : AppCompatActivity() {
 //                    "34.50724201341369,31.602641553384572,34.5180453565571,31.59509118055151,34.50855899068993,31.5815177494226,34.497755647546515,31.589068122255644,34.50724201341369,31.602641553384572",
 //                "34.47956403,31.52202192,34.51125354,31.54650531",
 //                "34.33390512,31.39424661,34.33937683,31.39776391",// json dose not exist on s3 for this bBox
-                "34.46087927,31.48921097,34.46834067,31.50156331",
+                "34.46087927,31.48921097,34.48834067,31.50156331",
                 false
             )
             val id = service.downloadMap(props, downloadStatusHandler);
+            if(id == null) {
+                this@MainActivity.runOnUiThread {
+                    // This is where your UI code goes.
+                    Toast.makeText(applicationContext, "The map already exists, please choose another Bbox", Toast.LENGTH_LONG).show()
+                }
+            }
 
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }

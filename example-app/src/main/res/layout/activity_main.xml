@@ -53,10 +53,14 @@
         android:id="@+id/selectedProduct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="test text"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:layout_marginEnd="294dp"
+        android:layout_marginBottom="1dp"
+        android:text="You have selected:"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textColor="#000000"
         android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerView"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 

@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -51,7 +52,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val downloadData = asyncListDiffer.currentList[position]
-
+//        Log.i("NISOUIEIEIEIEIEIEEI", "onBindViewHolder: ${}")
         holder.textFileName.text = downloadData.fileName
         holder.textStatus.text = downloadData.statusMsg
         holder.textError.text = downloadData.statusDescr
@@ -67,44 +68,54 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
         when(downloadData.deliveryState){
             START -> {
                 holder.btnDelete.visibility = View.GONE
-                holder.btnCancelResume.text = "Cancel"
+//                holder.btnCancelResume.text = "Cancel"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
             DONE -> {
                 holder.percentage.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.visibility = View.GONE
-                holder.btnCancelResume.text = "Cancel"
+//                holder.btnCancelResume.text = "Cancel"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.VISIBLE
             }
             ERROR -> {
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.btnCancelResume.text = "Resume"
+//                holder.btnCancelResume.text = "Resume"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
             CANCEL -> {
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.btnCancelResume.text = "Resume"
+//                holder.btnCancelResume.text = "Resume"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
             PAUSE -> {
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.btnCancelResume.text = "Resume"
+//                holder.btnCancelResume.text = "Resume"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
             CONTINUE -> {
                 holder.btnDelete.visibility = View.GONE
-                holder.btnCancelResume.text = "Cancel"
+                holder.percentage.visibility = View.VISIBLE
+//                holder.btnCancelResume.text = "Cancel"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
             DOWNLOAD -> {
                 holder.btnDelete.visibility = View.GONE
-                holder.btnCancelResume.text = "Cancel"
+                holder.percentage.visibility = View.VISIBLE
+//                holder.btnCancelResume.text = "Cancel"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
             DELETED -> {
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.btnCancelResume.text = "Cancel"
+//                holder.btnCancelResume.text = "Cancel"
+                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
 
             }
@@ -112,7 +123,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) : Re
 
         // Set click listeners for buttons
         holder.btnCancelResume.setOnClickListener {
-            if ((it as Button).text == "Resume" ){
+            if ((it as Button).background.constantState?.equals(ContextCompat.getDrawable((it as Button).context, R.drawable.play)?.constantState) == true ){
                 onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!)
             }else{
                 onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!)
