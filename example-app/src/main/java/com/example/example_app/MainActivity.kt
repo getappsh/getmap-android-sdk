@@ -122,8 +122,8 @@ class MainActivity : AppCompatActivity() {
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
             this.onDiscovery()
-        }
 
+        }
 
         deliveryButton = findViewById<Button>(R.id.delivery)
         deliveryButton.isEnabled = false
@@ -162,11 +162,14 @@ class MainActivity : AppCompatActivity() {
             try {
                 val products = service.getDiscoveryCatalog(props)
                 Log.d(TAG, "discovery products: " + products);
-
+                products.forEach{ product -> Log.d("products1", "Id : ${product.id} And Coordinates : ${product.footprint}")}
                 launch(Dispatchers.Main) {
                     // Display the response in an AlertDialog
                     dismissLoadingDialog()
-                    discoveryDialogPicker(products)
+                    DiscoveryProductsManager.getInstance().updateProducts(products)
+                    val intent = Intent(this@MainActivity, MapActivity::class.java)
+                    startActivity(intent)
+//                    discoveryDialogPicker(products)
 
                 }
             }catch (e: Exception) {
@@ -174,6 +177,7 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "error: "+ e );
                 launch(Dispatchers.Main) {
                     dismissLoadingDialog()
+                    Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
 
                 }
             }
@@ -181,7 +185,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
 
     private fun onDelivery(){
         Log.d(TAG, "onDelivery: ");

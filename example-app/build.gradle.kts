@@ -39,19 +39,22 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
-        compose = true
+        dataBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/*"
         }
     }
 }
 
 dependencies {
+//    implementation("com.esri.arcgisruntime:arcgis-android:100.10.0")
+    implementation("com.esri:arcgis-maps-kotlin:200.3.0")
+
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
     implementation(project(mapOf("path" to ":sdk")))
@@ -60,6 +63,8 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     implementation("com.squareup.moshi:moshi-adapters:1.13.0")
     implementation("androidx.room:room-runtime:2.5.2")
+    implementation("com.google.code.gson:gson:2.8.9")
+
 
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2")

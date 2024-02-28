@@ -8,3 +8,9 @@ plugins {
     id("org.jetbrains.dokka") version "1.9.0" apply false
     id("com.google.devtools.ksp") version "1.8.10-1.0.9" apply false
 }
+
+tasks.register("clean") {
+    doLast {
+        delete(rootProject.buildDir)
+    }
+}
