@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -47,11 +48,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
 
-    private lateinit var selectedProductView: TextView
+//    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
 
-    private lateinit var syncButton: Button
+    private lateinit var syncButton: ImageButton
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var downloadListAdapter: DownloadListAdapter
@@ -113,19 +114,19 @@ class MainActivity : AppCompatActivity() {
         }
         recyclerView.adapter = downloadListAdapter
             //Separator code between each download, optional
-//        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-//        recyclerView.addItemDecoration(
-//            DividerItemDecoration(
-//                baseContext,
-//                layoutManager.orientation
-//            )
-//        )
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                baseContext,
+                layoutManager.orientation
+            )
+        )
         service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
         })
 
-        selectedProductView = findViewById<TextView>(R.id.selectedProduct)
+//        selectedProductView = findViewById<TextView>(R.id.selectedProduct)
 
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
@@ -139,7 +140,7 @@ class MainActivity : AppCompatActivity() {
             this.onDelivery()
         }
 
-        syncButton = findViewById<Button>(R.id.d_test)
+        syncButton = findViewById<ImageButton>(R.id.d_test)
 
         syncButton.setOnClickListener{
             GlobalScope.launch(Dispatchers.IO) {
@@ -203,7 +204,7 @@ class MainActivity : AppCompatActivity() {
 //                    "34.50724201341369,31.602641553384572,34.5180453565571,31.59509118055151,34.50855899068993,31.5815177494226,34.497755647546515,31.589068122255644,34.50724201341369,31.602641553384572",
 //                "34.47956403,31.52202192,34.51125354,31.54650531",
 //                "34.33390512,31.39424661,34.33937683,31.39776391",// json dose not exist on s3 for this bBox
-                "34.46087927,31.48921097,34.48834067,31.50156331",
+                "34.46087927,31.48921197,34.48834067,31.50156331",
                 false
             )
             val id = service.downloadMap(props, downloadStatusHandler);
@@ -230,7 +231,7 @@ class MainActivity : AppCompatActivity() {
             selectedProduct = products[which]
             Log.d(TAG, "dialogPicker: selected item " + selectedProduct.productName)
 
-            selectedProductView.text = ("Selected Product:\n" + selectedProduct.productName)
+//            selectedProductView.text = ("Selected Product:\n" + selectedProduct.productName)
             deliveryButton.isEnabled = true
             updateDate = selectedProduct.ingestionDate!!.toLocalDateTime()
 
