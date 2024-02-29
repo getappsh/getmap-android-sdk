@@ -17,7 +17,8 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         private const val TEST_CONFIG = 0
         private const val TEST_IMPORT = 1
         private const val TEST_DOWNLOAD = 2
-        private const val TEST_INVENTORY_UPDATES = 3
+        private const val TEST_FILE_MOVE = 3
+        private const val TEST_INVENTORY_UPDATES = 4
     }
 
     data class TestResults(
@@ -42,6 +43,9 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         testReport.clear()
         testReport[TEST_CONFIG] = null
         testReport[TEST_IMPORT] = null
+        testReport[TEST_DOWNLOAD] = null
+        testReport[TEST_FILE_MOVE] = null
+        testReport[TEST_INVENTORY_UPDATES] = null
     }
     fun run(){
         initTestReport()
@@ -118,8 +122,13 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
             }
             if (flowState >= DeliveryFlowState.DOWNLOAD_DONE){
                 testReport[TEST_DOWNLOAD]?.success = true
+                if (testReport[TEST_FILE_MOVE] == null){
+                    testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE)
+                }
             }
-//            if (flowState >= DeliveryFlowState.MOVE_FILES){}
+            if (flowState >= DeliveryFlowState.MOVE_FILES){
+                testReport[TEST_FILE_MOVE]?.success = true
+            }
 
             if(state == MapDeliveryState.DONE){
                 break
@@ -127,12 +136,16 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
             if(state == MapDeliveryState.ERROR || state == MapDeliveryState.CANCEL || state == MapDeliveryState.PAUSE || timeoutTime.hasPassedNow()){
                 if (testReport[TEST_IMPORT]?.success != true){
                     testReport[TEST_IMPORT]?.success = false
-                    testReport[TEST_IMPORT]?.message = if (timeoutTime.hasPassedNow()) "Time Out" else mapPkg.statusDescr
+                    testReport[TEST_IMPORT]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
 
                 }
                 if (testReport[TEST_DOWNLOAD]?.success != true){
                     testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD, false)
-                    testReport[TEST_DOWNLOAD]?.message = if (timeoutTime.hasPassedNow()) "Time Out" else mapPkg.statusDescr
+                    testReport[TEST_DOWNLOAD]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
+                }
+                if (testReport[TEST_FILE_MOVE]?.success != true){
+                    testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE)
+                    testReport[TEST_FILE_MOVE]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
                 }
                 break
             }
