@@ -1,5 +1,6 @@
 package com.example.example_app
 
+
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.util.Log
@@ -20,10 +21,11 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import java.io.File
 import java.time.LocalDate
 
-class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
+class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit, private val pathAvailable: String) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val availableSpace: TextView = itemView.findViewById(R.id.AvailableSpace)
         val textFileName: TextView = itemView.findViewById(R.id.textFileName)
         val textStatus: TextView = itemView.findViewById(R.id.textStatus)
         val dates: TextView = itemView.findViewById(R.id.dates)
@@ -68,20 +70,23 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
             "sdcard/Documents" +
                     File.separator
         )
+
         if (directory.exists()) {
             val files: Array<File> = directory.listFiles()!!
 
             for (file in files.iterator())
                 if (file.name == downloadData.jsonName) {
-                    var text = file.readText()
-                    var json_text = Gson().fromJson(text, MapDataMetaData::class.java)
+                    val text = file.readText()
+                    val json_text = Gson().fromJson(text, MapDataMetaData::class.java)
                     holder.textFileName.text = json_text.productName
+                    val start_date = json_text.creationDate.substringBefore('T')
+                    val update_date = json_text.updateDate.substringBefore('T')
+                    val tsoulam = "צולם: "
+                    val minus = "-"
 //                    var json_text = JSONObject(text) json_text.get("creationDate").toString().substringBefore('T')}
 //                    - ${json_text.get("updateDate").toString().substringBefore('T')
 //                    holder.textFileName.text = json_text.get("productName").toString()
-                    holder.dates.text = "צולם: ${json_text.creationDate.substringBefore('T')} - ${
-                        json_text.updateDate.substringBefore('T')
-                    }"
+                    holder.dates.text = "${tsoulam}${start_date} ${minus} ${update_date}"
                 }
         }
 
@@ -100,9 +105,10 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
         when (downloadData.deliveryState) {
             START -> {
                 holder.btnDelete.visibility = View.GONE
+                holder.textStatus.visibility = View.VISIBLE
+                holder.percentage.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
-//                holder.btnCancelResume.text = "Cancel"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
@@ -115,7 +121,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
                 holder.dates.visibility = View.VISIBLE
                 holder.btnCancelResume.visibility = View.GONE
                 holder.progressBar.progress = 0
-//                holder.btnCancelResume.text = "Cancel"
+                holder.availableSpace.text = pathAvailable
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.VISIBLE
             }
@@ -123,21 +129,18 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
             ERROR -> {
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.dates.text = LocalDate.now().toString()
-//                holder.btnCancelResume.text = "Resume"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
 
             CANCEL -> {
                 holder.btnDelete.visibility = View.VISIBLE
-//                holder.btnCancelResume.text = "Resume"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
 
             PAUSE -> {
                 holder.btnDelete.visibility = View.VISIBLE
-//                holder.btnCancelResume.text = "Resume"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
@@ -145,7 +148,6 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
             CONTINUE -> {
                 holder.btnDelete.visibility = View.GONE
                 holder.percentage.visibility = View.VISIBLE
-//                holder.btnCancelResume.text = "Cancel"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
@@ -153,16 +155,15 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
             DOWNLOAD -> {
                 holder.btnDelete.visibility = View.GONE
                 holder.percentage.visibility = View.VISIBLE
+                holder.textStatus.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
-//                holder.btnCancelResume.text = "Cancel"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
 
             DELETED -> {
                 holder.btnDelete.visibility = View.VISIBLE
-//                holder.btnCancelResume.text = "Cancel"
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
 
@@ -178,19 +179,19 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
                     )?.constantState
                 ) == true
             ) {
-                onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!)
+                onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!,pathAvailable)
             } else {
-                onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!)
+                onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!,pathAvailable)
             }
         }
 
         holder.btnDelete.setOnClickListener {
-            onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!)
+            onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!,pathAvailable)
 
         }
 
         holder.btnQRCode.setOnClickListener {
-            onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!)
+            onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!,pathAvailable)
         }
 
         if (downloadData.isUpdated) {
@@ -199,11 +200,11 @@ class DownloadListAdapter(private val onButtonClick: (Int, String) -> Unit) :
             holder.btnUpdate.visibility = View.VISIBLE
         }
         holder.btnUpdate.setOnClickListener {
-            onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!)
+            onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!,pathAvailable)
         }
 
         holder.itemView.setOnClickListener {
-            onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!)
+            onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!,pathAvailable)
         }
     }
 
