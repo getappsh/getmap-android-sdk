@@ -1,117 +1,169 @@
 <!-- res/layout/list_item_download.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:dividerHeight="0dp"
     android:orientation="vertical">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/black"
-        />
     <!-- Display the file name, status, and error content -->
-    <TextView
-        android:id="@+id/textFileName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="File Name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
-
-    <TextView
-        android:id="@+id/textStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="Status"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
-
-    <TextView
-        android:id="@+id/textError"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="Error"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
     <!-- Display the progress bar -->
-    <TextView
-        android:id="@+id/Percentages"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="20px"
-        android:text="Percentages"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
 
-<!--    <ProgressBar-->
-<!--        android:id="@+id/progressBar"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="66dp"-->
-<!--        android:layout_margin="5dp"-->
-<!--        android:indeterminateDrawable="@drawable/circular_progress_bar"-->
-<!--        android:max="100"-->
-<!--        android:padding="10dp"-->
-<!--        android:progress="0"-->
-<!--        android:progressDrawable="@drawable/circular_progress_bar"-->
-<!--        android:progressTint="#EC1010" />
+    <!--    <ProgressBar-->
+    <!--        android:id="@+id/progressBar"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="66dp"-->
+    <!--        android:layout_margin="5dp"-->
+    <!--        android:indeterminateDrawable="@drawable/circular_progress_bar"-->
+    <!--        android:max="100"-->
+    <!--        android:padding="10dp"-->
+    <!--        android:progress="0"-->
+    <!--        android:progressDrawable="@drawable/circular_progress_bar"-->
+    <!--        android:progressTint="#EC1010" />
 -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="193dp"
-        android:layout_height="170dp"
-        android:background="@drawable/circular_shape"
-        android:indeterminate="false"
-        android:progressDrawable="@drawable/circular_progress_bar"
-        android:textAlignment="center" />
-    <!--style="?android:attr/progressBarStyleHorizontal"/>-->
 
-    <!-- Display buttons for cancel/resume and delete -->
-
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp">
 
-        android:orientation="horizontal">
+        <LinearLayout
+            android:id="@+id/linearLayout2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="5dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnDelete"
+            app:layout_constraintStart_toEndOf="@+id/progressBar"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/textFileName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="3dp"
+                android:text="File Name"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <TextView
+                android:id="@+id/Percentages"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:gravity="right"
+                android:text="Percentages"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:text="Status"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/dates"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="3dp"
+                android:text="Dates"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:indeterminateOnly="false"
+            android:progressDrawable="@drawable/progress_bar_shape"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btnCancelResume"
             style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_margin="5dp"
-            android:text="Cancel"
-            android:textSize="10sp" />
-
-        <Button
-            android:id="@+id/btnDelete"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:text="Delete"
-            android:textSize="10sp" />
+            android:background="@drawable/square"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="@+id/progressBar"
+            app:layout_constraintStart_toStartOf="@+id/progressBar"
+            app:layout_constraintTop_toTopOf="@+id/progressBar" />
 
         <Button
             android:id="@+id/btnQRCode"
             style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="39dp"
+            android:layout_height="41dp"
             android:layout_margin="5dp"
-            android:text="QR code"
+            android:background="@drawable/qr_code"
+            android:paddingLeft="5dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="10sp"
-            android:visibility="gone" />
-
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="@+id/progressBar"
+            app:layout_constraintHorizontal_bias="0.49"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/progressBar"
+            app:layout_constraintVertical_bias="0.49" />
 
         <Button
             android:id="@+id/btnUpdate"
             style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="250dp"
+            android:layout_height="152dp"
             android:layout_margin="5dp"
+            android:layout_marginEnd="411dp"
+            android:layout_marginBottom="390dp"
             android:text="Update"
             android:textSize="10sp"
-            android:visibility="gone" />
-    </LinearLayout>
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/btnDelete"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@color/zxing_transparent"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/baseline_delete_24" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--style="?android:attr/progressBarStyleHorizontal"/>-->
+
+    <!-- Display buttons for cancel/resume and delete -->
 
 </LinearLayout>
