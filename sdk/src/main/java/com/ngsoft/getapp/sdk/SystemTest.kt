@@ -17,6 +17,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         private const val TEST_CONFIG = 0
         private const val TEST_IMPORT = 1
         private const val TEST_DOWNLOAD = 2
+        private const val TEST_INVENTORY_UPDATES = 3
     }
 
     data class TestResults(
@@ -46,7 +47,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         initTestReport()
         testConfig()
         testDelivery()
-
+        testInventoryUpdates()
     }
 
     fun testConfig(){
@@ -63,6 +64,18 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
             testReport[TEST_CONFIG]?.success = false
             testReport[TEST_CONFIG]?.message = e.message.toString()
 
+        }
+    }
+
+    fun testInventoryUpdates(){
+        testReport[TEST_INVENTORY_UPDATES] = TestResults("Inventory Updates", TEST_INVENTORY_UPDATES)
+
+        try {
+            service.fetchInventoryUpdates()
+            testReport[TEST_INVENTORY_UPDATES]?.success = true
+        }catch (e: Exception){
+            testReport[TEST_INVENTORY_UPDATES]?.success = false
+            testReport[TEST_INVENTORY_UPDATES]?.message = e.message.toString()
         }
     }
 
