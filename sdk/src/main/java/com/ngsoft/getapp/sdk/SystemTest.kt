@@ -12,6 +12,8 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
+typealias TestReportUpdater = (HashMap<Int, SystemTest.TestResults?>) -> Unit
+
 class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     companion object{
         private const val TEST_CONFIG = 0
@@ -30,32 +32,34 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
 
     private var service: AsioSdkGetMapService
     private var mapRepo: MapRepo
-    private var mapsList: LiveData<List<MapData>>? = null
-    var testReport = hashMapOf<Int, TestResults?>()
+    private var testReport = hashMapOf<Int, TestResults?>()
 
     init {
         service = AsioSdkGetMapService(appCtx)
         service.init(configuration)
         mapRepo = MapRepo(appCtx)
     }
+    fun run(reportUpdater: TestReportUpdater){
+        initTestReport(reportUpdater)
+        testConfig(reportUpdater)
+        testDelivery(reportUpdater)
+        testInventoryUpdates(reportUpdater)
+    }
 
-    private fun initTestReport(){
+    private fun initTestReport(reportUpdater: TestReportUpdater){
         testReport.clear()
         testReport[TEST_CONFIG] = null
         testReport[TEST_IMPORT] = null
         testReport[TEST_DOWNLOAD] = null
         testReport[TEST_FILE_MOVE] = null
         testReport[TEST_INVENTORY_UPDATES] = null
-    }
-    fun run(){
-        initTestReport()
-        testConfig()
-        testDelivery()
-        testInventoryUpdates()
+        reportUpdater(testReport)
     }
 
-    fun testConfig(){
+    fun testConfig(reportUpdater: TestReportUpdater){
         testReport[TEST_CONFIG] = TestResults("Config", TEST_CONFIG)
+        reportUpdater(testReport)
+
         val lastUpdate = service.config.lastConfigCheck
         try {
             service.fetchConfigUpdates()
@@ -69,10 +73,12 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
             testReport[TEST_CONFIG]?.message = e.message.toString()
 
         }
+        reportUpdater(testReport)
     }
 
-    fun testInventoryUpdates(){
+    fun testInventoryUpdates(reportUpdater: TestReportUpdater){
         testReport[TEST_INVENTORY_UPDATES] = TestResults("Inventory Updates", TEST_INVENTORY_UPDATES)
+        reportUpdater(testReport)
 
         try {
             service.fetchInventoryUpdates()
@@ -81,15 +87,17 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
             testReport[TEST_INVENTORY_UPDATES]?.success = false
             testReport[TEST_INVENTORY_UPDATES]?.message = e.message.toString()
         }
+        reportUpdater(testReport)
     }
 
     @OptIn(ExperimentalTime::class)
-    fun testDelivery(){
+    fun testDelivery(reportUpdater: TestReportUpdater){
         testReport[TEST_IMPORT] = TestResults("Import Map", TEST_IMPORT)
+        reportUpdater(testReport)
 
         val props = MapProperties(
             "system-test",
-            "34.46087927,31.48921097,34.47834067,31.50156334",
+            "34.46087927,31.48921097,34.47834067,31.50156335",
             false
         )
         mapRepo.getByBBox(props.boundingBox).forEach {
@@ -100,6 +108,8 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         if (id == null){
             testReport[TEST_IMPORT]?.success = false
             testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD, false)
+            testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE, false)
+            reportUpdater(testReport)
             return
         }
 
@@ -119,18 +129,22 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
                 if (testReport[TEST_DOWNLOAD] == null){
                     testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD)
                 }
+                reportUpdater(testReport)
             }
             if (flowState >= DeliveryFlowState.DOWNLOAD_DONE){
                 testReport[TEST_DOWNLOAD]?.success = true
                 if (testReport[TEST_FILE_MOVE] == null){
                     testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE)
                 }
+                reportUpdater(testReport)
             }
             if (flowState >= DeliveryFlowState.MOVE_FILES){
                 testReport[TEST_FILE_MOVE]?.success = true
+                reportUpdater(testReport)
             }
 
             if(state == MapDeliveryState.DONE){
+                reportUpdater(testReport)
                 break
             }
             if(state == MapDeliveryState.ERROR || state == MapDeliveryState.CANCEL || state == MapDeliveryState.PAUSE || timeoutTime.hasPassedNow()){
@@ -144,9 +158,10 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
                     testReport[TEST_DOWNLOAD]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
                 }
                 if (testReport[TEST_FILE_MOVE]?.success != true){
-                    testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE)
+                    testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE, false)
                     testReport[TEST_FILE_MOVE]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
                 }
+                reportUpdater(testReport)
                 break
             }
 
