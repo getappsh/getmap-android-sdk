@@ -41,7 +41,7 @@ import java.io.File
 import java.time.LocalDateTime
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private val TAG = MainActivity::class.qualifiedName
 
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         availableSpace.text = GetAvailableSpaceInSdCard()
 
         //Get the path of SDCard
-        val storageManager : StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
         val volume = storageList[1].directory?.absoluteFile ?: ""
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        downloadListAdapter = DownloadListAdapter( { bId, mapId,pathSd ->
+        downloadListAdapter = DownloadListAdapter({ bId, mapId, pathSd ->
             when (bId) {
                 DownloadListAdapter.RESUME_BUTTON_CLICK -> onResume(mapId)
                 DownloadListAdapter.CANCEL_BUTTON_CLICK -> onCancel(mapId)
@@ -122,7 +122,10 @@ class MainActivity : AppCompatActivity() {
                 DownloadListAdapter.UPDATE_BUTTON_CLICK -> updateMap(mapId)
                 DownloadListAdapter.ITEM_VIEW_CLICK -> itemViewClick(mapId)
             }
-        },pathSd)
+        }, pathSd)
+        //Set the adapter to listen to changes
+        downloadListAdapter.setOnSignalListener(this)
+
         recyclerView.adapter = downloadListAdapter
         //Separator code between each download, optional
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -306,7 +309,15 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             service.resumeDownload(id, downloadStatusHandler)
         }
+
     }
+
+    // Function that will update the AvailableSpace
+    override fun onSignal() {
+        val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
+        availableSpace.text = GetAvailableSpaceInSdCard()
+    }
+
 
     private fun generateQrCode(id: String) {
         GlobalScope.launch(Dispatchers.IO) {

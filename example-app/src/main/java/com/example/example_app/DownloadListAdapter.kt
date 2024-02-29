@@ -21,11 +21,32 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import java.io.File
 import java.time.LocalDate
 
-class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit, private val pathAvailable: String) :
+
+class DownloadListAdapter(
+    private val onButtonClick: (Int, String, Any?) -> Unit,
+    private val pathAvailable: String
+) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
+
+    //Create and define the signal listener
+    interface OnSignalListener {
+        fun onSignal()
+    }
+
+    private var signalListener: OnSignalListener? = null
+
+    fun setOnSignalListener(listener: MainActivity) {
+        signalListener = listener
+    }
+
+    private fun sendSignal() {
+        if (signalListener != null) {
+            signalListener!!.onSignal()
+        }
+    }
+
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val availableSpace: TextView = itemView.findViewById(R.id.AvailableSpace)
         val textFileName: TextView = itemView.findViewById(R.id.textFileName)
         val textStatus: TextView = itemView.findViewById(R.id.textStatus)
         val dates: TextView = itemView.findViewById(R.id.dates)
@@ -67,8 +88,9 @@ class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit
         val directory: File = File(
             //path for olar
 //            Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + downloadData.jsonName
-            "sdcard/Documents" +
-                    File.separator
+//            "sdcard/Documents" +
+//                    File.separator
+            pathAvailable
         )
 
         if (directory.exists()) {
@@ -90,15 +112,11 @@ class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit
                 }
         }
 
-//        Log.i("NISOUIEIEIEIEIEIEEI", "onBindViewHolder: ${}")
-//        holder.textFileName.text = downloadData.fileName
-//        holder.dates.text = downloadData.statusDescr
         holder.textStatus.text = downloadData.statusMsg
         holder.progressBar.progress = downloadData.progress
 
         holder.percentage.text = downloadData.progress.toString() + "%"
 
-//        Log.d("a", "maor " + downloadData.progress)
         holder.btnCancelResume.visibility = View.VISIBLE
         holder.btnCancelResume.isEnabled = true
 
@@ -121,9 +139,11 @@ class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit
                 holder.dates.visibility = View.VISIBLE
                 holder.btnCancelResume.visibility = View.GONE
                 holder.progressBar.progress = 0
-                holder.availableSpace.text = pathAvailable
+                sendSignal()
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.VISIBLE
+
+
             }
 
             ERROR -> {
@@ -166,7 +186,7 @@ class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
-
+                sendSignal()
             }
         }
 
@@ -179,19 +199,19 @@ class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit
                     )?.constantState
                 ) == true
             ) {
-                onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!,pathAvailable)
+                onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!, pathAvailable)
             } else {
-                onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!,pathAvailable)
+                onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!, pathAvailable)
             }
         }
 
         holder.btnDelete.setOnClickListener {
-            onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!,pathAvailable)
+            onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
 
         }
 
         holder.btnQRCode.setOnClickListener {
-            onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!,pathAvailable)
+            onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
         }
 
         if (downloadData.isUpdated) {
@@ -200,11 +220,11 @@ class DownloadListAdapter(private val onButtonClick: (Int, String, Any?) -> Unit
             holder.btnUpdate.visibility = View.VISIBLE
         }
         holder.btnUpdate.setOnClickListener {
-            onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!,pathAvailable)
+            onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
         }
 
         holder.itemView.setOnClickListener {
-            onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!,pathAvailable)
+            onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
         }
     }
 
