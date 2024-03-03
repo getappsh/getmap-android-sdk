@@ -34,6 +34,7 @@ import com.ngsoft.getapp.sdk.GetMapServiceFactory
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -154,7 +155,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             this.onDelivery()
         }
 
-        service.synchronizeMapData()
+        CoroutineScope(Dispatchers.Default).launch{ service.synchronizeMapData() }
         syncButton = findViewById<ImageButton>(R.id.d_test)
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
@@ -174,7 +175,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             }
         }.start()
 
-
+        val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
+        settingButton.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun onDiscovery() {
