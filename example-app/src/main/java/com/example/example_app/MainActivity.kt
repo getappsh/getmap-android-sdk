@@ -88,8 +88,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
 
         val cfg = Configuration(
-//            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
-            "http://getapp-test.getapp.sh:3000",
+            "https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link",
+//            "http://getapp-test.getapp.sh:3000",
 //            "http://192.168.2.26:3000",
 //            "http://getapp-dev.getapp.sh:3000",
 //            "http://localhost:3333",
@@ -154,8 +154,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             this.onDelivery()
         }
 
+        service.synchronizeMapData()
         syncButton = findViewById<ImageButton>(R.id.d_test)
-
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
                 service.synchronizeMapData()
