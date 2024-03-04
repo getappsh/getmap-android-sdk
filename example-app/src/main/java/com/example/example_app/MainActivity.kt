@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.storage.StorageManager
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,6 +25,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
@@ -36,6 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 
 class MainActivity : AppCompatActivity() {
@@ -43,7 +46,6 @@ class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.qualifiedName
 
     private var progressDialog: ProgressDialog? = null
-
     private lateinit var service: GetMapService
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
@@ -76,22 +78,28 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        //Get the path of SDCard
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+        val volume = storageList[1].directory?.absoluteFile ?: ""
+        val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
 
         val cfg = Configuration(
 //            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
-            "http://getapp-test.getapp.sh:3000",
+            "https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link",
 //            "http://192.168.2.26:3000",
 //            "http://getapp-dev.getapp.sh:3000",
 //            "http://localhost:3333",
             "rony@example.com",
             "rony123",
 //            File("/storage/1115-0C18/com.asio.gis").path,
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
+            pathSd,
             16,
+
             null
         )
 
-        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
+        service = GetMapServiceFactory.createAsioSdkSvc(applicationContext, cfg)
         service.setOnInventoryUpdatesListener {
             val data = it.joinToString()
             runOnUiThread{Toast.makeText(this, data, Toast.LENGTH_LONG).show()}
@@ -134,11 +142,11 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        deliveryButton = findViewById<Button>(R.id.delivery)
-        deliveryButton.isEnabled = false
-        deliveryButton.setOnClickListener {
-            this.onDelivery()
-        }
+//        deliveryButton = findViewById<Button>(R.id.delivery)
+//        deliveryButton.isEnabled = false
+//        deliveryButton.setOnClickListener {
+//            this.onDelivery()
+//        }
 
         syncButton = findViewById<ImageButton>(R.id.d_test)
 
@@ -195,19 +203,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun onDelivery(){
+     fun onDelivery(first:Point, second:Point){
+
         Log.d(TAG, "onDelivery: ");
         GlobalScope.launch(Dispatchers.IO){
 
 //            service.purgeCache()
 
             val props = MapProperties(
-                selectedProduct.id,
+                "selectedProduct.id",
 //                "34.46641783,31.55079535, 34.47001187,31.55095355, 34.4700189, 31.553150863,34.46641783, 31.55318508, 34.46641783, 31.55079535",
 //                    "34.50724201341369,31.602641553384572,34.5180453565571,31.59509118055151,34.50855899068993,31.5815177494226,34.497755647546515,31.589068122255644,34.50724201341369,31.602641553384572",
 //                "34.47956403,31.52202192,34.51125354,31.54650531",
 //                "34.33390512,31.39424661,34.33937683,31.39776391",// json dose not exist on s3 for this bBox
-                "34.46087927,31.48921197,34.48834067,31.50156331",
+                "${first.y},${first.x},${second.y},${second.x}",
                 false
             )
             val id = service.downloadMap(props, downloadStatusHandler);
