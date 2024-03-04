@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
-
+    private lateinit var nebulaParamAdapter: NebulaParamAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
@@ -65,43 +65,19 @@ class SettingsActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.nebula_recycler)
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = NebulaParamAdapter(params,false)
+        nebulaParamAdapter = NebulaParamAdapter(params, false)
+        recyclerView.adapter = nebulaParamAdapter
 
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
-
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
-//        val xmlParam = findViewById<TextInputEditText>(R.id.card)
-
-//        val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         editConf.setOnCheckedChangeListener { _, isChecked ->
-            // Update the editing state of the adapter based on the ToggleButton's state
-            NebulaParamAdapter.setIsEditing(isChecked)
+
+            for (i in 0..(params.size-1)){
+            nebulaParamAdapter.setIsEditing(i, isChecked)
+            }
         }
-//        editConf.setOnClickListener {
-//            if (editConf.isChecked) {
-//
-//                for (param in params) {
-//                    if (param != null) {
-//                        Log.i("ffffff", param.value)
-//                    }
-//                    params.forEach {
-//                        xmlParam.isEnabled = true
-//                    }
-//
-////                    val xmlParam = findViewById<TextInputEditText>(R.id.value_nebula)
-//                    xmlParam.isEnabled = true
-//                }
-//                Log.i("EDITTTTT", "WORKING")
-//            }
-////            }else{
-////                for (param in params) {
-////                    val paramXml = findViewById<TextView>(R.id.value_nebula)
-////                    paramXml.isEnabled = false
-////                }
-////            }
-//        }
 
         lastConfig.text = "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
         lastServerConfig.text =
