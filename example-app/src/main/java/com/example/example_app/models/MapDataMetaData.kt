@@ -13,7 +13,7 @@ class MapDataMetaData {
     var updateDate: String = ""
     var sourceDateStart: String = ""
     var sourceDateEnd: String = ""
-    var minHorizontalAccuracyCE90: Int = -1
+    var minHorizontalAccuracyCE90: Double = -1.0
     var sensors: Array<String> = arrayOf()
     var region: Array<String> = arrayOf()
     var productId: String = ""

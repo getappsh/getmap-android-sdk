@@ -49,6 +49,7 @@ import kotlinx.coroutines.GlobalScope
 
 class MapActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
+    @RequiresApi(Build.VERSION_CODES.R)
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
     private val downloadStatusHandler :(MapData) -> Unit = { data ->
@@ -146,6 +147,7 @@ class MapActivity : AppCompatActivity() {
 //        }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     private fun deliver() {
         val displayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(displayMetrics)
@@ -164,6 +166,7 @@ class MapActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     private fun onDelivery(first:Point, second:Point, third:Point, fourth:Point){
 
         Log.d(TAG, "onDelivery: ");
