@@ -1,6 +1,7 @@
 package com.example.example_app
 
 import android.os.StatFs
+import com.example.example_app.MapServiceManager
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -41,26 +42,25 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
 
-
+@RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private val TAG = MainActivity::class.qualifiedName
 
     private var progressDialog: ProgressDialog? = null
 
-    private lateinit var service: GetMapService
+    //    private lateinit var service: GetMapService
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
 
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
-
+    private lateinit var pathSd: String
     private lateinit var syncButton: ImageButton
-
+    private lateinit var mapServiceManager: MapServiceManager
     private lateinit var recyclerView: RecyclerView
     private lateinit var downloadListAdapter: DownloadListAdapter
-
 
     private val downloadStatusHandler: (MapData) -> Unit = { data ->
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
@@ -84,7 +84,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         //Get the path of SDCard
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
-        val volume = storageList[1].directory?.absoluteFile ?: ""
+        val volume =
+            if (storageList[1].directory?.absoluteFile != null) storageList[1].directory?.absoluteFile else Toast.makeText(
+                applicationContext,
+                "Please insert a SdCard !",
+                Toast.LENGTH_SHORT
+            ).show()
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
 
 
@@ -102,14 +107,22 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             16,
             null
         )
+//
+//        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
+//        service.setOnInventoryUpdatesListener {
+//            val data = it.joinToString()
+//            runOnUiThread { Toast.makeText(this, data, Toast.LENGTH_LONG).show() }
+//            Log.d(TAG, "onCreate - setOnInventoryUpdatesListener: $data")
+//
+//        }
 
-        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
-        service.setOnInventoryUpdatesListener {
-            val data = it.joinToString()
-            runOnUiThread { Toast.makeText(this, data, Toast.LENGTH_LONG).show() }
-            Log.d(TAG, "onCreate - setOnInventoryUpdatesListener: $data")
-
+        mapServiceManager = MapServiceManager.getInstance()
+        try {
+            mapServiceManager.initService(applicationContext, cfg)
+        } catch (_: Exception) {
         }
+
+
         dismissLoadingDialog()
 
         recyclerView = findViewById(R.id.recyclerView)
@@ -136,7 +149,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 layoutManager.orientation
             )
         )
-        service.getDownloadedMapsLive().observe(this, Observer {
+        mapServiceManager.service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
         })
@@ -155,11 +168,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             this.onDelivery()
         }
 
-        CoroutineScope(Dispatchers.Default).launch{ service.synchronizeMapData() }
+        CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         syncButton = findViewById<ImageButton>(R.id.d_test)
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                service.synchronizeMapData()
+                mapServiceManager.service.synchronizeMapData()
             }
         }
 
@@ -170,14 +183,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         }
 
         Thread {
-            service.getDownloadedMaps().forEach {
-                service.registerDownloadHandler(it.id!!, downloadStatusHandler)
+            mapServiceManager.service.getDownloadedMaps().forEach {
+                mapServiceManager.service.registerDownloadHandler(it.id!!, downloadStatusHandler)
             }
         }.start()
 
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
+            intent.putExtra("URL","\"https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link\"")
             startActivity(intent)
         }
     }
@@ -188,7 +202,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties("dummy product", "1,2,3,4", false)
             try {
-                val products = service.getDiscoveryCatalog(props)
+
+                val products = mapServiceManager.service.getDiscoveryCatalog(props)
                 Log.d(TAG, "discovery products: " + products);
 
                 launch(Dispatchers.Main) {
@@ -226,7 +241,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 "34.46087927,31.48921197,34.46334067,31.48956331",
                 false
             )
-            val id = service.downloadMap(props, downloadStatusHandler);
+            val id = mapServiceManager.service.downloadMap(props, downloadStatusHandler);
             if (id == null) {
                 this@MainActivity.runOnUiThread {
                     // This is where your UI code goes.
@@ -300,19 +315,19 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private fun onDelete(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            service.deleteMap(id)
+            mapServiceManager.service.deleteMap(id)
         }
     }
 
     private fun onCancel(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            service.cancelDownload(id)
+            mapServiceManager.service.cancelDownload(id)
         }
     }
 
     private fun onResume(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            service.resumeDownload(id, downloadStatusHandler)
+            mapServiceManager.service.resumeDownload(id, downloadStatusHandler)
         }
 
     }
@@ -327,7 +342,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private fun generateQrCode(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val qrCode = service.generateQrCode(id, 1000, 1000)
+                val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
                 runOnUiThread { showQRCodeDialog(qrCode) }
             } catch (e: Exception) {
                 runOnUiThread { showErrorDialog(e.message.toString()) }
@@ -338,14 +353,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private fun updateMap(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            service.downloadUpdatedMap(id, downloadStatusHandler)
+            mapServiceManager.service.downloadUpdatedMap(id, downloadStatusHandler)
         }
     }
 
     private fun itemViewClick(id: String) {
         Log.d(TAG, "itemViewClick - id $id")
         GlobalScope.launch(Dispatchers.IO) {
-            val map = service.getDownloadedMap(id)
+            val map = mapServiceManager.service.getDownloadedMap(id)
             val str = map?.let {
                 "id=${it.id}, \n" +
 //                        "footprint=${it.footprint}, \n" +
@@ -400,7 +415,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         if (id != null) {
             progressDialog?.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel Download",
                 DialogInterface.OnClickListener { dialog, which ->
-                    this.service.cancelDownload(id)
+                    mapServiceManager.service.cancelDownload(id)
                     progressDialog?.dismiss() //dismiss dialog
                 })
         }
@@ -438,7 +453,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    service.processQrCodeData(result.contents) {
+                    mapServiceManager.service.processQrCodeData(result.contents) {
                         Log.d(TAG, "on data change: $it")
                     }
                 } catch (e: Exception) {

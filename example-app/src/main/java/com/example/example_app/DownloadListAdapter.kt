@@ -99,16 +99,14 @@ class DownloadListAdapter(
             for (file in files.iterator())
                 if (file.name == downloadData.jsonName) {
                     val text = file.readText()
-                    val json_text = Gson().fromJson(text, MapDataMetaData::class.java)
-                    holder.textFileName.text = json_text.productName
-                    val start_date = json_text.creationDate.substringBefore('T')
-                    val update_date = json_text.updateDate.substringBefore('T')
+                    //Take the 3 letters that identify bbox
+                    val endName = downloadData.fileName?.takeLast(9)?.slice(IntRange(0,3))
+                    val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
+                    holder.textFileName.text = "${jsonText.productName} - ${endName}"
+                    val startDate = jsonText.creationDate.substringBefore('T')
+                    val updateDate = jsonText.updateDate.substringBefore('T')
                     val tsoulam = "צולם: "
-                    val minus = "-"
-//                    var json_text = JSONObject(text) json_text.get("creationDate").toString().substringBefore('T')}
-//                    - ${json_text.get("updateDate").toString().substringBefore('T')
-//                    holder.textFileName.text = json_text.get("productName").toString()
-                    holder.dates.text = "${tsoulam}${start_date} ${minus} ${update_date}"
+                    holder.dates.text = "${tsoulam}${startDate} - ${updateDate}"
                 }
         }
 
