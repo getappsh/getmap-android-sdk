@@ -65,7 +65,7 @@ class SettingsActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.nebula_recycler)
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
-        nebulaParamAdapter = NebulaParamAdapter(params, false)
+        nebulaParamAdapter = NebulaParamAdapter(params)
         recyclerView.adapter = nebulaParamAdapter
 
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
@@ -75,7 +75,7 @@ class SettingsActivity : AppCompatActivity() {
         editConf.setOnCheckedChangeListener { _, isChecked ->
 
             for (i in 0..(params.size-1)){
-            nebulaParamAdapter.setIsEditing(i, isChecked)
+            nebulaParamAdapter.setIsEditing(isChecked)
             }
         }
 
