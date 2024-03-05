@@ -238,6 +238,11 @@ interface GetMapService {
     interface GeneralConfig {
 
         /**
+         * Server URL
+         */
+        val baseUrl: String
+
+        /**
          * Path where maps are stored locally.
          */
         val storagePath: String
