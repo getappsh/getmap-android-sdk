@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="30dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -23,12 +24,12 @@
 
         <TextView
             android:id="@+id/testConfigName"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Test Config"
             android:textSize="18sp"
-            android:gravity="center_vertical"/>
+            android:gravity="center_vertical|start"/>
 
     </LinearLayout>
 
@@ -37,6 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="30dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -48,7 +50,7 @@
 
         <TextView
             android:id="@+id/testImportName"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Test Import"
@@ -62,6 +64,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="30dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -73,7 +76,7 @@
 
         <TextView
             android:id="@+id/testDownloadName"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Test Download"
@@ -87,6 +90,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="30dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -98,7 +102,7 @@
 
         <TextView
             android:id="@+id/testFileMoveName"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Test File Move"
@@ -112,6 +116,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="30dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -123,7 +128,7 @@
 
         <TextView
             android:id="@+id/testInventoryUpdatesName"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Test Inventory Updates"
