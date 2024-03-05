@@ -72,7 +72,7 @@ class MapActivity : AppCompatActivity() {
 
         val cfg = Configuration(
 //            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
-            "https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link",
+            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
 //            "http://192.168.2.26:3000",
 //            "http://getapp-dev.getapp.sh:3000",
 //            "http://localhost:3333",
