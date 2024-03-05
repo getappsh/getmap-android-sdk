@@ -16,11 +16,11 @@ typealias TestReportUpdater = (HashMap<Int, SystemTest.TestResults?>) -> Unit
 
 class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     companion object{
-        private const val TEST_CONFIG = 0
-        private const val TEST_IMPORT = 1
-        private const val TEST_DOWNLOAD = 2
-        private const val TEST_FILE_MOVE = 3
-        private const val TEST_INVENTORY_UPDATES = 4
+        const val TEST_CONFIG = 0
+        const val TEST_IMPORT = 1
+        const val TEST_DOWNLOAD = 2
+        const val TEST_FILE_MOVE = 3
+        const val TEST_INVENTORY_UPDATES = 4
     }
 
     data class TestResults(
