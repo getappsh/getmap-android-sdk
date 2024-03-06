@@ -102,7 +102,12 @@ class DownloadListAdapter(
                 if (file.name == downloadData.jsonName) {
                     val text = file.readText()
                     //Take the 3 letters that identify bbox
-                    val endName = downloadData.fileName?.takeLast(9)?.slice(IntRange(0,3))
+                    var endName = ""
+                    if (downloadData.fileName?.length == 58) {
+                        endName = downloadData.fileName?.takeLast(9)?.slice(IntRange(0,3)).toString()
+                    } else {
+                        endName = downloadData.fileName?.takeLast(11)?.slice(IntRange(0,3)).toString()
+                    }
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
                     holder.textFileName.text = "${jsonText.productName} - ${endName}"
                     val startDate = jsonText.creationDate.substringBefore('T')

@@ -201,23 +201,17 @@ class MapActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, "The map already exists, please choose another Bbox", Toast.LENGTH_LONG).show()
                 }
             }
-
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }
 
     }
 
-
     private fun setApiKey() {
-        // It is not best practice to store API keys in source code. We have you insert one here
-        // to streamline this tutorial.
-
-        ArcGISEnvironment.apiKey = ApiKey.create("AAPK9f60194290664c60b1e4e9c2f12731e2EnCmC48fwIqi_aWiIk2SX22TpgeXo5XIS013xIkAhhYX9EFwz1QooTqlN34eD0FM")
-
+        val keyId = "AAPK9f60194290664c60b1e4e9c2f12731e2EnCmC48fwIqi_aWiIk2SX22TpgeXo5XIS013xIkAhhYX9EFwz1QooTqlN34eD0FM"
+        ArcGISEnvironment.apiKey = ApiKey.create(keyId)
     }
 
-
-    private fun boolRender() {
+//    private fun boolRender() {
 //        val geoPackage = GeoPackage(path)
 //        lifecycleScope.launch {
 //            geoPackage.load().onSuccess {
@@ -230,28 +224,28 @@ class MapActivity : AppCompatActivity() {
 //                }
 //            }
 
-            service.getDownloadedMaps().forEach {
-                val footPrint = it.footprint ?: return@forEach
-
-                val graphicsOverlay = GraphicsOverlay()
-                val gson = Gson()
-                val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
-
-
-                val productPolyDTO = gson.fromJson(footPrint, PolygonDTO::class.java)
-                productPolyDTO.coordinates.forEach { it ->
-                    val points: List<Point> = it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
-                    val polygon = Polygon(points)
-
-                    val graphic = Graphic(polygon, yellowOutlineSymbol)
-                    graphicsOverlay.graphics.add(graphic)
-
-                }
-
-                mapView.graphicsOverlays.add(graphicsOverlay)
-            }
+//            service.getDownloadedMaps().forEach {
+//                val footPrint = it.footprint ?: return@forEach
+//
+//                val graphicsOverlay = GraphicsOverlay()
+//                val gson = Gson()
+//                val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
+//
+//
+//                val productPolyDTO = gson.fromJson(footPrint, PolygonDTO::class.java)
+//                productPolyDTO.coordinates.forEach { it ->
+//                    val points: List<Point> = it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
+//                    val polygon = Polygon(points)
+//
+//                    val graphic = Graphic(polygon, yellowOutlineSymbol)
+//                    graphicsOverlay.graphics.add(graphic)
+//
+//                }
+//
+//                mapView.graphicsOverlays.add(graphicsOverlay)
+//            }
 //        }
-    }
+//    }
 
 
     @RequiresApi(Build.VERSION_CODES.R)

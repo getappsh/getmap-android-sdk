@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private fun onDiscovery() {
         Log.d(TAG, "onDiscovery");
-        showLoadingDialog("Discovery")
+        showLoadingDialog("מפה בטעינה")
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties("dummy product", "1,2,3,4", false)
             try {
