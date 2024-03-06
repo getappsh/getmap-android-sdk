@@ -39,6 +39,7 @@ import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
@@ -135,7 +136,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 DownloadListAdapter.DELETE_BUTTON_CLICK -> onDelete(mapId)
                 DownloadListAdapter.QR_CODE_BUTTON_CLICK -> generateQrCode(mapId)
                 DownloadListAdapter.UPDATE_BUTTON_CLICK -> updateMap(mapId)
-                DownloadListAdapter.ITEM_VIEW_CLICK -> itemViewClick(mapId)
+                DownloadListAdapter.ITEM_VIEW_CLICK -> itemViewClick(
+                    mapId,
+                    downloadListAdapter.availableUpdate
+                )
             }
         }, pathSd)
         //Set the adapter to listen to changes
@@ -192,7 +196,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
-            intent.putExtra("URL","\"https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link\"")
+            intent.putExtra(
+                "URL",
+                "\"https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link\""
+            )
             startActivity(intent)
         }
     }
@@ -362,27 +369,32 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         }
     }
 
-    private fun itemViewClick(id: String) {
-        Log.d(TAG, "itemViewClick - id $id")
-        GlobalScope.launch(Dispatchers.IO) {
-            val map = mapServiceManager.service.getDownloadedMap(id)
-            val str = map?.let {
-                "id=${it.id}, \n" +
+    private fun itemViewClick(id: String, availableUpdate: Boolean) {
+        if (availableUpdate) {
+            CoroutineScope(Dispatchers.IO).launch {
+                mapServiceManager.service.downloadUpdatedMap(id, downloadStatusHandler)
+            }
+        } else {
+
+            GlobalScope.launch(Dispatchers.IO) {
+                val map = mapServiceManager.service.getDownloadedMap(id)
+                val str = map?.let {
+                    "The id is =${it.id}, \n" +
 //                        "footprint=${it.footprint}, \n" +
 //                        "fileName=${it.fileName}, \n" +
 //                        "jsonName=${it.jsonName}, \n" +
 //                        "deliveryStatus=${it.deliveryStatus}, \n" +
 //                        "url=${it.url}, \n" +
-                        "statusMessage=${it.statusMsg}, \n" +
-                        "downloadProgress=${it.progress}, \n" +
+                            "The status is:${it.statusMsg}, \n" +
+                            "The download is:${it.progress}, \n" +
 //                        "errorContent=${it.errorContent}, \n" +
-                        "isUpdated=${it.isUpdated}, \n " +
-                        "downloadStart=${it.downloadStart}, \n" +
-                        "downloadStop=${it.downloadStop}, \n" +
-                        "downloadDone=${it.downloadDone}"
-            }.toString()
-            runOnUiThread { showDialog(str) }
+                            "The bbox is updated:${it.isUpdated}, \n "
+                }.toString()
+                runOnUiThread { showDialog(str) }
+            }
         }
+
+
     }
 
     private fun showErrorDialog(msg: String) {

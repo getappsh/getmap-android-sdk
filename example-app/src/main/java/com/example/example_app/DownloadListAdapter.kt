@@ -8,10 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -27,7 +29,7 @@ class DownloadListAdapter(
     private val pathAvailable: String
 ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
-
+    var availableUpdate:Boolean = false
 
     //Create and define the signal listener
     interface OnSignalListener {
@@ -55,7 +57,7 @@ class DownloadListAdapter(
         val btnCancelResume: Button = itemView.findViewById(R.id.btnCancelResume)
         val btnDelete: AppCompatImageButton = itemView.findViewById(R.id.btnDelete)
         val btnQRCode: Button = itemView.findViewById(R.id.btnQRCode)
-        val btnUpdate: Button = itemView.findViewById(R.id.btnUpdate)
+        val updated: ImageView = itemView.findViewById(R.id.updated_signal)
     }
 
 
@@ -212,13 +214,10 @@ class DownloadListAdapter(
             onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
         }
 
-        if (downloadData.isUpdated) {
-            holder.btnUpdate.visibility = View.GONE
-        } else {
-            holder.btnUpdate.visibility = View.VISIBLE
-        }
-        holder.btnUpdate.setOnClickListener {
-            onButtonClick(UPDATE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
+        if (!downloadData.isUpdated) {
+//            holder.btnUpdate.visibility = View.GONE
+            holder.updated.visibility = View.VISIBLE
+            availableUpdate = true
         }
 
         holder.itemView.setOnClickListener {

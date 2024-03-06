@@ -1,5 +1,6 @@
 package com.example.example_app.models
 
+import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -12,26 +13,20 @@ import com.example.example_app.R
 class NebulaParam {
 
     // Classe représentant l'objet
-    data class NebulaParam(val name: String, val value: String)
+    data class NebulaParam(var name: String, var value: String)
 
     // Classe ViewHolder
     class NebulaParamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val nomTextView: TextView = itemView.findViewById(R.id.param_name)
+        val nomTextView: TextView = itemView.findViewById(R.id.param_name)
         val descriptionTextView: TextView = itemView.findViewById(R.id.value_nebula)
-
-        fun bind(objet: NebulaParam, b: Boolean) {
-            nomTextView.text = objet.name
-            descriptionTextView.text = objet.value
-            descriptionTextView.isEnabled = b
-        }
     }
 
     // Classe Adapter
     class NebulaParamAdapter(
         private val Params: Array<NebulaParam?>,
-        private var isEditing: Boolean,
     ) : RecyclerView.Adapter<NebulaParamViewHolder>() {
         private val isEditingList = BooleanArray(Params.size) { false }
+        private var isEditing = false
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NebulaParamViewHolder {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_param_nebula, parent, false)
@@ -40,11 +35,14 @@ class NebulaParam {
 
         override fun onBindViewHolder(holder: NebulaParamViewHolder, position: Int) {
             val nebulaParam = Params[holder.adapterPosition]
-            nebulaParam?.let { holder.bind(it, isEditingList[holder.adapterPosition]) }
+            holder.nomTextView.text = nebulaParam?.name
+            holder.descriptionTextView.text = nebulaParam?.value
+            holder.descriptionTextView.isEnabled = isEditing
+//            holder.descriptionTextView.isEnabled = isEditingList[holder.adapterPosition]
             holder.descriptionTextView.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     // Update the value in the Params array when the user edits the EditText
-                    Params[holder.adapterPosition] = nebulaParam?.copy(value = s.toString())
+                    Params[holder.adapterPosition]?.value = s.toString()
                 }
 
                 override fun beforeTextChanged(
@@ -59,11 +57,8 @@ class NebulaParam {
             })
         }
 
-        fun setIsEditing(position: Int, editing: Boolean) {
-            // Mettre à jour l'état d'édition pour l'élément à la position donnée
-            isEditingList[position] = editing
-
-            // Notifier l'adaptateur que l'ensemble de données a changé
+        fun setIsEditing(editing: Boolean) {
+            isEditing = editing
             notifyDataSetChanged()
         }
 
