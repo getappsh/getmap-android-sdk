@@ -6,6 +6,7 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -27,7 +28,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.arcgismaps.geometry.Point
+//import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
@@ -49,8 +50,9 @@ import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private val TAG = MainActivity::class.qualifiedName
-
+    private var mapServiceManager = MapServiceManager.getInstance()
     private var progressDialog: ProgressDialog? = null
+
     //    private lateinit var service: GetMapService
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
@@ -60,7 +62,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private lateinit var scanQRButton: Button
     private lateinit var pathSd: String
     private lateinit var syncButton: ImageButton
-    private lateinit var mapServiceManager: MapServiceManager
+
+    //    private lateinit var mapServiceManager: MapServiceManager
     private lateinit var recyclerView: RecyclerView
     private lateinit var downloadListAdapter: DownloadListAdapter
 
@@ -93,22 +96,29 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 Toast.LENGTH_SHORT
             ).show()
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
+        if (!mapServiceManager.isInit) {
 
-        val cfg = Configuration(
-            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
+            val cfg = Configuration(
+                "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://192.168.2.26:3000",
 //            "http://getapp-dev.getapp.sh:3000",
 //            "http://localhost:3333",
-            "rony@example.com",
-            "rony123",
+                "rony@example.com",
+                "rony123",
 //            File("/storage/1115-0C18/com.asio.gis").path,
 //            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
-            pathSd,
-            16,
+                pathSd,
+                16,
 
-            null
-        )
+                null
+            )
+
+            try {
+                mapServiceManager.initService(applicationContext, cfg)
+            } catch (_: Exception) {
+            }
+        }
 //
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
@@ -117,12 +127,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 //            Log.d(TAG, "onCreate - setOnInventoryUpdatesListener: $data")
 //
 //        }
-
-        mapServiceManager = MapServiceManager.getInstance()
-        try {
-            mapServiceManager.initService(applicationContext, cfg)
-        } catch (_: Exception) {
-        }
 
 
         dismissLoadingDialog()
@@ -200,6 +204,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 "URL",
                 "\"https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link\""
             )
+            intent.putExtra(
+                "pathSd",
+                pathSd
+            )
             startActivity(intent)
         }
     }
@@ -213,7 +221,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
                 val products = mapServiceManager.service.getDiscoveryCatalog(props)
                 Log.d(TAG, "discovery products: " + products);
-                products.forEach{ product -> Log.d("products1", "Id : ${product.id} And Coordinates : ${product.footprint}")}
+                products.forEach { product ->
+                    Log.d(
+                        "products1",
+                        "Id : ${product.id} And Coordinates : ${product.footprint}"
+                    )
+                }
                 launch(Dispatchers.Main) {
                     // Display the response in an AlertDialog
                     dismissLoadingDialog()
@@ -237,7 +250,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     }
 
-    private fun onDelivery(first:Point, second:Point) {
+    private fun onDelivery(first: Point, second: Point) {
         Log.d(TAG, "onDelivery: ");
         GlobalScope.launch(Dispatchers.IO) {
 

@@ -20,8 +20,8 @@ import kotlin.jvm.Throws
 @RequiresApi(Build.VERSION_CODES.R)
 class MapServiceManager {
     private var _service: GetMapService? = null
+     var isInit = false
     val service get() = _service!!
-    private val TAG = MapServiceManager::class.qualifiedName
 
     companion object {
         private var _instance: MapServiceManager? = null;
@@ -37,6 +37,7 @@ class MapServiceManager {
 
     @Throws(Exception::class)
     fun initService(ctx: Context, config: Configuration) {
+        isInit = true
         if(_service != null) throw Exception("Can not initialize service more than one.")
 
         _service = GetMapServiceFactory.createAsioSdkSvc(ctx, config)

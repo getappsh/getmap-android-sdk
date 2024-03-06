@@ -1,12 +1,12 @@
 package com.example.example_app
 
+import PasswordDialog
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.EditText
+import android.telephony.TelephonyManager
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -14,13 +14,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.example_app.models.NebulaParam.NebulaParamAdapter
 import com.example.example_app.models.NebulaParam.NebulaParam
-import com.google.android.material.textfield.TextInputEditText
+import com.ngsoft.getapp.sdk.Configuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.full.memberProperties
 
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
@@ -28,8 +29,8 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
-
-        val service = MapServiceManager.getInstance().service
+        var instance = MapServiceManager.getInstance()
+        var service = instance.service
 //        if (savedInstanceState == null) {
 //            supportFragmentManager
 //                .beginTransaction()
@@ -74,9 +75,23 @@ class SettingsActivity : AppCompatActivity() {
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         editConf.setOnCheckedChangeListener { _, isChecked ->
-
-            for (i in 0..(params.size - 1)) {
-                nebulaParamAdapter.setIsEditing(isChecked)
+//            val passwordLayout = findViewById<ConstraintLayout>(R.id.password_layout)
+//            val back = findViewById<ImageButton>(R.id.back_nebula_password)
+////            passwordLayout.visibility = View.VISIBLE
+//            back.setOnClickListener{
+////                passwordLayout.visibility = View.GONE
+//            }
+            if (isChecked) {
+                val passwordDialog = PasswordDialog(
+                    this, params, nebulaParamAdapter,
+                    isChecked, editConf
+                )
+                passwordDialog.show()
+            } else {
+                service = SaveConfiguration(params, instance, this).service
+                for (i in 0..(params.size - 1)) {
+                    nebulaParamAdapter.setIsEditing(isChecked)
+                }
             }
         }
 
@@ -113,13 +128,46 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
-    private fun dateFormat(date: OffsetDateTime?): String? {
-        return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
+    private fun SaveConfiguration(
+        serviceparams: Array<NebulaParam?>,
+        instance: MapServiceManager,
+        context: Context,
+    ): MapServiceManager {
+        var pathSd: String = intent.getStringExtra("pathSd").toString()
+        var url: String = " "
+        for (param in serviceparams) {
+            if (param?.name == "URL") {
+                url = param.value
+                break
+            }
+        }
+//        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+//        val imei = telephonyManager.imei
+        val cfg = Configuration(
+            url,
+            "rony@example.com",
+            "rony123",
+            //            File("/storage/1115-0C18/com.asio.gis").path,
+            //            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
+            pathSd,
+            16,
+//            imei //Talk with Ronny and with asio
+            null
+        )
+        try {
+            instance.initService(applicationContext, cfg)
+        } catch (_: Exception) {
+        }
+        return instance
     }
+}
+
+private fun dateFormat(date: OffsetDateTime?): String? {
+    return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
+}
 
 //    class SettingsFragment : PreferenceFragmentCompat() {
 //        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 //            setPreferencesFromResource(R.xml.root_preferences, rootKey)
 //        }
 //    }
-}
