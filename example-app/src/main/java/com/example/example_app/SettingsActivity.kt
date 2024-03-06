@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -74,8 +75,8 @@ class SettingsActivity : AppCompatActivity() {
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         editConf.setOnCheckedChangeListener { _, isChecked ->
 
-            for (i in 0..(params.size-1)){
-            nebulaParamAdapter.setIsEditing(isChecked)
+            for (i in 0..(params.size - 1)) {
+                nebulaParamAdapter.setIsEditing(isChecked)
             }
         }
 
@@ -91,12 +92,22 @@ class SettingsActivity : AppCompatActivity() {
                 lastConfig.text = "Loading..."
                 lastInventory.text = "Loading..."
                 lastServerConfig.text = "Loading..."
-                service.fetchConfigUpdates()
-                delay(2000)
-                lastConfig.text = "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
-                lastServerConfig.text =
-                    "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
-                lastInventory.text = "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
+
+                try {
+                    service.fetchConfigUpdates()
+                    delay(1500)
+                    lastConfig.text =
+                        "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
+                    lastServerConfig.text =
+                        "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
+                    lastInventory.text = "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
+
+
+                } catch (e: Exception) {
+                    lastConfig.text = "Connection error !"
+                    lastServerConfig.text = "Connection error ! "
+                    lastInventory.text = "Connection error !"
+                }
             }
         }
 

@@ -25,7 +25,6 @@ class NebulaParam {
     class NebulaParamAdapter(
         private val Params: Array<NebulaParam?>,
     ) : RecyclerView.Adapter<NebulaParamViewHolder>() {
-        private val isEditingList = BooleanArray(Params.size) { false }
         private var isEditing = false
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NebulaParamViewHolder {
             val view = LayoutInflater.from(parent.context)
