@@ -54,10 +54,10 @@ class NebulaParam {
             })
         }
 
-        fun setIsEditing(editing: Boolean) {
+        fun setIsEditing(editing: Boolean,position: Int) {
             isEditing = editing
-            notifyDataSetChanged()
-//            notifyItemChanged()
+            notifyItemChanged(position)
+//            notifyDataSetChanged()
         }
 
         override fun getItemCount(): Int {

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.example_app.models.NebulaParam.NebulaParamAdapter
 import com.example.example_app.models.NebulaParam.NebulaParam
 import com.ngsoft.getapp.sdk.Configuration
+import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -81,22 +83,43 @@ class SettingsActivity : AppCompatActivity() {
 ////                passwordLayout.visibility = View.GONE
 //            }
             if (isChecked) {
-                val passwordDialog = PasswordDialog(
-                    this, params, nebulaParamAdapter,
-                    isChecked, editConf
-                )
+                val passwordDialog =
+                    PasswordDialog(this, params, nebulaParamAdapter, isChecked, editConf)
                 passwordDialog.show()
             } else {
-                try {
-                    instance.resetService()
-                    instance.initService(this, SaveConfiguration(params))
-                } catch (_: Exception) {
-                    Log.i("There is a BIG problem", "There is a problem")
+
+                if (params.get(6).value == "" || service.config.maxMapAreaSqKm != params.get(6).value.toLong()){
+                    Toast.makeText(this,"You can't change the maxMapAreaSqKm field ! ",Toast.LENGTH_LONG).show()
+                    finish()
                 }
+                if ( params.get(13).value == "" || service.config.mapMinInclusionPct != params.get(13).value.toInt()){
+                    Toast.makeText(this,"You can't change the Inclusion field ! ",Toast.LENGTH_LONG).show()
+                    finish()
+                }
+                if (params.get(1).value != "")service.config.downloadRetry = params.get(1).value.toInt()
+                if (params.get(2).value != "")service.config.deliveryTimeoutMins = params.get(2).value.toInt()
+                if (params.get(3).value != "")service.config.matomoUrl = params.get(3).value
+               if (params.get(4).value != "") service.config.matomoUpdateIntervalMins = params.get(4).value.toInt()
+               if (params.get(5).value != "") service.config.maxMapSizeInMB = params.get(5).value.toLong()
+               if (params.get(7).value != "") service.config.maxParallelDownloads = params.get(7).value.toInt()
+               if (params.get(8).value != "") service.config.minAvailableSpaceMB = params.get(8).value.toLong()
+               if (params.get(9).value != "") service.config.periodicConfIntervalMins = params.get(9).value.toInt()
+               if (params.get(10).value != "") service.config.periodicInventoryIntervalMins = params.get(10).value.toInt()
+               if (params.get(11).value != "") service.config.matomoSiteId = params.get(11).value
+               if (params.get(12).value != "") service.config.matomoDimensionId = params.get(12).value
+
+                    if (params.get(0).value != service.config.baseUrl) {
+                        try {
+                            instance.resetService()
+                            instance.initService(this, SaveConfiguration(params))
+                        } catch (_: Exception) {
+                            Log.i("There is a BIG problem", "There is a problem")
+                        }
+                    }
 
 //                service = SaveConfiguration(params, instance, this).service
                 for (i in 0..(params.size - 1)) {
-                    nebulaParamAdapter.setIsEditing(isChecked)
+                    nebulaParamAdapter.setIsEditing(isChecked,i)
                 }
             }
         }
@@ -153,7 +176,7 @@ class SettingsActivity : AppCompatActivity() {
 //            imei //Talk with Ronny and with asio
             null
         )
-    return cfg
+        return cfg
     }
 }
 

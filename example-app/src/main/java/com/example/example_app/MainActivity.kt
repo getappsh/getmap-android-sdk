@@ -1,7 +1,6 @@
 package com.example.example_app
 
 import android.os.StatFs
-import com.example.example_app.MapServiceManager
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -20,7 +19,9 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -28,24 +29,20 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
 //import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
-import com.ngsoft.getapp.sdk.GetMapService
-import com.ngsoft.getapp.sdk.GetMapServiceFactory
+import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
@@ -72,17 +69,27 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
     }
 
+    private val startForResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        if (mapServiceManager.isInit) {
+            CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
+        }
+    }
+
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mapServiceManager = MapServiceManager.getInstance()
+
         if (!Environment.isExternalStorageManager()) {
             val intent = Intent()
             intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
             val uri = Uri.fromParts("package", this.packageName, null)
             intent.data = uri
-            startActivity(intent)
+            startForResult.launch(intent)
         }
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = GetAvailableSpaceInSdCard()
@@ -98,9 +105,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             ).show()
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
         if (!mapServiceManager.isInit) {
-
+            var url = Pref.getInstance(this).baseUrl
+            if (url.isEmpty()) url =
+                "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link"
             val cfg = Configuration(
-                "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
+                url,
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://192.168.2.26:3000",
                 "rony@example.com",
@@ -175,13 +184,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 //        }
 
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
-        syncButton = findViewById<ImageButton>(R.id.d_test)
+        syncButton = findViewById<ImageButton>(R.id.Sync)
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.synchronizeMapData()
             }
         }
-
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
         scanQRButton.setOnClickListener {
