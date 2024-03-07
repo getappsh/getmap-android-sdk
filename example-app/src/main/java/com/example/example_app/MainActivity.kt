@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
 
         val cfg = Configuration(
-            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
+            "https://api-asio-getapp-6.apps.okd4-stage-getapp.getappstage.link",
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://192.168.2.26:3000",
 //            "http://getapp-dev.getapp.sh:3000",
@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             val intent = Intent(this, SettingsActivity::class.java)
             intent.putExtra(
                 "URL",
-                "\"https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link\""
+                "\"https://api-asio-getapp-6.apps.okd4-stage-getapp.getappstage.link\""
             )
             startActivity(intent)
         }
@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private fun onDiscovery() {
         Log.d(TAG, "onDiscovery");
-        showLoadingDialog("מפה בטעינה")
+        showLoadingDialog("תיחומים בטעינה")
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties("dummy product", "1,2,3,4", false)
             try {
