@@ -16,11 +16,12 @@ typealias TestReportUpdater = (HashMap<Int, SystemTest.TestResults?>) -> Unit
 
 class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     companion object{
-        const val TEST_CONFIG = 0
-        const val TEST_IMPORT = 1
-        const val TEST_DOWNLOAD = 2
-        const val TEST_FILE_MOVE = 3
-        const val TEST_INVENTORY_UPDATES = 4
+        const val TEST_DISCOVERY = 0
+        const val TEST_CONFIG = 1
+        const val TEST_IMPORT = 2
+        const val TEST_DOWNLOAD = 3
+        const val TEST_FILE_MOVE = 4
+        const val TEST_INVENTORY_UPDATES = 5
     }
 
     data class TestResults(
@@ -41,6 +42,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     }
     fun run(reportUpdater: TestReportUpdater){
         initTestReport(reportUpdater)
+        testDiscovery(reportUpdater)
         testConfig(reportUpdater)
         testDelivery(reportUpdater)
         testInventoryUpdates(reportUpdater)
@@ -48,11 +50,25 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
 
     private fun initTestReport(reportUpdater: TestReportUpdater){
         testReport.clear()
+        testReport[TEST_DISCOVERY] = null
         testReport[TEST_CONFIG] = null
         testReport[TEST_IMPORT] = null
         testReport[TEST_DOWNLOAD] = null
         testReport[TEST_FILE_MOVE] = null
         testReport[TEST_INVENTORY_UPDATES] = null
+        reportUpdater(testReport)
+    }
+
+    fun testDiscovery(reportUpdater: TestReportUpdater){
+        testReport[TEST_DISCOVERY] = TestResults("Discovery", TEST_DISCOVERY)
+        reportUpdater(testReport)
+        try {
+            service.getDiscoveryCatalog(MapProperties("system-test", "1.1.1.1", false))
+            testReport[TEST_DISCOVERY]?.success = true
+        }catch (e: Exception){
+            testReport[TEST_DISCOVERY]?.success = false
+            testReport[TEST_DISCOVERY]?.message = e.message.toString()
+        }
         reportUpdater(testReport)
     }
 
