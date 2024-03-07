@@ -8,7 +8,7 @@ import com.example.example_app.R
 import com.example.example_app.models.NebulaParam
 
 class PasswordDialog(
-    private val context: Context, private val params: Array<NebulaParam.NebulaParam?>,
+    private val context: Context, private val params: Array<NebulaParam.NebulaParam>,
     private val nebulaParamAdapter: NebulaParam.NebulaParamAdapter, private val isChecked: Boolean,
     private var editConf: ToggleButton,
 ) {
@@ -16,11 +16,11 @@ class PasswordDialog(
     fun show() {
         val builder = AlertDialog.Builder(context)
 
-        // Inflater le layout personnalisé
+        // Inflate the personalized layout
         val inflater = LayoutInflater.from(context)
         val dialogView = inflater.inflate(R.layout.nebula_password, null)
 
-        // Configurer la vue du dialog
+        // Configure the vue of the dialog
         val editTextPassword = dialogView.findViewById<EditText>(R.id.editTextNumberPassword)
         builder.setView(dialogView)
 

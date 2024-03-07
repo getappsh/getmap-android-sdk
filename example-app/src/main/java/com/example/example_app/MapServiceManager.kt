@@ -39,7 +39,6 @@ class MapServiceManager {
     fun initService(ctx: Context, config: Configuration) {
         isInit = true
         if(_service != null) throw Exception("Can not initialize service more than one.")
-
         _service = GetMapServiceFactory.createAsioSdkSvc(ctx, config)
 //        _service!!.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
@@ -47,6 +46,10 @@ class MapServiceManager {
 //                Toast.makeText(ctx, data, Toast.LENGTH_LONG).show()
 //            }
 //        }
+    }
+    fun resetService(){
+        isInit = false
+        _service = null
     }
 }
 

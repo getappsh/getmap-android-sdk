@@ -4,7 +4,7 @@ import PasswordDialog
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.telephony.TelephonyManager
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.ToggleButton
@@ -21,7 +21,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.reflect.full.memberProperties
 
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
@@ -39,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
 //        }
 //        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val params = arrayOf(
-            intent.getStringExtra("URL")?.let { NebulaParam("URL", it) },
+            NebulaParam("URL", service.config.baseUrl),
             NebulaParam("DownloadRetry", service.config.downloadRetry.toString()),
             NebulaParam("DeliveryTimeout in mins", service.config.deliveryTimeoutMins.toString()),
             NebulaParam("Matomo Url", service.config.matomoUrl),
@@ -88,7 +87,14 @@ class SettingsActivity : AppCompatActivity() {
                 )
                 passwordDialog.show()
             } else {
-                service = SaveConfiguration(params, instance, this).service
+                try {
+                    instance.resetService()
+                    instance.initService(this, SaveConfiguration(params))
+                } catch (_: Exception) {
+                    Log.i("There is a BIG problem", "There is a problem")
+                }
+
+//                service = SaveConfiguration(params, instance, this).service
                 for (i in 0..(params.size - 1)) {
                     nebulaParamAdapter.setIsEditing(isChecked)
                 }
@@ -129,22 +135,15 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun SaveConfiguration(
-        serviceparams: Array<NebulaParam?>,
-        instance: MapServiceManager,
-        context: Context,
-    ): MapServiceManager {
+        serviceparams: Array<NebulaParam>,
+//        instance: MapServiceManager,
+//        context: Context,
+    ): Configuration {
         var pathSd: String = intent.getStringExtra("pathSd").toString()
-        var url: String = " "
-        for (param in serviceparams) {
-            if (param?.name == "URL") {
-                url = param.value
-                break
-            }
-        }
 //        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 //        val imei = telephonyManager.imei
         val cfg = Configuration(
-            url,
+            serviceparams.get(0).value,
             "rony@example.com",
             "rony123",
             //            File("/storage/1115-0C18/com.asio.gis").path,
@@ -154,11 +153,7 @@ class SettingsActivity : AppCompatActivity() {
 //            imei //Talk with Ronny and with asio
             null
         )
-        try {
-            instance.initService(applicationContext, cfg)
-        } catch (_: Exception) {
-        }
-        return instance
+    return cfg
     }
 }
 
@@ -171,3 +166,7 @@ private fun dateFormat(date: OffsetDateTime?): String? {
 //            setPreferencesFromResource(R.xml.root_preferences, rootKey)
 //        }
 //    }
+
+
+//Make an interface that will manage all the config and save it into the sharedpreference,
+// We will just have to call the function to do the job, like the sdk

@@ -28,6 +28,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
 //import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -50,7 +51,7 @@ import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     private val TAG = MainActivity::class.qualifiedName
-    private var mapServiceManager = MapServiceManager.getInstance()
+    private lateinit var mapServiceManager: MapServiceManager
     private var progressDialog: ProgressDialog? = null
 
     //    private lateinit var service: GetMapService
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        mapServiceManager = MapServiceManager.getInstance()
         if (!Environment.isExternalStorageManager()) {
             val intent = Intent()
             intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
@@ -102,8 +103,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://192.168.2.26:3000",
-//            "http://getapp-dev.getapp.sh:3000",
-//            "http://localhost:3333",
                 "rony@example.com",
                 "rony123",
 //            File("/storage/1115-0C18/com.asio.gis").path,
@@ -163,8 +162,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             downloadListAdapter.saveData(it)
         })
 
-//        selectedProductView = findViewById<TextView>(R.id.selectedProduct)
-
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
             this.onDiscovery()
@@ -201,10 +198,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         settingButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             intent.putExtra(
-                "URL",
-                "\"https://api-asio-getapp-5.apps.okd4-stage-getapp.getappstage.link\""
-            )
-            intent.putExtra(
                 "pathSd",
                 pathSd
             )
@@ -212,9 +205,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        mapServiceManager = MapServiceManager.getInstance()
+//        Log.d("a", "sa")
+    }
+
     private fun onDiscovery() {
         Log.d(TAG, "onDiscovery");
-        showLoadingDialog("מפה בטעינה")
+        showLoadingDialog("פותח את המפה")
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties("dummy product", "1,2,3,4", false)
             try {
@@ -280,13 +279,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 //            val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
 //            availableSpace.text = GetAvailableSpaceInSdCard()
 
-
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }
 
     }
 
     fun GetAvailableSpaceInSdCard(): String {
+
         val externalFilesDirs = getExternalFilesDirs(null)
         var sdCardDirectory: File? = null
 
@@ -439,11 +438,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 //        Log.i("PROGRESSBAR", "showLoadingDialog: ")
         progressDialog = ProgressDialog(this)
         progressDialog?.setTitle(title)
-        progressDialog?.setMessage("Loading...") // Set the message to be displayed
+        progressDialog?.setMessage("מפה בטעינה...") // Set the message to be displayed
         progressDialog?.setCancelable(false) // Prevent users from dismissing the dialog
         progressDialog?.setProgressStyle(ProgressDialog.STYLE_SPINNER) // Use a spinner-style progress indicator
         if (id != null) {
-            progressDialog?.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel Download",
+            progressDialog?.setButton(DialogInterface.BUTTON_NEGATIVE, "בטל",
                 DialogInterface.OnClickListener { dialog, which ->
                     mapServiceManager.service.cancelDownload(id)
                     progressDialog?.dismiss() //dismiss dialog
