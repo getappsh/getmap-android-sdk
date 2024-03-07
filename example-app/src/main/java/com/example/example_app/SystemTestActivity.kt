@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 
 class SystemTestActivity : AppCompatActivity() {
 
+    private lateinit var testDiscoveryIcon: ImageView
+    private lateinit var testDiscoveryName: TextView
 
     private lateinit var testConfigIcon: ImageView
     private lateinit var testConfigName: TextView
@@ -45,6 +47,9 @@ class SystemTestActivity : AppCompatActivity() {
 
         val systemTest = SystemTest(this, cfg)
 
+        testDiscoveryIcon = findViewById(R.id.testDiscoveryIcon)
+        testDiscoveryName = findViewById(R.id.testDiscoveryName)
+
         testConfigIcon = findViewById(R.id.testConfigIcon)
         testConfigName = findViewById(R.id.testConfigName)
 
@@ -72,6 +77,7 @@ class SystemTestActivity : AppCompatActivity() {
 
 
     private fun updateTestResults(testReport: HashMap<Int, SystemTest.TestResults?>) {
+        updateTestResult(testDiscoveryIcon, testDiscoveryName, testReport[SystemTest.TEST_DISCOVERY])
         updateTestResult(testConfigIcon, testConfigName, testReport[SystemTest.TEST_CONFIG])
         updateTestResult(testImportIcon, testImportName, testReport[SystemTest.TEST_IMPORT])
         updateTestResult(testDownloadIcon, testDownloadName, testReport[SystemTest.TEST_DOWNLOAD])
