@@ -6,11 +6,13 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.example_app.models.NebulaParam.NebulaParamAdapter
@@ -21,6 +23,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.internal.notify
+import okhttp3.internal.notifyAll
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -68,58 +73,47 @@ class SettingsActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.nebula_recycler)
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
-        nebulaParamAdapter = NebulaParamAdapter(params)
+        var notif: Toast? = null
+        nebulaParamAdapter = NebulaParamAdapter(params) { position, name ->
+            if (notif != null) {
+                notif?.cancel()
+            }
+            notif = Toast.makeText(
+                this,
+                "You can't change the ${name} field ! ",
+                Toast.LENGTH_SHORT
+            )
+            notif?.show()
+        }
         recyclerView.adapter = nebulaParamAdapter
+
 
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         editConf.setOnCheckedChangeListener { _, isChecked ->
-//            val passwordLayout = findViewById<ConstraintLayout>(R.id.password_layout)
-//            val back = findViewById<ImageButton>(R.id.back_nebula_password)
-////            passwordLayout.visibility = View.VISIBLE
-//            back.setOnClickListener{
-////                passwordLayout.visibility = View.GONE
-//            }
+
             if (isChecked) {
                 val passwordDialog =
                     PasswordDialog(this, params, nebulaParamAdapter, isChecked, editConf)
                 passwordDialog.show()
             } else {
 
-                if (params.get(6).value == "" || service.config.maxMapAreaSqKm != params.get(6).value.toLong()){
-                    Toast.makeText(this,"You can't change the maxMapAreaSqKm field ! ",Toast.LENGTH_LONG).show()
-                    finish()
-                }
-                if ( params.get(13).value == "" || service.config.mapMinInclusionPct != params.get(13).value.toInt()){
-                    Toast.makeText(this,"You can't change the Inclusion field ! ",Toast.LENGTH_LONG).show()
-                    finish()
-                }
-                if (params.get(1).value != "")service.config.downloadRetry = params.get(1).value.toInt()
-                if (params.get(2).value != "")service.config.deliveryTimeoutMins = params.get(2).value.toInt()
-                if (params.get(3).value != "")service.config.matomoUrl = params.get(3).value
-               if (params.get(4).value != "") service.config.matomoUpdateIntervalMins = params.get(4).value.toInt()
-               if (params.get(5).value != "") service.config.maxMapSizeInMB = params.get(5).value.toLong()
-               if (params.get(7).value != "") service.config.maxParallelDownloads = params.get(7).value.toInt()
-               if (params.get(8).value != "") service.config.minAvailableSpaceMB = params.get(8).value.toLong()
-               if (params.get(9).value != "") service.config.periodicConfIntervalMins = params.get(9).value.toInt()
-               if (params.get(10).value != "") service.config.periodicInventoryIntervalMins = params.get(10).value.toInt()
-               if (params.get(11).value != "") service.config.matomoSiteId = params.get(11).value
-               if (params.get(12).value != "") service.config.matomoDimensionId = params.get(12).value
+                UiVerifs(params, service, this)
 
-                    if (params.get(0).value != service.config.baseUrl) {
-                        try {
-                            instance.resetService()
-                            instance.initService(this, SaveConfiguration(params))
-                        } catch (_: Exception) {
-                            Log.i("There is a BIG problem", "There is a problem")
-                        }
+                if (params.get(0).value != service.config.baseUrl) {
+                    try {
+                        instance.resetService()
+                        instance.initService(this, SaveConfiguration(params))
+                    } catch (_: Exception) {
+                        Log.i("There is a BIG problem", "There is a problem")
                     }
+                }
 
 //                service = SaveConfiguration(params, instance, this).service
                 for (i in 0..(params.size - 1)) {
-                    nebulaParamAdapter.setIsEditing(isChecked,i)
+                    nebulaParamAdapter.setIsEditing(isChecked, i, params.get(i))
                 }
             }
         }
@@ -131,7 +125,8 @@ class SettingsActivity : AppCompatActivity() {
 
         val refresh_text = findViewById<ImageButton>(R.id.refresh_button_conf)
         refresh_text.setOnClickListener {
-            CoroutineScope(Dispatchers.Default).launch {
+            lifecycleScope.launch {
+            withContext(Dispatchers.IO){
 
                 lastConfig.text = "Loading..."
                 lastInventory.text = "Loading..."
@@ -151,6 +146,10 @@ class SettingsActivity : AppCompatActivity() {
                     lastConfig.text = "Connection error !"
                     lastServerConfig.text = "Connection error ! "
                     lastInventory.text = "Connection error !"
+                }
+            }
+                withContext(Dispatchers.Main){
+                    UiVerifs(params,service,applicationContext)
                 }
             }
         }
@@ -180,8 +179,109 @@ class SettingsActivity : AppCompatActivity() {
     }
 }
 
+fun onParamClick(context: Context, param: NebulaParam) {
+    Toast.makeText(
+        context,
+        "You can't change the ${param.name} field ! ",
+        Toast.LENGTH_LONG
+    ).show()
+}
+
 private fun dateFormat(date: OffsetDateTime?): String? {
     return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
+}
+
+
+private fun UiVerifs(params: Array<NebulaParam>, service: GetMapService, context: Context) {
+    var notifValidation: Toast? = null
+    val reg: Regex = Regex("[a-zA-Z]")
+    if (params.get(1).value != "")
+        if (!params.get(1).value.contains(regex = reg))
+            service.config.downloadRetry = params.get(1).value.toInt()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(1).value = service.config.downloadRetry.toString()
+        }
+    if (params.get(2).value != "")
+        if (!params.get(2).value.contains(regex = reg))
+            service.config.deliveryTimeoutMins = params.get(2).value.toInt()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(2).value = service.config.deliveryTimeoutMins.toString()
+        }
+    if (params.get(3).value != "") service.config.matomoUrl = params.get(3).value
+    if (params.get(4).value != "")
+        if (!params.get(4).value.contains(regex = reg))
+            service.config.matomoUpdateIntervalMins = params.get(4).value.toInt()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(4).value = service.config.matomoUpdateIntervalMins.toString()
+        }
+    if (params.get(5).value != "")
+        if (!params.get(5).value.contains(regex = reg))
+            service.config.maxMapSizeInMB = params.get(5).value.toLong()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(5).value = service.config.maxMapSizeInMB.toString()
+        }
+    if (params.get(7).value != "")
+        if (!params.get(7).value.contains(regex = reg))
+            service.config.maxParallelDownloads = params.get(7).value.toInt()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(7).value = service.config.maxParallelDownloads.toString()
+        }
+    if (params.get(8).value != "")
+        if (!params.get(8).value.contains(regex = reg))
+            service.config.minAvailableSpaceMB = params.get(8).value.toLong()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(8).value = service.config.minAvailableSpaceMB.toString()
+        }
+    if (params.get(9).value != "")
+        if (!params.get(9).value.contains(regex = reg))
+            service.config.periodicConfIntervalMins = params.get(9).value.toInt()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(9).value = service.config.periodicConfIntervalMins.toString()
+        }
+    if (params.get(10).value != "")
+        if (!params.get(10).value.contains(regex = reg))
+            service.config.periodicInventoryIntervalMins = params.get(10).value.toInt()
+        else {
+            notifValidation?.cancel()
+            notifValidation =
+                Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
+            notifValidation?.show()
+            params.get(10).value =
+                service.config.periodicInventoryIntervalMins.toString()
+        }
+    if (params.get(11).value != "") service.config.matomoSiteId = params.get(11).value
+    if (params.get(12).value != "") service.config.matomoDimensionId =
+        params.get(12).value
+
+
 }
 
 //    class SettingsFragment : PreferenceFragmentCompat() {
