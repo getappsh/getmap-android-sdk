@@ -69,13 +69,7 @@ class NebulaParam {
                     Params[holder.adapterPosition].value = s.toString()
                 }
 
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int,
-                ) {
-                }
+                override fun beforeTextChanged(s: CharSequence?,start: Int,count: Int,after: Int,) {}
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
@@ -85,11 +79,18 @@ class NebulaParam {
         fun setIsEditing(editing: Boolean, position: Int, param: NebulaParam) {
             isEditing = editing
             notifyItemChanged(position, param)
-//            notifyDataSetChanged()
         }
 
         override fun getItemCount(): Int {
             return Params.size
+        }
+
+        fun updateAll(params:Array<NebulaParam>){
+            this.Params = params
+            notifyDataSetChanged()
+        }
+        fun getParams(): Array<NebulaParam>{
+            return Params
         }
     }
 
