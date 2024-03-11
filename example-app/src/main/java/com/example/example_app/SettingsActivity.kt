@@ -1,9 +1,10 @@
 package com.example.example_app
 
+import PasswordDialog
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.ToggleButton
@@ -13,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.example_app.models.NebulaParam.NebulaParamAdapter
 import com.example.example_app.models.NebulaParam.NebulaParam
-import com.google.android.material.textfield.TextInputEditText
+import com.ngsoft.getapp.sdk.Configuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -27,8 +28,8 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
-
-        val service = MapServiceManager.getInstance().service
+        var instance = MapServiceManager.getInstance()
+        var service = instance.service
 //        if (savedInstanceState == null) {
 //            supportFragmentManager
 //                .beginTransaction()
@@ -37,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
 //        }
 //        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val params = arrayOf(
-            intent.getStringExtra("URL")?.let { NebulaParam("URL", it) },
+            NebulaParam("URL", service.config.baseUrl),
             NebulaParam("DownloadRetry", service.config.downloadRetry.toString()),
             NebulaParam("DeliveryTimeout in mins", service.config.deliveryTimeoutMins.toString()),
             NebulaParam("Matomo Url", service.config.matomoUrl),
@@ -73,9 +74,30 @@ class SettingsActivity : AppCompatActivity() {
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         editConf.setOnCheckedChangeListener { _, isChecked ->
+//            val passwordLayout = findViewById<ConstraintLayout>(R.id.password_layout)
+//            val back = findViewById<ImageButton>(R.id.back_nebula_password)
+////            passwordLayout.visibility = View.VISIBLE
+//            back.setOnClickListener{
+////                passwordLayout.visibility = View.GONE
+//            }
+            if (isChecked) {
+                val passwordDialog = PasswordDialog(
+                    this, params, nebulaParamAdapter,
+                    isChecked, editConf
+                )
+                passwordDialog.show()
+            } else {
+                try {
+                    instance.resetService()
+                    instance.initService(this, SaveConfiguration(params))
+                } catch (_: Exception) {
+                    Log.i("There is a BIG problem", "There is a problem")
+                }
 
-            for (i in 0..(params.size-1)){
-            nebulaParamAdapter.setIsEditing(isChecked)
+//                service = SaveConfiguration(params, instance, this).service
+                for (i in 0..(params.size - 1)) {
+                    nebulaParamAdapter.setIsEditing(isChecked)
+                }
             }
         }
 
@@ -91,24 +113,60 @@ class SettingsActivity : AppCompatActivity() {
                 lastConfig.text = "Loading..."
                 lastInventory.text = "Loading..."
                 lastServerConfig.text = "Loading..."
-                service.fetchConfigUpdates()
-                delay(2000)
-                lastConfig.text = "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
-                lastServerConfig.text =
-                    "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
-                lastInventory.text = "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
+
+                try {
+                    service.fetchConfigUpdates()
+                    delay(1500)
+                    lastConfig.text =
+                        "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
+                    lastServerConfig.text =
+                        "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
+                    lastInventory.text = "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
+
+
+                } catch (e: Exception) {
+                    lastConfig.text = "Connection error !"
+                    lastServerConfig.text = "Connection error ! "
+                    lastInventory.text = "Connection error !"
+                }
             }
         }
 
     }
 
-    private fun dateFormat(date: OffsetDateTime?): String? {
-        return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
+    private fun SaveConfiguration(
+        serviceparams: Array<NebulaParam>,
+//        instance: MapServiceManager,
+//        context: Context,
+    ): Configuration {
+        var pathSd: String = intent.getStringExtra("pathSd").toString()
+//        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+//        val imei = telephonyManager.imei
+        val cfg = Configuration(
+            serviceparams.get(0).value,
+            "rony@example.com",
+            "rony123",
+            //            File("/storage/1115-0C18/com.asio.gis").path,
+            //            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
+            pathSd,
+            16,
+//            imei //Talk with Ronny and with asio
+            null
+        )
+    return cfg
     }
+}
+
+private fun dateFormat(date: OffsetDateTime?): String? {
+    return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
+}
 
 //    class SettingsFragment : PreferenceFragmentCompat() {
 //        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 //            setPreferencesFromResource(R.xml.root_preferences, rootKey)
 //        }
 //    }
-}
+
+
+//Make an interface that will manage all the config and save it into the sharedpreference,
+// We will just have to call the function to do the job, like the sdk
