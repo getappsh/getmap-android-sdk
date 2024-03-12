@@ -110,10 +110,10 @@ class DownloadListAdapter(
                     }
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
                     holder.textFileName.text = "${jsonText.productName} - ${endName}"
-                    val startDate = jsonText.creationDate.substringBefore('T')
-                    val updateDate = jsonText.updateDate.substringBefore('T')
+                    val startDate = jsonText.sourceDateStart.substringBefore('T')
+                    val endDate = jsonText.sourceDateEnd.substringBefore('T')
                     val tsoulam = "צולם: "
-                    holder.dates.text = "${tsoulam}${startDate} - ${updateDate}"
+                    holder.dates.text = "${tsoulam}${startDate} - ${endDate}"
                 }
         }
 
