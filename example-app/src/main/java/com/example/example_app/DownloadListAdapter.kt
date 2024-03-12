@@ -109,7 +109,9 @@ class DownloadListAdapter(
                         endName = downloadData.fileName?.takeLast(9)?.slice(IntRange(0, 3)).toString()
                     }
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
-                    holder.textFileName.text = "${jsonText.productName} - ${endName}"
+                    val region = jsonText.region[0]
+                    Log.i("fndosfhdsofgvhdfsioivfnds", "${region}")
+                    holder.textFileName.text = "${region} - ${endName}"
                     val startDate = jsonText.sourceDateStart.substringBefore('T')
                     val endDate = jsonText.sourceDateEnd.substringBefore('T')
                     val tsoulam = "צולם: "

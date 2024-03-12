@@ -37,6 +37,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="5dp"
+            android:gravity="right"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnDelete"
@@ -45,11 +46,12 @@
 
             <TextView
                 android:id="@+id/textFileName"
-                android:layout_width="286dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_marginBottom="3dp"
+                android:gravity="right"
                 android:text="File Name"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
