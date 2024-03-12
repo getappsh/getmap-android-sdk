@@ -50,11 +50,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var mapServiceManager: MapServiceManager
     private var progressDialog: ProgressDialog? = null
-
-    //    private lateinit var service: GetMapService
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
-
+    private var availableSpaceInMb:Double = 0.0
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
@@ -173,8 +171,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
-            this.onDiscovery()
-
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
+                this.onDiscovery()
+            else {
+                Toast.makeText(applicationContext,"You don't have enough space according to config",Toast.LENGTH_LONG).show()
+            }
         }
 
 //        deliveryButton = findViewById<Button>(R.id.delivery)
@@ -294,6 +295,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     fun GetAvailableSpaceInSdCard(): String {
 
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+        val flashMem = storageList[0].directory
         val externalFilesDirs = getExternalFilesDirs(null)
         var sdCardDirectory: File? = null
 
@@ -303,20 +307,53 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 break
             }
         }
+        var availableSd:String = ""
+        var availableFlash:String = ""
         sdCardDirectory?.let {
-
-            val stat = StatFs(it.absolutePath)
-            val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
-            val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)
-            val megabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024)
-
-            return if (gigabytesAvailable >= 1) {
-                String.format("מקום פנוי להורדה: %.2f GB", gigabytesAvailable)
-            } else {
-                String.format("מקום פנוי להורדה: %.2f MB", megabytesAvailable)
-            }
+            availableSd = AvailableSpace(it)
         }
-        return "Not Found"
+        flashMem.let {
+            availableFlash = AvailableSpace(it)
+        }
+        val shorter = shorterSpace(availableSd,availableFlash)
+        GetAvailableSpaceInMb(shorter)
+        return shorter
+    }
+
+    private fun GetAvailableSpaceInMb(shorter:String) {
+        availableSpaceInMb = shorter.substringAfter(":").substring(1,shorter.substringAfter(":").length-3).toDouble()
+        val availableSpaceType = shorter.substringAfterLast(" ")
+        if (availableSpaceType != "MB"){
+            availableSpaceInMb *= 1024
+        }
+    }
+
+    private fun shorterSpace(mem1:String,mem2:String): String {
+
+        if (mem1.contains("MB") && mem2.contains("GB")){
+            return mem1
+        }
+        else if ( (mem1.contains("GB") && mem2.contains("GB")) || (mem1.contains("MB") && mem2.contains("MB"))){
+            val mem1Number = mem1.substringAfter(":").substring(1,mem1.substringAfter(":").length-3).toDouble()
+            val mem2Number = mem2.substringAfter(":").substring(1,mem1.substringAfter(":").length-3).toDouble()
+            if (mem1Number > mem2Number){
+                return mem2
+            }else return mem1
+        }
+        return mem2
+    }
+
+    private fun AvailableSpace(it:File?):String {
+        val stat = StatFs(it?.absolutePath)
+        val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
+        val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)
+        val megabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024)
+
+        return if (gigabytesAvailable >= 1) {
+            String.format("מקום פנוי להורדה: %.2f GB", gigabytesAvailable)
+        } else {
+            String.format("מקום פנוי להורדה: %.2f MB", megabytesAvailable)
+        }
     }
 
     private fun discoveryDialogPicker(products: List<DiscoveryItem>) {

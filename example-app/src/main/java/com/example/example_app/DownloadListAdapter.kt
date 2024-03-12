@@ -132,6 +132,7 @@ class DownloadListAdapter(
                 holder.percentage.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
+                holder.btnCancelResume.visibility = View.INVISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
@@ -183,6 +184,7 @@ class DownloadListAdapter(
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
+                holder.btnCancelResume.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }

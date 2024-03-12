@@ -1,14 +1,13 @@
 package com.example.example_app.models
 
-import android.content.Context
 import android.text.Editable
+import android.text.InputType.TYPE_CLASS_TEXT
+import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.example_app.R
@@ -33,7 +32,7 @@ class NebulaParam {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NebulaParamViewHolder {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_param_nebula, parent, false)
+                .inflate(R.layout.item_param_config, parent, false)
             return NebulaParamViewHolder(view)
         }
 
@@ -43,10 +42,10 @@ class NebulaParam {
             holder.nameTextView.text = nebulaParam.name
             holder.valueTextView.text = nebulaParam.value
             holder.valueTextView.isEnabled = isEditing
-
+            val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
             val itemViewLayout = holder.itemView.findViewById<CardView>(R.id.card)
             val itemNameLayout = holder.itemView.findViewById<TextView>(R.id.param_name)
-            val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
+            defineType(holder)
             if ((holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed")
                 && isEditing
             ) {
@@ -74,6 +73,16 @@ class NebulaParam {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             })
+        }
+
+        private fun defineType(holder: NebulaParamViewHolder) {
+
+            val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
+            val stringNames = arrayOf("URL","Matomo Url","Matomo dimension id","Matomo site id")
+            if (stringNames.contains(Params[holder.adapterPosition].name)){
+                valItemView.inputType = TYPE_CLASS_TEXT
+            }
+            else valItemView.inputType = TYPE_CLASS_NUMBER
         }
 
         fun setIsEditing(editing: Boolean, position: Int, param: NebulaParam) {
