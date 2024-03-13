@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 launch(Dispatchers.Main) {
                     dismissLoadingDialog()
                     Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
-
+                    Log.i("hghfhffhg", e.message!!)
                 }
             }
 
