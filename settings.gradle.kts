@@ -20,5 +20,3 @@ dependencyResolutionManagement {
 rootProject.name = "getapp-sdk"
 include(":sdk")
 include(":example-app")
-include(":technician")
-include(":cloud-mapping")

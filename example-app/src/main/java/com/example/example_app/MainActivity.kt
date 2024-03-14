@@ -29,6 +29,9 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.arcgismaps.ArcGISEnvironment
+import com.arcgismaps.LicenseKey
+import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
 //import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -81,6 +84,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         mapServiceManager = MapServiceManager.getInstance()
 
         if (!Environment.isExternalStorageManager()) {
@@ -104,6 +108,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             ).show()
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
         if (!mapServiceManager.isInit) {
+
             var url = Pref.getInstance(this).baseUrl
             if (url.isEmpty()) url =
                 "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link"
@@ -252,6 +257,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                     // Display the response in an AlertDialog
                     dismissLoadingDialog()
                     DiscoveryProductsManager.getInstance().updateProducts(products)
+
                     val intent = Intent(this@MainActivity, MapActivity::class.java)
                     startActivity(intent)
 //                    discoveryDialogPicker(products)
@@ -263,7 +269,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 launch(Dispatchers.Main) {
                     dismissLoadingDialog()
                     Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
-
+                    Log.i("hghfhffhg", e.message!!)
                 }
             }
 

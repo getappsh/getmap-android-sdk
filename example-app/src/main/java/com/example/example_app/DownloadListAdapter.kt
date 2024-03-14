@@ -121,12 +121,7 @@ class DownloadListAdapter(
                 if (file.name == downloadData.jsonName) {
                     val text = file.readText()
                     //Take the 3 letters that identify bbox
-                    var endName = ""
-                    if (downloadData.fileName?.length == 60 || downloadData.fileName?.length == 63 || downloadData.fileName?.length == 61) {
-                        endName = downloadData.fileName?.takeLast(11)?.slice(IntRange(0,3)).toString()
-                    } else {
-                        endName = downloadData.fileName?.takeLast(9)?.slice(IntRange(0, 3)).toString()
-                    }
+                    val endName = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
                     val region = jsonText.region[0]
                     holder.size.text = occupiedSpace(geo)
