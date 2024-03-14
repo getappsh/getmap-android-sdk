@@ -6,7 +6,9 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.EditText
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethod
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.Switch
 import android.widget.TextView
@@ -14,11 +16,12 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.example_app.models.NebulaParam.NebulaParamAdapter
-import com.example.example_app.models.NebulaParam.NebulaParam
+import com.example.example_app.models.ConfigParam.NebulaParamAdapter
+import com.example.example_app.models.ConfigParam.NebulaParam
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.coroutines.coroutineContext
 
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
@@ -179,6 +183,24 @@ class SettingsActivity : AppCompatActivity() {
         )
         return cfg
     }
+    // Block that allow to hide the keyboard with touch on the screen
+    fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    override fun onBackPressed() {
+        hideKeyboard()
+        super.onBackPressed()
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event?.action == MotionEvent.ACTION_DOWN) {
+            hideKeyboard()
+        }
+        return super.onTouchEvent(event)
+    }
+
 }
 
 fun onParamClick(context: Context, param: NebulaParam) {
@@ -260,7 +282,6 @@ private fun saveLocalToService(params: Array<NebulaParam>, service: GetMapServic
         params[12].value
 
 }
-
 private fun NotifyValidity(notification: Toast?, context: Context) {
     var notifValidation = notification
     notifValidation?.cancel()

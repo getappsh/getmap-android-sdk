@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.example_app.R
 import com.google.android.material.textfield.TextInputEditText
 
-class NebulaParam {
+class ConfigParam {
 
     data class NebulaParam(var name: String, var value: String)
 
