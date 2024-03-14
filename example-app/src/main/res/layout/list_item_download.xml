@@ -93,6 +93,7 @@
                 android:text="Dates" />
 
             <LinearLayout
+                android:id="@+id/size_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"

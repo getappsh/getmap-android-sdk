@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -25,8 +26,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 
 class DownloadListAdapter(
@@ -67,6 +71,7 @@ class DownloadListAdapter(
         val demandDate: TextView = itemView.findViewById(R.id.demand_date)
         val size: TextView = itemView.findViewById(R.id.size)
         val product: TextView = itemView.findViewById(R.id.product)
+        val sizeLayout:LinearLayout = itemView.findViewById(R.id.size_layout)
     }
 
 
@@ -130,8 +135,10 @@ class DownloadListAdapter(
                     holder.textFileName.text = "${region} - ${endName}"
                     val startDate = jsonText.sourceDateStart.substringBefore('T')
                     val endDate = jsonText.sourceDateEnd.substringBefore('T')
+                    var startDateFormatted = formatDate(startDate)
+                    var endDateFormatted = formatDate(endDate)
                     val tsoulam = "צולם: "
-                    holder.dates.text = "${tsoulam}${endDate} - ${startDate}"
+                    holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
                 }
             }
         }
@@ -146,6 +153,7 @@ class DownloadListAdapter(
 
         when (downloadData.deliveryState) {
             START -> {
+                holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager,downloadData,holder)
                 holder.btnDelete.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
@@ -158,6 +166,7 @@ class DownloadListAdapter(
             }
 
             DONE -> {
+                holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
                 holder.textFileName.visibility = View.VISIBLE
@@ -283,6 +292,12 @@ class DownloadListAdapter(
         } else {
             String.format("נפח: %.2f mb", megabytesAvailable)
         }
+    }
+    fun formatDate(inputDate: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val date: Date = inputFormat.parse(inputDate)
+        return outputFormat.format(date)
     }
     companion object {
         const val RESUME_BUTTON_CLICK = 1
