@@ -119,7 +119,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/d_test"
+        android:id="@+id/Sync"
         android:layout_width="35dp"
         android:layout_height="0dp"
         android:layout_marginStart="15dp"

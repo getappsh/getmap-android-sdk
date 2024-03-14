@@ -18,6 +18,9 @@ import androidx.lifecycle.lifecycleScope
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.Color
+import com.arcgismaps.LicenseInfo
+import com.arcgismaps.LicenseKey
+import com.arcgismaps.LicenseType
 import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
@@ -51,6 +54,8 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -74,6 +79,8 @@ class MapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
+        setApiKey()
+
         mapView = findViewById(R.id.mapView)
 
         //Get the path of SDCard
@@ -91,7 +98,7 @@ class MapActivity : AppCompatActivity() {
         )
         service = GetMapServiceFactory.createAsioSdkSvc(applicationContext, cfg)
 
-        setApiKey()
+
 
 //        service.getDownloadedMaps().forEach{
 //            boolRender(pathSd + "/" + it.jsonName)
@@ -225,11 +232,15 @@ class MapActivity : AppCompatActivity() {
                                 val boxArea = GeometryEngine.area(boxPolygon)
                                 val date = findViewById<TextView>(R.id.dateText)
                                 val firstOffsetDateTime = p.imagingTimeBeginUTC
+                                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                                val a = sdf.format(firstOffsetDateTime)
                                 val secondOffsetDateTime = p.imagingTimeEndUTC
+                                val b = sdf.format(secondOffsetDateTime)
+
                                 val interPolygon = service.config.mapMinInclusionPct.toDouble()
                                 if (abs(intersectionArea) / abs(boxArea) >= interPolygon/100) {
                                     downloadAble = true
-                                    date.text = "צולם : ${firstOffsetDateTime}, ${secondOffsetDateTime}"
+                                    date.text = "צולם : ${b} - ${a}"
                                     zoom = p.maxResolutionDeg.toInt()
                                 }
                             }
@@ -252,12 +263,15 @@ class MapActivity : AppCompatActivity() {
                                     val boxArea = GeometryEngine.area(boxPolygon)
 
                                     val firstOffsetDateTime = p.imagingTimeBeginUTC
+                                    val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                                    val a = sdf.format(firstOffsetDateTime)
                                     val secondOffsetDateTime = p.imagingTimeEndUTC
+                                    val b = sdf.format(secondOffsetDateTime)
 
                                     val interPolygon = service.config.mapMinInclusionPct.toDouble()
                                     if (abs(intersectionArea) / abs(boxArea) >= interPolygon/100) {
                                         downloadAble = true
-                                        date.text = "צולם : ${firstOffsetDateTime}, ${secondOffsetDateTime}"
+                                        date.text = "צולם : ${b} - ${a}"
                                         zoom = p.maxResolutionDeg.toInt()
                                     }
                                 }
@@ -279,63 +293,11 @@ class MapActivity : AppCompatActivity() {
                 } else {
                     overlayView.setBackgroundResource(R.drawable.red_border)
                     date.text = "אין נתון"
-                    showKm.text = "שטח משוער :אין נתון"
+//                    showKm.text = "שטח משוער :אין נתון"
                     showBm.text = "נפח משוער :אין נתון"
                 }
             }
         }
-
-//        GlobalScope.launch(Dispatchers.Default) {
-//            mapView.onUp.collect {
-//                val displayMetrics = DisplayMetrics()
-//                windowManager.defaultDisplay.getMetrics(displayMetrics)
-//                val height = displayMetrics.heightPixels
-//                val width = displayMetrics.widthPixels
-//
-//                val leftTop = ScreenCoordinate(100.0, height - 550.0)
-//                val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
-//                val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
-//                val leftBottom = ScreenCoordinate(100.0, 550.0)
-//
-//                val pLeftTop = mapView.screenToLocation(leftTop) ?: Point(0.0, 0.0)
-//                val pRightBottom = mapView.screenToLocation(rightBottom) ?: Point(0.0, 0.0)
-//                val pRightTop = mapView.screenToLocation(rightTop) ?: Point(0.0, 0.0)
-//                val pLeftBottom = mapView.screenToLocation(leftBottom) ?: Point(0.0, 0.0)
-//
-//                val boxCoordinates = mutableListOf<Point>()
-//                boxCoordinates.add(pLeftTop)
-//                boxCoordinates.add(pRightTop)
-//                boxCoordinates.add(pRightBottom)
-//                boxCoordinates.add(pLeftBottom)
-//                boxCoordinates.add(pLeftTop)
-//
-//                val boxPolygon = Polygon(boxCoordinates)
-//
-//                service.getDownloadedMaps().forEach { g ->
-//                    val nums = g.footprint?.split(",") ?: ArrayList()
-//                    val coords = ArrayList<Point>()
-//                    for (i in 0 until nums.size - 1 step 2) {
-//                        val lon = nums[i].toDouble()
-//                        val lat = nums[i + 1].toDouble()
-//
-//                        coords.add(Point(lon, lat, SpatialReference.wgs84()))
-//                    }
-//                    val poly = Polygon(coords)
-//
-//                    val intersection = GeometryEngine.intersectionOrNull(poly, boxPolygon)
-//                    val intersectionArea = GeometryEngine.area(intersection!!)
-//                    val boxArea = GeometryEngine.area(boxPolygon)
-//                    if (abs(intersectionArea) / abs(boxArea) == 0.0) {
-//                        downloadAble = true
-//                    }
-//                }
-//                if (downloadAble) {
-//                    overlayView.setBackgroundResource(R.drawable.blue_border)
-//                } else {
-//                    overlayView.setBackgroundResource(R.drawable.red_border)
-//                }
-//            }
-//        }
 
     }
 
@@ -419,11 +381,11 @@ class MapActivity : AppCompatActivity() {
         }
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
+        finish()
     }
 
     private fun setApiKey() {
-        val keyId =
-            "AAPK9f60194290664c60b1e4e9c2f12731e2EnCmC48fwIqi_aWiIk2SX22TpgeXo5XIS013xIkAhhYX9EFwz1QooTqlN34eD0FM"
+        val keyId = "runtimelite,1000,rud1971484999,none,GB2PMD17JYCJ5G7XE200"
         ArcGISEnvironment.apiKey = ApiKey.create(keyId)
     }
 
@@ -444,16 +406,8 @@ class MapActivity : AppCompatActivity() {
                     val map: ArcGISMap = ArcGISMap(basemap)
                     val graphicsOverlay = GraphicsOverlay()
                     val gson = Gson()
-                    val yellowOutlineSymbol = SimpleLineSymbol(
-                        SimpleLineSymbolStyle.Dash,
-                        Color.fromRgba(255, 255, 0),
-                        3f
-                    )
-                    val pinkOutlineSymbol = SimpleLineSymbol(
-                        SimpleLineSymbolStyle.Dash,
-                        Color.fromRgba(240, 26, 133),
-                        3f
-                    )
+                    val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
+                    val pinkOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.fromRgba(240, 26, 133), 3f)
                     CoroutineScope(Dispatchers.IO).launch {
                         service.getDownloadedMaps().forEach { g ->
                             val nums = g.footprint?.split(",") ?: ArrayList()

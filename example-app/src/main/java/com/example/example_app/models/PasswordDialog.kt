@@ -28,7 +28,7 @@ class PasswordDialog(
             val password = editTextPassword.text.toString()
             if (password == "200") {
                 for (i in 0..(params.size - 1)) {
-                    nebulaParamAdapter.setIsEditing(isChecked)
+                    nebulaParamAdapter.setIsEditing(isChecked,i,params[i] )
                 }
             } else {
                 Toast.makeText(context, "Incorrect Password", Toast.LENGTH_SHORT).show()

@@ -1,7 +1,6 @@
 package com.example.example_app
 
 import android.os.StatFs
-import com.example.example_app.MapServiceManager
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -20,7 +19,9 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -28,23 +29,23 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.arcgismaps.ArcGISEnvironment
+import com.arcgismaps.LicenseKey
 import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
+//import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
-import com.ngsoft.getapp.sdk.GetMapService
-import com.ngsoft.getapp.sdk.GetMapServiceFactory
+import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
@@ -52,11 +53,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var mapServiceManager: MapServiceManager
     private var progressDialog: ProgressDialog? = null
-
-    //    private lateinit var service: GetMapService
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
-
+    private var availableSpaceInMb:Double = 0.0
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
@@ -71,17 +70,28 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
     }
 
+    private val startForResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        if (mapServiceManager.isInit) {
+            CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
+        }
+    }
+
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         mapServiceManager = MapServiceManager.getInstance()
+
         if (!Environment.isExternalStorageManager()) {
             val intent = Intent()
             intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
             val uri = Uri.fromParts("package", this.packageName, null)
             intent.data = uri
-            startActivity(intent)
+            startForResult.launch(intent)
         }
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = GetAvailableSpaceInSdCard()
@@ -98,8 +108,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
         if (!mapServiceManager.isInit) {
 
+            var url = Pref.getInstance(this).baseUrl
+            if (url.isEmpty()) url =
+                "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link"
             val cfg = Configuration(
-                "https://api-asio-getapp-6.apps.okd4-stage-getapp.getappstage.link",
+                url,
 //            "http://getapp-test.getapp.sh:3000",
 //            "http://192.168.2.26:3000",
                 "rony@example.com",
@@ -163,8 +176,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
-            this.onDiscovery()
-
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
+                this.onDiscovery()
+            else {
+                Toast.makeText(applicationContext,"You don't have enough space according to config",Toast.LENGTH_LONG).show()
+            }
         }
 
 //        deliveryButton = findViewById<Button>(R.id.delivery)
@@ -174,13 +190,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 //        }
 
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
-        syncButton = findViewById<ImageButton>(R.id.d_test)
+        syncButton = findViewById<ImageButton>(R.id.Sync)
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.synchronizeMapData()
             }
         }
-
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
         scanQRButton.setOnClickListener {
@@ -229,6 +244,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                     // Display the response in an AlertDialog
                     dismissLoadingDialog()
                     DiscoveryProductsManager.getInstance().updateProducts(products)
+
                     val intent = Intent(this@MainActivity, MapActivity::class.java)
                     startActivity(intent)
 //                    discoveryDialogPicker(products)
@@ -285,6 +301,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     fun GetAvailableSpaceInSdCard(): String {
 
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+        val flashMem = storageList[0].directory
         val externalFilesDirs = getExternalFilesDirs(null)
         var sdCardDirectory: File? = null
 
@@ -294,20 +313,53 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 break
             }
         }
+        var availableSd:String = ""
+        var availableFlash:String = ""
         sdCardDirectory?.let {
-
-            val stat = StatFs(it.absolutePath)
-            val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
-            val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)
-            val megabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024)
-
-            return if (gigabytesAvailable >= 1) {
-                String.format("מקום פנוי להורדה: %.2f GB", gigabytesAvailable)
-            } else {
-                String.format("מקום פנוי להורדה: %.2f MB", megabytesAvailable)
-            }
+            availableSd = AvailableSpace(it)
         }
-        return "Not Found"
+        flashMem.let {
+            availableFlash = AvailableSpace(it)
+        }
+        val shorter = shorterSpace(availableSd,availableFlash)
+        GetAvailableSpaceInMb(shorter)
+        return shorter
+    }
+
+    private fun GetAvailableSpaceInMb(shorter:String) {
+        availableSpaceInMb = shorter.substringAfter(":").substring(1,shorter.substringAfter(":").length-3).toDouble()
+        val availableSpaceType = shorter.substringAfterLast(" ")
+        if (availableSpaceType != "MB"){
+            availableSpaceInMb *= 1024
+        }
+    }
+
+    private fun shorterSpace(mem1:String,mem2:String): String {
+
+        if (mem1.contains("MB") && mem2.contains("GB")){
+            return mem1
+        }
+        else if ( (mem1.contains("GB") && mem2.contains("GB")) || (mem1.contains("MB") && mem2.contains("MB"))){
+            val mem1Number = mem1.substringAfter(":").substring(1,mem1.substringAfter(":").length-3).toDouble()
+            val mem2Number = mem2.substringAfter(":").substring(1,mem1.substringAfter(":").length-3).toDouble()
+            if (mem1Number > mem2Number){
+                return mem2
+            }else return mem1
+        }
+        return mem2
+    }
+
+    private fun AvailableSpace(it:File?):String {
+        val stat = StatFs(it?.absolutePath)
+        val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
+        val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)
+        val megabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024)
+
+        return if (gigabytesAvailable >= 1) {
+            String.format("מקום פנוי להורדה: %.2f GB", gigabytesAvailable)
+        } else {
+            String.format("מקום פנוי להורדה: %.2f MB", megabytesAvailable)
+        }
     }
 
     private fun discoveryDialogPicker(products: List<DiscoveryItem>) {

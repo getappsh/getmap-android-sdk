@@ -104,11 +104,13 @@ class DownloadListAdapter(
                     //Take the 3 letters that identify bbox
                     val endName = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
-                    holder.textFileName.text = "${jsonText.productName} - ${endName}"
-                    val startDate = jsonText.creationDate.substringBefore('T')
-                    val updateDate = jsonText.updateDate.substringBefore('T')
+                    val region = jsonText.region[0]
+                    Log.i("fndosfhdsofgvhdfsioivfnds", "${region}")
+                    holder.textFileName.text = "${region} - ${endName}"
+                    val startDate = jsonText.sourceDateStart.substringBefore('T')
+                    val endDate = jsonText.sourceDateEnd.substringBefore('T')
                     val tsoulam = "צולם: "
-                    holder.dates.text = "${tsoulam}${startDate} - ${updateDate}"
+                    holder.dates.text = "${tsoulam}${startDate} - ${endDate}"
                 }
         }
 
@@ -127,6 +129,7 @@ class DownloadListAdapter(
                 holder.percentage.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
+                holder.btnCancelResume.visibility = View.INVISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
@@ -178,6 +181,7 @@ class DownloadListAdapter(
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
+                holder.btnCancelResume.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
             }
