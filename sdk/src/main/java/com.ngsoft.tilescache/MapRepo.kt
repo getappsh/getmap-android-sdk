@@ -295,7 +295,7 @@ internal class MapRepo(ctx: Context) {
         val localZone = ZoneId.systemDefault()
         return MapData(
             id = map.id.toString(),
-            footprint = map.footprint,
+            footprint = map.footprint ?: map.bBox,
             fileName = map.fileName,
             jsonName = map.jsonName,
             deliveryState = map.state,

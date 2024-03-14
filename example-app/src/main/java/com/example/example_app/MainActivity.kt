@@ -55,7 +55,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private var progressDialog: ProgressDialog? = null
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
-    private var availableSpaceInMb:Double = 0.0
+    private var availableSpaceInMb: Double = 0.0
+
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
@@ -156,7 +157,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                     downloadListAdapter.availableUpdate
                 )
             }
-        }, pathSd)
+        }, pathSd, mapServiceManager)
         //Set the adapter to listen to changes
         downloadListAdapter.setOnSignalListener(this)
 
@@ -179,7 +180,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
                 this.onDiscovery()
             else {
-                Toast.makeText(applicationContext,"You don't have enough space according to config",Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    applicationContext,
+                    "You don't have enough space according to config",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -199,7 +204,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
         scanQRButton.setOnClickListener {
-            barcodeLauncher.launch(ScanOptions())
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
+                barcodeLauncher.launch(ScanOptions())
+            else {
+                Toast.makeText(
+                    applicationContext,
+                    "You don't have enough space according to config",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
 
         Thread {
@@ -313,43 +326,51 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 break
             }
         }
-        var availableSd:String = ""
-        var availableFlash:String = ""
+        var availableSd: String = ""
+        var availableFlash: String = ""
         sdCardDirectory?.let {
             availableSd = AvailableSpace(it)
         }
         flashMem.let {
             availableFlash = AvailableSpace(it)
         }
-        val shorter = shorterSpace(availableSd,availableFlash)
+        val shorter = shorterSpace(availableSd, availableFlash)
         GetAvailableSpaceInMb(shorter)
         return shorter
     }
 
-    private fun GetAvailableSpaceInMb(shorter:String) {
-        availableSpaceInMb = shorter.substringAfter(":").substring(1,shorter.substringAfter(":").length-3).toDouble()
+    private fun GetAvailableSpaceInMb(shorter: String) {
+        availableSpaceInMb =
+            shorter.substringAfter(":").substring(1, shorter.substringAfter(":").length - 3)
+                .toDouble()
         val availableSpaceType = shorter.substringAfterLast(" ")
-        if (availableSpaceType != "MB"){
+        if (availableSpaceType != "MB") {
             availableSpaceInMb *= 1024
         }
     }
 
-    private fun shorterSpace(mem1:String,mem2:String): String {
+    private fun shorterSpace(mem1: String, mem2: String): String {
 
-        if (mem1.contains("MB") && mem2.contains("GB")){
+        if (mem1.contains("MB") && mem2.contains("GB")) {
             return mem1
-        }
-        else if ( (mem1.contains("GB") && mem2.contains("GB")) || (mem1.contains("MB") && mem2.contains("MB"))){
-            val mem1Number = mem1.substringAfter(":").substring(1,mem1.substringAfter(":").length-3).toDouble()
-            val mem2Number = mem2.substringAfter(":").substring(1,mem1.substringAfter(":").length-3).toDouble()
-            if (mem1Number > mem2Number){
+        } else if ((mem1.contains("GB") && mem2.contains("GB")) || (mem1.contains("MB") && mem2.contains(
+                "MB"
+            ))
+        ) {
+            val mem1Number =
+                mem1.substringAfter(":").substring(1, mem1.substringAfter(":").length - 3)
+                    .toDouble()
+            val mem2Number =
+                mem2.substringAfter(":").substring(1, mem1.substringAfter(":").length - 3)
+                    .toDouble()
+            if (mem1Number > mem2Number) {
                 return mem2
-            }else return mem1
+            } else return mem1
         }
         return mem2
     }
 
-    private fun AvailableSpace(it:File?):String {
+    fun AvailableSpace(it: File?): String {
         val stat = StatFs(it?.absolutePath)
         val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
         val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)

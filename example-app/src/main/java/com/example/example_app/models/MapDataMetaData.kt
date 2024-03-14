@@ -30,5 +30,4 @@ class MapDataMetaData {
     var sha256: String = ""
     var includedInBests: Array<String> = arrayOf()
 
-
 }

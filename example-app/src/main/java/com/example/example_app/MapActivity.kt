@@ -423,7 +423,6 @@ class MapActivity : AppCompatActivity() {
                             }
                             val polygon = Polygon(coords)
                             loadedPolys.add(polygon)
-
                             val endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                             val textSymbol = TextSymbol(
                                 endName,
