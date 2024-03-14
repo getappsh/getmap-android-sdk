@@ -82,23 +82,8 @@ class MapActivity : AppCompatActivity() {
         setApiKey()
 
         mapView = findViewById(R.id.mapView)
-
-        //Get the path of SDCard
-        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes
-        val volume = storageList[1].directory?.absoluteFile ?: ""
-        val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
-        val cfg = Configuration(
-            "https://api-asio-getapp-6.apps.okd4-stage-getapp.getappstage.link",
-            "rony@example.com",
-            "rony123",
-            pathSd,
-            16,
-            null
-        )
-        service = GetMapServiceFactory.createAsioSdkSvc(applicationContext, cfg)
-
-
+        val instance = MapServiceManager.getInstance()
+        service = instance.service
 
 //        service.getDownloadedMaps().forEach{
 //            boolRender(pathSd + "/" + it.jsonName)
