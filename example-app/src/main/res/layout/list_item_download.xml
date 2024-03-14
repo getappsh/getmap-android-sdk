@@ -79,14 +79,47 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/demand_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
                 android:id="@+id/dates"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_marginBottom="3dp"
-                android:text="Dates"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+                android:text="Dates" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="size" />
+
+                <TextView
+                    android:id="@+id/lign_separator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp"
+                    android:text="|" />
+
+                <TextView
+                    android:id="@+id/product"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:text="product"
+                    android:textAlignment="viewStart" />
+            </LinearLayout>
 
         </LinearLayout>
 

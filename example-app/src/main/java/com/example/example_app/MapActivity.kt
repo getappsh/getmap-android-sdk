@@ -99,6 +99,7 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
 //            Log.i("ffffffd", "${downloadAvailable()}")
+
             this.onDelivery()
         }
 
@@ -260,7 +261,8 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun setApiKey() {
-        val keyId = "AAPK9f60194290664c60b1e4e9c2f12731e2EnCmC48fwIqi_aWiIk2SX22TpgeXo5XIS013xIkAhhYX9EFwz1QooTqlN34eD0FM"
+        val keyId =
+            "AAPK9f60194290664c60b1e4e9c2f12731e2EnCmC48fwIqi_aWiIk2SX22TpgeXo5XIS013xIkAhhYX9EFwz1QooTqlN34eD0FM"
         ArcGISEnvironment.apiKey = ApiKey.create(keyId)
     }
 
@@ -316,13 +318,21 @@ class MapActivity : AppCompatActivity() {
                     val map: ArcGISMap = ArcGISMap(basemap)
                     val graphicsOverlay = GraphicsOverlay()
                     val gson = Gson()
-                    val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
-                    val pinkOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(240, 26, 133), 3f)
+                    val yellowOutlineSymbol = SimpleLineSymbol(
+                        SimpleLineSymbolStyle.Dash,
+                        Color.fromRgba(255, 255, 0),
+                        3f
+                    )
+                    val pinkOutlineSymbol = SimpleLineSymbol(
+                        SimpleLineSymbolStyle.Dash,
+                        Color.fromRgba(240, 26, 133),
+                        3f
+                    )
                     CoroutineScope(Dispatchers.IO).launch {
                         service.getDownloadedMaps().forEach { g ->
                             val nums = g.footprint?.split(",") ?: ArrayList()
                             val coords = ArrayList<Point>()
-                            for (i in 0 until nums.size-1 step 2) {
+                            for (i in 0 until nums.size - 1 step 2) {
                                 val lon = nums[i].toDouble()
                                 val lat = nums[i + 1].toDouble()
 
@@ -332,7 +342,7 @@ class MapActivity : AppCompatActivity() {
 
                             var endName = ""
                             if (g.fileName?.length == 60 || g.fileName?.length == 63 || g.fileName?.length == 61) {
-                                endName = g.fileName?.takeLast(11)?.slice(IntRange(0,3)).toString()
+                                endName = g.fileName?.takeLast(11)?.slice(IntRange(0, 3)).toString()
                             } else {
                                 endName = g.fileName?.takeLast(9)?.slice(IntRange(0, 3)).toString()
                             }
@@ -363,17 +373,20 @@ class MapActivity : AppCompatActivity() {
                             val type = json.getString("type")
 
                             if (type == "Polygon") {
-                                val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                                    productPolyDTO.coordinates.forEach { it ->
-                                    val points: List<Point> = it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
+                                val productPolyDTO =
+                                    gson.fromJson(p.footprint, PolygonDTO::class.java)
+                                productPolyDTO.coordinates.forEach { it ->
+                                    val points: List<Point> =
+                                        it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
                                     val polygon = Polygon(points)
 
                                     val graphic = Graphic(polygon, pinkOutlineSymbol)
                                     graphicsOverlay.graphics.add(graphic)
                                 }
                             } else {
-                                val productPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                                    productPolyDTO.coordinates.forEach { polygonCoords ->
+                                val productPolyDTO =
+                                    gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                                productPolyDTO.coordinates.forEach { polygonCoords ->
                                     val rings: MutableList<List<Point>> = mutableListOf()
                                     polygonCoords.forEach { ringCoords ->
                                         val points: MutableList<Point> = mutableListOf()

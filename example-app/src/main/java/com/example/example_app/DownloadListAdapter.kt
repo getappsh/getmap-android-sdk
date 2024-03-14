@@ -3,6 +3,7 @@ package com.example.example_app
 
 import MapDataMetaData
 import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,22 +12,27 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 class DownloadListAdapter(
     private val onButtonClick: (Int, String, Any?) -> Unit,
-    private val pathAvailable: String
+    private val pathAvailable: String,
+    private val manager:MapServiceManager
 ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
     var availableUpdate:Boolean = false
@@ -58,6 +64,9 @@ class DownloadListAdapter(
         val btnDelete: AppCompatImageButton = itemView.findViewById(R.id.btnDelete)
         val btnQRCode: Button = itemView.findViewById(R.id.btnQRCode)
         val updated: ImageView = itemView.findViewById(R.id.updated_signal)
+        val demandDate: TextView = itemView.findViewById(R.id.demand_date)
+        val size: TextView = itemView.findViewById(R.id.size)
+        val product: TextView = itemView.findViewById(R.id.product)
     }
 
 
@@ -80,6 +89,7 @@ class DownloadListAdapter(
         return ViewHolder(view)
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val downloadData = asyncListDiffer.currentList[position]
@@ -87,18 +97,22 @@ class DownloadListAdapter(
             "vsdnhilofherszofhezofezhioflezhfiollzefhzuofhezuofhezjofgdszuikzerf",
             "onBindViewHolder: ${downloadData.jsonName}"
         )
-        val directory: File = File(
+        val directory= File(
             //path for olar
 //            Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + downloadData.jsonName
 //            "sdcard/Documents" +
 //                    File.separator
             pathAvailable
         )
-
         if (directory.exists()) {
             val files: Array<File> = directory.listFiles()!!
-
-            for (file in files.iterator())
+            var geo:File = File("dnfjosh")
+            for (file in files.iterator()){
+                if (file.name.substringBefore('.') == downloadData.jsonName?.substringBefore('.') &&
+                    file.name.substringAfter('.') == "gpkg"){
+                    geo = file
+                    continue
+                }
                 if (file.name == downloadData.jsonName) {
                     val text = file.readText()
                     //Take the 3 letters that identify bbox
@@ -110,13 +124,16 @@ class DownloadListAdapter(
                     }
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
                     val region = jsonText.region[0]
-                    Log.i("fndosfhdsofgvhdfsioivfnds", "${region}")
+                    holder.size.text = occupiedSpace(geo)
+                    holder.product.text = "תוצר: ${jsonText.id.subSequence(jsonText.id.length-4,jsonText.id.length)}"
+                    deliveryDate(manager,downloadData,holder)
                     holder.textFileName.text = "${region} - ${endName}"
                     val startDate = jsonText.sourceDateStart.substringBefore('T')
                     val endDate = jsonText.sourceDateEnd.substringBefore('T')
                     val tsoulam = "צולם: "
-                    holder.dates.text = "${tsoulam}${startDate} - ${endDate}"
+                    holder.dates.text = "${tsoulam}${endDate} - ${startDate}"
                 }
+            }
         }
 
         holder.textStatus.text = downloadData.statusMsg
@@ -129,6 +146,7 @@ class DownloadListAdapter(
 
         when (downloadData.deliveryState) {
             START -> {
+                deliveryDate(manager,downloadData,holder)
                 holder.btnDelete.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
@@ -241,7 +259,31 @@ class DownloadListAdapter(
     fun saveData(dataResponse: List<MapData>) {
         asyncListDiffer.submitList(dataResponse)
     }
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun deliveryDate(manager: MapServiceManager,downloadData:MapData,holder: ViewHolder){
+        CoroutineScope(Dispatchers.IO).launch {
+            manager.service.getDownloadedMaps().forEach { i ->
+                if (i.id == downloadData.id){
+                    val firstOffsetDateTime = downloadData.downloadStart
+                    val sdf = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm")
+                    val a = sdf.format(firstOffsetDateTime)
+                    holder.demandDate.text = "תאריך בקשה: ${a}"
+                }
 
+            }
+        }
+    }
+
+    fun occupiedSpace(it:File):String {
+        val gigabytesAvailable = it.length().toDouble() / (1024 * 1024 * 1024)
+        val megabytesAvailable = it.length().toDouble() / (1024 * 1024)
+
+        return if (gigabytesAvailable >= 1) {
+            String.format("נפח: %.2f gb", gigabytesAvailable)
+        } else {
+            String.format("נפח: %.2f mb", megabytesAvailable)
+        }
+    }
     companion object {
         const val RESUME_BUTTON_CLICK = 1
         const val CANCEL_BUTTON_CLICK = 2
