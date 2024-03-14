@@ -282,12 +282,15 @@ class MapActivity : AppCompatActivity() {
                 loadedPolys.forEach { p ->
 
                     val intersection = GeometryEngine.intersectionOrNull(p, boxPolygon)
-                    val intersectionArea = GeometryEngine.area(intersection!!)
-                    val boxArea = GeometryEngine.area(boxPolygon)
-                    if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                        downloadAble = false
+                    if (intersection != null) {
+                        val intersectionArea = GeometryEngine.area(intersection)
+                        val boxArea = GeometryEngine.area(boxPolygon)
+                        if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                            downloadAble = false
+                        }
                     }
                 }
+
                 if (spaceMb < maxMb && downloadAble) {
                     overlayView.setBackgroundResource(R.drawable.blue_border)
                 } else {
