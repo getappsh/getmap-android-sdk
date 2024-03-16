@@ -18,9 +18,6 @@ import androidx.lifecycle.lifecycleScope
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.Color
-import com.arcgismaps.LicenseInfo
-import com.arcgismaps.LicenseKey
-import com.arcgismaps.LicenseType
 import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
@@ -41,9 +38,7 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.MapView
 import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.google.gson.Gson
-import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
-import com.ngsoft.getapp.sdk.GetMapServiceFactory
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
@@ -51,11 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
-import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -84,14 +75,6 @@ class MapActivity : AppCompatActivity() {
         mapView = findViewById(R.id.mapView)
         val instance = MapServiceManager.getInstance()
         service = instance.service
-
-//        service.getDownloadedMaps().forEach{
-//            boolRender(pathSd + "/" + it.jsonName)
-//        }
-//        GlobalScope.launch(Dispatchers.IO) {
-//            boolRender()
-//        }
-
 
         lifecycle.addObserver(mapView)
 
