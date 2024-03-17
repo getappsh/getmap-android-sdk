@@ -161,7 +161,7 @@ class MapActivity : AppCompatActivity() {
                 boxCoordinates.add(pRightTop)
                 boxCoordinates.add(pRightBottom)
                 boxCoordinates.add(pLeftBottom)
-                boxCoordinates.add(pLeftTop)
+//                boxCoordinates.add(pLeftTop)
 
                 val boxPolygon = Polygon(boxCoordinates)
 
@@ -198,49 +198,56 @@ class MapActivity : AppCompatActivity() {
                                     GeometryEngine.intersectionOrNull(polygon, boxPolygon)
                                 val intersectionArea = GeometryEngine.area(intersection!!)
                                 val boxArea = GeometryEngine.area(boxPolygon)
-                                val date = findViewById<TextView>(R.id.dateText)
+                                val dateTextView = findViewById<TextView>(R.id.dateText)
                                 val firstOffsetDateTime = p.imagingTimeBeginUTC
                                 val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                                val a = sdf.format(firstOffsetDateTime)
+                                val firstDate = sdf.format(firstOffsetDateTime)
                                 val secondOffsetDateTime = p.imagingTimeEndUTC
-                                val b = sdf.format(secondOffsetDateTime)
-
+                                val secondDate = sdf.format(secondOffsetDateTime)
                                 val interPolygon = service.config.mapMinInclusionPct.toDouble()
-                                if (abs(intersectionArea) / abs(boxArea) >= interPolygon/100) {
+
+
+                                if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
+                                    if (downloadAble && secondDate > dateTextView.text.toString().substringAfter(":").trim()) {
+                                        dateTextView.text = "צולם : $secondDate - $firstDate"
+                                        zoom = p.maxResolutionDeg.toInt()
+                                    } else if (!downloadAble) {
+                                        dateTextView.text = "צולם : $secondDate - $firstDate"
+                                        zoom = p.maxResolutionDeg.toInt()
+                                    }
                                     downloadAble = true
-                                    date.text = "צולם : ${b} - ${a}"
-                                    zoom = p.maxResolutionDeg.toInt()
                                 }
                             }
                         } else if (type == "MultiPolygon") {
-                            val productMultiPolyDTO =
-                                gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                            val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
                             productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
                                 polyCoordinates.forEach { coordinates ->
                                     val points: List<Point> = coordinates.map {
-                                        Point(
-                                            it[0],
-                                            it[1],
-                                            SpatialReference.wgs84()
-                                        )
+                                        Point(it[0], it[1], SpatialReference.wgs84())
                                     }
                                     val polygon = Polygon(points)
 
                                     val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
                                     val intersectionArea = GeometryEngine.area(intersection!!)
                                     val boxArea = GeometryEngine.area(boxPolygon)
-
+                                    val dateTextView = findViewById<TextView>(R.id.dateText)
                                     val firstOffsetDateTime = p.imagingTimeBeginUTC
                                     val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                                    val a = sdf.format(firstOffsetDateTime)
+                                    val firstDate = sdf.format(firstOffsetDateTime)
                                     val secondOffsetDateTime = p.imagingTimeEndUTC
-                                    val b = sdf.format(secondOffsetDateTime)
-
+                                    val secondDate = sdf.format(secondOffsetDateTime)
                                     val interPolygon = service.config.mapMinInclusionPct.toDouble()
-                                    if (abs(intersectionArea) / abs(boxArea) >= interPolygon/100) {
+
+                                    if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
+                                        if (downloadAble && secondDate > dateTextView.text.toString().substringAfter(":").trim()
+                                        ) {
+                                            dateTextView.text = "צולם : $secondDate - $firstDate"
+                                            zoom = p.maxResolutionDeg.toInt()
+                                        } else if (!downloadAble) {
+                                            dateTextView.text = "צולם : $secondDate - $firstDate"
+                                            zoom = p.maxResolutionDeg.toInt()
+                                        }
                                         downloadAble = true
-                                        date.text = "צולם : ${b} - ${a}"
-                                        zoom = p.maxResolutionDeg.toInt()
                                     }
                                 }
                             }
