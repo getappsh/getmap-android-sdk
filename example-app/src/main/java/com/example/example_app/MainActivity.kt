@@ -29,6 +29,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.LicenseKey
 import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
@@ -39,6 +40,7 @@ import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -174,10 +176,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
         })
-
+        val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
+        swipeRecycler.setOnRefreshListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                mapServiceManager.service.synchronizeMapData()
+            }
+            swipeRecycler.isRefreshing = false
+        }
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
-            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
+            val onDownload = mapServiceManager.service.getDownloadedMaps().filter { it.deliveryState == MapDeliveryState.DOWNLOAD ||  it.deliveryState == MapDeliveryState.CONTINUE || it.deliveryState == MapDeliveryState.START}.size
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB || onDownload > mapServiceManager.service.config.maxParallelDownloads)
                 this.onDiscovery()
             else {
                 Toast.makeText(
@@ -198,7 +207,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         syncButton = findViewById<ImageButton>(R.id.Sync)
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                mapServiceManager.service.synchronizeMapData()
+                mapServiceManager.service.fetchInventoryUpdates()
+                runOnUiThread {
+                    Toast.makeText(baseContext,"בודק עדכון בולים...",Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

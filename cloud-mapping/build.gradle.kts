@@ -36,7 +36,6 @@ android {
 }
 
 dependencies {
-
     implementation(project(mapOf("path" to ":sdk")))
     implementation ("com.esri.arcgisruntime:arcgis-android:100.10.0")
     implementation("androidx.core:core-ktx:1.12.0")

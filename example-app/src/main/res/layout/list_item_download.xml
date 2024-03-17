@@ -103,7 +103,8 @@
                     android:id="@+id/size"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="size" />
+                    android:text="size"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/lign_separator"
@@ -111,7 +112,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="3dp"
                     android:layout_marginRight="3dp"
-                    android:text="|" />
+                    android:text="|"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/product"
@@ -119,7 +121,8 @@
                     android:layout_height="wrap_content"
                     android:gravity="right"
                     android:text="product"
-                    android:textAlignment="viewStart" />
+                    android:textAlignment="viewStart"
+                    android:visibility="invisible" />
             </LinearLayout>
 
         </LinearLayout>
