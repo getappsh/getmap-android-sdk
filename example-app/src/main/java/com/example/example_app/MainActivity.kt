@@ -218,10 +218,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         syncButton = findViewById<ImageButton>(R.id.Sync)
         syncButton.setOnClickListener {
+            Toast.makeText(baseContext, "בודק עדכון בולים...", Toast.LENGTH_SHORT).show()
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.fetchInventoryUpdates()
                 runOnUiThread {
-                    Toast.makeText(baseContext, "בודק עדכון בולים...", Toast.LENGTH_SHORT).show()
                     TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
 
                 }
@@ -230,12 +230,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
         scanQRButton.setOnClickListener {
-            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB){
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB) {
                 barcodeLauncher.launch(ScanOptions())
                 TrackHelper.track().event("ScanQr", "ScanQrButton-clicked").with(tracker)
-            }
-
-            else {
+            } else {
                 Toast.makeText(
                     applicationContext,
                     "You don't have enough space according to config",
