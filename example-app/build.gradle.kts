@@ -73,6 +73,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2")
 
     implementation ("androidx.core:core-ktx:1.7.0")
+    implementation ("com.github.matomo-org:matomo-sdk-android:4.1.4")
 
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
