@@ -1,5 +1,6 @@
 package com.example.example_app
 
+import android.app.Dialog
 import android.app.ProgressDialog
 import com.example.example_app.matomo.MatomoTracker
 import android.content.DialogInterface
@@ -15,6 +16,7 @@ import android.os.storage.StorageManager
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -51,7 +53,7 @@ import java.io.File
 import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.R)
-class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
+class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private var tracker: Tracker? = null
     private val TAG = MainActivity::class.qualifiedName
@@ -163,7 +165,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             }
         }, pathSd, mapServiceManager)
         //Set the adapter to listen to changes
-        downloadListAdapter.setOnSignalListener(this)
+        downloadListAdapter.addListener(this)
 
         recyclerView.adapter = downloadListAdapter
         //Separator code between each download, optional
@@ -216,14 +218,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 //        TrackHelper.track().event("current-time", "234").name("mills").value(System.currentTimeMillis().toFloat()).with(tracker);
 
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
-        syncButton = findViewById<ImageButton>(R.id.Sync)
+        syncButton = findViewById(R.id.Sync)
         syncButton.setOnClickListener {
-            Toast.makeText(baseContext, "בודק עדכון בולים...", Toast.LENGTH_SHORT).show()
             GlobalScope.launch(Dispatchers.IO) {
-                mapServiceManager.service.fetchInventoryUpdates()
+                mapServiceManager.service.getDownloadedMaps().forEach { mapData ->
+                    if (!mapData.isUpdated) {
+                        mapServiceManager.service.downloadUpdatedMap(
+                            mapData.id!!,
+                            downloadStatusHandler
+                        )
+                    }
+                }
                 runOnUiThread {
+                    syncButton.visibility = View.GONE
                     TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
-
                 }
             }
         }
@@ -463,9 +471,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     }
 
     // Function that will update the AvailableSpace
-    override fun onSignal() {
-        val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-        availableSpace.text = GetAvailableSpaceInSdCard()
+    override fun onSignalSpace() {
+            val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
+            availableSpace.text = GetAvailableSpaceInSdCard()
+    }
+
+    override fun onSignalDownload() {
+        syncButton.visibility = View.VISIBLE
+    }
+
+    override fun onNotSignalDownload() {
+        syncButton.visibility = View.GONE
     }
 
 

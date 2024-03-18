@@ -43,19 +43,35 @@ class DownloadListAdapter(
     var availableUpdate: Boolean = false
 
     //Create and define the signal listener
-    interface OnSignalListener {
-        fun onSignal()
+    interface SignalListener {
+        fun onSignalSpace()
+        fun onSignalDownload()
+        fun onNotSignalDownload()
     }
 
-    private var signalListener: OnSignalListener? = null
+    private val listeners = mutableListOf<SignalListener>()
 
-    fun setOnSignalListener(listener: MainActivity) {
-        signalListener = listener
+    fun addListener(listener: SignalListener) {
+        listeners.add(listener)
     }
 
-    private fun sendSignal() {
-        if (signalListener != null) {
-            signalListener!!.onSignal()
+    fun removeListener(listener: SignalListener) {
+        listeners.remove(listener)
+    }
+    fun triggerSpaceSignal() {
+        for (listener in listeners) {
+            listener.onSignalSpace()
+        }
+    }
+    fun triggerNotDownloadSignal(){
+        for (listener in listeners)
+            listener.onNotSignalDownload()
+    }
+
+    // Méthode pour déclencher le signal 2 avec des données
+    fun triggerDownloadSignal() {
+        for (listener in listeners) {
+            listener.onSignalDownload()
         }
     }
 
@@ -178,13 +194,12 @@ class DownloadListAdapter(
                 holder.dates.visibility = View.VISIBLE
                 holder.btnCancelResume.visibility = View.GONE
                 holder.progressBar.progress = 0
-                sendSignal()
+                triggerSpaceSignal()
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.VISIBLE
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
                 holder.separator.visibility = View.VISIBLE
-
             }
 
             ERROR -> {
@@ -247,7 +262,7 @@ class DownloadListAdapter(
         }
 
         holder.btnDelete.setOnClickListener {
-            sendSignal()
+            triggerSpaceSignal()
             onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
 
         }
@@ -260,7 +275,9 @@ class DownloadListAdapter(
 //            holder.btnUpdate.visibility = View.GONE
             holder.updated.visibility = View.VISIBLE
             availableUpdate = true
-        }
+            triggerDownloadSignal()
+        }else
+            triggerNotDownloadSignal()
 
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
