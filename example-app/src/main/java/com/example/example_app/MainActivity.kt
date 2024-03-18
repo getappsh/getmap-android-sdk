@@ -1,6 +1,5 @@
 package com.example.example_app
 
-import android.os.StatFs
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -10,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.StatFs
 import android.os.storage.StorageManager
 import android.provider.Settings
 import android.util.Log
@@ -30,28 +30,29 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.arcgismaps.ArcGISEnvironment
-import com.arcgismaps.LicenseKey
-import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
-//import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
-import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.matomo.sdk.Matomo
+import org.matomo.sdk.Tracker
+import org.matomo.sdk.TrackerBuilder
+import org.matomo.sdk.extra.MatomoApplication
+import org.matomo.sdk.extra.TrackHelper
 import java.io.File
 import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
+    private var tracker: Tracker? = null
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var mapServiceManager: MapServiceManager
     private var progressDialog: ProgressDialog? = null
@@ -72,7 +73,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private val downloadStatusHandler: (MapData) -> Unit = { data ->
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
     }
-
     private val startForResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
@@ -133,6 +133,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             } catch (_: Exception) {
             }
         }
+
+
 //
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
@@ -177,7 +179,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             downloadListAdapter.saveData(it)
         })
         val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
+        getTracker()
         swipeRecycler.setOnRefreshListener {
+            TrackHelper.track().event("refreshBboxs", "refreshed-recyclerView").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.synchronizeMapData()
             }
@@ -185,8 +189,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         }
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
-            val onDownload = mapServiceManager.service.getDownloadedMaps().filter { it.deliveryState == MapDeliveryState.DOWNLOAD ||  it.deliveryState == MapDeliveryState.CONTINUE || it.deliveryState == MapDeliveryState.START}.size
-            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB || onDownload > mapServiceManager.service.config.maxParallelDownloads)
+//            val onDownload = mapServiceManager.service.getDownloadedMaps().filter { it.deliveryState
+            //            == MapDeliveryState.DOWNLOAD ||  it.deliveryState == MapDeliveryState.CONTINUE
+            //            || it.deliveryState == MapDeliveryState.START}.size
+            //            || //            onDownload > mapServiceManager.service.config.maxParallelDownloads
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
                 this.onDiscovery()
             else {
                 Toast.makeText(
@@ -196,12 +203,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
                 ).show()
             }
         }
-
-//        deliveryButton = findViewById<Button>(R.id.delivery)
-//        deliveryButton.isEnabled = false
-//        deliveryButton.setOnClickListener {
-//            this.onDelivery()
-//        }
+        //Matomo tracker
+        // The `Tracker` instance from the previous step
+        val tracker = tracker
+        // Track a screen view
+        TrackHelper.track().screen("/MainActivity")
+            .with(tracker)
+        // Monitor your app installs
+        TrackHelper.track().download().with(tracker)
+        //Example of an event for matomo, have to put differents per action
+//        TrackHelper.track().event("current-time", "234").name("mills").value(System.currentTimeMillis().toFloat()).with(tracker);
 
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         syncButton = findViewById<ImageButton>(R.id.Sync)
@@ -209,15 +220,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.fetchInventoryUpdates()
                 runOnUiThread {
-                    Toast.makeText(baseContext,"בודק עדכון בולים...",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "בודק עדכון בולים...", Toast.LENGTH_SHORT).show()
+                    TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
+
                 }
             }
         }
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
         scanQRButton.setOnClickListener {
-            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
+            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB){
                 barcodeLauncher.launch(ScanOptions())
+                TrackHelper.track().event("ScanQr", "ScanQrButton-clicked").with(tracker)
+            }
+
             else {
                 Toast.makeText(
                     applicationContext,
@@ -235,6 +251,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
+            TrackHelper.track().event("settingsButton", "access-to-settings").with(tracker)
             val intent = Intent(this, SettingsActivity::class.java)
             intent.putExtra(
                 "pathSd",
@@ -247,10 +264,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     override fun onResume() {
         super.onResume()
         mapServiceManager = MapServiceManager.getInstance()
+        TrackHelper.track().event("ResumeButton", "resume-launched").with(tracker)
 //        Log.d("a", "sa")
     }
 
     private fun onDiscovery() {
+
+        TrackHelper.track().event("DiscoveryButton", "opened-map").with(tracker)
         Log.d(TAG, "onDiscovery");
         showLoadingDialog("פותח את המפה")
         GlobalScope.launch(Dispatchers.IO) {
@@ -422,22 +442,25 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     }
 
     private fun onDelete(id: String) {
+        TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.deleteMap(id)
         }
     }
 
-    private fun onCancel(id: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.cancelDownload(id)
-        }
-    }
-
     private fun onResume(id: String) {
+        TrackHelper.track().event("resumeButton", "resume-download-map").with(tracker)
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.resumeDownload(id, downloadStatusHandler)
         }
 
+    }
+
+    private fun onCancel(id: String) {
+        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
+        GlobalScope.launch(Dispatchers.IO) {
+            mapServiceManager.service.cancelDownload(id)
+        }
     }
 
     // Function that will update the AvailableSpace
@@ -466,6 +489,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     }
 
     private fun itemViewClick(id: String, availableUpdate: Boolean) {
+
+        TrackHelper.track().event("itemClick", "more-info-on-bbox").with(tracker)
         if (availableUpdate) {
             CoroutineScope(Dispatchers.IO).launch {
                 mapServiceManager.service.downloadUpdatedMap(id, downloadStatusHandler)
@@ -575,5 +600,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
             }
         }
+    }
+
+    fun getTracker(): Tracker {
+        if (tracker == null) {
+            tracker = TrackerBuilder.createDefault(
+                "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php", 1
+            ).build(
+                Matomo.getInstance(this)
+            )
+        }
+        return tracker!!
     }
 }
