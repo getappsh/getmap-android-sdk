@@ -1,6 +1,7 @@
 package com.example.example_app
 
 import android.app.ProgressDialog
+import com.example.example_app.matomo.MatomoTracker
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
@@ -133,8 +134,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             } catch (_: Exception) {
             }
         }
-
-
+        tracker = MatomoTracker.getTracker(this)
 //
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
@@ -179,7 +179,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             downloadListAdapter.saveData(it)
         })
         val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
-        getTracker()
+//        getTracker()
+
         swipeRecycler.setOnRefreshListener {
             TrackHelper.track().event("refreshBboxs", "refreshed-recyclerView").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
@@ -263,8 +264,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
 
     override fun onResume() {
         super.onResume()
+        tracker?.dispatch()
         mapServiceManager = MapServiceManager.getInstance()
-        TrackHelper.track().event("ResumeButton", "resume-launched").with(tracker)
 //        Log.d("a", "sa")
     }
 
