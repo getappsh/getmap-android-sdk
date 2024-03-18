@@ -208,7 +208,7 @@ class MapActivity : AppCompatActivity() {
 
 
                                 if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
-                                    if (downloadAble && secondDate > dateTextView.text.toString().substringAfter(":").trim()) {
+                                    if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
                                         dateTextView.text = "צולם : $secondDate - $firstDate"
                                         zoom = p.maxResolutionDeg.toInt()
                                     } else if (!downloadAble) {
@@ -239,7 +239,7 @@ class MapActivity : AppCompatActivity() {
                                     val interPolygon = service.config.mapMinInclusionPct.toDouble()
 
                                     if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
-                                        if (downloadAble && secondDate > dateTextView.text.toString().substringAfter(":").trim()
+                                        if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()
                                         ) {
                                             dateTextView.text = "צולם : $secondDate - $firstDate"
                                             zoom = p.maxResolutionDeg.toInt()
@@ -254,6 +254,7 @@ class MapActivity : AppCompatActivity() {
                         }
                     }
                 }
+                var inBbox = false
                 loadedPolys.forEach { p ->
 
                     val intersection = GeometryEngine.intersectionOrNull(p, boxPolygon)
@@ -262,6 +263,7 @@ class MapActivity : AppCompatActivity() {
                         val boxArea = GeometryEngine.area(boxPolygon)
                         if (abs(intersectionArea) / abs(boxArea) > 0.0) {
                             downloadAble = false
+                            inBbox = true
                         }
                     }
                 }
@@ -270,8 +272,12 @@ class MapActivity : AppCompatActivity() {
                     overlayView.setBackgroundResource(R.drawable.blue_border)
                 } else {
                     overlayView.setBackgroundResource(R.drawable.red_border)
-                    date.text = "אין נתון"
-//                    showKm.text = "שטח משוער :אין נתון"
+                    if (inBbox){
+                        date.text = "נמצא בתחום שכבר קיים במכשיר"
+                    } else {
+                        date.text = "מחוץ לטווח הבחירה"
+                    }
+                    showKm.text = "שטח משוער :אין נתון"
                     showBm.text = "נפח משוער :אין נתון"
                 }
             }
@@ -398,7 +404,10 @@ class MapActivity : AppCompatActivity() {
                             }
                             val polygon = Polygon(coords)
                             loadedPolys.add(polygon)
-                            val endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                            var endName = "בהורדה"
+                            if (g.fileName != null) {
+                                endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                            }
                             val textSymbol = TextSymbol(
                                 endName,
                                 Color.fromRgba(255, 255, 0),

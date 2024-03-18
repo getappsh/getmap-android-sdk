@@ -2,8 +2,10 @@ package com.example.example_app
 
 import android.os.StatFs
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.net.Uri
@@ -29,9 +31,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.arcgismaps.ArcGISEnvironment
-import com.arcgismaps.LicenseKey
-import com.arcgismaps.mapping.symbology.SymbolAngleAlignment
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 //import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
     private var availableSpaceInMb: Double = 0.0
+
 
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
@@ -174,9 +175,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
         })
-
+        val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
+        swipeRecycler.setOnRefreshListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                mapServiceManager.service.synchronizeMapData()
+            }
+            swipeRecycler.isRefreshing = false
+        }
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
+//            val onDownload = mapServiceManager.service.getDownloadedMaps().filter { it.deliveryState == MapDeliveryState.DOWNLOAD ||  it.deliveryState == MapDeliveryState.CONTINUE || it.deliveryState == MapDeliveryState.START}.size
             if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB)
                 this.onDiscovery()
             else {
@@ -198,7 +206,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.OnSignalListener {
         syncButton = findViewById<ImageButton>(R.id.Sync)
         syncButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                mapServiceManager.service.synchronizeMapData()
+                mapServiceManager.service.fetchInventoryUpdates()
+                runOnUiThread {
+                    Toast.makeText(baseContext,"בודק עדכון בולים...",Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

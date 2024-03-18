@@ -5,11 +5,11 @@ import android.widget.EditText
 import android.widget.Toast
 import android.widget.ToggleButton
 import com.example.example_app.R
-import com.example.example_app.models.NebulaParam
+import com.example.example_app.models.ConfigParam
 
 class PasswordDialog(
-    private val context: Context, private val params: Array<NebulaParam.NebulaParam>,
-    private val nebulaParamAdapter: NebulaParam.NebulaParamAdapter, private val isChecked: Boolean,
+    private val context: Context, private val params: Array<ConfigParam.NebulaParam>,
+    private val configParamAdapter: ConfigParam.NebulaParamAdapter, private val isChecked: Boolean,
     private var editConf: ToggleButton,
 ) {
 
@@ -18,7 +18,7 @@ class PasswordDialog(
 
         // Inflate the personalized layout
         val inflater = LayoutInflater.from(context)
-        val dialogView = inflater.inflate(R.layout.nebula_password, null)
+        val dialogView = inflater.inflate(R.layout.config_password, null)
 
         // Configure the vue of the dialog
         val editTextPassword = dialogView.findViewById<EditText>(R.id.editTextNumberPassword)
@@ -28,7 +28,7 @@ class PasswordDialog(
             val password = editTextPassword.text.toString()
             if (password == "200") {
                 for (i in 0..(params.size - 1)) {
-                    nebulaParamAdapter.setIsEditing(isChecked,i,params[i] )
+                    configParamAdapter.setIsEditing(isChecked,i,params[i] )
                 }
             } else {
                 Toast.makeText(context, "Incorrect Password", Toast.LENGTH_SHORT).show()

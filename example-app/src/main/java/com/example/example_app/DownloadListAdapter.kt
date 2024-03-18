@@ -3,6 +3,8 @@ package com.example.example_app
 
 import MapDataMetaData
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.arcgismaps.ArcGISEnvironment.applicationContext
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
@@ -28,6 +31,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
@@ -36,10 +40,10 @@ import java.util.Locale
 class DownloadListAdapter(
     private val onButtonClick: (Int, String, Any?) -> Unit,
     private val pathAvailable: String,
-    private val manager:MapServiceManager
-) :
+    private val manager: MapServiceManager,
+    ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
-    var availableUpdate:Boolean = false
+    var availableUpdate: Boolean = false
 
     //Create and define the signal listener
     interface OnSignalListener {
@@ -47,7 +51,6 @@ class DownloadListAdapter(
     }
 
     private var signalListener: OnSignalListener? = null
-
     fun setOnSignalListener(listener: MainActivity) {
         signalListener = listener
     }
@@ -71,7 +74,8 @@ class DownloadListAdapter(
         val demandDate: TextView = itemView.findViewById(R.id.demand_date)
         val size: TextView = itemView.findViewById(R.id.size)
         val product: TextView = itemView.findViewById(R.id.product)
-        val sizeLayout:LinearLayout = itemView.findViewById(R.id.size_layout)
+        val sizeLayout: LinearLayout = itemView.findViewById(R.id.size_layout)
+        val separator: TextView = itemView.findViewById(R.id.lign_separator)
     }
 
 
@@ -102,7 +106,8 @@ class DownloadListAdapter(
             "vsdnhilofherszofhezofezhioflezhfiollzefhzuofhezuofhezjofgdszuikzerf",
             "onBindViewHolder: ${downloadData.jsonName}"
         )
-        val directory= File(
+
+        val directory = File(
             //path for olar
 //            Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + downloadData.jsonName
 //            "sdcard/Documents" +
@@ -111,22 +116,29 @@ class DownloadListAdapter(
         )
         if (directory.exists()) {
             val files: Array<File> = directory.listFiles()!!
-            var geo:File = File("dnfjosh")
-            for (file in files.iterator()){
+            var geo: File = File("dnfjosh")
+            for (file in files.iterator()) {
                 if (file.name.substringBefore('.') == downloadData.jsonName?.substringBefore('.') &&
-                    file.name.substringAfter('.') == "gpkg"){
+                    file.name.substringAfter('.') == "gpkg"
+                ) {
                     geo = file
                     continue
                 }
                 if (file.name == downloadData.jsonName) {
                     val text = file.readText()
                     //Take the 3 letters that identify bbox
-                    val endName = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                    val endName =
+                        downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                     val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
                     val region = jsonText.region[0]
                     holder.size.text = occupiedSpace(geo)
-                    holder.product.text = "תוצר: ${jsonText.id.subSequence(jsonText.id.length-4,jsonText.id.length)}"
-                    deliveryDate(manager,downloadData,holder)
+                    holder.product.text = "תוצר: ${
+                        jsonText.id.subSequence(
+                            jsonText.id.length - 4,
+                            jsonText.id.length
+                        )
+                    }"
+                    deliveryDate(manager, downloadData, holder)
                     holder.textFileName.text = "${region} - ${endName}"
                     val startDate = jsonText.sourceDateStart.substringBefore('T')
                     val endDate = jsonText.sourceDateEnd.substringBefore('T')
@@ -137,6 +149,7 @@ class DownloadListAdapter(
                 }
             }
         }
+
 
         holder.textStatus.text = downloadData.statusMsg
         holder.progressBar.progress = downloadData.progress
@@ -149,7 +162,7 @@ class DownloadListAdapter(
         when (downloadData.deliveryState) {
             START -> {
                 holder.sizeLayout.visibility = View.GONE
-                deliveryDate(manager,downloadData,holder)
+                deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
@@ -172,7 +185,9 @@ class DownloadListAdapter(
                 sendSignal()
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.VISIBLE
-
+                holder.size.visibility = View.VISIBLE
+                holder.product.visibility = View.VISIBLE
+                holder.separator.visibility = View.VISIBLE
 
             }
 
@@ -217,7 +232,6 @@ class DownloadListAdapter(
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
-                sendSignal()
             }
         }
 
@@ -237,6 +251,7 @@ class DownloadListAdapter(
         }
 
         holder.btnDelete.setOnClickListener {
+            sendSignal()
             onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
 
         }
@@ -263,22 +278,29 @@ class DownloadListAdapter(
     fun saveData(dataResponse: List<MapData>) {
         asyncListDiffer.submitList(dataResponse)
     }
+
     @RequiresApi(Build.VERSION_CODES.R)
-    fun deliveryDate(manager: MapServiceManager,downloadData:MapData,holder: ViewHolder){
+    fun deliveryDate(manager: MapServiceManager, downloadData: MapData, holder: ViewHolder) {
         CoroutineScope(Dispatchers.IO).launch {
             manager.service.getDownloadedMaps().forEach { i ->
-                if (i.id == downloadData.id){
+                val sdf = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm")
+                if (i.id == downloadData.id) {
                     val firstOffsetDateTime = downloadData.downloadStart
-                    val sdf = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm")
-                    val a = sdf.format(firstOffsetDateTime)
-                    holder.demandDate.text = "תאריך בקשה: ${a}"
+                    if (firstOffsetDateTime != null) {
+
+                        val a = sdf.format(firstOffsetDateTime)
+                        holder.demandDate.text = "תאריך בקשה: ${a}"
+                    } else {
+                        val currDate = LocalDateTime.now().format(sdf)
+                        holder.demandDate.text = "תאריך בקשה: ${currDate}"
+                    }
                 }
 
             }
         }
     }
 
-    fun occupiedSpace(it:File):String {
+    fun occupiedSpace(it: File): String {
         val gigabytesAvailable = it.length().toDouble() / (1024 * 1024 * 1024)
         val megabytesAvailable = it.length().toDouble() / (1024 * 1024)
 
@@ -288,12 +310,14 @@ class DownloadListAdapter(
             String.format("נפח: %.2f mb", megabytesAvailable)
         }
     }
+
     fun formatDate(inputDate: String): String {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val date: Date = inputFormat.parse(inputDate)
         return outputFormat.format(date)
     }
+
     companion object {
         const val RESUME_BUTTON_CLICK = 1
         const val CANCEL_BUTTON_CLICK = 2
