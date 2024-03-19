@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.ir.backend.js.compile
+import java.net.URI
 
 plugins {
     id("com.android.application")
@@ -49,6 +50,9 @@ android {
             excludes += "/META-INF/*"
         }
     }
+    dependencies{
+        implementation( "com.github.matomo-org:matomo-sdk-android:4.2")
+    }
 }
 
 dependencies {
@@ -56,7 +60,6 @@ dependencies {
     implementation("com.esri:arcgis-maps-kotlin:200.3.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-
     implementation(project(mapOf("path" to ":sdk")))
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
@@ -65,11 +68,12 @@ dependencies {
     implementation("androidx.room:room-runtime:2.5.2")
     implementation("com.google.code.gson:gson:2.8.9")
 
-
+    implementation( "com.github.matomo-org:matomo-sdk-android:4.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2")
 
     implementation ("androidx.core:core-ktx:1.7.0")
+    implementation ("com.github.matomo-org:matomo-sdk-android:4.1.4")
 
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")

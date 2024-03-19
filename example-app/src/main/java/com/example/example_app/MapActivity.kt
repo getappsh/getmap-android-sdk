@@ -1,11 +1,13 @@
 package com.example.example_app
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.storage.StorageManager
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -58,6 +60,7 @@ import kotlin.math.sqrt
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
+    private var isMapScrolling = false
     private val loadedPolys: ArrayList<Polygon> = ArrayList();
 
     private val TAG = MainActivity::class.qualifiedName
@@ -66,6 +69,7 @@ class MapActivity : AppCompatActivity() {
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -165,10 +169,7 @@ class MapActivity : AppCompatActivity() {
 
                 val boxPolygon = Polygon(boxCoordinates)
 
-                val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(
-                    pLeftTop,
-                    pLeftBottom
-                ) / 1000)
+                val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
                 val showKm = findViewById<TextView>(R.id.kmShow)
                 val showBm = findViewById<TextView>(R.id.showMb)
                 val formattedNum = String.format("%.2f", area)
@@ -282,7 +283,6 @@ class MapActivity : AppCompatActivity() {
                 }
             }
         }
-
     }
 
 
