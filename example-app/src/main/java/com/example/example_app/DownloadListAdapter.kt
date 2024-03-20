@@ -282,7 +282,7 @@ class DownloadListAdapter(
     fun deliveryDate(manager: MapServiceManager, downloadData: MapData, holder: ViewHolder) {
         CoroutineScope(Dispatchers.IO).launch {
             manager.service.getDownloadedMaps().forEach { i ->
-                val sdf = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm")
+                val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                 if (i.id == downloadData.id) {
                     val firstOffsetDateTime = downloadData.downloadStart
                     if (firstOffsetDateTime != null) {

@@ -180,6 +180,8 @@ class MapActivity : AppCompatActivity() {
                 var zoom = 0
                 var downloadAble = false
 
+                val allPolygon = mutableListOf<PolyObject>()
+
                 DiscoveryProductsManager.getInstance().products.forEach { p ->
                     run {
                         val json = JSONObject(p.footprint)
@@ -199,33 +201,16 @@ class MapActivity : AppCompatActivity() {
                                     GeometryEngine.intersectionOrNull(polygon, boxPolygon)
                                 val intersectionArea = GeometryEngine.area(intersection!!)
                                 val boxArea = GeometryEngine.area(boxPolygon)
-                                val dateTextView = findViewById<TextView>(R.id.dateText)
                                 val firstOffsetDateTime = p.imagingTimeBeginUTC
                                 val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
                                 val firstDate = sdf.format(firstOffsetDateTime)
                                 val secondOffsetDateTime = p.imagingTimeEndUTC
                                 val secondDate = sdf.format(secondOffsetDateTime)
-                                val interPolygon = service.config.mapMinInclusionPct.toDouble()
+                                val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
 
-
-                                if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
-                                    if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
-                                        dateTextView.text = "צולם : $secondDate - $firstDate"
-                                        zoom = p.maxResolutionDeg.toInt()
-                                    } else if (!downloadAble) {
-                                        dateTextView.text = "צולם : $secondDate - $firstDate"
-                                        zoom = p.maxResolutionDeg.toInt()
-                                    }
-                                    downloadAble = true
-                                } else if (abs(intersectionArea) / abs(boxArea) > 0.0){
-                                    if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
-                                        dateTextView.text = "צולם : $secondDate - $firstDate"
-                                        zoom = p.maxResolutionDeg.toInt()
-                                    } else if (!downloadAble) {
-                                        dateTextView.text = "צולם : $secondDate - $firstDate"
-                                        zoom = p.maxResolutionDeg.toInt()
-                                    }
-                                    downloadAble = true
+                                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                    allPolygon.add(polyObject)
                                 }
                             }
                         } else if (type == "MultiPolygon") {
@@ -240,39 +225,41 @@ class MapActivity : AppCompatActivity() {
                                     val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
                                     val intersectionArea = GeometryEngine.area(intersection!!)
                                     val boxArea = GeometryEngine.area(boxPolygon)
-                                    val dateTextView = findViewById<TextView>(R.id.dateText)
+
                                     val firstOffsetDateTime = p.imagingTimeBeginUTC
                                     val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
                                     val firstDate = sdf.format(firstOffsetDateTime)
                                     val secondOffsetDateTime = p.imagingTimeEndUTC
                                     val secondDate = sdf.format(secondOffsetDateTime)
-                                    val interPolygon = service.config.mapMinInclusionPct.toDouble()
 
-                                    if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
-                                        if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()
-                                        ) {
-                                            dateTextView.text = "צולם : $secondDate - $firstDate"
-                                            zoom = p.maxResolutionDeg.toInt()
-                                        } else if (!downloadAble) {
-                                            dateTextView.text = "צולם : $secondDate - $firstDate"
-                                            zoom = p.maxResolutionDeg.toInt()
-                                        }
-                                        downloadAble = true
-                                    } else if (abs(intersectionArea) / abs(boxArea) > 0.0){
-                                        if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
-                                            dateTextView.text = "צולם : $secondDate - $firstDate"
-                                            zoom = p.maxResolutionDeg.toInt()
-                                        } else if (!downloadAble) {
-                                            dateTextView.text = "צולם : $secondDate - $firstDate"
-                                            zoom = p.maxResolutionDeg.toInt()
-                                        }
-                                        downloadAble = true
+                                    if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                                        val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                        allPolygon.add(polyObject)
                                     }
                                 }
                             }
                         }
                     }
                 }
+                val dateTextView = findViewById<TextView>(R.id.dateText)
+                val interPolygon = service.config.mapMinInclusionPct.toDouble()
+                allPolygon.sortByDescending(PolyObject::date)
+                var found = false
+                val boxArea = GeometryEngine.area(boxPolygon)
+                for (polygon in allPolygon) {
+                    if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
+                        dateTextView.text = "צולם : ${polygon.start} - ${polygon.end}"
+                        found = true
+                        downloadAble = true
+                        break
+                    }
+                }
+                if (!found) {
+                    val firstPolyObject = allPolygon[0]
+                    dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
+                    downloadAble = true
+                }
+
                 var inBbox = false
                 loadedPolys.forEach { p ->
 
@@ -436,13 +423,15 @@ class MapActivity : AppCompatActivity() {
                                 VerticalAlignment.Top
                             )
 
+                            val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                             val compositeSymbol = CompositeSymbol().apply {
                                 if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                                     symbols.add(yellowOutlineSymbol)
                                     symbols.add(textSymbol)
                                 } else {
                                     symbols.add(redOutlineSymbol)
-                                    textSymbol.text = g.statusMsg.toString()
+                                    val formattedDownloadStart = g.downloadStart?.format(formatter)
+                                    textSymbol.text = "${g.statusMsg} $formattedDownloadStart"
                                     symbols.add(textSymbol)
                                 }
                             }
