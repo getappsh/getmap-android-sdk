@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.storage.StorageManager
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -155,10 +154,10 @@ class MapActivity : AppCompatActivity() {
                 val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
                 val leftBottom = ScreenCoordinate(100.0, 550.0)
 
-                val pLeftTop = mapView.screenToLocation(leftTop) ?: Point(0.0, 0.0)
-                val pRightBottom = mapView.screenToLocation(rightBottom) ?: Point(0.0, 0.0)
-                val pRightTop = mapView.screenToLocation(rightTop) ?: Point(0.0, 0.0)
-                val pLeftBottom = mapView.screenToLocation(leftBottom) ?: Point(0.0, 0.0)
+                val pLeftTop = mapView.screenToLocation(leftTop) ?: Point(1.0, 0.0)
+                val pRightBottom = mapView.screenToLocation(rightBottom) ?: Point(0.0, 1.0)
+                val pRightTop = mapView.screenToLocation(rightTop) ?: Point(0.5, 0.0)
+                val pLeftBottom = mapView.screenToLocation(leftBottom) ?: Point(0.0, 0.5)
 
                 val boxCoordinates = mutableListOf<Point>()
                 boxCoordinates.add(pLeftTop)
@@ -187,6 +186,7 @@ class MapActivity : AppCompatActivity() {
                         val type = json.getString("type")
                         val gson = Gson()
 
+
                         if (type == "Polygon") {
                             val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
                             productPolyDTO.coordinates.forEach { coordinates ->
@@ -209,6 +209,15 @@ class MapActivity : AppCompatActivity() {
 
 
                                 if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
+                                    if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
+                                        dateTextView.text = "צולם : $secondDate - $firstDate"
+                                        zoom = p.maxResolutionDeg.toInt()
+                                    } else if (!downloadAble) {
+                                        dateTextView.text = "צולם : $secondDate - $firstDate"
+                                        zoom = p.maxResolutionDeg.toInt()
+                                    }
+                                    downloadAble = true
+                                } else if (abs(intersectionArea) / abs(boxArea) > 0.0){
                                     if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
                                         dateTextView.text = "צולם : $secondDate - $firstDate"
                                         zoom = p.maxResolutionDeg.toInt()
@@ -242,6 +251,15 @@ class MapActivity : AppCompatActivity() {
                                     if (abs(intersectionArea) / abs(boxArea) >= interPolygon / 100) {
                                         if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()
                                         ) {
+                                            dateTextView.text = "צולם : $secondDate - $firstDate"
+                                            zoom = p.maxResolutionDeg.toInt()
+                                        } else if (!downloadAble) {
+                                            dateTextView.text = "צולם : $secondDate - $firstDate"
+                                            zoom = p.maxResolutionDeg.toInt()
+                                        }
+                                        downloadAble = true
+                                    } else if (abs(intersectionArea) / abs(boxArea) > 0.0){
+                                        if (downloadAble && secondDate > dateTextView.text.toString().substringBefore(":").trim()) {
                                             dateTextView.text = "צולם : $secondDate - $firstDate"
                                             zoom = p.maxResolutionDeg.toInt()
                                         } else if (!downloadAble) {
@@ -392,6 +410,8 @@ class MapActivity : AppCompatActivity() {
                     val gson = Gson()
                     val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
                     val pinkOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.fromRgba(240, 26, 133), 3f)
+                    val redOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 0, 0), 3f)
+
                     CoroutineScope(Dispatchers.IO).launch {
                         service.getDownloadedMaps().forEach { g ->
                             val nums = g.footprint?.split(",") ?: ArrayList()
@@ -405,7 +425,7 @@ class MapActivity : AppCompatActivity() {
                             val polygon = Polygon(coords)
                             loadedPolys.add(polygon)
                             var endName = "בהורדה"
-                            if (g.fileName != null) {
+                            if (g.statusMsg == "הסתיים") {
                                 endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                             }
                             val textSymbol = TextSymbol(
@@ -417,8 +437,14 @@ class MapActivity : AppCompatActivity() {
                             )
 
                             val compositeSymbol = CompositeSymbol().apply {
-                                symbols.add(yellowOutlineSymbol)
-                                symbols.add(textSymbol)
+                                if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
+                                    symbols.add(yellowOutlineSymbol)
+                                    symbols.add(textSymbol)
+                                } else {
+                                    symbols.add(redOutlineSymbol)
+                                    textSymbol.text = g.statusMsg.toString()
+                                    symbols.add(textSymbol)
+                                }
                             }
 
                             val graphic = Graphic(polygon, compositeSymbol)
