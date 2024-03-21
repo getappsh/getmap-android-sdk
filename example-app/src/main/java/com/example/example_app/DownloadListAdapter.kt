@@ -27,7 +27,9 @@ import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -46,18 +48,35 @@ class DownloadListAdapter(
     var availableUpdate: Boolean = false
 
     //Create and define the signal listener
-    interface OnSignalListener {
-        fun onSignal()
+    interface SignalListener {
+        fun onSignalSpace()
+        fun onSignalDownload()
+        fun onNotSignalDownload()
     }
 
-    private var signalListener: OnSignalListener? = null
-    fun setOnSignalListener(listener: MainActivity) {
-        signalListener = listener
+    private val listeners = mutableListOf<SignalListener>()
+
+    fun addListener(listener: SignalListener) {
+        listeners.add(listener)
     }
 
-    private fun sendSignal() {
-        if (signalListener != null) {
-            signalListener!!.onSignal()
+    fun removeListener(listener: SignalListener) {
+        listeners.remove(listener)
+    }
+    fun triggerSpaceSignal() {
+        for (listener in listeners) {
+            listener.onSignalSpace()
+        }
+    }
+    fun triggerNotDownloadSignal(){
+        for (listener in listeners)
+            listener.onNotSignalDownload()
+    }
+
+    // Méthode pour déclencher le signal 2 avec des données
+    fun triggerDownloadSignal() {
+        for (listener in listeners) {
+            listener.onSignalDownload()
         }
     }
 
@@ -163,6 +182,7 @@ class DownloadListAdapter(
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
+                holder.updated.visibility = View.INVISIBLE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
@@ -175,19 +195,19 @@ class DownloadListAdapter(
             DONE -> {
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
+                holder.updated.visibility = View.INVISIBLE
                 holder.textStatus.visibility = View.GONE
                 holder.textFileName.visibility = View.VISIBLE
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.dates.visibility = View.VISIBLE
                 holder.btnCancelResume.visibility = View.GONE
                 holder.progressBar.progress = 0
-                sendSignal()
+                triggerSpaceSignal()
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.VISIBLE
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
                 holder.separator.visibility = View.VISIBLE
-
             }
 
             ERROR -> {
@@ -218,6 +238,7 @@ class DownloadListAdapter(
 
             DOWNLOAD -> {
                 holder.btnDelete.visibility = View.GONE
+                holder.updated.visibility = View.INVISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
@@ -250,7 +271,7 @@ class DownloadListAdapter(
         }
 
         holder.btnDelete.setOnClickListener {
-            sendSignal()
+            triggerSpaceSignal()
             onButtonClick(DELETE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
 
         }
@@ -259,11 +280,22 @@ class DownloadListAdapter(
             onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
         }
 
-        if (!downloadData.isUpdated) {
-//            holder.btnUpdate.visibility = View.GONE
-            holder.updated.visibility = View.VISIBLE
-            availableUpdate = true
+        GlobalScope.launch(Dispatchers.IO) {
+            manager.service.getDownloadedMaps().forEach { g ->
+                if (!g.isUpdated) {
+                    withContext(Dispatchers.Main) {
+                        holder.updated.visibility = View.VISIBLE
+                        availableUpdate = false
+                        triggerDownloadSignal()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        triggerNotDownloadSignal()
+                    }
+                }
+            }
         }
+
 
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)

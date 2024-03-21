@@ -1,12 +1,16 @@
 package com.example.example_app.models
 
 import android.text.Editable
+import android.text.InputType
 import android.text.InputType.TYPE_CLASS_TEXT
 import android.text.InputType.TYPE_CLASS_NUMBER
+import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
 import android.text.TextWatcher
+import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
@@ -45,7 +49,14 @@ class ConfigParam {
             val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
             val itemViewLayout = holder.itemView.findViewById<CardView>(R.id.card)
             val itemNameLayout = holder.itemView.findViewById<TextView>(R.id.param_name)
+            val star = "*"
             defineType(holder)
+            if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url")
+                && !isEditing){
+                holder.valueTextView.transformationMethod = PasswordTransformationMethod.getInstance()
+            }else
+                holder.valueTextView.transformationMethod = null
+
             if ((holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed")
                 && isEditing
             ) {
@@ -78,10 +89,12 @@ class ConfigParam {
         private fun defineType(holder: NebulaParamViewHolder) {
 
             val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
-            val stringNames = arrayOf("URL","Matomo Url","Matomo dimension id","Matomo site id")
-            if (stringNames.contains(Params[holder.adapterPosition].name)){
+            val stringNames = arrayOf("Matomo dimension id","Matomo site id")
+            val passwordNames = arrayOf("URL","Matomo Url")
+            if (passwordNames.contains(Params[holder.adapterPosition].name))
+                valItemView.inputType = TYPE_TEXT_VARIATION_PASSWORD
+            if(stringNames.contains(Params[holder.adapterPosition].name))
                 valItemView.inputType = TYPE_CLASS_TEXT
-            }
             else valItemView.inputType = TYPE_CLASS_NUMBER
         }
 

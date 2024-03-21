@@ -133,15 +133,16 @@
 
     <ImageButton
         android:id="@+id/Sync"
-        android:layout_width="35dp"
-        android:layout_height="0dp"
+        android:layout_width="48dp"
+        android:layout_height="46dp"
         android:layout_marginStart="15dp"
         android:background="#00FFFFFF"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/textView2"
         app:layout_constraintEnd_toStartOf="@+id/textView2"
-        app:layout_constraintHorizontal_bias="0.175"
+        app:layout_constraintHorizontal_bias="0.01"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView2"
-        app:layout_constraintVertical_bias="0.42"
-        app:srcCompat="@drawable/baseline_autorenew_24" />
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/download_all" />
 </androidx.constraintlayout.widget.ConstraintLayout>
