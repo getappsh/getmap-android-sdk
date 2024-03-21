@@ -189,6 +189,9 @@ class DownloadListAdapter(
                 holder.btnCancelResume.visibility = View.INVISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
             }
 
             DONE -> {
@@ -232,6 +235,9 @@ class DownloadListAdapter(
                 holder.percentage.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
             }
 
             DOWNLOAD -> {
@@ -243,6 +249,9 @@ class DownloadListAdapter(
                 holder.btnCancelResume.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
             }
 
             DELETED -> {
