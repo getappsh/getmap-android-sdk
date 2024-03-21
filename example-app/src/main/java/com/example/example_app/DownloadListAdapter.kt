@@ -182,7 +182,6 @@ class DownloadListAdapter(
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
-                holder.updated.visibility = View.INVISIBLE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
@@ -195,7 +194,6 @@ class DownloadListAdapter(
             DONE -> {
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
-                holder.updated.visibility = View.INVISIBLE
                 holder.textStatus.visibility = View.GONE
                 holder.textFileName.visibility = View.VISIBLE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -238,7 +236,6 @@ class DownloadListAdapter(
 
             DOWNLOAD -> {
                 holder.btnDelete.visibility = View.GONE
-                holder.updated.visibility = View.INVISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.INVISIBLE
@@ -280,20 +277,13 @@ class DownloadListAdapter(
             onButtonClick(QR_CODE_BUTTON_CLICK, downloadData.id!!, pathAvailable)
         }
 
-        GlobalScope.launch(Dispatchers.IO) {
-            manager.service.getDownloadedMaps().forEach { g ->
-                if (!g.isUpdated) {
-                    withContext(Dispatchers.Main) {
-                        holder.updated.visibility = View.VISIBLE
-                        availableUpdate = false
-                        triggerDownloadSignal()
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        triggerNotDownloadSignal()
-                    }
-                }
-            }
+        if (!downloadData.isUpdated) {
+//            holder.btnUpdate.visibility = View.GONE
+            holder.updated.visibility = View.VISIBLE
+            availableUpdate = true
+            triggerDownloadSignal()
+        } else {
+            triggerNotDownloadSignal()
         }
 
 

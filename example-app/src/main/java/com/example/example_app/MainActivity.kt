@@ -1,12 +1,9 @@
 package com.example.example_app
 
-import android.app.Dialog
 import android.app.ProgressDialog
-import android.content.Context
 import com.example.example_app.matomo.MatomoTracker
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.net.Uri
@@ -51,7 +48,6 @@ import kotlinx.coroutines.withContext
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
-import org.matomo.sdk.extra.MatomoApplication
 import org.matomo.sdk.extra.TrackHelper
 import java.io.File
 import java.time.LocalDateTime
@@ -88,6 +84,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         }
     }
+
+    private val popUp = PopUp()
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -472,10 +470,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onDelete(id: String) {
+        popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את המפה הזו?"
+        popUp.mapId = id
+        popUp.show(supportFragmentManager, "delete")
         TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
-        GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.deleteMap(id)
-        }
+//        GlobalScope.launch(Dispatchers.IO) {
+//            mapServiceManager.service.deleteMap(id)
+//        }
     }
 
     private fun onResume(id: String) {
