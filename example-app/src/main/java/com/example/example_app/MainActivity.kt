@@ -241,20 +241,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         syncButton = findViewById(R.id.Sync)
         syncButton.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                mapServiceManager.service.getDownloadedMaps().forEach { mapData ->
-                    if (!mapData.isUpdated) {
-                        mapServiceManager.service.downloadUpdatedMap(
-                            mapData.id!!,
-                            downloadStatusHandler
-                        )
-                    }
-                }
-                runOnUiThread {
-                    syncButton.visibility = View.GONE
-                    TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
-                }
-            }
+            popUp.handler = downloadStatusHandler
+            popUp.type = "update"
+            popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
+            popUp.tracker = tracker
+            popUp.show(supportFragmentManager, "update")
+            TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
         }
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
@@ -472,11 +464,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun onDelete(id: String) {
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את המפה הזו?"
         popUp.mapId = id
+        popUp.type = "delete"
         popUp.show(supportFragmentManager, "delete")
         TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
-//        GlobalScope.launch(Dispatchers.IO) {
-//            mapServiceManager.service.deleteMap(id)
-//        }
     }
 
     private fun onResume(id: String) {
