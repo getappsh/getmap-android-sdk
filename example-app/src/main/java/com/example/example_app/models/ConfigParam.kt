@@ -6,6 +6,7 @@ import android.text.InputType.TYPE_CLASS_TEXT
 import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
 import android.text.TextWatcher
+import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -49,13 +50,12 @@ class ConfigParam {
             val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
             val itemViewLayout = holder.itemView.findViewById<CardView>(R.id.card)
             val itemNameLayout = holder.itemView.findViewById<TextView>(R.id.param_name)
-            val star = "*"
             defineType(holder)
             if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url")
                 && !isEditing){
                 holder.valueTextView.transformationMethod = PasswordTransformationMethod.getInstance()
             }else
-                holder.valueTextView.transformationMethod = null
+                holder.valueTextView.transformationMethod = HideReturnsTransformationMethod.getInstance()
 
             if ((holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed")
                 && isEditing
@@ -93,7 +93,7 @@ class ConfigParam {
             val passwordNames = arrayOf("URL","Matomo Url")
             if (passwordNames.contains(Params[holder.adapterPosition].name))
                 valItemView.inputType = TYPE_TEXT_VARIATION_PASSWORD
-            if(stringNames.contains(Params[holder.adapterPosition].name))
+            else if(stringNames.contains(Params[holder.adapterPosition].name))
                 valItemView.inputType = TYPE_CLASS_TEXT
             else valItemView.inputType = TYPE_CLASS_NUMBER
         }
