@@ -189,6 +189,9 @@ class DownloadListAdapter(
                 holder.btnCancelResume.visibility = View.INVISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
             }
 
             DONE -> {
@@ -232,6 +235,9 @@ class DownloadListAdapter(
                 holder.percentage.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
             }
 
             DOWNLOAD -> {
@@ -243,6 +249,9 @@ class DownloadListAdapter(
                 holder.btnCancelResume.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
             }
 
             DELETED -> {
@@ -278,7 +287,6 @@ class DownloadListAdapter(
         }
 
         if (!downloadData.isUpdated) {
-//            holder.btnUpdate.visibility = View.GONE
             holder.updated.visibility = View.VISIBLE
             availableUpdate = true
             triggerDownloadSignal()
@@ -326,9 +334,9 @@ class DownloadListAdapter(
         val megabytesAvailable = it.length().toDouble() / (1024 * 1024)
 
         return if (gigabytesAvailable >= 1) {
-            String.format("נפח: %.2f GB", gigabytesAvailable)
+            String.format("נפח: %.2f gb", gigabytesAvailable)
         } else {
-            String.format("נפח: %.2f MB", megabytesAvailable)
+            String.format("נפח: %.2f mb", megabytesAvailable)
         }
     }
 
