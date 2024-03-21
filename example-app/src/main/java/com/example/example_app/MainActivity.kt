@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        getTracker()
 
         swipeRecycler.setOnRefreshListener {
-            TrackHelper.track().event("refreshBboxs", "refreshed-recyclerView").with(tracker)
+            TrackHelper.track().dimension(1,"רענון הבולים").event("מיפוי ענן", "מרענן את הבולים").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.synchronizeMapData()
             }
@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 GlobalScope.launch(Dispatchers.IO) {
                     var count = 0
                     mapServiceManager.service.getDownloadedMaps().forEach { m ->
-                        Log.i("ffggsdcv",  "${m.statusMsg}")
+                        Log.i("ffggsdcv", "${m.statusMsg}")
                         if (m.statusMsg == "בקשה נשלחה" || m.statusMsg == "בקשה בהפקה" || m.statusMsg == "בהורדה") {
                             count += 1
                         }
@@ -486,8 +486,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     // Function that will update the AvailableSpace
     override fun onSignalSpace() {
-            val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-            availableSpace.text = GetAvailableSpaceInSdCard()
+        val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
+        availableSpace.text = GetAvailableSpaceInSdCard()
     }
 
     override fun onSignalDownload() {
@@ -519,30 +519,31 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun itemViewClick(id: String, availableUpdate: Boolean) {
 
-        TrackHelper.track().event("itemClick", "more-info-on-bbox").with(tracker)
         if (availableUpdate) {
+            TrackHelper.track().dimension(1,"מעדכן בול").event("מיפוי ענן", "מעדכן בול").with(tracker)
             CoroutineScope(Dispatchers.IO).launch {
                 mapServiceManager.service.downloadUpdatedMap(id, downloadStatusHandler)
             }
-        } else {
-
-            GlobalScope.launch(Dispatchers.IO) {
-                val map = mapServiceManager.service.getDownloadedMap(id)
-                val str = map?.let {
-                    "The id is =${it.id}, \n" +
-//                        "footprint=${it.footprint}, \n" +
-//                        "fileName=${it.fileName}, \n" +
-//                        "jsonName=${it.jsonName}, \n" +
-//                        "deliveryStatus=${it.deliveryStatus}, \n" +
-//                        "url=${it.url}, \n" +
-                            "The status is:${it.statusMsg}, \n" +
-                            "The download is:${it.progress}, \n" +
-//                        "errorContent=${it.errorContent}, \n" +
-                            "The bbox is updated:${it.isUpdated}, \n "
-                }.toString()
-                runOnUiThread { showDialog(str) }
-            }
         }
+//        } else {
+//
+//            GlobalScope.launch(Dispatchers.IO) {
+//                val map = mapServiceManager.service.getDownloadedMap(id)
+//                val str = map?.let {
+//                    "The id is =${it.id}, \n" +
+////                        "footprint=${it.footprint}, \n" +
+////                        "fileName=${it.fileName}, \n" +
+////                        "jsonName=${it.jsonName}, \n" +
+////                        "deliveryStatus=${it.deliveryStatus}, \n" +
+////                        "url=${it.url}, \n" +
+//                            "The status is:${it.statusMsg}, \n" +
+//                            "The download is:${it.progress}, \n" +
+////                        "errorContent=${it.errorContent}, \n" +
+//                            "The bbox is updated:${it.isUpdated}, \n "
+//                }.toString()
+//                runOnUiThread { showDialog(str) }
+//            }
+//        }
 
 
     }
