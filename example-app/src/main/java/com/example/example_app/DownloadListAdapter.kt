@@ -304,9 +304,9 @@ class DownloadListAdapter(
         val megabytesAvailable = it.length().toDouble() / (1024 * 1024)
 
         return if (gigabytesAvailable >= 1) {
-            String.format("נפח: %.2f gb", gigabytesAvailable)
+            String.format("נפח: %.2f GB", gigabytesAvailable)
         } else {
-            String.format("נפח: %.2f mb", megabytesAvailable)
+            String.format("נפח: %.2f MB", megabytesAvailable)
         }
     }
 
