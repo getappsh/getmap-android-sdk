@@ -254,7 +254,7 @@ class MapActivity : AppCompatActivity() {
                         break
                     }
                 }
-                if (!found && allPolygon.isNotEmpty()) {
+                if (!found) {
                     val firstPolyObject = allPolygon[0]
                     dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
                     downloadAble = true
@@ -425,13 +425,8 @@ class MapActivity : AppCompatActivity() {
 
                             val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                             val compositeSymbol = CompositeSymbol().apply {
-                                if (g.statusMsg == "הסתיים") {
+                                if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                                     symbols.add(yellowOutlineSymbol)
-                                    symbols.add(textSymbol)
-                                } else if (g.statusMsg == "בהורדה" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
-                                    symbols.add(yellowOutlineSymbol)
-                                    val formattedDownloadStart = g.downloadStart?.format(formatter)
-                                    textSymbol.text = "${g.statusMsg} $formattedDownloadStart"
                                     symbols.add(textSymbol)
                                 } else {
                                     symbols.add(redOutlineSymbol)
