@@ -287,7 +287,6 @@ class DownloadListAdapter(
         }
 
         if (!downloadData.isUpdated) {
-//            holder.btnUpdate.visibility = View.GONE
             holder.updated.visibility = View.VISIBLE
             availableUpdate = true
             triggerDownloadSignal()
