@@ -290,7 +290,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun onDiscovery() {
 
-        TrackHelper.track().event("DiscoveryButton", "opened-map").with(tracker)
+        TrackHelper.track().screen("/בחירת בול").with(tracker)
         Log.d(TAG, "onDiscovery");
         showLoadingDialog("פותח את המפה")
         GlobalScope.launch(Dispatchers.IO) {
