@@ -254,7 +254,7 @@ class MapActivity : AppCompatActivity() {
                         break
                     }
                 }
-                if (!found) {
+                if (!found && allPolygon.isNotEmpty()) {
                     val firstPolyObject = allPolygon[0]
                     dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
                     downloadAble = true
