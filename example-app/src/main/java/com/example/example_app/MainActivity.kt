@@ -187,7 +187,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        getTracker()
 
         swipeRecycler.setOnRefreshListener {
-            TrackHelper.track().dimension(1,"רענון הבולים").event("מיפוי ענן", "מרענן את הבולים").with(tracker)
+            TrackHelper.track().dimension(1, "רענון הבולים").event("מיפוי ענן", "ניהול בולים")
+                .name("בדיקת עדכניות בולים").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.synchronizeMapData()
             }
@@ -200,7 +201,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 GlobalScope.launch(Dispatchers.IO) {
                     var count = 0
                     mapServiceManager.service.getDownloadedMaps().forEach { m ->
-                        Log.i("ffggsdcv", "${m.statusMsg}")
                         if (m.statusMsg == "בקשה נשלחה" || m.statusMsg == "בקשה בהפקה" || m.statusMsg == "בהורדה") {
                             count += 1
                         }
@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         // The `Tracker` instance from the previous step
         val tracker = tracker
         // Track a screen view
-        TrackHelper.track().screen("/MainActivity")
+        TrackHelper.track().screen(this)
             .with(tracker)
         // Monitor your app installs
         TrackHelper.track().download().with(tracker)
@@ -241,19 +241,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         syncButton = findViewById(R.id.Sync)
         syncButton.setOnClickListener {
+            TrackHelper.track().dimension(1, "מעדכן בול").screen("/Popup/עדכון כלל הבולים")
+                .with(tracker)
             popUp.handler = downloadStatusHandler
             popUp.type = "update"
             popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
             popUp.tracker = tracker
             popUp.show(supportFragmentManager, "update")
-            TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
         }
 
         scanQRButton = findViewById<Button>(R.id.scanQR)
         scanQRButton.setOnClickListener {
             if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB) {
                 barcodeLauncher.launch(ScanOptions())
-                TrackHelper.track().event("ScanQr", "ScanQrButton-clicked").with(tracker)
+                TrackHelper.track().screen("/סריקת בול").with(tracker)
             } else {
                 Toast.makeText(
                     applicationContext,
@@ -271,7 +272,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
-            TrackHelper.track().event("settingsButton", "access-to-settings").with(tracker)
             val intent = Intent(this, SettingsActivity::class.java)
             intent.putExtra(
                 "pathSd",
@@ -462,15 +462,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onDelete(id: String) {
+        TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את המפה הזו?"
         popUp.mapId = id
         popUp.type = "delete"
         popUp.show(supportFragmentManager, "delete")
-        TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
     }
 
     private fun onResume(id: String) {
-        TrackHelper.track().event("resumeButton", "resume-download-map").with(tracker)
+        TrackHelper.track().dimension(1, id).event("מיפוי ענן", "ניהול בקשות").name("אתחל")
+            .with(tracker)
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.resumeDownload(id, downloadStatusHandler)
         }
@@ -478,10 +479,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onCancel(id: String) {
-        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
-        GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.cancelDownload(id)
-        }
+        TrackHelper.track().screen("/עצירת בקשה").with(tracker)
+        popUp.mapId = id
+        popUp.type = "cancelled"
+        popUp.textM = "האם לעצור את ההורדה ?"
+        popUp.tracker = tracker
+        popUp.show(supportFragmentManager, "cancelled")
+//        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
+//        GlobalScope.launch(Dispatchers.IO) {
+//            mapServiceManager.service.cancelDownload(id)
+//        }
     }
 
     // Function that will update the AvailableSpace
@@ -489,6 +496,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = GetAvailableSpaceInSdCard()
     }
+
 
     override fun onSignalDownload() {
         syncButton.visibility = View.VISIBLE
@@ -503,7 +511,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
-                runOnUiThread { showQRCodeDialog(qrCode) }
+                runOnUiThread {
+                    TrackHelper.track().dimension(1, id).event("מיפוי ענן", "שיתוף")
+                        .name("שליחת בול בסריקה").with(tracker)
+                    showQRCodeDialog(qrCode)
+                }
             } catch (e: Exception) {
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
@@ -520,10 +532,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun itemViewClick(id: String, availableUpdate: Boolean) {
 
         if (availableUpdate) {
-            TrackHelper.track().dimension(1,"מעדכן בול").event("מיפוי ענן", "מעדכן בול").with(tracker)
-            CoroutineScope(Dispatchers.IO).launch {
-                mapServiceManager.service.downloadUpdatedMap(id, downloadStatusHandler)
-            }
+            TrackHelper.track().dimension(1, "עדכן בול").screen(this).with(tracker)
+            popUp.mapId = id
+            popUp.type = "updateOne"
+            popUp.handler = downloadStatusHandler
+            popUp.textM = "האם לבצע עדכון מפה ?"
+            popUp.show(supportFragmentManager, "updateOne")
         }
 //        } else {
 //
@@ -619,10 +633,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
         } else {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
+
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents) {
                         Log.d(TAG, "on data change: $it")
+                    }
+                    withContext(Dispatchers.Main) {
+                        TrackHelper.track().dimension(1, result.contents)
+                            .event("מיפוי ענן", "שיתוף")
+                            .name("קבלת בול בסריקה").with(tracker)
                     }
                 } catch (e: Exception) {
                     runOnUiThread { showErrorDialog(e.message.toString()) }

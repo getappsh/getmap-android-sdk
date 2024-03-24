@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.example_app.matomo.MatomoTracker
 import com.example.example_app.models.ConfigParam.NebulaParamAdapter
 import com.example.example_app.models.ConfigParam.NebulaParam
 import com.ngsoft.getapp.sdk.Configuration
@@ -27,6 +28,7 @@ import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.matomo.sdk.extra.TrackHelper
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.coroutines.coroutineContext
@@ -38,9 +40,9 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
+        val tracker = MatomoTracker.getTracker(this)
         val instance = MapServiceManager.getInstance()
         val service = instance.service
-
         val recyclerView: RecyclerView = findViewById(R.id.nebula_recycler)
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -65,6 +67,7 @@ class SettingsActivity : AppCompatActivity() {
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         val applyServerConfig = findViewById<Switch>(R.id.apply_server_config)
+        TrackHelper.track().screen(this).with(tracker)
         applyServerConfig.isChecked = service.config.applyServerConfig
         applyServerConfig.setOnCheckedChangeListener { _, isChecked -> service.config.applyServerConfig = isChecked }
         editConf.setOnCheckedChangeListener { _, isChecked ->
@@ -131,6 +134,12 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val tracker = MatomoTracker.getTracker(this)
+        TrackHelper.track().screen(this).with(tracker)
     }
 
     private fun loadConfig(service: GetMapService) {
@@ -214,7 +223,6 @@ fun onParamClick(context: Context, param: NebulaParam) {
 private fun dateFormat(date: OffsetDateTime?): String? {
     return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
 }
-
 
 private fun saveLocalToService(params: Array<NebulaParam>, service: GetMapService, context: Context) {
 
