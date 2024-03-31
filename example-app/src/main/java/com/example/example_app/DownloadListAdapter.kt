@@ -17,11 +17,13 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
+import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.arcgismaps.ArcGISEnvironment.applicationContext
+import com.example.example_app.matomo.MatomoTracker
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
@@ -30,6 +32,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.matomo.sdk.Tracker
+import org.matomo.sdk.extra.TrackHelper
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -43,9 +47,11 @@ class DownloadListAdapter(
     private val onButtonClick: (Int, String, Any?) -> Unit,
     private val pathAvailable: String,
     private val manager: MapServiceManager,
+    private val context: Context
     ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
     var availableUpdate: Boolean = false
+    var tracker: Tracker? = null
 
     //Create and define the signal listener
     interface SignalListener {
@@ -72,7 +78,6 @@ class DownloadListAdapter(
         for (listener in listeners)
             listener.onNotSignalDownload()
     }
-
     // Méthode pour déclencher le signal 2 avec des données
     fun triggerDownloadSignal() {
         for (listener in listeners) {
@@ -112,6 +117,7 @@ class DownloadListAdapter(
     private val asyncListDiffer = AsyncListDiffer(this, diffUtil)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        tracker = MatomoTracker.getTracker(this.context)
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.list_item_download, parent, false)
         return ViewHolder(view)
@@ -179,6 +185,8 @@ class DownloadListAdapter(
 
         when (downloadData.deliveryState) {
             START -> {
+                TrackHelper.track().event("מיפוי ענן","ניהול בקשות").name("הורדת בול")
+                    .with(tracker)
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
@@ -195,6 +203,8 @@ class DownloadListAdapter(
             }
 
             DONE -> {
+                TrackHelper.track().event("מיפוי ענן","ניהול בקשות").name("בול הורד בהצלחה")
+                    .with(tracker)
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
@@ -244,14 +254,14 @@ class DownloadListAdapter(
                 holder.btnDelete.visibility = View.GONE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textFileName.visibility = View.INVISIBLE
-                holder.dates.visibility = View.INVISIBLE
-                holder.btnCancelResume.visibility = View.VISIBLE
+                holder.textFileName.visibility = View.GONE
+                holder.dates.visibility = View.GONE
+                holder.btnCancelResume.visibility = View. VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
-                holder.size.visibility = View.INVISIBLE
-                holder.product.visibility = View.INVISIBLE
-                holder.separator.visibility = View.INVISIBLE
+                holder.size.visibility = View.GONE
+                holder.product.visibility = View.GONE
+                holder.separator.visibility = View.GONE
             }
 
             DELETED -> {

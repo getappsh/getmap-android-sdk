@@ -1,5 +1,6 @@
 package com.example.example_app
 
+import MapDataMetaData
 import android.content.Context
 import com.example.example_app.matomo.MatomoTracker
 import android.os.Build
@@ -10,8 +11,10 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
+import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,20 +53,26 @@ class PopUp : DialogFragment() {
         buttonDelete.setOnClickListener {
             if (type == "delete") {
                 CoroutineScope(Dispatchers.IO).launch {
-                    for (data in service.getDownloadedMaps()) {
-
-                        if (data.id == mapId && data.statusMsg != "הסתיים") {
+                    val data = service.getDownloadedMap(mapId)
+                    if (data != null) {
+                        if (data.statusMsg != "הסתיים") {
                             TrackHelper.track().dimension(1, mapId)
                                 .event("מיפוי ענן", "ניהול בולים")
                                 .name("מחיקת בקשה").with(tracker)
-                            break
+                            return@launch
 
                         } else {
                             TrackHelper.track().dimension(1, mapId)
                                 .event("מיפוי ענן", "ניהול בקשות")
                                 .name("מחיקת בול").with(tracker)
-                            break
+                            return@launch
                         }
+                    } else {
+                        Toast.makeText(
+                            this@PopUp.context,
+                            "The map does not exist",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
 

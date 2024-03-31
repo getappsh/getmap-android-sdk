@@ -168,7 +168,10 @@ class MapActivity : AppCompatActivity() {
 
                 val boxPolygon = Polygon(boxCoordinates)
 
-                val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
+                val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(
+                    pLeftTop,
+                    pLeftBottom
+                ) / 1000)
                 val showKm = findViewById<TextView>(R.id.kmShow)
                 val showBm = findViewById<TextView>(R.id.showMb)
                 val formattedNum = String.format("%.2f", area)
@@ -197,8 +200,7 @@ class MapActivity : AppCompatActivity() {
                                 }
                                 val polygon = Polygon(points)
 
-                                val intersection =
-                                    GeometryEngine.intersectionOrNull(polygon, boxPolygon)
+                                val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
                                 val intersectionArea = GeometryEngine.area(intersection!!)
                                 val boxArea = GeometryEngine.area(boxPolygon)
                                 val firstOffsetDateTime = p.imagingTimeBeginUTC
@@ -209,12 +211,18 @@ class MapActivity : AppCompatActivity() {
                                 val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
 
                                 if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                    val polyObject = PolyObject(
+                                        p.ingestionDate,
+                                        abs(intersectionArea),
+                                        firstDate,
+                                        secondDate
+                                    )
                                     allPolygon.add(polyObject)
                                 }
                             }
                         } else if (type == "MultiPolygon") {
-                            val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                            val productMultiPolyDTO =
+                                gson.fromJson(p.footprint, MultiPolygonDto::class.java)
                             productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
                                 polyCoordinates.forEach { coordinates ->
                                     val points: List<Point> = coordinates.map {
@@ -222,7 +230,8 @@ class MapActivity : AppCompatActivity() {
                                     }
                                     val polygon = Polygon(points)
 
-                                    val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
+                                    val intersection =
+                                        GeometryEngine.intersectionOrNull(polygon, boxPolygon)
                                     val intersectionArea = GeometryEngine.area(intersection!!)
                                     val boxArea = GeometryEngine.area(boxPolygon)
 
@@ -233,7 +242,12 @@ class MapActivity : AppCompatActivity() {
                                     val secondDate = sdf.format(secondOffsetDateTime)
 
                                     if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                        val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                        val polyObject = PolyObject(
+                                            p.ingestionDate,
+                                            abs(intersectionArea),
+                                            firstDate,
+                                            secondDate
+                                        )
                                         allPolygon.add(polyObject)
                                     }
                                 }
@@ -278,7 +292,7 @@ class MapActivity : AppCompatActivity() {
                     overlayView.setBackgroundResource(R.drawable.blue_border)
                 } else {
                     overlayView.setBackgroundResource(R.drawable.red_border)
-                    if (inBbox){
+                    if (inBbox) {
                         date.text = "נמצא בתחום שכבר קיים במכשיר"
                     } else {
                         date.text = "מחוץ לטווח הבחירה"
@@ -392,12 +406,21 @@ class MapActivity : AppCompatActivity() {
                     val rasterLayer = RasterLayer(geoPackageRaster)
 
                     val basemap = Basemap(rasterLayer)
-                    val map: ArcGISMap = ArcGISMap(basemap)
+                    val map = ArcGISMap(basemap)
                     val graphicsOverlay = GraphicsOverlay()
                     val gson = Gson()
-                    val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
-                    val pinkOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.fromRgba(240, 26, 133), 3f)
-                    val redOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 0, 0), 3f)
+                    val yellowOutlineSymbol = SimpleLineSymbol(
+                        SimpleLineSymbolStyle.Dash,
+                        Color.fromRgba(255, 255, 0),
+                        3f
+                    )
+                    val pinkOutlineSymbol = SimpleLineSymbol(
+                        SimpleLineSymbolStyle.Solid,
+                        Color.fromRgba(240, 26, 133),
+                        3f
+                    )
+                    val redOutlineSymbol =
+                        SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 0, 0), 3f)
 
                     CoroutineScope(Dispatchers.IO).launch {
                         service.getDownloadedMaps().forEach { g ->
@@ -413,7 +436,8 @@ class MapActivity : AppCompatActivity() {
                             loadedPolys.add(polygon)
                             var endName = "בהורדה"
                             if (g.statusMsg == "הסתיים") {
-                                endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                                endName =
+                                    g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                             }
                             val textSymbol = TextSymbol(
                                 endName,
@@ -450,8 +474,7 @@ class MapActivity : AppCompatActivity() {
                             val type = json.getString("type")
 
                             if (type == "Polygon") {
-                                val productPolyDTO =
-                                    gson.fromJson(p.footprint, PolygonDTO::class.java)
+                                val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
                                 productPolyDTO.coordinates.forEach { it ->
                                     val points: List<Point> =
                                         it.map { Point(it[0], it[1], SpatialReference.wgs84()) }

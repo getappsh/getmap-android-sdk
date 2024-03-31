@@ -1,14 +1,18 @@
 package com.example.example_app
 
 import PasswordDialog
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
-import android.view.inputmethod.InputMethod
+import android.view.View
+import android.view.animation.LinearInterpolator
+import android.view.animation.RotateAnimation
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Switch
 import android.widget.TextView
@@ -16,7 +20,7 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.graphics.rotationMatrix
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,19 +32,19 @@ import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.coroutines.coroutineContext
 
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
     private lateinit var nebulaParamAdapter: NebulaParamAdapter
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
-        val tracker = MatomoTracker.getTracker(this)
         val instance = MapServiceManager.getInstance()
         val service = instance.service
         val recyclerView: RecyclerView = findViewById(R.id.nebula_recycler)
@@ -48,6 +52,9 @@ class SettingsActivity : AppCompatActivity() {
         recyclerView.layoutManager = layoutManager
         var params = emptyArray<NebulaParam>()
         var notif: Toast? = null
+        var tracker: Tracker?
+        tracker = MatomoTracker.getTracker(this)
+
         nebulaParamAdapter = NebulaParamAdapter(params) { _, name ->
             if (notif != null) {
                 notif?.cancel()
@@ -63,21 +70,47 @@ class SettingsActivity : AppCompatActivity() {
         loadConfig(service)
         params = nebulaParamAdapter.getParams()
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
+        val cancelButton = findViewById<Button>(R.id.cancel_button)
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         val applyServerConfig = findViewById<Switch>(R.id.apply_server_config)
-        TrackHelper.track().screen(this).with(tracker)
+        TrackHelper.track().screen("/מסך טכנאי").with(tracker)
+        applyServerConfig.isEnabled = false
         applyServerConfig.isChecked = service.config.applyServerConfig
-        applyServerConfig.setOnCheckedChangeListener { _, isChecked -> service.config.applyServerConfig = isChecked }
+        applyServerConfig.setOnCheckedChangeListener { _, isChecked ->
+            service.config.applyServerConfig = isChecked
+        }
+        cancelButton.setOnClickListener {
+            loadConfig(service)
+            hideKeyboard()
+            for (i in params.indices) {
+                nebulaParamAdapter.setIsEditing(false, i, params[i])
+            }
+            cancelButton.visibility = View.INVISIBLE
+            editConf.isChecked = false
+            applyServerConfig.isEnabled = false
+        }
         editConf.setOnCheckedChangeListener { _, isChecked ->
-
             if (isChecked) {
+                TrackHelper.track().screen("/מסך טכנאי").with(tracker)
                 val passwordDialog =
-                    PasswordDialog(this, params, nebulaParamAdapter, true, editConf)
+                    PasswordDialog(
+                        this, params, nebulaParamAdapter, true, editConf,
+                        cancelButton, tracker, applyServerConfig
+                    )
                 passwordDialog.show()
             } else {
+                hideKeyboard()
                 params = nebulaParamAdapter.getParams()
+                val hasChanged: List<String> = hasChanged(service, params)
+                if (hasChanged.isNotEmpty()) {
+                    hasChanged.forEach { e ->
+                        TrackHelper.track().dimension(1, e).event("מיפוי ענן", "נתונים השתנו")
+                            .name("שינוי הגדרות")
+                            .with(tracker)
+                    }
+                }
                 val url = params[0].value
                 if (url != service.config.baseUrl) {
                     try {
@@ -93,22 +126,27 @@ class SettingsActivity : AppCompatActivity() {
                 for (i in params.indices) {
                     nebulaParamAdapter.setIsEditing(false, i, params[i])
                 }
+                cancelButton.visibility = View.INVISIBLE
+                applyServerConfig.isEnabled = false
             }
         }
 
         lastConfig.text = "lastInventory: ${dateFormat(service.config.lastConfigCheck)}"
-        lastServerConfig.text = "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
+        lastServerConfig.text =
+            "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
         lastInventory.text = "lastConfig: ${dateFormat(service.config.lastInventoryCheck)}"
 
         val refresh_text = findViewById<ImageButton>(R.id.refresh_button_conf)
         refresh_text.setOnClickListener {
+            TrackHelper.track().dimension(1, "הגדרות").event("מיפוי ענן", "שינוי הגדרות")
+                .name("רענון הגדרות")
+                .with(tracker)
+            rotateInfinitely(refresh_text)
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-
                     lastConfig.text = "Loading..."
                     lastInventory.text = "Loading..."
                     lastServerConfig.text = "Loading..."
-
                     try {
                         service.fetchConfigUpdates()
                         service.fetchInventoryUpdates()
@@ -120,17 +158,20 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
                 withContext(Dispatchers.Main) {
-                    if (!lastConfig.text.contains("error")){
-                        lastConfig.text = "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
+                    if (!lastConfig.text.contains("error")) {
+                        lastConfig.text =
+                            "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
                     }
-                    if (!lastServerConfig.text.contains("error")){
-                        lastServerConfig.text = "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
+                    if (!lastServerConfig.text.contains("error")) {
+                        lastServerConfig.text =
+                            "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
                     }
-                    if (!lastInventory.text.contains("error")){
-                        lastInventory.text = "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
+                    if (!lastInventory.text.contains("error")) {
+                        lastInventory.text =
+                            "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
                     }
                     loadConfig(service)
-                    }
+                }
             }
         }
 
@@ -138,8 +179,8 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val tracker = MatomoTracker.getTracker(this)
-        TrackHelper.track().screen(this).with(tracker)
+//        val tracker = MatomoTracker.getTracker(this)
+//        TrackHelper.track().screen("הגדרות").with(tracker)
     }
 
     private fun loadConfig(service: GetMapService) {
@@ -192,6 +233,7 @@ class SettingsActivity : AppCompatActivity() {
         )
         return cfg
     }
+
     // Block that allow to hide the keyboard with touch on the screen
     fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -224,7 +266,11 @@ private fun dateFormat(date: OffsetDateTime?): String? {
     return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
 }
 
-private fun saveLocalToService(params: Array<NebulaParam>, service: GetMapService, context: Context) {
+private fun saveLocalToService(
+    params: Array<NebulaParam>,
+    service: GetMapService,
+    context: Context,
+) {
 
     var notifValidation: Toast? = null
     val reg: Regex = Regex("[a-zA-Z]")
@@ -290,10 +336,50 @@ private fun saveLocalToService(params: Array<NebulaParam>, service: GetMapServic
         params[12].value
 
 }
+
+private fun hasChanged(service: GetMapService, params: Array<NebulaParam>): List<String> {
+    var toReturn = ArrayList<String>()
+
+    if (service.config.baseUrl != params[0].value)
+        toReturn.add("URL")
+    if (service.config.downloadRetry != params[1].value.toInt())
+        toReturn.add("DownloadRetry")
+    if (service.config.deliveryTimeoutMins != params[2].value.toInt())
+        toReturn.add("deliveryTimeoutMins")
+    if (service.config.matomoUrl != params[3].value)
+        toReturn.add("matomoUrl")
+    if (service.config.matomoUpdateIntervalMins != params[4].value.toInt())
+        toReturn.add("matomoUpdateIntervalMins")
+    if (service.config.maxMapSizeInMB != params[5].value.toLong())
+        toReturn.add("maxMapSizeInMB")
+    if (service.config.maxParallelDownloads != params[7].value.toInt())
+        toReturn.add("maxParallelDownloads")
+    if (service.config.minAvailableSpaceMB != params[8].value.toLong())
+        toReturn.add("minAvailableSpaceMB")
+    if (service.config.periodicConfIntervalMins != params[9].value.toInt())
+        toReturn.add("periodicConfIntervalMins")
+    if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
+        toReturn.add("periodicInventoryIntervalMins")
+    if (service.config.matomoSiteId != params[11].value)
+        toReturn.add("matomoSiteId")
+    if (service.config.matomoDimensionId != params[12].value)
+        toReturn.add("matomoDimensionId")
+
+    return toReturn
+}
+
 private fun NotifyValidity(notification: Toast?, context: Context) {
     var notifValidation = notification
     notifValidation?.cancel()
     notifValidation = Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
     notifValidation?.show()
 
+}
+
+fun rotateInfinitely(view: View, duration: Long = 2500L): ObjectAnimator {
+    val rotation = ObjectAnimator.ofFloat(view, View.ROTATION, 0F, 360F)
+    rotation.duration = duration
+    rotation.interpolator = LinearInterpolator()
+    rotation.start()
+    return rotation
 }
