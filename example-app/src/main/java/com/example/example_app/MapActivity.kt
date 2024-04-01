@@ -59,10 +59,25 @@ import kotlin.math.sqrt
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
+    private lateinit var overlayView: FrameLayout
+
+    private lateinit var backFrame: View
+    private lateinit var blackBack: View
+    private lateinit var backFrame2: View
+    private lateinit var backFrame3: View
+    private lateinit var backFrame4: View
+
+    private lateinit var deliveryButton: Button
+    private lateinit var closeButton: Button
+
+    private lateinit var showKm: TextView
+    private lateinit var showBm: TextView
+    private lateinit var dateTextView: TextView
+
     private var isMapScrolling = false
     private val loadedPolys: ArrayList<Polygon> = ArrayList();
 
-    private val TAG = MainActivity::class.qualifiedName
+    private val TAG = MapActivity::class.qualifiedName
     private lateinit var service: GetMapService
     private val downloadStatusHandler: (MapData) -> Unit = { data ->
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
@@ -76,15 +91,27 @@ class MapActivity : AppCompatActivity() {
         setApiKey()
 
         mapView = findViewById(R.id.mapView)
+        overlayView = findViewById(R.id.overlayView)
+        backFrame = findViewById(R.id.backFrame)
+        blackBack = findViewById(R.id.blackBack)
+        backFrame2 = findViewById(R.id.blackLabel)
+        backFrame3 = findViewById(R.id.backFrame3)
+        backFrame4 = findViewById(R.id.backFrame4)
+
+        showKm = findViewById(R.id.kmShow)
+        showBm = findViewById(R.id.showMb)
+        dateTextView = findViewById(R.id.dateText)
+
         val instance = MapServiceManager.getInstance()
         service = instance.service
 
         lifecycle.addObserver(mapView)
 
-        val delivery = findViewById<Button>(R.id.deliver)
-        var overlayView = findViewById<FrameLayout>(R.id.overlayView)
-        delivery.visibility = View.INVISIBLE
-        delivery.setOnClickListener {
+        deliveryButton = findViewById(R.id.deliver)
+        closeButton = findViewById(R.id.close)
+
+        deliveryButton.visibility = View.INVISIBLE
+        deliveryButton.setOnClickListener {
             val blueBorderDrawableId = R.drawable.blue_border
             if (overlayView.background.constantState?.equals(
                     ContextCompat.getDrawable(
@@ -100,43 +127,30 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
-        val close = findViewById<Button>(R.id.close)
-        close.visibility = View.INVISIBLE
+        closeButton.visibility = View.INVISIBLE
 
         val back = findViewById<Button>(R.id.back)
         back.setOnClickListener {
-            delivery.visibility = View.VISIBLE
-            close.visibility = View.VISIBLE
-            val backFrame = findViewById<View>(R.id.backFrame)
+            deliveryButton.visibility = View.VISIBLE
+            closeButton.visibility = View.VISIBLE
             backFrame.visibility = View.VISIBLE
-            val blackBack = findViewById<View>(R.id.blackBack)
             blackBack.visibility = View.VISIBLE
-            val backFrame2 = findViewById<View>(R.id.blackLabel)
             backFrame2.visibility = View.VISIBLE
-            val backFrame3 = findViewById<View>(R.id.backFrame3)
             backFrame3.visibility = View.VISIBLE
-            val backFrame4 = findViewById<View>(R.id.backFrame4)
             backFrame4.visibility = View.VISIBLE
-            val frame = findViewById<FrameLayout>(R.id.overlayView)
-            frame.visibility = View.VISIBLE
+            overlayView.visibility = View.VISIBLE
             back.visibility = View.INVISIBLE
         }
 
-        close.setOnClickListener {
-            delivery.visibility = View.INVISIBLE
-            close.visibility = View.INVISIBLE
-            val backFrame = findViewById<View>(R.id.backFrame)
+        closeButton.setOnClickListener {
+            deliveryButton.visibility = View.INVISIBLE
+            closeButton.visibility = View.INVISIBLE
             backFrame.visibility = View.INVISIBLE
-            val blackBack = findViewById<View>(R.id.blackBack)
             blackBack.visibility = View.INVISIBLE
-            val backFrame2 = findViewById<View>(R.id.blackLabel)
             backFrame2.visibility = View.INVISIBLE
-            val backFrame3 = findViewById<View>(R.id.backFrame3)
             backFrame3.visibility = View.INVISIBLE
-            val backFrame4 = findViewById<View>(R.id.backFrame4)
             backFrame4.visibility = View.INVISIBLE
-            val frame = findViewById<FrameLayout>(R.id.overlayView)
-            frame.visibility = View.INVISIBLE
+            overlayView.visibility = View.INVISIBLE
             back.visibility = View.VISIBLE
         }
 
@@ -169,13 +183,10 @@ class MapActivity : AppCompatActivity() {
                 val boxPolygon = Polygon(boxCoordinates)
 
                 val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
-                val showKm = findViewById<TextView>(R.id.kmShow)
-                val showBm = findViewById<TextView>(R.id.showMb)
                 val formattedNum = String.format("%.2f", area)
                 val spaceMb = (formattedNum.toDouble() * 9).toInt()
                 showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
                 showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                val date = findViewById<TextView>(R.id.dateText)
                 val maxMb = service.config.maxMapSizeInMB.toInt()
                 var zoom = 0
                 var downloadAble = false
@@ -241,7 +252,6 @@ class MapActivity : AppCompatActivity() {
                         }
                     }
                 }
-                val dateTextView = findViewById<TextView>(R.id.dateText)
                 val interPolygon = service.config.mapMinInclusionPct.toDouble()
                 allPolygon.sortByDescending(PolyObject::date)
                 var found = false
@@ -279,9 +289,9 @@ class MapActivity : AppCompatActivity() {
                 } else {
                     overlayView.setBackgroundResource(R.drawable.red_border)
                     if (inBbox){
-                        date.text = "נמצא בתחום שכבר קיים במכשיר"
+                        dateTextView.text = "נמצא בתחום שכבר קיים במכשיר"
                     } else {
-                        date.text = "מחוץ לטווח הבחירה"
+                        dateTextView.text = "מחוץ לטווח הבחירה"
                     }
                     showKm.text = "שטח משוער :אין נתון"
                     showBm.text = "נפח משוער :אין נתון"
