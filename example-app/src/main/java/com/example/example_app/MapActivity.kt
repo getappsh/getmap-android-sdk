@@ -58,6 +58,8 @@ import kotlin.math.sqrt
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
+    private val TAG = MapActivity::class.qualifiedName
+
     private lateinit var mapView: MapView
     private lateinit var overlayView: FrameLayout
 
@@ -69,15 +71,16 @@ class MapActivity : AppCompatActivity() {
 
     private lateinit var deliveryButton: Button
     private lateinit var closeButton: Button
+    private lateinit var backButton: Button
 
     private lateinit var showKm: TextView
     private lateinit var showBm: TextView
     private lateinit var dateTextView: TextView
 
     private var isMapScrolling = false
+    private var selectMode = false
     private val loadedPolys: ArrayList<Polygon> = ArrayList();
 
-    private val TAG = MapActivity::class.qualifiedName
     private lateinit var service: GetMapService
     private val downloadStatusHandler: (MapData) -> Unit = { data ->
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
@@ -109,6 +112,7 @@ class MapActivity : AppCompatActivity() {
 
         deliveryButton = findViewById(R.id.deliver)
         closeButton = findViewById(R.id.close)
+        backButton = findViewById(R.id.back)
 
         deliveryButton.visibility = View.INVISIBLE
         deliveryButton.setOnClickListener {
@@ -128,30 +132,16 @@ class MapActivity : AppCompatActivity() {
         }
 
         closeButton.visibility = View.INVISIBLE
+        toggleViews()
 
-        val back = findViewById<Button>(R.id.back)
-        back.setOnClickListener {
-            deliveryButton.visibility = View.VISIBLE
-            closeButton.visibility = View.VISIBLE
-            backFrame.visibility = View.VISIBLE
-            blackBack.visibility = View.VISIBLE
-            backFrame2.visibility = View.VISIBLE
-            backFrame3.visibility = View.VISIBLE
-            backFrame4.visibility = View.VISIBLE
-            overlayView.visibility = View.VISIBLE
-            back.visibility = View.INVISIBLE
+        backButton.setOnClickListener {
+            selectMode = true
+            toggleViews()
         }
 
         closeButton.setOnClickListener {
-            deliveryButton.visibility = View.INVISIBLE
-            closeButton.visibility = View.INVISIBLE
-            backFrame.visibility = View.INVISIBLE
-            blackBack.visibility = View.INVISIBLE
-            backFrame2.visibility = View.INVISIBLE
-            backFrame3.visibility = View.INVISIBLE
-            backFrame4.visibility = View.INVISIBLE
-            overlayView.visibility = View.INVISIBLE
-            back.visibility = View.VISIBLE
+            selectMode = false
+            toggleViews()
         }
 
         geoPackageRender()
@@ -300,6 +290,18 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    private fun toggleViews(){
+        val visibility = if (selectMode) View.VISIBLE else View.INVISIBLE
+        deliveryButton.visibility = visibility
+        closeButton.visibility = visibility
+        backFrame.visibility = visibility
+        blackBack.visibility = visibility
+        backFrame2.visibility = visibility
+        backFrame3.visibility = visibility
+        backFrame4.visibility = visibility
+        overlayView.visibility = visibility
+        backButton.visibility = if (selectMode) View.INVISIBLE else View.VISIBLE
+    }
 
     private fun calculateDistance(point1: Point, point2: Point): Double {
         val lat1 = Math.toRadians(point1.y)
