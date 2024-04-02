@@ -393,117 +393,137 @@ class MapActivity : AppCompatActivity() {
         ArcGISEnvironment.apiKey = ApiKey.create(keyId)
     }
 
-
     private fun geoPackageRender() {
-        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes
-        val volume = storageList[1].directory?.absoluteFile ?: ""
-        Log.i("gfgffgf", "$volume")
-        val geoPackage = GeoPackage("${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg")
+        val geoPackage = GeoPackage(getBaseMapLocation())
         lifecycleScope.launch {
-            geoPackage.load().onSuccess {
-                if (geoPackage.geoPackageRasters.isNotEmpty()) {
-                    val geoPackageRaster = geoPackage.geoPackageRasters.first()
-                    val rasterLayer = RasterLayer(geoPackageRaster)
+            loadGeoPackageRasters(geoPackage)?.let { basemap ->
+                val graphicsOverlay = createGraphicsOverlay()
 
-                    val basemap = Basemap(rasterLayer)
-                    val map: ArcGISMap = ArcGISMap(basemap)
-                    val graphicsOverlay = GraphicsOverlay()
-                    val gson = Gson()
-                    val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
-                    val pinkOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.fromRgba(240, 26, 133), 3f)
-                    val redOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 0, 0), 3f)
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        service.getDownloadedMaps().forEach { g ->
-                            val nums = g.footprint?.split(",") ?: ArrayList()
-                            val coords = ArrayList<Point>()
-                            for (i in 0 until nums.size - 1 step 2) {
-                                val lon = nums[i].toDouble()
-                                val lat = nums[i + 1].toDouble()
-
-                                coords.add(Point(lon, lat, SpatialReference.wgs84()))
-                            }
-                            val polygon = Polygon(coords)
-                            loadedPolys.add(polygon)
-                            var endName = "בהורדה"
-                            if (g.statusMsg == "הסתיים") {
-                                endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                            }
-                            val textSymbol = TextSymbol(
-                                endName,
-                                Color.fromRgba(255, 255, 0),
-                                14f,
-                                HorizontalAlignment.Center,
-                                VerticalAlignment.Top
-                            )
-
-                            val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                            val compositeSymbol = CompositeSymbol().apply {
-                                if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
-                                    symbols.add(yellowOutlineSymbol)
-                                    symbols.add(textSymbol)
-                                } else {
-                                    symbols.add(redOutlineSymbol)
-                                    val formattedDownloadStart = g.downloadStart?.format(formatter)
-                                    textSymbol.text = "${g.statusMsg} $formattedDownloadStart"
-                                    symbols.add(textSymbol)
-                                }
-                            }
-
-                            val graphic = Graphic(polygon, compositeSymbol)
-
-                            graphicsOverlay.graphics.add(graphic)
-                        }
-
-                    }
-
-
-                    DiscoveryProductsManager.getInstance().products.forEach { p ->
-                        run {
-                            val json = JSONObject(p.footprint)
-                            val type = json.getString("type")
-
-                            if (type == "Polygon") {
-                                val productPolyDTO =
-                                    gson.fromJson(p.footprint, PolygonDTO::class.java)
-                                productPolyDTO.coordinates.forEach { it ->
-                                    val points: List<Point> =
-                                        it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
-                                    val polygon = Polygon(points)
-
-                                    val graphic = Graphic(polygon, pinkOutlineSymbol)
-                                    graphicsOverlay.graphics.add(graphic)
-                                }
-                            } else {
-                                val productPolyDTO =
-                                    gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                                productPolyDTO.coordinates.forEach { polygonCoords ->
-                                    val rings: MutableList<List<Point>> = mutableListOf()
-                                    polygonCoords.forEach { ringCoords ->
-                                        val points: MutableList<Point> = mutableListOf()
-                                        ringCoords.forEach { coord ->
-                                            val point = Point(coord[0], coord[1])
-                                            points.add(point)
-                                        }
-                                        rings.add(points)
-                                    }
-                                    val polygon = Polygon(rings.flatten())
-                                    val graphic = Graphic(polygon, pinkOutlineSymbol)
-                                    graphicsOverlay.graphics.add(graphic)
-                                }
-                            }
-                        }
-                    }
-                    mapView.graphicsOverlays.add(graphicsOverlay)
-                    mapView.map = map
-                    mapView.setViewpoint(Viewpoint(31.7270, 34.6, 2000000.0))
-                } else {
-                    Log.i("Error", "No feature tables found in the GeoPackage.")
-                }
-            }.onFailure { error ->
-                Log.i("Error", "Error loading package: ${error.message}")
+                mapView.graphicsOverlays.add(graphicsOverlay)
+                mapView.map = ArcGISMap(basemap)
+                mapView.setViewpoint(Viewpoint(31.7270, 34.6, 2000000.0))
             }
         }
+    }
+
+    private fun getBaseMapLocation(): String{
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes
+        val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
+        Log.i(TAG, "$volume")
+
+        return "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
+    }
+
+    private suspend fun loadGeoPackageRasters(geoPackage: GeoPackage): Basemap? {
+        return geoPackage.load().fold(
+            onSuccess = {
+                if (geoPackage.geoPackageRasters.isNotEmpty()){
+                    val geoPackageRaster = geoPackage.geoPackageRasters.first()
+                    RasterLayer(geoPackageRaster).let { rasterLayer ->
+                        Basemap(rasterLayer)
+                    }
+                }else{
+                    Log.e(TAG, "Error: No feature tables found in the GeoPackage.")
+                    null
+                }
+            },
+            onFailure = { error ->
+                Log.e(TAG, "Failed to load GeoPackage: ${error.message}")
+                null
+            }
+        )
+
+    }
+
+    private fun createGraphicsOverlay(): GraphicsOverlay {
+        val graphicsOverlay = GraphicsOverlay()
+        val yellowOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 255, 0), 3f)
+        val pinkOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.fromRgba(240, 26, 133), 3f)
+        val redOutlineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 0, 0), 3f)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            service.getDownloadedMaps().forEach { g ->
+                val nums = g.footprint?.split(",") ?: ArrayList()
+                val coords = ArrayList<Point>()
+                for (i in 0 until nums.size - 1 step 2) {
+                    val lon = nums[i].toDouble()
+                    val lat = nums[i + 1].toDouble()
+
+                    coords.add(Point(lon, lat, SpatialReference.wgs84()))
+                }
+                val polygon = Polygon(coords)
+                loadedPolys.add(polygon)
+                var endName = "בהורדה"
+                if (g.statusMsg == "הסתיים") {
+                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                }
+                val textSymbol = TextSymbol(
+                    endName,
+                    Color.fromRgba(255, 255, 0),
+                    14f,
+                    HorizontalAlignment.Center,
+                    VerticalAlignment.Top
+                )
+
+                val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                val compositeSymbol = CompositeSymbol().apply {
+                    if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
+                        symbols.add(yellowOutlineSymbol)
+                        symbols.add(textSymbol)
+                    } else {
+                        symbols.add(redOutlineSymbol)
+                        val formattedDownloadStart = g.downloadStart?.format(formatter)
+                        textSymbol.text = "${g.statusMsg} $formattedDownloadStart"
+                        symbols.add(textSymbol)
+                    }
+                }
+
+                val graphic = Graphic(polygon, compositeSymbol)
+
+                graphicsOverlay.graphics.add(graphic)
+            }
+
+        }
+
+        val gson = Gson()
+        DiscoveryProductsManager.getInstance().products.forEach { p ->
+            run {
+                val json = JSONObject(p.footprint)
+                val type = json.getString("type")
+
+                if (type == "Polygon") {
+                    val productPolyDTO =
+                        gson.fromJson(p.footprint, PolygonDTO::class.java)
+                    productPolyDTO.coordinates.forEach { it ->
+                        val points: List<Point> =
+                            it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
+                        val polygon = Polygon(points)
+
+                        val graphic = Graphic(polygon, pinkOutlineSymbol)
+                        graphicsOverlay.graphics.add(graphic)
+                    }
+                } else {
+                    val productPolyDTO =
+                        gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                    productPolyDTO.coordinates.forEach { polygonCoords ->
+                        val rings: MutableList<List<Point>> = mutableListOf()
+                        polygonCoords.forEach { ringCoords ->
+                            val points: MutableList<Point> = mutableListOf()
+                            ringCoords.forEach { coord ->
+                                val point = Point(coord[0], coord[1])
+                                points.add(point)
+                            }
+                            rings.add(points)
+                        }
+                        val polygon = Polygon(rings.flatten())
+                        val graphic = Graphic(polygon, pinkOutlineSymbol)
+                        graphicsOverlay.graphics.add(graphic)
+                    }
+                }
+            }
+        }
+
+        return graphicsOverlay
     }
 }
