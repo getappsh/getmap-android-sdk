@@ -148,6 +148,9 @@ class MapActivity : AppCompatActivity() {
 
         GlobalScope.launch(Dispatchers.Main) {
             mapView.onPan.collect {
+                if (!selectMode){
+                    return@collect
+                }
                 val displayMetrics = DisplayMetrics()
                 windowManager.defaultDisplay.getMetrics(displayMetrics)
                 val height = displayMetrics.heightPixels
