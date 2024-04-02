@@ -147,149 +147,165 @@ class MapActivity : AppCompatActivity() {
         geoPackageRender()
 
         GlobalScope.launch(Dispatchers.Main) {
-            mapView.onPan.collect {
-                if (!selectMode){
-                    return@collect
-                }
-                val displayMetrics = DisplayMetrics()
-                windowManager.defaultDisplay.getMetrics(displayMetrics)
-                val height = displayMetrics.heightPixels
-                val width = displayMetrics.widthPixels
+            processMapPan()
+        }
+    }
 
-                val leftTop = ScreenCoordinate(100.0, height - 550.0)
-                val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
-                val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
-                val leftBottom = ScreenCoordinate(100.0, 550.0)
+    private suspend fun processMapPan(){
+        mapView.onPan.collect {
+            if (!selectMode) {
+                return@collect
+            }
+            val polygonPoints = createPolygonPoints(mapView)
 
-                val pLeftTop = mapView.screenToLocation(leftTop) ?: Point(1.0, 0.0)
-                val pRightBottom = mapView.screenToLocation(rightBottom) ?: Point(0.0, 1.0)
-                val pRightTop = mapView.screenToLocation(rightTop) ?: Point(0.5, 0.0)
-                val pLeftBottom = mapView.screenToLocation(leftBottom) ?: Point(0.0, 0.5)
+            val area = calculateArea(polygonPoints)
 
-                val boxCoordinates = mutableListOf<Point>()
-                boxCoordinates.add(pLeftTop)
-                boxCoordinates.add(pRightTop)
-                boxCoordinates.add(pRightBottom)
-                boxCoordinates.add(pLeftBottom)
-//                boxCoordinates.add(pLeftTop)
+            val boxPolygon = Polygon(polygonPoints)
+            val allPolygons = extractPolygonsFromProducts(boxPolygon)
 
-                val boxPolygon = Polygon(boxCoordinates)
+            val polyProduct = findNewestPolygonWithIntersection(allPolygons, boxPolygon)
+            val inBBox = isInBBox(boxPolygon);
 
-                val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
-                val formattedNum = String.format("%.2f", area)
-                val spaceMb = (formattedNum.toDouble() * 9).toInt()
-                showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
-                showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                val maxMb = service.config.maxMapSizeInMB.toInt()
-                var zoom = 0
-                var downloadAble = false
+            updateUIWithIntersectionInfo(inBBox, polyProduct, area)
 
-                val allPolygon = mutableListOf<PolyObject>()
+        }
+    }
+    private fun createPolygonPoints(mapView: MapView): List<Point> {
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val height = displayMetrics.heightPixels
+        val width = displayMetrics.widthPixels
 
-                DiscoveryProductsManager.getInstance().products.forEach { p ->
-                    run {
-                        val json = JSONObject(p.footprint)
-                        val type = json.getString("type")
-                        val gson = Gson()
+        val leftTop = ScreenCoordinate(100.0, height - 550.0)
+        val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
+        val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
+        val leftBottom = ScreenCoordinate(100.0, 550.0)
 
+        val screenToLocation = mapView::screenToLocation
+        return listOf(
+            screenToLocation(leftTop) ?: Point(1.0, 0.0),
+            screenToLocation(rightTop) ?: Point(0.5, 0.0),
+            screenToLocation(rightBottom) ?: Point(0.0, 1.0),
+            screenToLocation(leftBottom) ?: Point(0.0, 0.5)
+        )
+    }
 
-                        if (type == "Polygon") {
-                            val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                            productPolyDTO.coordinates.forEach { coordinates ->
-                                val points: List<Point> = coordinates.map {
-                                    Point(it[0], it[1], SpatialReference.wgs84())
-                                }
-                                val polygon = Polygon(points)
+    private fun calculateArea(polygonPoints: List<Point>): Double {
+        val pLeftTop = polygonPoints[0]
+        val pRightTop = polygonPoints[1]
+        val width = calculateDistance(pLeftTop, pRightTop) / 1000
+        val height = calculateDistance(pLeftTop, polygonPoints[3]) / 1000
+        return width * height
+    }
+    private fun extractPolygonsFromProducts(boxPolygon: Polygon): MutableList<PolyObject> {
+        val allPolygons = mutableListOf<PolyObject>()
 
-                                val intersection =
-                                    GeometryEngine.intersectionOrNull(polygon, boxPolygon)
-                                val intersectionArea = GeometryEngine.area(intersection!!)
-                                val boxArea = GeometryEngine.area(boxPolygon)
-                                val firstOffsetDateTime = p.imagingTimeBeginUTC
-                                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                                val firstDate = sdf.format(firstOffsetDateTime)
-                                val secondOffsetDateTime = p.imagingTimeEndUTC
-                                val secondDate = sdf.format(secondOffsetDateTime)
-                                val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+        val gson = Gson()
 
-                                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                    allPolygon.add(polyObject)
-                                }
-                            }
-                        } else if (type == "MultiPolygon") {
-                            val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                            productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
-                                polyCoordinates.forEach { coordinates ->
-                                    val points: List<Point> = coordinates.map {
-                                        Point(it[0], it[1], SpatialReference.wgs84())
-                                    }
-                                    val polygon = Polygon(points)
+        DiscoveryProductsManager.getInstance().products.forEach { p ->
+            run {
+                val json = JSONObject(p.footprint)
+                val type = json.getString("type")
 
-                                    val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
-                                    val intersectionArea = GeometryEngine.area(intersection!!)
-                                    val boxArea = GeometryEngine.area(boxPolygon)
-
-                                    val firstOffsetDateTime = p.imagingTimeBeginUTC
-                                    val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                                    val firstDate = sdf.format(firstOffsetDateTime)
-                                    val secondOffsetDateTime = p.imagingTimeEndUTC
-                                    val secondDate = sdf.format(secondOffsetDateTime)
-
-                                    if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                        val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                        allPolygon.add(polyObject)
-                                    }
-                                }
-                            }
+                if (type == "Polygon") {
+                    val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
+                    productPolyDTO.coordinates.forEach { coordinates ->
+                        val points: List<Point> = coordinates.map {
+                            Point(it[0], it[1], SpatialReference.wgs84())
                         }
-                    }
-                }
-                val interPolygon = service.config.mapMinInclusionPct.toDouble()
-                allPolygon.sortByDescending(PolyObject::date)
-                var found = false
-                val boxArea = GeometryEngine.area(boxPolygon)
-                for (polygon in allPolygon) {
-                    if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
-                        dateTextView.text = "צולם : ${polygon.start} - ${polygon.end}"
-                        found = true
-                        downloadAble = true
-                        break
-                    }
-                }
-                if (!found && allPolygon.isNotEmpty()) {
-                    val firstPolyObject = allPolygon[0]
-                    dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
-                    downloadAble = true
-                }
+                        val polygon = Polygon(points)
 
-                var inBbox = false
-                loadedPolys.forEach { p ->
-
-                    val intersection = GeometryEngine.intersectionOrNull(p, boxPolygon)
-                    if (intersection != null) {
-                        val intersectionArea = GeometryEngine.area(intersection)
+                        val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
+                        val intersectionArea = GeometryEngine.area(intersection!!)
                         val boxArea = GeometryEngine.area(boxPolygon)
+                        val firstOffsetDateTime = p.imagingTimeBeginUTC
+                        val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                        val firstDate = sdf.format(firstOffsetDateTime)
+                        val secondOffsetDateTime = p.imagingTimeEndUTC
+                        val secondDate = sdf.format(secondOffsetDateTime)
+                        val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+
                         if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                            downloadAble = false
-                            inBbox = true
+                            val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                            allPolygons.add(polyObject)
                         }
                     }
-                }
+                } else if (type == "MultiPolygon") {
+                    val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                    productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
+                        polyCoordinates.forEach { coordinates ->
+                            val points: List<Point> = coordinates.map {
+                                Point(it[0], it[1], SpatialReference.wgs84())
+                            }
+                            val polygon = Polygon(points)
 
-                if (spaceMb < maxMb && downloadAble) {
-                    overlayView.setBackgroundResource(R.drawable.blue_border)
-                } else {
-                    overlayView.setBackgroundResource(R.drawable.red_border)
-                    if (inBbox){
-                        dateTextView.text = "נמצא בתחום שכבר קיים במכשיר"
-                    } else {
-                        dateTextView.text = "מחוץ לטווח הבחירה"
+                            val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
+                            val intersectionArea = GeometryEngine.area(intersection!!)
+                            val boxArea = GeometryEngine.area(boxPolygon)
+
+                            val firstOffsetDateTime = p.imagingTimeBeginUTC
+                            val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                            val firstDate = sdf.format(firstOffsetDateTime)
+                            val secondOffsetDateTime = p.imagingTimeEndUTC
+                            val secondDate = sdf.format(secondOffsetDateTime)
+
+                            if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                                val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                allPolygons.add(polyObject)
+                            }
+                        }
                     }
-                    showKm.text = "שטח משוער :אין נתון"
-                    showBm.text = "נפח משוער :אין נתון"
                 }
             }
+        }
+        return allPolygons
+    }
+
+    private fun findNewestPolygonWithIntersection(allPolygons: MutableList<PolyObject>, boxPolygon: Polygon): PolyObject? {
+        allPolygons.sortByDescending(PolyObject::date)
+        val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+
+        val boxArea = GeometryEngine.area(boxPolygon)
+        val polyProduct = allPolygons.find { poly ->  (poly.intersection / abs(boxArea) >= interPolygon)} ?: allPolygons.getOrNull(0)
+
+        return polyProduct
+    }
+
+    private fun isInBBox(boxPolygon: Polygon): Boolean{
+        return loadedPolys.any { p ->
+            val intersection = GeometryEngine.intersectionOrNull(p, boxPolygon)
+            if (intersection != null) {
+                val intersectionArea = GeometryEngine.area(intersection)
+                val boxArea = GeometryEngine.area(boxPolygon)
+                (abs(intersectionArea) / abs(boxArea) > 0.0)
+            }else
+                false
+        }
+    }
+
+    private fun updateUIWithIntersectionInfo(inBBox: Boolean, polyProduct: PolyObject?, area: Double) {
+        val formattedNum = String.format("%.2f", area)
+        val spaceMb = (formattedNum.toDouble() * 9).toInt()
+        val maxMb = service.config.maxMapSizeInMB.toInt()
+
+        val downloadAble = !inBBox && polyProduct != null
+
+        if (spaceMb < maxMb && downloadAble) {
+            overlayView.setBackgroundResource(R.drawable.blue_border)
+            polyProduct?.let {
+                dateTextView.text = "צולם : ${it.start} - ${it.end}"
+            }
+            showKm.text = "שטח משוער : $formattedNum קמ\"ר"
+            showBm.text = "נפח משוער : $spaceMb מ\"ב"
+        } else {
+            overlayView.setBackgroundResource(R.drawable.red_border)
+            if (inBBox){
+                dateTextView.text = "נמצא בתחום שכבר קיים במכשיר"
+            } else {
+                dateTextView.text = "מחוץ לטווח הבחירה"
+            }
+            showKm.text = "שטח משוער :אין נתון"
+            showBm.text = "נפח משוער :אין נתון"
         }
     }
 
