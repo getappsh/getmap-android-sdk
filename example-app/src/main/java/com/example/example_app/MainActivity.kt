@@ -463,7 +463,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun onDelete(id: String) {
         TrackHelper.track().screen("/מחיקה").with(tracker)
-        popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את המפה הזו?"
+        popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
         popUp.show(supportFragmentManager, "delete")

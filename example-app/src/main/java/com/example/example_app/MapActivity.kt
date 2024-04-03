@@ -124,31 +124,85 @@ class MapActivity : AppCompatActivity() {
                     )?.constantState
                 ) == true
             ) {
-                this.onDelivery()
+                checkBboxBeforeSent()
+                if (overlayView.background.constantState?.equals(
+                        ContextCompat.getDrawable(
+                            this,
+                            blueBorderDrawableId
+                        )?.constantState
+                    ) == false
+                ) {
+                    Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    this.onDelivery()
+                }
             } else {
                 Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT)
                     .show()
+                if (overlayView.background.constantState?.equals(
+                        ContextCompat.getDrawable(
+                            this,
+                            blueBorderDrawableId
+                        )?.constantState
+                    ) == true
+                ) {
+                    checkBboxBeforeSent()
+                    if (overlayView.background.constantState?.equals(
+                            ContextCompat.getDrawable(
+                                this,
+                                blueBorderDrawableId
+                            )?.constantState
+                        ) == false
+                    ) {
+                        Toast.makeText(
+                            this,
+                            "התיחום שנבחר גדול מידי או מחוץ לתחום",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        this.onDelivery()
+                    }
+                    Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+            closeButton.visibility = View.INVISIBLE
+            toggleViews()
+
+            backButton.setOnClickListener {
+                selectMode = true
+                toggleViews()
+            }
+
+            closeButton.setOnClickListener {
+                selectMode = false
+                toggleViews()
+            }
+
+            geoPackageRender()
+
+            GlobalScope.launch(Dispatchers.Main) {
+                processMapPan()
             }
         }
+    }
 
-        closeButton.visibility = View.INVISIBLE
-        toggleViews()
 
-        backButton.setOnClickListener {
-            selectMode = true
-            toggleViews()
-        }
+    private fun checkBboxBeforeSent(){
+        val polygonPoints = createPolygonPoints(mapView)
 
-        closeButton.setOnClickListener {
-            selectMode = false
-            toggleViews()
-        }
+        val area = calculateArea(polygonPoints)
 
-        geoPackageRender()
+        val boxPolygon = Polygon(polygonPoints)
+        val allPolygons = extractPolygonsFromProducts(boxPolygon)
 
-        GlobalScope.launch(Dispatchers.Main) {
-            processMapPan()
-        }
+        val polyProduct = findNewestPolygonWithIntersection(allPolygons, boxPolygon)
+        val inBBox = isInBBox(boxPolygon);
+
+        updateUIWithIntersectionInfo(inBBox, polyProduct, area)
+
     }
 
     private suspend fun processMapPan(){
@@ -156,18 +210,8 @@ class MapActivity : AppCompatActivity() {
             if (!selectMode) {
                 return@collect
             }
-            val polygonPoints = createPolygonPoints(mapView)
 
-            val area = calculateArea(polygonPoints)
-
-            val boxPolygon = Polygon(polygonPoints)
-            val allPolygons = extractPolygonsFromProducts(boxPolygon)
-
-            val polyProduct = findNewestPolygonWithIntersection(allPolygons, boxPolygon)
-            val inBBox = isInBBox(boxPolygon);
-
-            updateUIWithIntersectionInfo(inBBox, polyProduct, area)
-
+            checkBboxBeforeSent()
         }
     }
     private fun createPolygonPoints(mapView: MapView): List<Point> {
