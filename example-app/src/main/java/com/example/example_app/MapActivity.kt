@@ -207,28 +207,14 @@ class MapActivity : AppCompatActivity() {
                 val json = JSONObject(p.footprint)
                 val type = json.getString("type")
 
+                var polygon: Polygon? = null
                 if (type == "Polygon") {
                     val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
                     productPolyDTO.coordinates.forEach { coordinates ->
                         val points: List<Point> = coordinates.map {
                             Point(it[0], it[1], SpatialReference.wgs84())
                         }
-                        val polygon = Polygon(points)
-
-                        val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
-                        val intersectionArea = GeometryEngine.area(intersection!!)
-                        val boxArea = GeometryEngine.area(boxPolygon)
-                        val firstOffsetDateTime = p.imagingTimeBeginUTC
-                        val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                        val firstDate = sdf.format(firstOffsetDateTime)
-                        val secondOffsetDateTime = p.imagingTimeEndUTC
-                        val secondDate = sdf.format(secondOffsetDateTime)
-                        val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
-
-                        if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                            val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                            allPolygons.add(polyObject)
-                        }
+                        polygon = Polygon(points)
                     }
                 } else if (type == "MultiPolygon") {
                     val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
@@ -237,24 +223,25 @@ class MapActivity : AppCompatActivity() {
                             val points: List<Point> = coordinates.map {
                                 Point(it[0], it[1], SpatialReference.wgs84())
                             }
-                            val polygon = Polygon(points)
-
-                            val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
-                            val intersectionArea = GeometryEngine.area(intersection!!)
-                            val boxArea = GeometryEngine.area(boxPolygon)
-
-                            val firstOffsetDateTime = p.imagingTimeBeginUTC
-                            val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                            val firstDate = sdf.format(firstOffsetDateTime)
-                            val secondOffsetDateTime = p.imagingTimeEndUTC
-                            val secondDate = sdf.format(secondOffsetDateTime)
-
-                            if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                allPolygons.add(polyObject)
-                            }
+                            polygon = Polygon(points)
                         }
                     }
+                } else return allPolygons
+
+                val firstOffsetDateTime = p.imagingTimeBeginUTC
+                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                val firstDate = sdf.format(firstOffsetDateTime)
+                val secondOffsetDateTime = p.imagingTimeEndUTC
+                val secondDate = sdf.format(secondOffsetDateTime)
+                val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+
+                val intersection = GeometryEngine.intersectionOrNull(polygon!!, boxPolygon)
+                val intersectionArea = GeometryEngine.area(intersection!!)
+                val boxArea = GeometryEngine.area(boxPolygon)
+
+                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                    allPolygons.add(polyObject)
                 }
             }
         }
