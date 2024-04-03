@@ -167,25 +167,25 @@ class MapActivity : AppCompatActivity() {
                         .show()
                 }
             }
+        }
 
-            closeButton.visibility = View.INVISIBLE
+        closeButton.visibility = View.INVISIBLE
+        toggleViews()
+
+        backButton.setOnClickListener {
+            selectMode = true
             toggleViews()
+        }
 
-            backButton.setOnClickListener {
-                selectMode = true
-                toggleViews()
-            }
+        closeButton.setOnClickListener {
+            selectMode = false
+            toggleViews()
+        }
 
-            closeButton.setOnClickListener {
-                selectMode = false
-                toggleViews()
-            }
+        geoPackageRender()
 
-            geoPackageRender()
-
-            GlobalScope.launch(Dispatchers.Main) {
-                processMapPan()
-            }
+        GlobalScope.launch(Dispatchers.Main) {
+            processMapPan()
         }
     }
 
