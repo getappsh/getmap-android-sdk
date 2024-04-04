@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     downloadListAdapter.availableUpdate
                 )
             }
-        }, pathSd, mapServiceManager)
+        }, pathSd, mapServiceManager,this)
         //Set the adapter to listen to changes
         downloadListAdapter.addListener(this)
 
@@ -187,8 +187,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        getTracker()
 
         swipeRecycler.setOnRefreshListener {
-            TrackHelper.track().dimension(1, "רענון הבולים").event("מיפוי ענן", "ניהול בולים")
-                .name("בדיקת עדכניות בולים").with(tracker)
+            TrackHelper.track().event("מיפוי ענן", "ניהול בולים").name("רענון").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
                 mapServiceManager.service.synchronizeMapData()
             }
@@ -231,7 +230,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         // The `Tracker` instance from the previous step
         val tracker = tracker
         // Track a screen view
-        TrackHelper.track().screen(this)
+        TrackHelper.track().screen("מסך ראשי")
             .with(tracker)
         // Monitor your app installs
         TrackHelper.track().download().with(tracker)
@@ -250,11 +249,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             popUp.show(supportFragmentManager, "update")
         }
 
-        scanQRButton = findViewById<Button>(R.id.scanQR)
+        scanQRButton = findViewById(R.id.scanQR)
         scanQRButton.setOnClickListener {
             if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB) {
                 barcodeLauncher.launch(ScanOptions())
-                TrackHelper.track().screen("/סריקת בול").with(tracker)
+                TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
             } else {
                 Toast.makeText(
                     applicationContext,
