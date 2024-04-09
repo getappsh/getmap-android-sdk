@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:rotationY="0"
-        android:text="Version 1.1.0"
+        android:text="Version 1.1.1"
         android:translationY="-6dp" />
 
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.Color
+import com.arcgismaps.LoadStatus
 import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
@@ -218,6 +219,12 @@ class MapActivity : AppCompatActivity() {
             }
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }
+        val intent = Intent(this@MapActivity, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
@@ -493,5 +500,29 @@ class MapActivity : AppCompatActivity() {
                 Log.i("Error", "Error loading package: ${error.message}")
             }
         }
+//        // Inside your MapActivity class
+//
+//        // Initialize the WMTS layer
+//        val wmtsLayer = WmtsLayer("https://your-wmts-service-url.com")
+//
+//        // Set up a callback for when the layer is loaded
+//        wmtsLayer.addDoneLoadingListener {
+//            if (wmtsLayer.loadStatus == LoadStatus.Loaded) {
+//                // Create a new map with the WMTS layer as the basemap
+//                val map = ArcGISMap(Basemap(wmtsLayer))
+//
+//                // Set the map to the MapView
+//                mapView.map = map
+//
+//                // Set the initial viewpoint
+//                mapView.setViewpoint(Viewpoint(31.7270, 34.6, 2000000.0))
+//            } else {
+//                // Handle the case where the layer fails to load
+//                Log.e("WMTS", "Error loading WMTS layer: ${wmtsLayer.loadError.message}")
+//            }
+//        }
+//
+//        // Add the WMTS layer to the map view
+//        mapView.map.operationalLayers.add(wmtsLayer)
     }
 }

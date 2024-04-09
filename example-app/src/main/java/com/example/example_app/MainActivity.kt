@@ -242,11 +242,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         syncButton.setOnClickListener {
             TrackHelper.track().dimension(1, "מעדכן בול").screen("/Popup/עדכון כלל הבולים")
                 .with(tracker)
+            popUp.recyclerView = recyclerView
             popUp.handler = downloadStatusHandler
             popUp.type = "update"
             popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
             popUp.tracker = tracker
             popUp.show(supportFragmentManager, "update")
+
         }
 
         scanQRButton = findViewById(R.id.scanQR)
@@ -311,6 +313,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
                     val intent = Intent(this@MainActivity, MapActivity::class.java)
                     startActivity(intent)
+                    finish()
 //                    discoveryDialogPicker(products)
 
                 }

@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +33,7 @@ class PopUp : DialogFragment() {
     lateinit var handler: (MapData) -> Unit
     var tracker: Tracker? = null
     var demand = false
+    lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,6 +95,7 @@ class PopUp : DialogFragment() {
                             )
                         }
                     }
+                    recyclerView.smoothScrollToPosition(0)
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
             } else if (type == "updateOne") {
