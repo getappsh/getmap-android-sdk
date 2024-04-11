@@ -189,7 +189,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         swipeRecycler.setOnRefreshListener {
             TrackHelper.track().event("מיפוי ענן", "ניהול בולים").name("רענון").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
-                mapServiceManager.service.synchronizeMapData()
+//                mapServiceManager.service.synchronizeMapData()
+                CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
             }
             swipeRecycler.isRefreshing = false
         }

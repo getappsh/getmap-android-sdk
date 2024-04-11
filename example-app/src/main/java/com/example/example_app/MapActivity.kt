@@ -146,6 +146,13 @@ class MapActivity : AppCompatActivity() {
                checkBboxBeforeSent()
             }
         }
+
+        val compass = findViewById<View>(R.id.arrow)
+        compass.setOnClickListener {
+            lifecycleScope.launch {
+                showNorth()
+            }
+        }
     }
 
     private fun setApiKey() {
@@ -230,6 +237,21 @@ class MapActivity : AppCompatActivity() {
         finish()
     }
 
+    private suspend fun showNorth() {
+        val compass = findViewById<View>(R.id.arrow)
+        compass.rotation = 0F
+        mapView.setViewpointRotation(0.0)
+    }
+
+    private fun compassRotation() {
+        var rotation = mapView.mapRotation.value
+        if (rotation < 0) {
+            rotation += 360
+        }
+        val compass = findViewById<View>(R.id.arrow)
+        compass.rotation = (180 - (rotation + 180)).toFloat()
+    }
+
     private fun checkBboxBeforeSent() {
         try {
             val displayMetrics = DisplayMetrics()
@@ -255,6 +277,8 @@ class MapActivity : AppCompatActivity() {
 //                boxCoordinates.add(pLeftTop)
 
             val boxPolygon = Polygon(boxCoordinates)
+
+            compassRotation()
 
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
             val showKm = findViewById<TextView>(R.id.kmShow)
@@ -367,10 +391,11 @@ class MapActivity : AppCompatActivity() {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
                 overlayView.setBackgroundResource(R.drawable.red_border)
+                date.text = "אין תוצר עדכני באזור זה"
                 if (inBbox){
-                    date.text = "נמצא בתחום שכבר קיים במכשיר"
-                } else {
-                    date.text = "מחוץ לטווח הבחירה"
+                    date.text = "בחר תיחום שאינו חותך בול קיים"
+                } else if (spaceMb > maxMb && downloadAble) {
+                    date.text = "תיחום גדול מנפח מקסימלי להורדה"
                 }
                 showKm.text = "שטח משוער :אין נתון"
                 showBm.text = "נפח משוער :אין נתון"
@@ -492,7 +517,7 @@ class MapActivity : AppCompatActivity() {
                     }
                     mapView.graphicsOverlays.add(graphicsOverlay)
                     mapView.map = map
-                    mapView.setViewpoint(Viewpoint(31.7270, 34.6, 2000000.0))
+                    mapView.setViewpoint(Viewpoint(31.7270, 34.9, 2000000.0))
                 } else {
                     Log.i("Error", "No feature tables found in the GeoPackage.")
                 }
@@ -525,4 +550,6 @@ class MapActivity : AppCompatActivity() {
 //        // Add the WMTS layer to the map view
 //        mapView.map.operationalLayers.add(wmtsLayer)
     }
+
+    fun showNorth(view: View) {}
 }
