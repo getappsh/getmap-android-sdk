@@ -6,6 +6,8 @@ import android.util.Log
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
+import com.arcgismaps.ApiKey
+import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.Color
 import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
@@ -30,6 +32,7 @@ import com.example.example_app.DiscoveryProductsManager
 import com.example.example_app.MultiPolygonDto
 import com.example.example_app.PolyObject
 import com.example.example_app.PolygonDTO
+import com.example.example_app.Product
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.CoroutineScope
@@ -49,13 +52,21 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
 
     override var mapView = MapView(ctx)
 
+    init {
+        setApiKey()
+    }
+    private fun setApiKey() {
+        val keyId = "runtimelite,1000,rud1971484999,none,GB2PMD17JYCJ5G7XE200"
+        ArcGISEnvironment.apiKey = ApiKey.create(keyId)
+    }
+
     override fun setMapView(parent: FrameLayout, lifecycle: Lifecycle) {
         parent.addView(mapView)
         lifecycle.addObserver(mapView)
     }
 
-    override fun renderBBoxData(renderedData: (inOtherMap: Boolean, polyProduct: PolyObject?, area: Double) -> Unit) {
-        val polygonPoints = getPolygonPoints()
+    override fun renderBBoxData(): PolyObject? {
+        val polygonPoints = getPolygonPoints() ?: return null
 
         val area = calculateArea(polygonPoints)
 
@@ -64,8 +75,20 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
         val polyProduct = findBestProductIntersection(containingProducts, boxPolygon)
 
         val inOtherMap = inExistingMap(boxPolygon);
+        return PolyObject(
+            area = area,
+            inCollision = inOtherMap,
+            product = polyProduct,
+            strPolygon = getPloyStr(polygonPoints)
+        )
+    }
+    private fun getPloyStr(polygonPoints: List<Point>): String{
+        val pLeftTop = polygonPoints[0]
+        val pRightTop = polygonPoints[1]
+        val pRightBottom = polygonPoints[2]
+        val pLeftBottom = polygonPoints[3]
 
-        renderedData(inOtherMap, polyProduct, area)
+        return "${pLeftTop.x},${pLeftTop.y},${pRightTop.x},${pRightTop.y},${pRightBottom.x},${pRightBottom.y},${pLeftBottom.x},${pLeftBottom.y},${pLeftTop.x},${pLeftTop.y}"
     }
 
     private fun inExistingMap(boxPolygon: Polygon): Boolean{
@@ -79,7 +102,7 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
                 false
         }
     }
-    private fun getPolygonPoints(): List<Point> {
+    private fun getPolygonPoints(): List<Point>? {
         val height = ctx.resources.displayMetrics.heightPixels
         val width = ctx.resources.displayMetrics.widthPixels
 
@@ -89,12 +112,13 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
         val leftBottom = ScreenCoordinate(100.0, 550.0)
 
         val screenToLocation = mapView::screenToLocation
-        return listOf(
-            screenToLocation(leftTop) ?: Point(1.0, 0.0),
-            screenToLocation(rightTop) ?: Point(0.5, 0.0),
-            screenToLocation(rightBottom) ?: Point(0.0, 1.0),
-            screenToLocation(leftBottom) ?: Point(0.0, 0.5)
+        val points  = listOf(
+            screenToLocation(leftTop) ?: return null,
+            screenToLocation(rightTop) ?: return null,
+            screenToLocation(rightBottom) ?: return null,
+            screenToLocation(leftBottom) ?: return null
         )
+        return points
     }
 
     private fun calculateArea(polygonPoints: List<Point>): Double {
@@ -105,8 +129,8 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
         return width * height
     }
 
-    private fun findContainingProducts(boxPolygon: Polygon): MutableList<PolyObject> {
-        val allPolygons = mutableListOf<PolyObject>()
+    private fun findContainingProducts(boxPolygon: Polygon): MutableList<Product> {
+        val allProducts = mutableListOf<Product>()
 
         val gson = Gson()
 
@@ -116,25 +140,29 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
                 val type = json.getString("type")
 
                 var polygon: Polygon? = null
-                if (type == "Polygon") {
-                    val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                    productPolyDTO.coordinates.forEach { coordinates ->
-                        val points: List<Point> = coordinates.map {
-                            Point(it[0], it[1], SpatialReference.wgs84())
-                        }
-                        polygon = Polygon(points)
-                    }
-                } else if (type == "MultiPolygon") {
-                    val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                    productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
-                        polyCoordinates.forEach { coordinates ->
+                when (type) {
+                    "Polygon" -> {
+                        val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
+                        productPolyDTO.coordinates.forEach { coordinates ->
                             val points: List<Point> = coordinates.map {
                                 Point(it[0], it[1], SpatialReference.wgs84())
                             }
                             polygon = Polygon(points)
                         }
                     }
-                } else return allPolygons
+                    "MultiPolygon" -> {
+                        val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                        productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
+                            polyCoordinates.forEach { coordinates ->
+                                val points: List<Point> = coordinates.map {
+                                    Point(it[0], it[1], SpatialReference.wgs84())
+                                }
+                                polygon = Polygon(points)
+                            }
+                        }
+                    }
+                    else -> return allProducts
+                }
 
                 val firstOffsetDateTime = p.imagingTimeBeginUTC
                 val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
@@ -148,22 +176,22 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
                 val boxArea = GeometryEngine.area(boxPolygon)
 
                 if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                    allPolygons.add(polyObject)
+                    val product = Product(date = p.ingestionDate, intersection = abs(intersectionArea), start = firstDate, end = secondDate)
+                    allProducts.add(product)
                 }
             }
         }
-        return allPolygons
+        return allProducts
     }
 
-    private fun findBestProductIntersection(allPolygons: MutableList<PolyObject>, boxPolygon: Polygon): PolyObject? {
-        allPolygons.sortByDescending(PolyObject::date)
+    private fun findBestProductIntersection(allProducts: MutableList<Product>, boxPolygon: Polygon): Product? {
+        allProducts.sortByDescending(Product::date)
         val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
 
         val boxArea = GeometryEngine.area(boxPolygon)
-        val polyProduct = allPolygons.find { poly ->  (poly.intersection / abs(boxArea) >= interPolygon)} ?: allPolygons.getOrNull(0)
+        val bestProduct = allProducts.find { prd ->  (prd.intersection / abs(boxArea) >= interPolygon)} ?: allProducts.getOrNull(0)
 
-        return polyProduct
+        return bestProduct
     }
     @RequiresApi(Build.VERSION_CODES.R)
     override suspend fun renderBaseMap() {
@@ -287,9 +315,5 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
         }
 
         return graphicsOverlay
-    }
-
-    override fun onDelivery() {
-        TODO("Not yet implemented")
     }
 }

@@ -25,10 +25,8 @@ abstract class MapInteraction<T: View>(protected val ctx: Context, protected val
 
     abstract val mapView: T
     abstract fun setMapView(parent: FrameLayout, lifecycle: Lifecycle)
-    abstract fun renderBBoxData(renderedData: (inBBox: Boolean, polyProduct: PolyObject?, area: Double) -> Unit)
+    abstract fun renderBBoxData(): PolyObject?
     abstract suspend fun renderBaseMap()
-    abstract fun onDelivery()
-
 
     @RequiresApi(Build.VERSION_CODES.R)
     protected fun getBaseMapLocation(): String{
