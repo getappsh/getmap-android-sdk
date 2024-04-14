@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
 import com.arcgismaps.Color
 import com.arcgismaps.data.GeoPackage
+import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.Polygon
 import com.arcgismaps.geometry.SpatialReference
@@ -24,8 +25,10 @@ import com.arcgismaps.mapping.symbology.VerticalAlignment
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.MapView
+import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.example.example_app.DiscoveryProductsManager
 import com.example.example_app.MultiPolygonDto
+import com.example.example_app.PolyObject
 import com.example.example_app.PolygonDTO
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
@@ -34,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 
 class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteraction<MapView>(ctx, service) {
@@ -50,10 +54,117 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
         lifecycle.addObserver(mapView)
     }
 
-    override fun checkBBoxBeforeSent() {
-        TODO("Not yet implemented")
+    override fun renderBBoxData(renderedData: (inOtherMap: Boolean, polyProduct: PolyObject?, area: Double) -> Unit) {
+        val polygonPoints = getPolygonPoints()
+
+        val area = calculateArea(polygonPoints)
+
+        val boxPolygon = Polygon(polygonPoints)
+        val containingProducts = findContainingProducts(boxPolygon)
+        val polyProduct = findBestProductIntersection(containingProducts, boxPolygon)
+
+        val inOtherMap = inExistingMap(boxPolygon);
+
+        renderedData(inOtherMap, polyProduct, area)
     }
 
+    private fun inExistingMap(boxPolygon: Polygon): Boolean{
+        return loadedProductsPolys.any { p ->
+            val intersection = GeometryEngine.intersectionOrNull(p, boxPolygon)
+            if (intersection != null) {
+                val intersectionArea = GeometryEngine.area(intersection)
+                val boxArea = GeometryEngine.area(boxPolygon)
+                (abs(intersectionArea) / abs(boxArea) > 0.0)
+            }else
+                false
+        }
+    }
+    private fun getPolygonPoints(): List<Point> {
+        val height = ctx.resources.displayMetrics.heightPixels
+        val width = ctx.resources.displayMetrics.widthPixels
+
+        val leftTop = ScreenCoordinate(100.0, height - 550.0)
+        val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
+        val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
+        val leftBottom = ScreenCoordinate(100.0, 550.0)
+
+        val screenToLocation = mapView::screenToLocation
+        return listOf(
+            screenToLocation(leftTop) ?: Point(1.0, 0.0),
+            screenToLocation(rightTop) ?: Point(0.5, 0.0),
+            screenToLocation(rightBottom) ?: Point(0.0, 1.0),
+            screenToLocation(leftBottom) ?: Point(0.0, 0.5)
+        )
+    }
+
+    private fun calculateArea(polygonPoints: List<Point>): Double {
+        val pLeftTop = polygonPoints[0]
+        val pRightTop = polygonPoints[1]
+        val width = calculateDistance(pLeftTop.x, pLeftTop.y, pRightTop.x, pRightTop.y) / 1000
+        val height = calculateDistance(pLeftTop.x, pLeftTop.y, polygonPoints[3].x,  polygonPoints[3].y) / 1000
+        return width * height
+    }
+
+    private fun findContainingProducts(boxPolygon: Polygon): MutableList<PolyObject> {
+        val allPolygons = mutableListOf<PolyObject>()
+
+        val gson = Gson()
+
+        DiscoveryProductsManager.getInstance().products.forEach { p ->
+            run {
+                val json = JSONObject(p.footprint)
+                val type = json.getString("type")
+
+                var polygon: Polygon? = null
+                if (type == "Polygon") {
+                    val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
+                    productPolyDTO.coordinates.forEach { coordinates ->
+                        val points: List<Point> = coordinates.map {
+                            Point(it[0], it[1], SpatialReference.wgs84())
+                        }
+                        polygon = Polygon(points)
+                    }
+                } else if (type == "MultiPolygon") {
+                    val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                    productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
+                        polyCoordinates.forEach { coordinates ->
+                            val points: List<Point> = coordinates.map {
+                                Point(it[0], it[1], SpatialReference.wgs84())
+                            }
+                            polygon = Polygon(points)
+                        }
+                    }
+                } else return allPolygons
+
+                val firstOffsetDateTime = p.imagingTimeBeginUTC
+                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                val firstDate = sdf.format(firstOffsetDateTime)
+                val secondOffsetDateTime = p.imagingTimeEndUTC
+                val secondDate = sdf.format(secondOffsetDateTime)
+                val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+
+                val intersection = GeometryEngine.intersectionOrNull(polygon!!, boxPolygon)
+                val intersectionArea = GeometryEngine.area(intersection!!)
+                val boxArea = GeometryEngine.area(boxPolygon)
+
+                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                    allPolygons.add(polyObject)
+                }
+            }
+        }
+        return allPolygons
+    }
+
+    private fun findBestProductIntersection(allPolygons: MutableList<PolyObject>, boxPolygon: Polygon): PolyObject? {
+        allPolygons.sortByDescending(PolyObject::date)
+        val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+
+        val boxArea = GeometryEngine.area(boxPolygon)
+        val polyProduct = allPolygons.find { poly ->  (poly.intersection / abs(boxArea) >= interPolygon)} ?: allPolygons.getOrNull(0)
+
+        return polyProduct
+    }
     @RequiresApi(Build.VERSION_CODES.R)
     override suspend fun renderBaseMap() {
         val geoPackage = GeoPackage(getBaseMapLocation())
