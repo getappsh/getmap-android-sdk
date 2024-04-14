@@ -102,6 +102,13 @@ class MapActivity : AppCompatActivity() {
         val close = findViewById<Button>(R.id.close)
         close.visibility = View.INVISIBLE
 
+        val compass = findViewById<View>(R.id.arrow)
+        compass.setOnClickListener {
+            lifecycleScope.launch {
+                showNorth()
+            }
+        }
+
         val back = findViewById<Button>(R.id.back)
         back.setOnClickListener {
             delivery.visibility = View.VISIBLE
@@ -144,13 +151,6 @@ class MapActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             mapView.onPan.collect {
                checkBboxBeforeSent()
-            }
-        }
-
-        val compass = findViewById<View>(R.id.arrow)
-        compass.setOnClickListener {
-            lifecycleScope.launch {
-                showNorth()
             }
         }
     }
@@ -550,6 +550,4 @@ class MapActivity : AppCompatActivity() {
 //        // Add the WMTS layer to the map view
 //        mapView.map.operationalLayers.add(wmtsLayer)
     }
-
-    fun showNorth(view: View) {}
 }
