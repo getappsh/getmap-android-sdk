@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
-    private lateinit var pathSd: String
+//    private lateinit var pathSd: String
     private lateinit var syncButton: ImageButton
 
     //    private lateinit var mapServiceManager: MapServiceManager

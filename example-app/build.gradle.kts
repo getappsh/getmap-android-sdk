@@ -58,6 +58,7 @@ android {
 dependencies {
 //    implementation("com.esri.arcgisruntime:arcgis-android:100.10.0")
     implementation("com.esri:arcgis-maps-kotlin:200.3.0")
+    implementation("gov.nasa.worldwind.android:worldwind:0.8.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(project(mapOf("path" to ":sdk")))

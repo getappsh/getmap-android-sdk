@@ -6,14 +6,14 @@
     android:layout_height="match_parent"
     android:layout_marginTop="15px">
 
-    <com.arcgismaps.mapping.view.MapView
+    <FrameLayout
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="-16dp"
         tools:layout_editor_absoluteY="-51dp">
 
-    </com.arcgismaps.mapping.view.MapView>
+    </FrameLayout>
 
 
     <FrameLayout
