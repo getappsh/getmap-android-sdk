@@ -116,6 +116,9 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
             screenToLocation(rightBottom) ?: return null,
             screenToLocation(leftBottom) ?: return null
         )
+        if (points.any { it == null }){
+            return null
+        }
         return points
     }
 
