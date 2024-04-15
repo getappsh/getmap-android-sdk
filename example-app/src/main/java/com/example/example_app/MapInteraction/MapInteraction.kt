@@ -2,7 +2,6 @@ package com.example.example_app.MapInteraction
 
 import android.content.Context
 import android.os.Build
-import android.os.Environment
 import android.os.storage.StorageManager
 import android.util.Log
 import android.view.View
@@ -10,7 +9,6 @@ import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
-import com.example.example_app.PolyObject
 import com.ngsoft.getapp.sdk.GetMapService
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -35,8 +33,7 @@ abstract class MapInteraction<T: View>(protected val ctx: Context, protected val
         val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
         Log.i(TAG, "$volume")
 
-//        return "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
-        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).path.toString() + "/gaza1.gpkg"
+        return "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
     }
 
 

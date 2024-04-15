@@ -30,9 +30,7 @@ import com.arcgismaps.mapping.view.MapView
 import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.example.example_app.DiscoveryProductsManager
 import com.example.example_app.MultiPolygonDto
-import com.example.example_app.PolyObject
 import com.example.example_app.PolygonDTO
-import com.example.example_app.Product
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.CoroutineScope

@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.example_app.MapInteraction
 
 import java.time.OffsetDateTime
 data class Product(

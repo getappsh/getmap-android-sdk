@@ -14,13 +14,13 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.example_app.MapInteraction.ArcGISMapInteraction
+import com.example.example_app.MapInteraction.PolyObject
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
