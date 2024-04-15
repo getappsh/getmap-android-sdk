@@ -23,7 +23,7 @@ abstract class MapInteraction<T: View>(protected val ctx: Context, protected val
 
     abstract val mapView: T
     abstract fun setMapView(parent: FrameLayout, lifecycle: Lifecycle)
-    abstract fun renderBBoxData(): PolyObject?
+    abstract fun generateBoundingInfo(): PolyObject?
     abstract suspend fun renderBaseMap()
 
     @RequiresApi(Build.VERSION_CODES.R)

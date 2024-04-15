@@ -63,7 +63,7 @@ class ArcGISMapInteraction(ctx: Context, service: GetMapService) : MapInteractio
         lifecycle.addObserver(mapView)
     }
 
-    override fun renderBBoxData(): PolyObject? {
+    override fun generateBoundingInfo(): PolyObject? {
         val polygonPoints = getPolygonPoints() ?: return null
 
         val area = calculateArea(polygonPoints)

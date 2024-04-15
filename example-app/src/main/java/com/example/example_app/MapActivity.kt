@@ -82,7 +82,7 @@ class MapActivity : AppCompatActivity() {
 
         deliveryButton.visibility = View.INVISIBLE
         deliveryButton.setOnClickListener {
-            val poly = mapInteraction.renderBBoxData()
+            val poly = mapInteraction.generateBoundingInfo()
 //            poly?.let { updateUIWithIntersectionInfo(it) }
             if (poly == null || poly.inCollision){
                 Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
@@ -137,7 +137,7 @@ class MapActivity : AppCompatActivity() {
             if (!selectMode) {
                 return@collect
             }
-            val poly = mapInteraction.renderBBoxData() ?: return@collect
+            val poly = mapInteraction.generateBoundingInfo() ?: return@collect
             updateUIWithIntersectionInfo(poly)
         }
     }
