@@ -34,13 +34,10 @@ class Sdk4ASIOIntegrationTest {
         fun setup() {
             println("Test setup...")
             val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
-            println("Path: $path")
             val cfg = Configuration(
                 "http://getapp-dev.getapp.sh:3000",
                 "rony@example.com",
                 "rony123",
-                path,
                 16,
                 null
             )

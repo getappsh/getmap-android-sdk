@@ -33,7 +33,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         super.init(configuration)
         zoomLevel = configuration.zoomLevel
 
-        packagesDownloader = PackagesDownloader(appCtx, configuration.storagePath, super.downloader)
+        packagesDownloader = PackagesDownloader(appCtx, config.storagePath, super.downloader)
         extentUpdates = ExtentUpdates(appCtx)
 
         return true
