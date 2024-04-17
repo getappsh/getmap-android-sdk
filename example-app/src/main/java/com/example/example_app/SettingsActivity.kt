@@ -103,10 +103,10 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 hideKeyboard()
                 params = nebulaParamAdapter.getParams()
-                val hasChanged: List<String> = hasChanged(service, params)
+                val hasChanged: LinkedHashMap<String,String> = hasChanged(service, params)
                 if (hasChanged.isNotEmpty()) {
                     hasChanged.forEach { e ->
-                        TrackHelper.track().dimension(1, e).event("מיפוי ענן", "נתונים השתנו")
+                        TrackHelper.track().dimension(1, e.value).event("מיפוי ענן", "נתונים השתנו ב-${e.key}")
                             .name("שינוי הגדרות")
                             .with(tracker)
                     }
@@ -337,35 +337,39 @@ private fun saveLocalToService(
 
 }
 
-private fun hasChanged(service: GetMapService, params: Array<NebulaParam>): List<String> {
-    var toReturn = ArrayList<String>()
+private fun hasChanged(service: GetMapService, params: Array<NebulaParam>): LinkedHashMap<String, String> {
+    var toReturn = LinkedHashMap<String,String>()
 
     if (service.config.baseUrl != params[0].value)
-        toReturn.add("URL")
+        toReturn["URL"] = params[0].value
     if (service.config.downloadRetry != params[1].value.toInt())
-        toReturn.add("DownloadRetry")
+        toReturn["DownloadRetry"] = params[1].value
     if (service.config.deliveryTimeoutMins != params[2].value.toInt())
-        toReturn.add("deliveryTimeoutMins")
+        toReturn["deliveryTimeoutMins"] = params[2].value
     if (service.config.matomoUrl != params[3].value)
-        toReturn.add("matomoUrl")
+        toReturn["matomoUrl"] =  params[3].value
     if (service.config.matomoUpdateIntervalMins != params[4].value.toInt())
-        toReturn.add("matomoUpdateIntervalMins")
+        toReturn["matomoUpdateIntervalMins"] = params[4].value
     if (service.config.maxMapSizeInMB != params[5].value.toLong())
-        toReturn.add("maxMapSizeInMB")
+        toReturn["maxMapSizeInMB"] = params[5].value
     if (service.config.maxParallelDownloads != params[7].value.toInt())
-        toReturn.add("maxParallelDownloads")
+        toReturn["maxParallelDownloads"] = params[7].value
     if (service.config.minAvailableSpaceMB != params[8].value.toLong())
-        toReturn.add("minAvailableSpaceMB")
+        toReturn["minAvailableSpaceMB"] = params[8].value
     if (service.config.periodicConfIntervalMins != params[9].value.toInt())
-        toReturn.add("periodicConfIntervalMins")
+        toReturn["periodicConfIntervalMins"] = params[9].value
     if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
-        toReturn.add("periodicInventoryIntervalMins")
+        toReturn["periodicInventoryIntervalMins"] = params[10].value
     if (service.config.matomoSiteId != params[11].value)
-        toReturn.add("matomoSiteId")
+        toReturn["matomoSiteId"] = params[11].value
     if (service.config.matomoDimensionId != params[12].value)
-        toReturn.add("matomoDimensionId")
+        toReturn["matomoDimensionId"] = params[12].value
 
     return toReturn
+}
+
+private fun <E> ArrayList<E>.add(index: E, element: E) {
+
 }
 
 private fun NotifyValidity(notification: Toast?, context: Context) {

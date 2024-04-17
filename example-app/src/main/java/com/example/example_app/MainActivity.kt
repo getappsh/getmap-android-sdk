@@ -292,7 +292,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun onDiscovery() {
 
-        TrackHelper.track().screen("/בחירת בול").with(tracker)
+        TrackHelper.track().screen("/בחירת תיחום").with(tracker)
         Log.d(TAG, "onDiscovery");
         showLoadingDialog("פותח את המפה")
         GlobalScope.launch(Dispatchers.IO) {
