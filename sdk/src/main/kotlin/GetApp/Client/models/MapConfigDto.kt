@@ -36,6 +36,8 @@ import com.squareup.moshi.JsonClass
  * @param matomoUrl 
  * @param matomoDimensionId 
  * @param matomoSiteId 
+ * @param relativeStoragePath 
+ * @param useSDCard 
  * @param lastCheckingMapUpdatesDate 
  * @param lastConfigUpdateDate 
  */
@@ -84,6 +86,12 @@ data class MapConfigDto (
 
     @Json(name = "matomoSiteId")
     val matomoSiteId: kotlin.String? = null,
+
+    @Json(name = "relativeStoragePath")
+    val relativeStoragePath: kotlin.String? = null,
+
+    @Json(name = "useSDCard")
+    val useSDCard: kotlin.Boolean? = null,
 
     @Json(name = "lastCheckingMapUpdatesDate")
     val lastCheckingMapUpdatesDate: java.time.OffsetDateTime? = null,
