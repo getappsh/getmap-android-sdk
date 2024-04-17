@@ -3,6 +3,7 @@ package com.ngsoft.getapp.sdk
 import android.content.Context
 import android.content.Context.STORAGE_SERVICE
 import android.os.Build
+import android.os.Environment
 import android.os.storage.StorageManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -38,7 +39,6 @@ internal class ServiceConfig private constructor(private var appContext: Context
             pref.storagePath = value
         }
     override var relativeStoragePath: String = pref.relativeStoragePath
-        @RequiresApi(Build.VERSION_CODES.R)
         set(value) {
             if (field != value){
                 field = value
@@ -47,7 +47,6 @@ internal class ServiceConfig private constructor(private var appContext: Context
         }
 
     override var useSDCard: Boolean = pref.useSDCard
-        @RequiresApi(Build.VERSION_CODES.R)
         set(value){
             if (field != value){
                 field = value
@@ -55,16 +54,18 @@ internal class ServiceConfig private constructor(private var appContext: Context
             }
         }
 
-    @RequiresApi(Build.VERSION_CODES.R)
-    fun updateStoragePath(){
+    private fun updateStoragePath(){
         val storageManager: StorageManager = appContext.getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
-        val base = if (this.useSDCard && storageList.size > 1){
+
+        val base = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+            Environment.getExternalStorageDirectory()
+        } else if (this.useSDCard && storageList.size > 1){
             storageList[1].directory?.absoluteFile
         }else {
             storageList[0].directory?.absoluteFile
-
         }
+        Environment.getExternalStorageDirectory()
         try {
             val storageDir = File(base, this.relativeStoragePath)
             storageDir.mkdirs()
