@@ -1,7 +1,14 @@
 package com.ngsoft.getapp.sdk
 
 import android.content.Context
+import android.content.Context.STORAGE_SERVICE
+import android.os.Build
+import android.os.storage.StorageManager
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import timber.log.Timber
+import java.io.File
 import java.time.OffsetDateTime
 
 internal class ServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
@@ -30,7 +37,43 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.storagePath = value
         }
+    override var relativeStoragePath: String = pref.relativeStoragePath
+        @RequiresApi(Build.VERSION_CODES.R)
+        set(value) {
+            if (field != value){
+                field = value
+                updateStoragePath()
+            }
+        }
 
+    override var useSDCard: Boolean = pref.useSDCard
+        @RequiresApi(Build.VERSION_CODES.R)
+        set(value){
+            if (field != value){
+                field = value
+                updateStoragePath()
+            }
+        }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun updateStoragePath(){
+        val storageManager: StorageManager = appContext.getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+        val base = if (this.useSDCard && storageList.size > 1){
+            storageList[1].directory?.absoluteFile
+        }else {
+            storageList[0].directory?.absoluteFile
+
+        }
+        try {
+            val storageDir = File(base, this.relativeStoragePath)
+            storageDir.mkdirs()
+            storagePath  = storageDir.absolutePath
+        }catch (e: Exception){
+            Timber.e("Error update storage path. useSD: $useSDCard, relativePath: $relativeStoragePath, error: ${e.message}")
+            Toast.makeText(appContext, "Error update storage path, error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
     override var downloadPath: String = pref.downloadPath
         set(value) {
             field = value
