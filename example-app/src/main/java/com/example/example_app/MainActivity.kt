@@ -190,7 +190,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             TrackHelper.track().event("מיפוי ענן", "ניהול בולים").name("רענון").with(tracker)
             GlobalScope.launch(Dispatchers.IO) {
 //                mapServiceManager.service.synchronizeMapData()
-                CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
+                CoroutineScope(Dispatchers.Default).launch {
+                    mapServiceManager.service.synchronizeMapData()
+                }
             }
             swipeRecycler.isRefreshing = false
         }
@@ -538,6 +540,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             TrackHelper.track().dimension(1, "עדכן בול").screen(this).with(tracker)
             popUp.mapId = id
             popUp.type = "updateOne"
+            popUp.recyclerView = recyclerView
             popUp.handler = downloadStatusHandler
             popUp.textM = "האם לבצע עדכון מפה ?"
             popUp.show(supportFragmentManager, "updateOne")

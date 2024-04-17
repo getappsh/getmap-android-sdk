@@ -103,6 +103,7 @@ class PopUp : DialogFragment() {
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
                     service.downloadUpdatedMap(mapId, handler)
+                    recyclerView.smoothScrollToPosition(0)
                 }
             } else if (type == "cancelled") {
                 TrackHelper.track().dimension(1, mapId).event("מיפוי ענן", "ניהול בקשות")
