@@ -103,10 +103,11 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 hideKeyboard()
                 params = nebulaParamAdapter.getParams()
-                val hasChanged: LinkedHashMap<String,String> = hasChanged(service, params)
+                val hasChanged: LinkedHashMap<String, String> = hasChanged(service, params)
                 if (hasChanged.isNotEmpty()) {
                     hasChanged.forEach { e ->
-                        TrackHelper.track().dimension(1, e.value).event("מיפוי ענן", "נתונים השתנו ב-${e.key}")
+                        TrackHelper.track().dimension(1, e.value)
+                            .event("מיפוי ענן", "נתונים השתנו ב-${e.key}")
                             .name("שינוי הגדרות")
                             .with(tracker)
                     }
@@ -273,14 +274,18 @@ private fun saveLocalToService(
 ) {
 
     var notifValidation: Toast? = null
-    val reg: Regex = Regex("[a-zA-Z]")
-    if (params[1].value != "")
+    val reg = Regex("[a-zA-Z]")
+      if (params[1].value != "")
         if (!params[1].value.contains(regex = reg))
             service.config.downloadRetry = params[1].value.toInt()
         else {
             NotifyValidity(notifValidation, context)
             params[1].value = service.config.downloadRetry.toString()
         }
+    else {
+        params[1].value = service.config.downloadRetry.toString()
+          NotifyValidity(notifValidation,context)
+    }
     if (params[2].value != "")
         if (!params[2].value.contains(regex = reg))
             service.config.deliveryTimeoutMins = params[2].value.toInt()
@@ -288,6 +293,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[2].value = service.config.deliveryTimeoutMins.toString()
         }
+    else{
+        NotifyValidity(notifValidation,context)
+        params[2].value = service.config.deliveryTimeoutMins.toString()
+    }
     if (params[3].value != "") service.config.matomoUrl = params[3].value
     if (params[4].value != "")
         if (!params.get(4).value.contains(regex = reg))
@@ -296,6 +305,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[4].value = service.config.matomoUpdateIntervalMins.toString()
         }
+    else{
+        NotifyValidity(notifValidation,context)
+        params[4].value = service.config.matomoUpdateIntervalMins.toString()
+    }
     if (params[5].value != "")
         if (!params[5].value.contains(regex = reg))
             service.config.maxMapSizeInMB = params[5].value.toLong()
@@ -303,6 +316,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[5].value = service.config.maxMapSizeInMB.toString()
         }
+    else{
+        NotifyValidity(notifValidation,context)
+        params[5].value = service.config.maxMapSizeInMB.toString()
+    }
     if (params[7].value != "")
         if (!params[7].value.contains(regex = reg))
             service.config.maxParallelDownloads = params[7].value.toInt()
@@ -310,6 +327,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[7].value = service.config.maxParallelDownloads.toString()
         }
+    else{
+        NotifyValidity(notifValidation,context)
+        params[7].value = service.config.maxParallelDownloads.toString()
+    }
     if (params[8].value != "")
         if (!params[8].value.contains(regex = reg))
             service.config.minAvailableSpaceMB = params[8].value.toLong()
@@ -317,6 +338,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[8].value = service.config.minAvailableSpaceMB.toString()
         }
+    else{
+        NotifyValidity(notifValidation,context)
+        params[8].value = service.config.minAvailableSpaceMB.toString()
+    }
     if (params[9].value != "")
         if (!params[9].value.contains(regex = reg)) {
             service.config.periodicConfIntervalMins = params[9].value.toInt()
@@ -324,6 +349,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[9].value = service.config.periodicConfIntervalMins.toString()
         }
+    else{
+        NotifyValidity(notifValidation,context)
+        params[9].value = service.config.periodicConfIntervalMins.toString()
+    }
     if (params[10].value != "")
         if (!params[10].value.contains(regex = reg))
             service.config.periodicInventoryIntervalMins = params[10].value.toInt()
@@ -331,39 +360,60 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[10].value = service.config.periodicInventoryIntervalMins.toString()
         }
-    if (params[11].value != "") service.config.matomoSiteId = params[11].value
-    if (params[12].value != "") service.config.matomoDimensionId =
-        params[12].value
+    else{
+        NotifyValidity(notifValidation,context)
+        params[10].value = service.config.periodicInventoryIntervalMins.toString()
+    }
+    if (params[11].value != "")
+        service.config.matomoSiteId = params[11].value
+    if (params[12].value != "")
+        service.config.matomoDimensionId = params[12].value
 
 }
 
-private fun hasChanged(service: GetMapService, params: Array<NebulaParam>): LinkedHashMap<String, String> {
-    var toReturn = LinkedHashMap<String,String>()
+private fun hasChanged(
+    service: GetMapService,
+    params: Array<NebulaParam>,
+): LinkedHashMap<String, String> {
+    var toReturn = LinkedHashMap<String, String>()
 
-    if (service.config.baseUrl != params[0].value)
-        toReturn["URL"] = params[0].value
-    if (service.config.downloadRetry != params[1].value.toInt())
-        toReturn["DownloadRetry"] = params[1].value
-    if (service.config.deliveryTimeoutMins != params[2].value.toInt())
-        toReturn["deliveryTimeoutMins"] = params[2].value
-    if (service.config.matomoUrl != params[3].value)
-        toReturn["matomoUrl"] =  params[3].value
-    if (service.config.matomoUpdateIntervalMins != params[4].value.toInt())
-        toReturn["matomoUpdateIntervalMins"] = params[4].value
-    if (service.config.maxMapSizeInMB != params[5].value.toLong())
-        toReturn["maxMapSizeInMB"] = params[5].value
-    if (service.config.maxParallelDownloads != params[7].value.toInt())
-        toReturn["maxParallelDownloads"] = params[7].value
-    if (service.config.minAvailableSpaceMB != params[8].value.toLong())
-        toReturn["minAvailableSpaceMB"] = params[8].value
-    if (service.config.periodicConfIntervalMins != params[9].value.toInt())
-        toReturn["periodicConfIntervalMins"] = params[9].value
-    if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
-        toReturn["periodicInventoryIntervalMins"] = params[10].value
-    if (service.config.matomoSiteId != params[11].value)
-        toReturn["matomoSiteId"] = params[11].value
-    if (service.config.matomoDimensionId != params[12].value)
-        toReturn["matomoDimensionId"] = params[12].value
+    if (params[0].value != "")
+        if (service.config.baseUrl != params[0].value)
+            toReturn["URL"] = params[0].value
+    if (params[1].value != "")
+        if (service.config.downloadRetry != params[1].value.toInt())
+            toReturn["DownloadRetry"] = params[1].value
+    if (params[2].value != "")
+        if (service.config.deliveryTimeoutMins != params[2].value.toInt())
+            toReturn["deliveryTimeoutMins"] = params[2].value
+    if (params[3].value != "")
+        if (service.config.matomoUrl != params[3].value)
+            toReturn["matomoUrl"] = params[3].value
+    if (params[4].value != "")
+        if (service.config.matomoUpdateIntervalMins != params[4].value.toInt())
+            toReturn["matomoUpdateIntervalMins"] = params[4].value
+    if (params[5].value != "")
+        if (service.config.maxMapSizeInMB != params[5].value.toLong())
+            toReturn["maxMapSizeInMB"] = params[5].value
+    if (params[7].value != "")
+        if (service.config.maxParallelDownloads != params[7].value.toInt())
+            toReturn["maxParallelDownloads"] = params[7].value
+    if (params[8].value != "")
+        if (service.config.minAvailableSpaceMB != params[8].value.toLong())
+            toReturn["minAvailableSpaceMB"] = params[8].value
+    if (params[9].value != "")
+        if (service.config.periodicConfIntervalMins != params[9].value.toInt())
+            toReturn["periodicConfIntervalMins"] = params[9].value
+    if (params[10].value != "")
+        if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
+            toReturn["periodicInventoryIntervalMins"] = params[10].value
+    if (params[11].value != "")
+        if (service.config.matomoSiteId != params[11].value)
+            toReturn["matomoSiteId"] = params[11].value
+    if (params[12].value != "")
+        if (service.config.matomoDimensionId != params[12].value)
+            toReturn["matomoDimensionId"] = params[12].value
+
 
     return toReturn
 }
