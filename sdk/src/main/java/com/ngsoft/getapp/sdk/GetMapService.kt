@@ -230,6 +230,18 @@ interface GetMapService {
          */
         val storagePath: String
 
+
+        /**
+         * Relative path to stored maps
+         */
+
+        val relativeStoragePath: String
+
+        /**
+         * Save the map to SD Card when exists
+         */
+        var useSDCard: Boolean
+
         /**
          * Path where downloaded maps are saved.
          */

@@ -64,7 +64,6 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TimberLogger.initTimber()
         Timber.i("Init GetMapService")
 
-        config.storagePath = configuration.storagePath
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
         val dir = Environment.DIRECTORY_DOWNLOADS

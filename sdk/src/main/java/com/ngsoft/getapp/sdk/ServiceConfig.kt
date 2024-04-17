@@ -1,7 +1,15 @@
 package com.ngsoft.getapp.sdk
 
 import android.content.Context
+import android.content.Context.STORAGE_SERVICE
+import android.os.Build
+import android.os.Environment
+import android.os.storage.StorageManager
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import timber.log.Timber
+import java.io.File
 import java.time.OffsetDateTime
 
 internal class ServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
@@ -30,7 +38,43 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.storagePath = value
         }
+    override var relativeStoragePath: String = pref.relativeStoragePath
+        set(value) {
+            if (field != value){
+                field = value
+                updateStoragePath()
+            }
+        }
 
+    override var useSDCard: Boolean = pref.useSDCard
+        set(value){
+            if (field != value){
+                field = value
+                updateStoragePath()
+            }
+        }
+
+    private fun updateStoragePath(){
+        val storageManager: StorageManager = appContext.getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+
+        val base = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+            Environment.getExternalStorageDirectory()
+        } else if (this.useSDCard && storageList.size > 1){
+            storageList[1].directory?.absoluteFile
+        }else {
+            storageList[0].directory?.absoluteFile
+        }
+        Environment.getExternalStorageDirectory()
+        try {
+            val storageDir = File(base, this.relativeStoragePath)
+            storageDir.mkdirs()
+            storagePath  = storageDir.absolutePath
+        }catch (e: Exception){
+            Timber.e("Error update storage path. useSD: $useSDCard, relativePath: $relativeStoragePath, error: ${e.message}")
+            Toast.makeText(appContext, "Error update storage path, error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
     override var downloadPath: String = pref.downloadPath
         set(value) {
             field = value

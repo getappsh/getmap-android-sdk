@@ -76,14 +76,12 @@ class MainActivity : AppCompatActivity() {
 
 
         val cfg = Configuration(
-            "http://getapp-test.getapp.sh:3000",
+            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
 //            "http://192.168.2.26:3000",
 //            "http://getapp-dev.getapp.sh:3000",
 //            "http://localhost:3333",
             "rony@example.com",
             "rony123",
-//            File("/storage/1115-0C18/com.asio.gis").path,
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
             16,
             null
         )
