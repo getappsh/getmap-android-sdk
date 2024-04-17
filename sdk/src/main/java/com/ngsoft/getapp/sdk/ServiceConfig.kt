@@ -42,6 +42,7 @@ internal class ServiceConfig private constructor(private var appContext: Context
         set(value) {
             if (field != value){
                 field = value
+                pref.relativeStoragePath = value
                 updateStoragePath()
             }
         }
@@ -50,6 +51,7 @@ internal class ServiceConfig private constructor(private var appContext: Context
         set(value){
             if (field != value){
                 field = value
+                pref.useSDCard = useSDCard
                 updateStoragePath()
             }
         }
