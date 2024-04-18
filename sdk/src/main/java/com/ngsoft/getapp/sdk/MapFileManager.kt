@@ -14,11 +14,11 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader) {
+internal class MapFileManager(private val appCtx: Context) {
     private val _tag = "MapManager"
 
     val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
-
+    private val downloader =  PackageDownloader(appCtx, config.downloadPath)
 
     fun getJsonString(jsonName: String?): JSONObject?{
         jsonName ?: return null
