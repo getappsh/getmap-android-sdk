@@ -32,8 +32,8 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     private var config = ServiceConfig.getInstance(appCtx)
     private var mapRepo = MapRepo(appCtx)
-    private var downloader = PackageDownloader(appCtx, Environment.DIRECTORY_DOWNLOADS)
-    private var mapFileManager =  MapFileManager(appCtx, downloader)
+    private var downloader = PackageDownloader(appCtx, config.downloadPath)
+    private var mapFileManager =  MapFileManager(appCtx)
     private var pref = Pref.getInstance(appCtx)
     private var client = GetAppClient(ConnectionConfig(pref.baseUrl, pref.username, pref.password))
     private val app = appCtx as Application

@@ -39,7 +39,6 @@ class SystemTestActivity : AppCompatActivity() {
             "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
             "rony@example.com",
             "rony123",
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
             16,
             null
         )

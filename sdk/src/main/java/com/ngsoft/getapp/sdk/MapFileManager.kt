@@ -1,11 +1,14 @@
 package com.ngsoft.getapp.sdk
 
 import android.content.Context
+import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
+import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
+import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
@@ -14,10 +17,12 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-internal class MapFileManager(private val appCtx: Context, private val downloader: PackageDownloader) {
+internal class MapFileManager(private val appCtx: Context) {
     private val _tag = "MapManager"
 
     val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
+    private val downloader =  PackageDownloader(appCtx, config.downloadPath)
+    private val mapRepo = MapRepo(appCtx)
 
 
     fun getJsonString(jsonName: String?): JSONObject?{
@@ -228,5 +233,106 @@ internal class MapFileManager(private val appCtx: Context, private val downloade
         mapPkg.metadata.jsonDone = jsonDone
 
         return mapPkg
+    }
+
+
+    fun synchronizeMapData(){
+        Timber.d("synchronizeMapData")
+        syncDatabase ()
+        syncStorage()
+    }
+    private fun syncDatabase (){
+        Timber.i("syncDatabase")
+        val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.DONE ||
+                it.state == MapDeliveryState.ERROR || it.state == MapDeliveryState.CANCEL ||
+                it.state == MapDeliveryState.PAUSE || it.state == MapDeliveryState.DELETED ||
+                it.state == MapDeliveryState.DOWNLOAD}
+
+        for (map in mapsData) {
+            Timber.d("syncDatabase  - map id: ${map.id}, state: ${map.state}")
+
+            if (map.state == MapDeliveryState.DELETED) {
+                this.deleteMapFiles(map.fileName, map.jsonName)
+                continue
+            }
+
+            val rMap = this.refreshMapState(map.copy())
+            if(map.state == MapDeliveryState.DOWNLOAD || map.state == MapDeliveryState.CONTINUE){
+                if ((rMap.metadata.mapDone ||!downloader.isDownloadFailed(map.MDID)) &&
+                    (rMap.metadata.jsonDone || !downloader.isDownloadFailed(map.JDID))){
+                    continue
+                }
+            }
+
+            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
+                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
+        }
+    }
+
+    private fun syncStorage(){
+        Timber.i("syncStorage")
+        val dir =  File(config.storagePath)
+        val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
+        val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
+        val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
+
+//        delete map file when there is no corresponding json file and no record in the DB
+        mapFiles?.forEach { file ->
+            val correspondingJsonFile = File(FileUtils.changeFileExtensionToJson(file.absolutePath))
+            if (!this.mapRepo.doesMapFileExist(file.name) && !correspondingJsonFile.exists()) {
+                Timber.d("syncStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+//        delete journal file when there is no corresponding map file
+        journalFiles?.forEach { file ->
+            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
+            if (!correspondingMapFile.exists()) {
+                Timber.d("syncStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
+                file.delete()
+            }
+        }
+
+        jsonFiles?.forEach { file ->
+            if (!this.mapRepo.doesJsonFileExist(file.name)) {
+                Timber.d("syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
+
+                val pId: String; val bBox: String; val url: String?;
+                try{
+                    val json = JsonUtils.readJson(file.path)
+                    pId = json.getString("id")
+                    bBox = json.getString("productBoundingBox")
+                    url =  if (json.has("downloadUrl")) json.getString("downloadUrl") else null
+                }catch (e: JSONException){
+                    Timber.e("syncStorage - not valid json object: ${e.message.toString()}")
+                    Timber.d("syncStorage - delete json file: ${file.name}")
+                    file.delete()
+                    return@forEach
+                }
+
+                val mapPkg = this.refreshMapState(MapPkg(
+                    pId = pId,
+                    bBox = bBox,
+                    state = MapDeliveryState.ERROR,
+                    flowState = DeliveryFlowState.MOVE_FILES,
+                    url = url,
+                    fileName = FileUtils.changeFileExtensionToMap(file.name),
+                    jsonName = file.name,
+                    statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
+                ))
+
+                val id = this.mapRepo.save(mapPkg)
+                Timber.d("syncStorage - new map id: $id, deliveryFlowState: ${mapPkg.flowState} ")
+                if (mapPkg.flowState == DeliveryFlowState.MOVE_FILES){
+                    Timber.i("syncStorage - execute delivery flow for map id: $id")
+                    try {
+                        DeliveryForegroundService.startForId(appCtx, id)
+                    }catch (e: Exception){
+                        Timber.e("Failed to start the service, error: ${e.message}")
+
+                    }
+                }
+            }
+        }
     }
 }

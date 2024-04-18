@@ -64,16 +64,16 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TimberLogger.initTimber()
         Timber.i("Init GetMapService")
 
+        config.downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
-        val dir = Environment.DIRECTORY_DOWNLOADS
-        downloader = PackageDownloader(appCtx, dir)
+        downloader = PackageDownloader(appCtx, config.downloadPath)
 
         pref = Pref.getInstance(appCtx)
 
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
 
-        mapFileManager = MapFileManager(appCtx, downloader)
+        mapFileManager = MapFileManager(appCtx)
 
         cache = TilesCache(appCtx)
 
