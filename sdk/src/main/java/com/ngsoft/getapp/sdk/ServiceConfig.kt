@@ -6,7 +6,6 @@ import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
 import timber.log.Timber
 import java.io.File
@@ -67,11 +66,17 @@ internal class ServiceConfig private constructor(private var appContext: Context
         }else {
             storageList[0].directory?.absoluteFile
         }
-        Environment.getExternalStorageDirectory()
+
         try {
             val storageDir = File(base, this.relativeStoragePath)
             storageDir.mkdirs()
-            storagePath  = storageDir.absolutePath
+            if (storagePath != storageDir.absolutePath){
+                storagePath  = storageDir.absolutePath
+//                TODO Toast message?
+                Thread {
+                    MapFileManager(appContext).synchronizeMapData()
+                }.start()
+            }
         }catch (e: Exception){
             Timber.e("Error update storage path. useSD: $useSDCard, relativePath: $relativeStoragePath, error: ${e.message}")
             Toast.makeText(appContext, "Error update storage path, error: ${e.message}", Toast.LENGTH_LONG).show()
