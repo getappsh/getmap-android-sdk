@@ -40,7 +40,6 @@ class SdkIntegrationTests {
                 "rony@example.com",
                 "rony123",
                 //currently downloads file to a path within the public external storage directory
-                Environment.DIRECTORY_DOWNLOADS,
                 14,
                 null
             )

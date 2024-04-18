@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
-    private lateinit var pathSd: String
     private lateinit var syncButton: ImageButton
 
     //    private lateinit var mapServiceManager: MapServiceManager
@@ -105,16 +104,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = GetAvailableSpaceInSdCard()
 
-        //Get the path of SDCard
-        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes;
-        val volume =
-            if (storageList[1].directory?.absoluteFile != null) storageList[1].directory?.absoluteFile else Toast.makeText(
-                applicationContext,
-                "Please insert a SdCard !",
-                Toast.LENGTH_SHORT
-            ).show()
-        val pathSd = ("${volume}/com.asio.gis/gis/maps/raster/מיפוי ענן")
         if (!mapServiceManager.isInit) {
 
             var url = Pref.getInstance(this).baseUrl
@@ -123,14 +112,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             val cfg = Configuration(
                 url,
 //            "http://getapp-test.getapp.sh:3000",
-//            "http://192.168.2.26:3000",
                 "rony@example.com",
                 "rony123",
-//            File("/storage/1115-0C18/com.asio.gis").path,
-//            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
-                pathSd,
                 16,
-
                 null
             )
 
@@ -139,6 +123,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             } catch (_: Exception) {
             }
         }
+
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+        if(mapServiceManager.service.config.useSDCard && (storageList.size <= 1 || storageList[1].directory?.absoluteFile == null )) {
+            Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT).show()
+        }
+
         tracker = MatomoTracker.getTracker(this)
 //
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
@@ -166,7 +157,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     downloadListAdapter.availableUpdate
                 )
             }
-        }, pathSd, mapServiceManager,this)
+        }, mapServiceManager,this)
         //Set the adapter to listen to changes
         downloadListAdapter.addListener(this)
 
@@ -275,10 +266,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
-            intent.putExtra(
-                "pathSd",
-                pathSd
-            )
             startActivity(intent)
         }
     }

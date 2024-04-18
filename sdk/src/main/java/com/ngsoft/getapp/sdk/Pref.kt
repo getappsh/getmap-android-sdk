@@ -63,6 +63,14 @@ class Pref private constructor(context: Context) {
         get() = getString(STORAGE_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path)
         set(value) = setString(STORAGE_PATH, value)
 
+    var relativeStoragePath: String
+        get() = getString(RELATIVE_STORAGE_PATH, "com.asio.gis/gis/maps/raster/מיפוי ענן")
+        set(value) = setString(RELATIVE_STORAGE_PATH, value)
+
+    var useSDCard: Boolean
+        get() = getBoolean(USE_SD_CARD, true)
+        set(value) = setBoolean(USE_SD_CARD, value)
+
     var downloadPath: String
         get() = getString(DOWNLOAD_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)
         set(value) = setString(DOWNLOAD_PATH, value)
@@ -189,6 +197,8 @@ class Pref private constructor(context: Context) {
         private const val MATOMO_SITE_ID = "matomoSiteId"
         private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
         private const val STORAGE_PATH = "storagePath"
+        private const val RELATIVE_STORAGE_PATH = "relativeStoragePath"
+        private const val USE_SD_CARD = "useSdCard"
         private const val DOWNLOAD_PATH = "downloadPath"
         private const val DELIVERY_TIMEOUT = "deliveryTimeout"
         private const val DOWNLOAD_TIMEOUT = "downloadTimeout"
