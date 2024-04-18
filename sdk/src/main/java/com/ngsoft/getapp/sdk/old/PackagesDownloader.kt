@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.sdk.old
 
 import android.content.Context
+import android.os.Environment
 import timber.log.Timber
 import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.utils.FileUtils
@@ -38,7 +39,7 @@ data class DownloadProgress(
 internal class PackagesDownloader(context: Context, downloadDirectory: String, private var downloader: PackageDownloader?) {
     init {
         if(downloader == null)
-            downloader = PackageDownloader(context, downloadDirectory)
+            downloader = PackageDownloader(context, Environment.getExternalStoragePublicDirectory(downloadDirectory).path)
     }
 
     private data class DownloadTrack(
