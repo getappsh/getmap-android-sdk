@@ -87,6 +87,7 @@ class PopUp : DialogFragment() {
                     .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
 
                 GlobalScope.launch(Dispatchers.IO) {
+
                     service.getDownloadedMaps().forEach { mapData ->
                         if (!mapData.isUpdated) {
                             service.downloadUpdatedMap(

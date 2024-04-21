@@ -153,9 +153,10 @@ class SettingsActivity : AppCompatActivity() {
                         service.fetchInventoryUpdates()
 
                     } catch (e: Exception) {
-                        lastConfig.text = "lastConfig: an error occured"
-                        lastServerConfig.text = "lastServerConfig: an error occured"
-                        lastInventory.text = "lastInventory: an error occured"
+                        lastConfig.text = e.message.toString()
+                        Log.e("Fetch Config", e.message.toString())
+                        lastServerConfig.text = e.message.toString()
+                        lastInventory.text = e.message.toString()
                     }
                 }
                 withContext(Dispatchers.Main) {
