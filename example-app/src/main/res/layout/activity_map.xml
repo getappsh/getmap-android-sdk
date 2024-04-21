@@ -4,14 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="15px">
+    android:layout_marginTop="0px">
 
     <FrameLayout
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="-16dp"
-        tools:layout_editor_absoluteY="-51dp">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="-16dp">
 
     </FrameLayout>
 
@@ -29,7 +30,7 @@
         app:layout_constraintBottom_toBottomOf="@id/mapView"
         app:layout_constraintEnd_toEndOf="@id/mapView"
         app:layout_constraintStart_toStartOf="@id/mapView"
-        app:layout_constraintTop_toTopOf="@id/mapView" >
+        app:layout_constraintTop_toTopOf="@id/mapView">
 
     </FrameLayout>
 
