@@ -172,6 +172,7 @@ class MapActivity : AppCompatActivity() {
                 }
             }
         )
+        drawPolygons()
     }
 
     private fun calculateDistance(point1: Position, point2: Position): Double {
@@ -204,17 +205,16 @@ class MapActivity : AppCompatActivity() {
 //        val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
 //        val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
 //        val leftBottom = ScreenCoordinate(100.0, 550.0)
-//
-//        val pLeftTop = wwd.screenToLocation(leftTop)!!
-//        val pRightBottom = wwd.screenToLocation(rightBottom)!!
-//        val pRightTop = wwd.screenToLocation(rightTop)!!
-//        val pLeftBottom = wwd.screenToLocation(leftBottom)!!
 
-        val navCheck = wwd.worldWindowController.worldWindow.navigator
+        val pLeftTop = wwd.pick(100f, height - 550f).terrainPickedObject().terrainPosition
+        val pRightBottom = wwd.pick(width - 100f, 550f).terrainPickedObject().terrainPosition
+        val pRightTop = wwd.pick(width - 100f, height - 550f).terrainPickedObject().terrainPosition
+        val pLeftBottom = wwd.pick(100f, 550f).terrainPickedObject().terrainPosition
+
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties(
                 "selectedProduct",
-                "${pLeftTop.x},${pLeftTop.y},${pRightTop.x},${pRightTop.y},${pRightBottom.x},${pRightBottom.y},${pLeftBottom.x},${pLeftBottom.y},${pLeftTop.x},${pLeftTop.y}",
+                "${pLeftTop.longitude},${pLeftTop.latitude},${pRightTop.longitude},${pRightTop.latitude},${pRightBottom.longitude},${pRightBottom.latitude},${pLeftBottom.longitude},${pLeftBottom.latitude},${pLeftTop.longitude},${pLeftTop.latitude}",
                 false
             )
             val id = service.downloadMap(props, downloadStatusHandler)
@@ -248,6 +248,12 @@ class MapActivity : AppCompatActivity() {
         compass.rotation = 0F
         wwd.navigator.heading = 0.0
         wwd.requestRedraw()
+    }
+
+    private fun drawPolygons() {
+
+
+
     }
 
     open inner class PickNavigateController (val context: AppCompatActivity) :
@@ -293,25 +299,13 @@ class MapActivity : AppCompatActivity() {
             Log.i("fsgxsx", "asdsxvsvz")
             val consumed = pickGestureDetector.onTouchEvent(event)
 
+
+
             // If event was not consumed by the pick operation, pass it on the globe navigation handlers
             return if (!consumed) {
-
                 // The super class performs the pan, tilt, rotate and zoom
                 super.onTouchEvent(event)
             } else consumed
         }
-    }
-    fun computeLatitude(y: Double, screenHeight: Double): Double {
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val height = displayMetrics.heightPixels
-        return ((screenHeight - y) / height) * 180 - 90
-    }
-
-    fun computeLongitude(x: Double, screenWidth: Double): Double {
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val width = displayMetrics.widthPixels
-        return (x / width) * 360 - 180
     }
 }
