@@ -37,8 +37,8 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":sdk")))
-
     implementation("com.squareup.moshi:moshi-adapters:1.13.0")
+
 
     implementation("com.squareup.okhttp3:mockwebserver:4.11.0")
 

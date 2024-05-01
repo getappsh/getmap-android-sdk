@@ -4,7 +4,7 @@ import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import org.junit.Assert.*
 import org.junit.BeforeClass
@@ -66,10 +66,10 @@ class Sdk4ASIOIntegrationTest {
         )
 
         val latch = CountDownLatch(1)
-        val downloadProgressHandler: (MapDownloadData) -> Unit = {
-            println("Map delivery state: ${it.deliveryStatus}")
-            assert(it.deliveryStatus != MapDeliveryState.ERROR) {"it.deliveryStatus == MapDeliveryState.ERROR"}
-            if (it.deliveryStatus == MapDeliveryState.DONE){
+        val downloadProgressHandler: (MapData) -> Unit = {
+            println("Map delivery state: ${it.deliveryState}")
+            assert(it.deliveryState != MapDeliveryState.ERROR) {"it.deliveryStatus == MapDeliveryState.ERROR"}
+            if (it.deliveryState == MapDeliveryState.DONE){
                 assert(it.fileName != null)
                 assert(it.fileName!!.isNotEmpty())
 

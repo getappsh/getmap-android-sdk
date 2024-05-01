@@ -174,7 +174,7 @@ internal class MapFileManager(private val appCtx: Context) {
             if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
-                mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_done)
+                mapPkg.statusMsg = appCtx.getString(R.string.delivery_status_done)
             } else {
                 mapPkg.flowState = DeliveryFlowState.MOVE_FILES
             }
@@ -226,7 +226,7 @@ internal class MapFileManager(private val appCtx: Context) {
 
         if (mapPkg.state != MapDeliveryState.CANCEL && mapPkg.state != MapDeliveryState.PAUSE){
             mapPkg.state = MapDeliveryState.ERROR
-            mapPkg.statusMessage = appCtx.getString(R.string.delivery_status_failed)
+            mapPkg.statusMsg = appCtx.getString(R.string.delivery_status_failed)
         }
 
         mapPkg.metadata.mapDone = mapDone
@@ -264,10 +264,11 @@ internal class MapFileManager(private val appCtx: Context) {
                 }
             }
 
-            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, errorContent = rMap.errorContent,
-                statusMessage = rMap.statusMessage, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
+            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
+                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
     }
+
     private fun syncStorage(){
         Timber.i("syncStorage")
         val dir =  File(config.storagePath)
@@ -317,7 +318,7 @@ internal class MapFileManager(private val appCtx: Context) {
                     url = url,
                     fileName = FileUtils.changeFileExtensionToMap(file.name),
                     jsonName = file.name,
-                    statusMessage = appCtx.getString(R.string.delivery_status_in_verification)
+                    statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
                 ))
 
                 val id = this.mapRepo.save(mapPkg)

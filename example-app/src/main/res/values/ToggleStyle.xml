@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomToggleButtonStyle">
+        <!-- Définir la couleur de fond lorsqu'il est activé -->
+        <item name="android:background">#dbd7d9</item>
+        <!-- Définir la couleur de texte -->
+        <item name="android:textColor">#DD000000</item>
+        <!-- Définir la taille du texte -->
+        <item name="android:textSize">14sp</item>
+        <!-- Définir la marge -->
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:radius">10dp</item>
+        <!-- Autres attributs personnalisés que vous souhaitez définir -->
+    </style>
+</resources>

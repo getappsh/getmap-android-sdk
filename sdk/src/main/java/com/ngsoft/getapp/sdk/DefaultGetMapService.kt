@@ -24,7 +24,7 @@ import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
 import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
-import com.ngsoft.getapp.sdk.models.MapDownloadData
+import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapDeployState
 import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
@@ -63,7 +63,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler())
         TimberLogger.initTimber()
         Timber.i("Init GetMapService")
-
+        
+        config.baseUrl = configuration.baseUrl
         config.downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
@@ -109,7 +110,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
+    override fun processQrCodeData(data: String): String {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -121,11 +122,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapDownloadData) -> Unit): String? {
+    override fun downloadMap(mp: MapProperties): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String? {
+    override fun downloadUpdatedMap(id: String): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -133,22 +134,18 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapDownloadData) -> Unit) {
+    override fun resumeDownload(id: String): String {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+    override fun getDownloadedMap(id: String): MapData? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapDownloadData) -> Unit): String {
-        TODO("Not implemented in DefaultGetMapService")
-    }
-    override fun getDownloadedMap(id: String): MapDownloadData? {
+    override fun getDownloadedMaps(): List<MapData> {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun getDownloadedMaps(): List<MapDownloadData> {
-        TODO("Not implemented in DefaultGetMapService")
-    }
-
-    override fun getDownloadedMapsLive(): LiveData<List<MapDownloadData>> {
+    override fun getDownloadedMapsLive(): LiveData<List<MapData>> {
         TODO("Not implemented in DefaultGetMapService")
     }
 

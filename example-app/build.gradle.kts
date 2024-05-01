@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.ir.backend.js.compile
+import java.net.URI
 
 plugins {
     id("com.android.application")
@@ -39,32 +40,40 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
-        compose = true
+        dataBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/*"
         }
+    }
+    dependencies{
+        implementation( "com.github.matomo-org:matomo-sdk-android:4.2")
     }
 }
 
 dependencies {
+//    implementation("com.esri.arcgisruntime:arcgis-android:100.10.0")
+    implementation("com.esri:arcgis-maps-kotlin:200.3.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-
     implementation(project(mapOf("path" to ":sdk")))
-
+    implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     implementation("com.squareup.moshi:moshi-adapters:1.13.0")
     implementation("androidx.room:room-runtime:2.5.2")
+    implementation("com.google.code.gson:gson:2.8.9")
 
+    implementation( "com.github.matomo-org:matomo-sdk-android:4.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2")
 
     implementation ("androidx.core:core-ktx:1.7.0")
+    implementation ("com.github.matomo-org:matomo-sdk-android:4.1.4")
 
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
@@ -77,6 +86,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.preference:preference:1.2.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

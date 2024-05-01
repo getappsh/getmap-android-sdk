@@ -32,6 +32,11 @@ internal class ServiceConfig private constructor(private var appContext: Context
     }
 
 
+    override var baseUrl: String = pref.baseUrl
+        set(value) {
+            field = value
+            pref.baseUrl = value
+        }
     override var storagePath: String = pref.storagePath
         set(value) {
             field = value
