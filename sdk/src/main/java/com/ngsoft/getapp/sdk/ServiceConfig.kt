@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.content.Context
 import android.content.Context.STORAGE_SERVICE
 import android.os.Build
@@ -42,51 +43,61 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.storagePath = value
         }
-    override var relativeStoragePath: String = pref.relativeStoragePath
+    override var sdStoragePath: String = pref.sdStoragePath
         set(value) {
             if (field != value){
                 field = value
-                pref.relativeStoragePath = value
-                updateStoragePath()
+                pref.sdStoragePath = value
+//                updateStoragePath()
             }
         }
 
-    override var useSDCard: Boolean = pref.useSDCard
+
+    override var flashStoragePath: String = pref.flashStoragePath
+        set(value) {
+            if (field != value){
+                field = value
+                pref.flashStoragePath = value
+//                updateStoragePath()
+            }
+        }
+
+    override var targetStoragePolicy: MapConfigDto.TargetStoragePolicy = pref.targetStoragePolicy
         set(value){
             if (field != value){
                 field = value
-                pref.useSDCard = useSDCard
-                updateStoragePath()
+                pref.targetStoragePolicy = targetStoragePolicy
+//                updateStoragePath()
             }
         }
 
-    private fun updateStoragePath(){
-        val storageManager: StorageManager = appContext.getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes;
-
-        val base = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
-            Environment.getExternalStorageDirectory()
-        } else if (this.useSDCard && storageList.size > 1){
-            storageList[1].directory?.absoluteFile
-        }else {
-            storageList[0].directory?.absoluteFile
-        }
-
-        try {
-            val storageDir = File(base, this.relativeStoragePath)
-            storageDir.mkdirs()
-            if (storagePath != storageDir.absolutePath){
-                storagePath  = storageDir.absolutePath
-//                TODO Toast message?
-                Thread {
-                    MapFileManager(appContext).synchronizeMapData()
-                }.start()
-            }
-        }catch (e: Exception){
-            Timber.e("Error update storage path. useSD: $useSDCard, relativePath: $relativeStoragePath, error: ${e.message}")
-            Toast.makeText(appContext, "Error update storage path, error: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
+//    private fun updateStoragePath(){
+//        val storageManager: StorageManager = appContext.getSystemService(STORAGE_SERVICE) as StorageManager
+//        val storageList = storageManager.storageVolumes;
+//
+//        val base = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+//            Environment.getExternalStorageDirectory()
+//        } else if (this.useSDCard && storageList.size > 1){
+//            storageList[1].directory?.absoluteFile
+//        }else {
+//            storageList[0].directory?.absoluteFile
+//        }
+//
+//        try {
+//            val storageDir = File(base, this.relativeStoragePath)
+//            storageDir.mkdirs()
+//            if (storagePath != storageDir.absolutePath){
+//                storagePath  = storageDir.absolutePath
+////                TODO Toast message?
+//                Thread {
+//                    MapFileManager(appContext).synchronizeMapData()
+//                }.start()
+//            }
+//        }catch (e: Exception){
+//            Timber.e("Error update storage path. useSD: $useSDCard, relativePath: $relativeStoragePath, error: ${e.message}")
+//            Toast.makeText(appContext, "Error update storage path, error: ${e.message}", Toast.LENGTH_LONG).show()
+//        }
+//    }
     override var downloadPath: String = pref.downloadPath
         set(value) {
             field = value
