@@ -218,16 +218,12 @@ class SettingsActivity : AppCompatActivity() {
 //        instance: MapServiceManager,
 //        context: Context,
     ): Configuration {
-        var pathSd: String = intent.getStringExtra("pathSd").toString()
 //        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 //        val imei = telephonyManager.imei
         val cfg = Configuration(
             serviceParams[0].value,
             "rony@example.com",
             "rony123",
-            //            File("/storage/1115-0C18/com.asio.gis").path,
-            //            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
-            pathSd,
             16,
 //            imei //Talk with Ronny and with asio
             null

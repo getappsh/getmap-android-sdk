@@ -45,11 +45,12 @@ import java.util.Locale
 
 class DownloadListAdapter(
     private val onButtonClick: (Int, String, Any?) -> Unit,
-    private val pathAvailable: String,
     private val manager: MapServiceManager,
     private val context: Context
     ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
+
+
     var availableUpdate: Boolean = false
     var tracker: Tracker? = null
 
@@ -60,6 +61,8 @@ class DownloadListAdapter(
         fun onNotSignalDownload()
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
+    private val pathAvailable = manager.service.config.storagePath
     private val listeners = mutableListOf<SignalListener>()
 
     fun addListener(listener: SignalListener) {

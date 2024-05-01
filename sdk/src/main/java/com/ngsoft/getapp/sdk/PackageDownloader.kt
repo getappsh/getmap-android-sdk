@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import com.ngsoft.getapp.sdk.utils.FileUtils
@@ -62,10 +63,9 @@ internal class PackageDownloader(private val context: Context, private val downl
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setTitle(name)
 
-
             //.addRequestHeader("Authorization", "Bearer <token>")
-
-            .setDestinationInExternalPublicDir(downloadDirectory, name)
+//            .setDestinationInExternalPublicDir(downloadDirectory, name)
+            .setDestinationUri(Uri.fromFile(File(downloadDirectory, name)))
 
         return downloadManager.enqueue(request)
     }

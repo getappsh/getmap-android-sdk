@@ -290,8 +290,11 @@ class MapFileManagerUnitTest {
         fun setup() {
             println("Test setup...")
             appContext = InstrumentationRegistry.getInstrumentation().targetContext
+            val config = ServiceConfig.getInstance(appContext)
+            config.downloadPath = originalDir
+            config.storagePath = targetDir
 
-            fileManager = MapFileManager(appContext, PackageDownloader(appContext, originalDir))
+            fileManager = MapFileManager(appContext)
 //            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path
 //            println("Path: $path")
 //            val cfg = Configuration(

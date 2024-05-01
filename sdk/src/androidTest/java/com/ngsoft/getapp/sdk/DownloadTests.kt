@@ -58,7 +58,7 @@ class DownloadTests {
     fun downloadTest() {
 
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val downloader = PackageDownloader(appContext, Environment.DIRECTORY_DOWNLOADS)
+        val downloader = PackageDownloader(appContext, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)
 
         var tmr: Timer? = null
         var completed = false
@@ -201,7 +201,7 @@ class DownloadTests {
     @Test
     fun vpnDownloadTest(){
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val downloader = PackageDownloader(appContext, Environment.DIRECTORY_DOWNLOADS)
+        val downloader = PackageDownloader(appContext, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)
         var completed = false
         val downloadId = downloader.downloadFile(
      "http://even.np.pz/a.json"
