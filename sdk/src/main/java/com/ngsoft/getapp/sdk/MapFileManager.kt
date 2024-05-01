@@ -268,6 +268,7 @@ internal class MapFileManager(private val appCtx: Context) {
                 statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
         }
     }
+
     private fun syncStorage(){
         Timber.i("syncStorage")
         val dir =  File(config.storagePath)

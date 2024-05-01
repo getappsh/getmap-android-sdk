@@ -22,7 +22,6 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.DownloadMetadata
 import com.ngsoft.tilescache.models.MapPkg
-import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
@@ -67,7 +66,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String?{
+    override fun downloadMap(mp: MapProperties): String?{
         Timber.i("downloadMap")
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
@@ -79,7 +78,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,
-            appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START, downloadStatusHandler)
+            appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START)
         this.mapRepo.invoke(id)
 
         Timber.i("downloadMap: id: $id")
@@ -92,7 +91,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return id
     }
     
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String?{
+    override fun downloadUpdatedMap(id: String): String?{
         Timber.i("downloadUpdatedMap")
         val mapPkg  = this.mapRepo.getById(id)
         if (mapPkg == null){
@@ -102,7 +101,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mp = MapProperties(mapPkg.pId, mapPkg.footprint ?: mapPkg.bBox, false)
 
-        return this.downloadMap(mp, downloadStatusHandler)
+        return this.downloadMap(mp)
     }
 
 
@@ -141,12 +140,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.remove(id)
     }
 
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String{
+    override fun resumeDownload(id: String): String{
         Timber.i("resumeDownload for id: $id")
 //        TODO all this needs to be as part of delivery manager
         Thread{
             val mapPkg = this.mapRepo.getById(id)
-            this.mapRepo.setListener(id, downloadStatusHandler)
 
             if (mapPkg == null ||
                 !(mapPkg.state == MapDeliveryState.PAUSE ||
@@ -196,7 +194,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return qrManager.generateQrCode(json.toString(), width, height)
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String{
+    override fun processQrCodeData(data: String): String{
         Timber.i("processQrCodeData")
 
         val jsonString = qrManager.processQrCodeData(data)
@@ -233,7 +231,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
 
         val id = this.mapRepo.save(mapPkg)
-        this.mapRepo.setListener(id, downloadStatusHandler)
         this.mapRepo.invoke(id)
 
         if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
@@ -257,10 +254,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
         Timber.i("setOnInventoryUpdatesListener")
         MapRepo.onInventoryUpdatesListener = listener
-    }
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
-        Timber.i("registerDownloadHandler, downloadId: $id")
-        this.mapRepo.setListener(id, downloadStatusHandler)
     }
 
     @Suppress("DEPRECATION")  // Deprecated for third party Services.

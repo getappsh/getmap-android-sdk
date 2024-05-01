@@ -237,7 +237,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             TrackHelper.track().dimension(1, "מעדכן בול").screen("/Popup/עדכון כלל הבולים")
                 .with(tracker)
             popUp.recyclerView = recyclerView
-            popUp.handler = downloadStatusHandler
             popUp.type = "update"
             popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
             popUp.tracker = tracker
@@ -259,11 +258,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             }
         }
 
-        Thread {
-            mapServiceManager.service.getDownloadedMaps().forEach {
-                mapServiceManager.service.registerDownloadHandler(it.id!!, downloadStatusHandler)
-            }
-        }.start()
 
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
@@ -337,7 +331,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
                 false
             )
-            val id = mapServiceManager.service.downloadMap(props, downloadStatusHandler);
+            val id = mapServiceManager.service.downloadMap(props);
             if (id == null) {
                 this@MainActivity.runOnUiThread {
                     // This is where your UI code goes.
@@ -465,7 +459,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         TrackHelper.track().dimension(1, id).event("מיפוי ענן", "ניהול בקשות").name("אתחל")
             .with(tracker)
         GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.resumeDownload(id, downloadStatusHandler)
+            mapServiceManager.service.resumeDownload(id)
         }
 
     }
@@ -517,7 +511,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun updateMap(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.downloadUpdatedMap(id, downloadStatusHandler)
+            mapServiceManager.service.downloadUpdatedMap(id)
         }
     }
 
@@ -528,7 +522,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             popUp.mapId = id
             popUp.type = "updateOne"
             popUp.recyclerView = recyclerView
-            popUp.handler = downloadStatusHandler
             popUp.textM = "האם לבצע עדכון מפה ?"
             popUp.show(supportFragmentManager, "updateOne")
         }
@@ -629,9 +622,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    mapServiceManager.service.processQrCodeData(result.contents) {
-                        Log.d(TAG, "on data change: $it")
-                    }
+                    mapServiceManager.service.processQrCodeData(result.contents)
                     withContext(Dispatchers.Main) {
                         TrackHelper.track().dimension(1, result.contents)
                             .event("מיפוי ענן", "שיתוף")

@@ -65,9 +65,6 @@ class MapActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
-    private val downloadStatusHandler: (MapData) -> Unit = { data ->
-        Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -213,7 +210,7 @@ class MapActivity : AppCompatActivity() {
                 "${pLeftTop.x},${pLeftTop.y},${pRightTop.x},${pRightTop.y},${pRightBottom.x},${pRightBottom.y},${pLeftBottom.x},${pLeftBottom.y},${pLeftTop.x},${pLeftTop.y}",
                 false
             )
-            val id = service.downloadMap(props, downloadStatusHandler)
+            val id = service.downloadMap(props)
             if (id == null) {
                 this@MapActivity.runOnUiThread {
                     // This is where your UI code goes.
