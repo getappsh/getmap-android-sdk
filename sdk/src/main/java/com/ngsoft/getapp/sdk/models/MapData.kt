@@ -9,6 +9,7 @@ class MapData(
     var jsonName: String? = null,
     var deliveryState: MapDeliveryState,
     var url: String? = null,
+    var path: String? = null,
     var statusMsg: String? = null,
     var progress: Int = 0,
     var statusDescr: String? = null,
