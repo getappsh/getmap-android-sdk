@@ -605,16 +605,18 @@ class MapActivity : AppCompatActivity() {
         )
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
-            // Allow pick listener to process the event first.
-            Log.i("fsgxsx", "asdsxvsvz")
-            checkBboxBeforeSent()
             val consumed = pickGestureDetector.onTouchEvent(event)
 
-
+            if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
+                // Handle scroll event here
+                Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
+                // You can perform your actions for scroll event here
+                // For example, check bounding box before sending
+                checkBboxBeforeSent()
+            }
 
             // If event was not consumed by the pick operation, pass it on the globe navigation handlers
             return if (!consumed) {
-                // The super class performs the pan, tilt, rotate and zoom
                 super.onTouchEvent(event)
             } else consumed
         }
