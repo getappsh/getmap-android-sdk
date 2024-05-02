@@ -405,18 +405,20 @@ class MapActivity : AppCompatActivity() {
                             val polygon = Polygon(points)
 
                             val intersection = intersectionOrNull(points, boxCoordinates)
-                            val intersectionArea = calculatePolygonArea(intersection!!)
-                            val boxArea = calculatePolygonArea(boxCoordinates)
-                            val firstOffsetDateTime = p.imagingTimeBeginUTC
-                            val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                            val firstDate = sdf.format(firstOffsetDateTime)
-                            val secondOffsetDateTime = p.imagingTimeEndUTC
-                            val secondDate = sdf.format(secondOffsetDateTime)
-                            val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+                            if (intersection != null) {
+                                val intersectionArea = calculatePolygonArea(intersection)
+                                val boxArea = calculatePolygonArea(boxCoordinates)
+                                val firstOffsetDateTime = p.imagingTimeBeginUTC
+                                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                                val firstDate = sdf.format(firstOffsetDateTime)
+                                val secondOffsetDateTime = p.imagingTimeEndUTC
+                                val secondDate = sdf.format(secondOffsetDateTime)
+                                val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
 //
-                            if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                allPolygon.add(polyObject)
+                                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                    allPolygon.add(polyObject)
+                                }
                             }
                         }
                     } else if (type == "MultiPolygon") {
@@ -429,18 +431,20 @@ class MapActivity : AppCompatActivity() {
                                 val polygon = Polygon(points)
 
                                 val intersection = intersectionOrNull(points, boxCoordinates)
-                                val intersectionArea = calculatePolygonArea(intersection!!)
-                                val boxArea = calculatePolygonArea(boxCoordinates)
-
-                                val firstOffsetDateTime = p.imagingTimeBeginUTC
-                                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                                val firstDate = sdf.format(firstOffsetDateTime)
-                                val secondOffsetDateTime = p.imagingTimeEndUTC
-                                val secondDate = sdf.format(secondOffsetDateTime)
-
-                                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                    allPolygon.add(polyObject)
+                                if (intersection != null) {
+                                    val intersectionArea = calculatePolygonArea(intersection)
+                                    val boxArea = calculatePolygonArea(boxCoordinates)
+                                    val firstOffsetDateTime = p.imagingTimeBeginUTC
+                                    val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                                    val firstDate = sdf.format(firstOffsetDateTime)
+                                    val secondOffsetDateTime = p.imagingTimeEndUTC
+                                    val secondDate = sdf.format(secondOffsetDateTime)
+                                    val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
+//
+                                    if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                                        val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                        allPolygon.add(polyObject)
+                                    }
                                 }
                             }
                         }
@@ -599,9 +603,10 @@ class MapActivity : AppCompatActivity() {
                 }
             }
         )
+
         override fun onTouchEvent(event: MotionEvent): Boolean {
             // Allow pick listener to process the event first.
-//            Log.i("fsgxsx", "asdsxvsvz")
+            Log.i("fsgxsx", "asdsxvsvz")
             checkBboxBeforeSent()
             val consumed = pickGestureDetector.onTouchEvent(event)
 
