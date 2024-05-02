@@ -1,6 +1,11 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.content.Context
+import android.os.Environment
+import android.os.storage.StorageManager
+import android.content.Context.STORAGE_SERVICE
+import android.os.Build
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
@@ -39,43 +44,91 @@ internal class MapFileManager(private val appCtx: Context) {
         return null
     }
 
+    private fun getStorageDirByPolicy(neededSpace: Long): File{
+        val storageManager = appCtx.getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes;
+
+        val dir = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+            Environment.getExternalStorageDirectory()
+        }else {
+            val flashDir = File(storageList[0].directory?.absoluteFile, config.flashStoragePath)
+            flashDir.mkdirs()
+            val sdDir = if (storageList.size > 1) File(storageList[1].directory?.absoluteFile, config.sdStoragePath) else flashDir
+            sdDir.mkdirs()
+
+            when(config.targetStoragePolicy){
+                MapConfigDto.TargetStoragePolicy.sDOnly -> {
+                    validateSpace(sdDir, neededSpace)
+                    sdDir
+                }
+                MapConfigDto.TargetStoragePolicy.flashOnly -> {
+                    validateSpace(flashDir, neededSpace)
+                    flashDir
+                }
+                MapConfigDto.TargetStoragePolicy.flashThenSD -> {
+                 if(FileUtils.getAvailableSpace(flashDir.path) > neededSpace) {
+                     flashDir
+                 }else {
+                     Timber.i("Not enough space in Flash save to SD")
+                     sdDir
+                 }
+                }
+                MapConfigDto.TargetStoragePolicy.sDThenFlash -> {
+                    if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace) {
+                        sdDir
+                    }else {
+                        Timber.i("Not enough space in SD save to Flash")
+                        flashDir
+                    }
+                }
+            }
+        }
+        return dir
+    }
 //    TODO clean this
-    fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<String, String>{
+    fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<File, File>{
         //        TODO fined better way to handle when file exist and have not been downloaded
         val pkgFileD = File(config.downloadPath, pkgName)
-        val pkgFileT = File(config.storagePath, pkgName)
+        val jsonFileD = File(config.downloadPath, jsonName)
+
+        val targetDir = getStorageDirByPolicy(pkgFileD.length() + jsonFileD.length())
+        Timber.d("Storage dir ${targetDir.path}")
+
+        val pkgFileT = File(targetDir, pkgName)
+        val jsonFileT = File(targetDir, jsonName)
 
         val pkgPath = if (pkgFileD.exists()) pkgFileD.path else {
             if (!pkgFileT.exists()) throw IOException("File $pkgName doesn't exist")
             pkgFileT.path
         }
 
-        val jsonFileD = File(config.downloadPath, jsonName)
-        val jsonFileT = File(config.storagePath, jsonName)
-
         val jsonPath = if (jsonFileD.exists()) jsonFileD.path else {
             if (!jsonFileT.exists()) throw IOException("File $jsonName doesn't exist")
             jsonFileT.path
         }
 
-        val newJsonName = FileUtils.changeFileExtensionToJson(pkgName)
-        val names = FileUtils.getUniqueFilesName(config.storagePath, pkgName, newJsonName)
+        val jsonNameT = FileUtils.changeFileExtensionToJson(pkgName)
+        val names = FileUtils.getUniqueFilesName(targetDir.path, pkgName, jsonNameT)
 
         moveFileIfRequired(pkgPath, pkgFileT, names.first)
         moveFileIfRequired(jsonPath, jsonFileT, names.second)
 
-        return names
+        return Pair(File(pkgFileT.parent, names.first), File(jsonFileT, names.second))
     }
-    private fun moveFileIfRequired(filePath: String, targetFile: File, newName: String) {
+    private fun moveFileIfRequired(sourcePath: String, targetFile: File, newName: String) {
         if (!(targetFile.exists() && targetFile.name == newName)) {
-            if (FileUtils.getAvailableSpace(config.storagePath) <= File(filePath).length()) {
-                throw IOException(appCtx.getString(R.string.error_not_enough_space))
-            }
+//            TODO `targetFile.parent` == null
+            validateSpace(File(targetFile.parent), File(sourcePath).length())
             Files.move(
-                Paths.get(filePath),
-                Paths.get(config.storagePath, newName),
+                Paths.get(sourcePath),
+                Paths.get(targetFile.parent, newName),
                 StandardCopyOption.REPLACE_EXISTING
             )
+        }
+    }
+    private fun validateSpace(directory: File, neededSpace: Long) {
+        if (FileUtils.getAvailableSpace(directory.path) <= neededSpace) {
+            throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
     }
     fun moveFileToTargetDir(fileName: String): String {
