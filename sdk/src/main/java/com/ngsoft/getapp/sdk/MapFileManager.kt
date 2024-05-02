@@ -30,9 +30,9 @@ internal class MapFileManager(private val appCtx: Context) {
     private val mapRepo = MapRepo(appCtx)
 
 
-    fun getJsonString(jsonName: String?): JSONObject?{
+    fun getJsonString(dirPath: String?, jsonName: String?): JSONObject?{
         jsonName ?: return null
-        val targetFile = File(config.storagePath, jsonName)
+        val targetFile = File(dirPath, jsonName)
         if (targetFile.exists()){
             return JsonUtils.readJson(targetFile.path)
         }

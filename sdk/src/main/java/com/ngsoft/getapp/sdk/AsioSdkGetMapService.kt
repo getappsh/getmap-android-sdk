@@ -183,7 +183,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             Timber.e( errorMsg)
             throw Exception(errorMsg)
         }
-        val file = File(config.storagePath, mapPkg.jsonName!!)
+        val file = File(mapPkg.path, mapPkg.jsonName!!)
         val json = JsonUtils.readJson(file.path)
 
         Timber.d("generateQrCode - append download url to json")
@@ -211,7 +211,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         this.mapRepo.getByBBox(bBox, footprint).forEach {
 //            TODO put ingestionDate in the DB Table
-            val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
+            val sIngDate = mapFileManager.getJsonString(it.path, it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
                 Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )

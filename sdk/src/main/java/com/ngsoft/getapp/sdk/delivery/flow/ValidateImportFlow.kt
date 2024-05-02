@@ -28,8 +28,8 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
 
         val isValid = try{
             Timber.d("validateImport - fileName ${mapPkg.fileName}, jsonName ${mapPkg.jsonName}")
-            val mapFile = File(config.storagePath, mapPkg.fileName!!)
-            val jsonFile = File(config.storagePath, mapPkg.jsonName!!)
+            val mapFile = File(mapPkg.path, mapPkg.fileName!!)
+            val jsonFile = File(mapPkg.path, mapPkg.jsonName!!)
 
             val expectedHash = JsonUtils.getStringOrThrow(checksumAlgorithm, jsonFile.path)
             val actualHash = HashUtils.getCheckSumFromFile(checksumAlgorithm, mapFile) {
