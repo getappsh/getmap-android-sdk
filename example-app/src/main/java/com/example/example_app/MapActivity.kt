@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.models.MapData
@@ -96,10 +97,24 @@ class MapActivity : AppCompatActivity() {
             showNorth()
         }
 
+        var overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
         delivery.visibility = View.INVISIBLE
+        delivery.setOnClickListener {
+            val blueBorderDrawableId = R.drawable.blue_border
+            if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == true) {
+                checkBboxBeforeSent()
+                if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == false) {
+                    Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
+                } else {
+                    this.onDelivery()
+                }
+            } else {
+                Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-        var overlayView = findViewById<FrameLayout>(R.id.overlayView)
+
         val close = findViewById<Button>(R.id.close)
         close.visibility = View.INVISIBLE
 
@@ -607,12 +622,16 @@ class MapActivity : AppCompatActivity() {
         override fun onTouchEvent(event: MotionEvent): Boolean {
             val consumed = pickGestureDetector.onTouchEvent(event)
 
-            if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
-                // Handle scroll event here
+            if (!consumed && event.action == MotionEvent.ACTION_UP) {
                 Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
-                // You can perform your actions for scroll event here
-                // For example, check bounding box before sending
                 checkBboxBeforeSent()
+            } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
+                val showKm = findViewById<TextView>(R.id.kmShow)
+                val showBm = findViewById<TextView>(R.id.showMb)
+                val date = findViewById<TextView>(R.id.dateText)
+                showKm.text = "שטח משוער : מחשב שטח"
+                showBm.text = "נפח משוער : מחשב נפח"
+                date.text = "בשביל לסיים חישוב יש להרים את האצבע"
             }
 
             // If event was not consumed by the pick operation, pass it on the globe navigation handlers
