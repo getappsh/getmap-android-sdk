@@ -29,6 +29,29 @@ internal class MapFileManager(private val appCtx: Context) {
     private val downloader =  PackageDownloader(appCtx, config.downloadPath)
     private val mapRepo = MapRepo(appCtx)
 
+    private val storageManager = appCtx.getSystemService(STORAGE_SERVICE) as StorageManager
+
+    val flashTargetDir: File
+        get(){
+            val storageList = storageManager.storageVolumes
+            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+//                TODO use the actual path
+                Environment.getExternalStorageDirectory()
+            }else{
+                File(storageList[0].directory?.absoluteFile, config.flashStoragePath)
+            }
+        }
+
+    val sdTargetDir: File
+        get() {
+            val storageList = storageManager.storageVolumes
+            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+//                TODO use the actual path
+                Environment.getExternalStorageDirectory()
+            }else{
+                if (storageList.size > 1) File(storageList[1].directory?.absoluteFile, config.sdStoragePath) else flashTargetDir
+            }
+        }
 
     fun getJsonString(dirPath: String?, jsonName: String?): JSONObject?{
         jsonName ?: return null
@@ -45,45 +68,38 @@ internal class MapFileManager(private val appCtx: Context) {
     }
 
     private fun getStorageDirByPolicy(neededSpace: Long): File{
-        val storageManager = appCtx.getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes;
+        val flashDir = flashTargetDir
+        val sdDir = sdTargetDir
 
-        val dir = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
-            Environment.getExternalStorageDirectory()
-        }else {
-            val flashDir = File(storageList[0].directory?.absoluteFile, config.flashStoragePath)
-            flashDir.mkdirs()
-            val sdDir = if (storageList.size > 1) File(storageList[1].directory?.absoluteFile, config.sdStoragePath) else flashDir
-            sdDir.mkdirs()
+        flashDir.mkdirs()
+        sdDir.mkdirs()
 
-            when(config.targetStoragePolicy){
-                MapConfigDto.TargetStoragePolicy.sDOnly -> {
-                    validateSpace(sdDir, neededSpace)
+        return when(config.targetStoragePolicy){
+            MapConfigDto.TargetStoragePolicy.sDOnly -> {
+                validateSpace(sdDir, neededSpace)
+                sdDir
+            }
+            MapConfigDto.TargetStoragePolicy.flashOnly -> {
+                validateSpace(flashDir, neededSpace)
+                flashDir
+            }
+            MapConfigDto.TargetStoragePolicy.flashThenSD -> {
+             if(FileUtils.getAvailableSpace(flashDir.path) > neededSpace) {
+                 flashDir
+             }else {
+                 Timber.i("Not enough space in Flash save to SD")
+                 sdDir
+             }
+            }
+            MapConfigDto.TargetStoragePolicy.sDThenFlash -> {
+                if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace) {
                     sdDir
-                }
-                MapConfigDto.TargetStoragePolicy.flashOnly -> {
-                    validateSpace(flashDir, neededSpace)
+                }else {
+                    Timber.i("Not enough space in SD save to Flash")
                     flashDir
-                }
-                MapConfigDto.TargetStoragePolicy.flashThenSD -> {
-                 if(FileUtils.getAvailableSpace(flashDir.path) > neededSpace) {
-                     flashDir
-                 }else {
-                     Timber.i("Not enough space in Flash save to SD")
-                     sdDir
-                 }
-                }
-                MapConfigDto.TargetStoragePolicy.sDThenFlash -> {
-                    if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace) {
-                        sdDir
-                    }else {
-                        Timber.i("Not enough space in SD save to Flash")
-                        flashDir
-                    }
                 }
             }
         }
-        return dir
     }
 //    TODO clean this
     fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<File, File>{
@@ -131,23 +147,23 @@ internal class MapFileManager(private val appCtx: Context) {
             throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
     }
-    fun moveFileToTargetDir(fileName: String): String {
-        val downloadFile = File(config.downloadPath, fileName)
-
-//        TODO fined better way to handle when file exist and have not been downloaded
-        if (!downloadFile.exists()){
-            if(File(config.storagePath, fileName).exists()){
-                return fileName
-            }
-            throw IOException("File $downloadFile, doesn't exist")
-        }
-
-        if (FileUtils.getAvailableSpace(config.storagePath) <= downloadFile.length()){
-            throw IOException(appCtx.getString(R.string.error_not_enough_space))
-        }
-
-        return FileUtils.moveFile(config.downloadPath, config.storagePath, fileName)
-    }
+//    fun moveFileToTargetDir(fileName: String): String {
+//        val downloadFile = File(config.downloadPath, fileName)
+//
+////        TODO fined better way to handle when file exist and have not been downloaded
+//        if (!downloadFile.exists()){
+//            if(File(config.storagePath, fileName).exists()){
+//                return fileName
+//            }
+//            throw IOException("File $downloadFile, doesn't exist")
+//        }
+//
+//        if (FileUtils.getAvailableSpace(config.storagePath) <= downloadFile.length()){
+//            throw IOException(appCtx.getString(R.string.error_not_enough_space))
+//        }
+//
+//        return FileUtils.moveFile(config.downloadPath, config.storagePath, fileName)
+//    }
 
     @Throws(Exception::class)
     fun deleteMap(mapPkg: MapPkg?){
@@ -180,10 +196,10 @@ internal class MapFileManager(private val appCtx: Context) {
 
     private fun deleteFileFromAllLocations(fileName: String){
         Timber.i("deleteFile - fileName: $fileName")
-        for (path in arrayOf(config.downloadPath, config.storagePath)){
+        for (path in arrayOf(config.downloadPath, flashTargetDir.path, sdTargetDir.path)){
             val file = File(path, fileName)
             if (!file.exists()){
-                Timber.d("deleteFile - File dose not exist. ${file.path}")
+                Timber.v("deleteFile - File dose not exist. ${file.path}")
                 continue
             }
             if (file.delete()) {
