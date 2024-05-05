@@ -478,6 +478,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
+        GlobalScope.launch(Dispatchers.IO) {
+            val map = mapServiceManager.service.getDownloadedMap(id)
+            if (map!!.fileName != null) {
+                val endName = map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                popUp.bullName = endName
+            } else {
+                popUp.bullName = ""
+            }
+        }
         popUp.show(supportFragmentManager, "delete")
     }
 
@@ -541,7 +550,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun itemViewClick(id: String) {
-    var currMap: MapData? = null
+        var currMap: MapData? = null
         GlobalScope.launch(Dispatchers.IO) {
             currMap = mapServiceManager.service.getDownloadedMap(id)!!
         withContext(Dispatchers.Main) {
