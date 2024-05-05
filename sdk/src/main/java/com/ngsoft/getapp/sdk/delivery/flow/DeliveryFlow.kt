@@ -43,7 +43,14 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
 // TODO dose not need to be here
     protected fun downloadFile(url: String): Long {
         Timber.i("downloadFile")
-        val fileName = FileUtils.getUniqueFileName(config.storagePath, FileUtils.getFileNameFromUri(url))
+        val fileName = try {
+            val storagePath = mapFileManager.getAndValidateStorageDirByPolicy((config.minAvailableSpaceMB * 1024 * 1024)).path
+            // TODO note suer why its have been done
+            FileUtils.getUniqueFileName(storagePath, FileUtils.getFileNameFromUri(url))
+        }catch (e: Exception){
+            FileUtils.getFileNameFromUri(url)
+        }
+
         val downloadId = downloader.downloadFile(url, fileName){
             Timber.d("downloadImport - completionHandler: processing download ID=$it completion event...")
         }

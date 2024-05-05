@@ -61,8 +61,11 @@ class DownloadListAdapter(
         fun onNotSignalDownload()
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
-    private val pathAvailable = manager.service.config.storagePath
+
+//    @RequiresApi(Build.VERSION_CODES.R)
+//    TODO Way is it needed?
+    private val pathAvailable = "" /* manager.service.config.storagePath */
+
     private val listeners = mutableListOf<SignalListener>()
 
     fun addListener(listener: SignalListener) {
@@ -140,7 +143,7 @@ class DownloadListAdapter(
 //            Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + downloadData.jsonName
 //            "sdcard/Documents" +
 //                    File.separator
-            pathAvailable
+            downloadData.path ?: ""
         )
         if (directory.exists()) {
             val files: Array<File> = directory.listFiles()!!

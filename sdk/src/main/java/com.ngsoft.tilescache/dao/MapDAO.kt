@@ -54,6 +54,7 @@ interface MapDAO {
             "fileName = COALESCE(:fileName, fileName), " +
             "jsonName = COALESCE(:jsonName, jsonName), " +
             "url = COALESCE(:url, url), " +
+            "path = COALESCE(:path, path), " +
             "flowState = COALESCE(:flowState, flowState), " +
             "statusMsg = COALESCE(:statusMsg, statusMsg), " +
             "downloadProgress = COALESCE(:downloadProgress, downloadProgress), " +
@@ -94,6 +95,7 @@ interface MapDAO {
         fileName: String?=null,
         jsonName: String?=null,
         url: String?=null,
+        path: String?=null,
         downloadProgress: Int?=null,
         statusDescr: String?=null,
         validationAttempt: Int?=null,

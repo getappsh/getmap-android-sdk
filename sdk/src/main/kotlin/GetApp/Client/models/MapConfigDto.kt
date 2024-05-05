@@ -36,8 +36,9 @@ import com.squareup.moshi.JsonClass
  * @param matomoUrl 
  * @param matomoDimensionId 
  * @param matomoSiteId 
- * @param relativeStoragePath 
- * @param useSDCard 
+ * @param sdStoragePath 
+ * @param flashStoragePath 
+ * @param targetStoragePolicy 
  * @param lastCheckingMapUpdatesDate 
  * @param lastConfigUpdateDate 
  */
@@ -87,11 +88,14 @@ data class MapConfigDto (
     @Json(name = "matomoSiteId")
     val matomoSiteId: kotlin.String? = null,
 
-    @Json(name = "relativeStoragePath")
-    val relativeStoragePath: kotlin.String? = null,
+    @Json(name = "sdStoragePath")
+    val sdStoragePath: kotlin.String? = null,
 
-    @Json(name = "useSDCard")
-    val useSDCard: kotlin.Boolean? = null,
+    @Json(name = "flashStoragePath")
+    val flashStoragePath: kotlin.String? = null,
+
+    @Json(name = "targetStoragePolicy")
+    val targetStoragePolicy: MapConfigDto.TargetStoragePolicy? = TargetStoragePolicy.sDOnly,
 
     @Json(name = "lastCheckingMapUpdatesDate")
     val lastCheckingMapUpdatesDate: java.time.OffsetDateTime? = null,
@@ -99,5 +103,19 @@ data class MapConfigDto (
     @Json(name = "lastConfigUpdateDate")
     val lastConfigUpdateDate: java.time.OffsetDateTime? = null
 
-)
+) {
+
+    /**
+     * 
+     *
+     * Values: sDOnly,flashThenSD,sDThenFlash,flashOnly
+     */
+    @JsonClass(generateAdapter = false)
+    enum class TargetStoragePolicy(val value: kotlin.String) {
+        @Json(name = "SDOnly") sDOnly("SDOnly"),
+        @Json(name = "FlashThenSD") flashThenSD("FlashThenSD"),
+        @Json(name = "SDThenFlash") sDThenFlash("SDThenFlash"),
+        @Json(name = "FlashOnly") flashOnly("FlashOnly");
+    }
+}
 
