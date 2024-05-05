@@ -16,6 +16,9 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.arcgismaps.geometry.GeometryEngine
+import com.arcgismaps.geometry.Point
+import com.arcgismaps.geometry.SpatialReference
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.models.MapData
@@ -50,7 +53,6 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
-
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
@@ -89,8 +91,6 @@ class MapActivity : AppCompatActivity() {
         wwd.navigator.setAsLookAt(wwd.globe, lookAt)
         val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
         globeLayout.addView(wwd)
-
-        drawPolygons()
 
         val compass = findViewById<View>(R.id.arrow)
         compass.setOnClickListener {
@@ -154,6 +154,7 @@ class MapActivity : AppCompatActivity() {
             frame.visibility = View.INVISIBLE
             back.visibility = View.VISIBLE
         }
+        drawPolygons()
     }
 
     private fun addGeoPkg() {
@@ -390,6 +391,15 @@ class MapActivity : AppCompatActivity() {
 
             val boxPolygon = Polygon(boxCoordinates)
 
+            val boxCoordinatesEsri = mutableListOf<Point>()
+            boxCoordinates.add(pLeftTop)
+            boxCoordinates.add(pRightTop)
+            boxCoordinates.add(pRightBottom)
+            boxCoordinates.add(pLeftBottom)
+
+            val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
+
+
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
             val showKm = findViewById<TextView>(R.id.kmShow)
             val showBm = findViewById<TextView>(R.id.showMb)
@@ -419,9 +429,16 @@ class MapActivity : AppCompatActivity() {
                             }
                             val polygon = Polygon(points)
 
-                            val intersection = intersectionOrNull(points, boxCoordinates)
+//                          convert position to points in esri
+                            val polygonPoints: List<Point> = it.map {
+                                Point(it[0], it[1], SpatialReference.wgs84())
+                            }
+                            val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
+
+                            val intersection = intersectionOrNullNasa(points, boxCoordinates)
                             if (intersection != null) {
-                                val intersectionArea = calculatePolygonArea(intersection)
+                                val newGeometry = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
+                                val intersectionArea =  GeometryEngine.area(newGeometry!!)
                                 val boxArea = calculatePolygonArea(boxCoordinates)
                                 val firstOffsetDateTime = p.imagingTimeBeginUTC
                                 val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
@@ -445,9 +462,16 @@ class MapActivity : AppCompatActivity() {
                                 }
                                 val polygon = Polygon(points)
 
-                                val intersection = intersectionOrNull(points, boxCoordinates)
+    //                          convert position to points in esri
+                                val polygonPoints: List<Point> = coordinates.map {
+                                    Point(it[0], it[1], SpatialReference.wgs84())
+                                }
+                                val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
+
+                                val intersection = intersectionOrNullNasa(points, boxCoordinates)
                                 if (intersection != null) {
-                                    val intersectionArea = calculatePolygonArea(intersection)
+                                    val newGeometry = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
+                                    val intersectionArea =  GeometryEngine.area(newGeometry!!)
                                     val boxArea = calculatePolygonArea(boxCoordinates)
                                     val firstOffsetDateTime = p.imagingTimeBeginUTC
                                     val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
@@ -488,7 +512,7 @@ class MapActivity : AppCompatActivity() {
             var inBbox = false
             loadedPolys.forEach { p ->
 
-                val intersection = intersectionOrNull(p, boxCoordinates)
+                val intersection = intersectionOrNullNasa(p, boxCoordinates)
                 if (intersection != null) {
                     val intersectionArea = calculatePolygonArea(intersection)
                     val boxArea = calculatePolygonArea(boxCoordinates)
@@ -518,7 +542,10 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun intersectionOrNull(polygon1: List<Position>, polygon2: List<Position>): List<Position>? {
+    private fun intersectionOrNullNasa(polygon1: List<Position>, polygon2: List<Position>): List<Position>? {
+        val p = polygon1.intersect(polygon2)
+        val i: Polygon = Polygon(polygon1 + polygon2)
+        Log.i("ScrollEvent", i.toString())
         for (point in polygon1) {
             if (pointInPolygon(point, polygon2)) {
                 return polygon1 // Return the whole polygon1 as the intersection
