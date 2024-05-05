@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
-import com.arcgismaps.geometry.SpatialReference
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.models.MapData
@@ -206,11 +205,6 @@ class MapActivity : AppCompatActivity() {
         val height = displayMetrics.heightPixels
         val width = displayMetrics.widthPixels
 
-//        val leftTop = ScreenCoordinate(100.0, height - 550.0)
-//        val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
-//        val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
-//        val leftBottom = ScreenCoordinate(100.0, 550.0)
-
         val pLeftTop = wwd.pick(100f, height - 550f).terrainPickedObject().terrainPosition
         val pRightBottom = wwd.pick(width - 100f, 550f).terrainPickedObject().terrainPosition
         val pRightTop = wwd.pick(width - 100f, height - 550f).terrainPickedObject().terrainPosition
@@ -383,8 +377,6 @@ class MapActivity : AppCompatActivity() {
             boxCoordinates.add(pRightBottom)
             boxCoordinates.add(pLeftBottom)
 
-            val boxPolygon = Polygon(boxCoordinates)
-
             val boxCoordinatesEsri = mutableListOf<Point>()
             boxCoordinatesEsri.add(Point(pLeftTop.longitude, pLeftTop.latitude))
             boxCoordinatesEsri.add(Point(pRightTop.longitude, pRightTop.latitude))
@@ -392,7 +384,6 @@ class MapActivity : AppCompatActivity() {
             boxCoordinatesEsri.add(Point(pLeftBottom.longitude, pLeftBottom.latitude))
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
-
 
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
             val showKm = findViewById<TextView>(R.id.kmShow)
@@ -403,7 +394,6 @@ class MapActivity : AppCompatActivity() {
             showBm.text = "נפח משוער :${spaceMb} מ\"ב"
             val date = findViewById<TextView>(R.id.dateText)
             val maxMb = service.config.maxMapSizeInMB.toInt()
-            var zoom = 0
             var downloadAble = false
 
             val allPolygon = mutableListOf<PolyObject>()
@@ -421,22 +411,19 @@ class MapActivity : AppCompatActivity() {
                             val points: List<Position> = it.map {
                                 Position.fromDegrees(it[1], it[0], 0.0)
                             }
-                            val polygon = Polygon(points)
                             val polygonPoints = points.map { Point(it.longitude, it.latitude) }
 
                             val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
 
-                            val intersection = intersectionOrNullNasa(points, boxCoordinates)
+                            val intersection = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
                             if (intersection != null) {
-                                val newGeometry = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
-                                val intersectionArea =  GeometryEngine.area(newGeometry!!)
+                                val intersectionArea =  GeometryEngine.area(intersection)
                                 val boxArea = calculatePolygonArea(boxCoordinates)
                                 val firstOffsetDateTime = p.imagingTimeBeginUTC
                                 val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
                                 val firstDate = sdf.format(firstOffsetDateTime)
                                 val secondOffsetDateTime = p.imagingTimeEndUTC
                                 val secondDate = sdf.format(secondOffsetDateTime)
-                                val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
 
                                 if (abs(intersectionArea) / abs(boxArea) > 0.0) {
                                     val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate, p.maxResolutionDeg)
@@ -451,23 +438,19 @@ class MapActivity : AppCompatActivity() {
                                 val points: List<Position> = coordinates.map {
                                     Position.fromDegrees(it[1], it[0], 0.0)
                                 }
-                                val polygon = Polygon(points)
-
                                 val polygonPoints = points.map { Point(it.longitude, it.latitude) }
 
                                 val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
 
-                                val intersection = intersectionOrNullNasa(points, boxCoordinates)
+                                val intersection = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
                                 if (intersection != null) {
-                                    val newGeometry = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
-                                    val intersectionArea =  GeometryEngine.area(newGeometry!!)
+                                    val intersectionArea =  GeometryEngine.area(intersection)
                                     val boxArea = calculatePolygonArea(boxCoordinates)
                                     val firstOffsetDateTime = p.imagingTimeBeginUTC
                                     val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
                                     val firstDate = sdf.format(firstOffsetDateTime)
                                     val secondOffsetDateTime = p.imagingTimeEndUTC
                                     val secondDate = sdf.format(secondOffsetDateTime)
-                                    val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
 
                                     if (abs(intersectionArea) / abs(boxArea) > 0.0) {
                                         val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate, p.maxResolutionDeg)
@@ -479,7 +462,6 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
             }
-            val dateTextView = findViewById<TextView>(R.id.dateText)
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
             allPolygon.sortByDescending(PolyObject::date)
             var found = false
@@ -496,7 +478,7 @@ class MapActivity : AppCompatActivity() {
                         spaceMb = (formattedNum.toDouble() * 2.5).toInt()
                         showBm.text = "נפח משוער :${spaceMb} מ\"ב"
                     }
-                    dateTextView.text = "צולם : ${polygon.start} - ${polygon.end}"
+                    date.text = "צולם : ${polygon.start} - ${polygon.end}"
                     found = true
                     downloadAble = true
                     break
@@ -514,7 +496,7 @@ class MapActivity : AppCompatActivity() {
                     spaceMb = (formattedNum.toDouble() * 2.5).toInt()
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
                 }
-                dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
+                date.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
                 downloadAble = true
             }
 
@@ -552,17 +534,14 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun intersectionOrNullNasa(polygon1: List<Position>, polygon2: List<Position>): List<Position>? {
-        val p = polygon1.intersect(polygon2)
-        val i: Polygon = Polygon(polygon1 + polygon2)
-        Log.i("ScrollEvent", i.toString())
         for (point in polygon1) {
             if (pointInPolygon(point, polygon2)) {
-                return polygon1 // Return the whole polygon1 as the intersection
+                return polygon1
             }
         }
         for (point in polygon2) {
             if (pointInPolygon(point, polygon1)) {
-                return polygon2 // Return the whole polygon2 as the intersection
+                return polygon2
             }
         }
         return null
@@ -670,7 +649,6 @@ class MapActivity : AppCompatActivity() {
                 date.text = "בשביל לסיים חישוב יש להרים את האצבע"
             }
 
-            // If event was not consumed by the pick operation, pass it on the globe navigation handlers
             return if (!consumed) {
                 super.onTouchEvent(event)
             } else consumed
