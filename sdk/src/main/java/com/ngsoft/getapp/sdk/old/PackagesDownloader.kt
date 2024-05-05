@@ -39,7 +39,7 @@ data class DownloadProgress(
 internal class PackagesDownloader(context: Context, downloadDirectory: String, private var downloader: PackageDownloader?) {
     init {
         if(downloader == null)
-            downloader = PackageDownloader(context, Environment.getExternalStoragePublicDirectory(downloadDirectory).path)
+            downloader = PackageDownloader(context, downloadDirectory)
     }
 
     private data class DownloadTrack(

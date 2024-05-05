@@ -232,12 +232,6 @@ interface GetMapService {
         val baseUrl: String
 
         /**
-         * Path where maps are stored locally.
-         */
-        val storagePath: String
-
-
-        /**
          * SD Storage path to stored maps
          */
 

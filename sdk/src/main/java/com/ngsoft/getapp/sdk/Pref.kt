@@ -60,10 +60,6 @@ class Pref private constructor(context: Context) {
         get() = getInt(MATOMO_UPDATE_INTERVAL, 60)
         set(value) = setInt(MATOMO_UPDATE_INTERVAL, value)
 
-    var storagePath: String
-        get() = getString(STORAGE_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path)
-        set(value) = setString(STORAGE_PATH, value)
-
     var sdStoragePath: String
         get() = getString(SD_STORAGE_PATH, "com.asio.gis/gis/maps/raster/מיפוי ענן")
         set(value) = setString(SD_STORAGE_PATH, value)
@@ -215,7 +211,6 @@ class Pref private constructor(context: Context) {
         private const val MATOMO_DIMENSION_ID = "matomoDimensionId"
         private const val MATOMO_SITE_ID = "matomoSiteId"
         private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
-        private const val STORAGE_PATH = "storagePath"
         private const val SD_STORAGE_PATH = "sdStoragePath"
         private const val FLASH_STORAGE_PATH = "flashStoragePath"
         private const val TARGET_STORAGE_POLICY = "targetStoragePolicy"
