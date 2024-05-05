@@ -1,5 +1,6 @@
 package com.example.example_app
 
+import GetApp.Client.models.MapConfigDto
 import android.app.ProgressDialog
 import com.example.example_app.matomo.MatomoTracker
 import android.content.DialogInterface
@@ -126,7 +127,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
-        if(mapServiceManager.service.config.useSDCard && (storageList.size <= 1 || storageList[1].directory?.absoluteFile == null )) {
+        val tp = mapServiceManager.service.config.targetStoragePolicy
+        if((tp == MapConfigDto.TargetStoragePolicy.sDOnly || tp == MapConfigDto.TargetStoragePolicy.sDThenFlash) && storageList.getOrNull(1)?.directory?.absoluteFile == null ) {
             Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT).show()
         }
 

@@ -405,7 +405,7 @@ class MapActivity : AppCompatActivity() {
     private fun geoPackageRender() {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
-        val volume = storageList[1].directory?.absoluteFile ?: ""
+        val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
         Log.i("gfgffgf", "$volume")
         val geoPackage = GeoPackage("${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg")
         lifecycleScope.launch {
