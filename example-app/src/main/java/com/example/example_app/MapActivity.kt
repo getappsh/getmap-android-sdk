@@ -372,11 +372,6 @@ class MapActivity : AppCompatActivity() {
             val height = displayMetrics.heightPixels
             val width = displayMetrics.widthPixels
 
-            //        val leftTop = ScreenCoordinate(100.0, height - 550.0)
-//        val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
-//        val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
-//        val leftBottom = ScreenCoordinate(100.0, 550.0)
-
             val pLeftTop = wwd.pick(100f, height - 550f).terrainPickedObject().terrainPosition
             val pRightBottom = wwd.pick(width - 100f, 550f).terrainPickedObject().terrainPosition
             val pRightTop = wwd.pick(width - 100f, height - 550f).terrainPickedObject().terrainPosition
@@ -387,15 +382,14 @@ class MapActivity : AppCompatActivity() {
             boxCoordinates.add(pRightTop)
             boxCoordinates.add(pRightBottom)
             boxCoordinates.add(pLeftBottom)
-//                boxCoordinates.add(pLeftTop)
 
             val boxPolygon = Polygon(boxCoordinates)
 
             val boxCoordinatesEsri = mutableListOf<Point>()
-            boxCoordinates.add(pLeftTop)
-            boxCoordinates.add(pRightTop)
-            boxCoordinates.add(pRightBottom)
-            boxCoordinates.add(pLeftBottom)
+            boxCoordinatesEsri.add(Point(pLeftTop.longitude, pLeftTop.latitude))
+            boxCoordinatesEsri.add(Point(pRightTop.longitude, pRightTop.latitude))
+            boxCoordinatesEsri.add(Point(pRightBottom.longitude, pRightBottom.latitude))
+            boxCoordinatesEsri.add(Point(pLeftBottom.longitude, pLeftBottom.latitude))
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
 
@@ -404,7 +398,7 @@ class MapActivity : AppCompatActivity() {
             val showKm = findViewById<TextView>(R.id.kmShow)
             val showBm = findViewById<TextView>(R.id.showMb)
             val formattedNum = String.format("%.2f", area)
-            val spaceMb = (formattedNum.toDouble() * 9).toInt()
+            var spaceMb = (formattedNum.toDouble() * 9).toInt()
             showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
             showBm.text = "נפח משוער :${spaceMb} מ\"ב"
             val date = findViewById<TextView>(R.id.dateText)
@@ -428,11 +422,8 @@ class MapActivity : AppCompatActivity() {
                                 Position.fromDegrees(it[1], it[0], 0.0)
                             }
                             val polygon = Polygon(points)
+                            val polygonPoints = points.map { Point(it.longitude, it.latitude) }
 
-//                          convert position to points in esri
-                            val polygonPoints: List<Point> = it.map {
-                                Point(it[0], it[1], SpatialReference.wgs84())
-                            }
                             val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
 
                             val intersection = intersectionOrNullNasa(points, boxCoordinates)
@@ -446,9 +437,9 @@ class MapActivity : AppCompatActivity() {
                                 val secondOffsetDateTime = p.imagingTimeEndUTC
                                 val secondDate = sdf.format(secondOffsetDateTime)
                                 val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
-//
+
                                 if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate, p.maxResolutionDeg)
                                     allPolygon.add(polyObject)
                                 }
                             }
@@ -462,10 +453,8 @@ class MapActivity : AppCompatActivity() {
                                 }
                                 val polygon = Polygon(points)
 
-    //                          convert position to points in esri
-                                val polygonPoints: List<Point> = coordinates.map {
-                                    Point(it[0], it[1], SpatialReference.wgs84())
-                                }
+                                val polygonPoints = points.map { Point(it.longitude, it.latitude) }
+
                                 val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
 
                                 val intersection = intersectionOrNullNasa(points, boxCoordinates)
@@ -479,9 +468,9 @@ class MapActivity : AppCompatActivity() {
                                     val secondOffsetDateTime = p.imagingTimeEndUTC
                                     val secondDate = sdf.format(secondOffsetDateTime)
                                     val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
-//
+
                                     if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                        val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
+                                        val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate, p.maxResolutionDeg)
                                         allPolygon.add(polyObject)
                                     }
                                 }
@@ -497,6 +486,16 @@ class MapActivity : AppCompatActivity() {
             val boxArea = calculatePolygonArea(boxCoordinates)
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
+                    if (polygon.resolution.toDouble() == 1.34110450744629E-6 || polygon.resolution.toDouble() == 1.3411E-6) {
+                        spaceMb = (formattedNum.toDouble() * 10).toInt()
+                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    } else if (polygon.resolution.toDouble() == 2.68220901489258E-6) {
+                        spaceMb = (formattedNum.toDouble() * 5).toInt()
+                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    } else {
+                        spaceMb = (formattedNum.toDouble() * 2.5).toInt()
+                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    }
                     dateTextView.text = "צולם : ${polygon.start} - ${polygon.end}"
                     found = true
                     downloadAble = true
@@ -505,6 +504,16 @@ class MapActivity : AppCompatActivity() {
             }
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
+                if (firstPolyObject.resolution.toDouble() == 1.34110450744629E-6 || firstPolyObject.resolution.toDouble() == 1.3411E-6) {
+                    spaceMb = (formattedNum.toDouble() * 10).toInt()
+                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                } else if (firstPolyObject.resolution.toDouble() == 2.68220901489258E-6) {
+                    spaceMb = (formattedNum.toDouble() * 5).toInt()
+                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                } else {
+                    spaceMb = (formattedNum.toDouble() * 2.5).toInt()
+                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                }
                 dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
                 downloadAble = true
             }
