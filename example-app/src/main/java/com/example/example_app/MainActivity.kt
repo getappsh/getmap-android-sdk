@@ -37,6 +37,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.Configuration
+import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
@@ -103,7 +104,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             startForResult.launch(intent)
         }
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-        availableSpace.text = GetAvailableSpaceInSdCard()
+        availableSpace.text = getAvailableSpace()
 
         if (!mapServiceManager.isInit) {
 
@@ -352,8 +353,23 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     }
 
-    fun GetAvailableSpaceInSdCard(): String {
+    private fun formatBytes(bytes: Long): String {
+        val units = arrayOf("B", "KB", "MB", "GB", "TB")
+        var size = bytes.toDouble()
+        var index = 0
+        while (size > 1024 && index < units.size - 1) {
+            size /= 1024
+            index++
+        }
+        return String.format("%.2f %s", size, units[index])
+    }
 
+    private fun getAvailableSpace(): String{
+        val availableBytes = MapFileManager(this).getAvailableSpaceByPolicy()
+        availableSpaceInMb = availableBytes.toDouble() / (1024 * 1024)
+        return "מקום פנוי להורדה: ${formatBytes(availableBytes)}"
+    }
+    fun GetAvailableSpaceInSdCard(): String {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
         val flashMem = storageList[0].directory
@@ -482,7 +498,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     // Function that will update the AvailableSpace
     override fun onSignalSpace() {
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-        availableSpace.text = GetAvailableSpaceInSdCard()
+        availableSpace.text = getAvailableSpace()
     }
 
 
