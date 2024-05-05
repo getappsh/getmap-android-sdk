@@ -23,7 +23,6 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
 internal class MapFileManager(private val appCtx: Context) {
-    private val _tag = "MapManager"
 
     val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
     private val downloader =  PackageDownloader(appCtx, config.downloadPath)
@@ -218,10 +217,7 @@ internal class MapFileManager(private val appCtx: Context) {
         }
     }
 
-    fun isFileDownloadDone(downloadId: Long?, fileName: String?): Boolean{
-        val downloadFile = fileName?.let { File(config.downloadPath, it) }
-        val targetFile = fileName?.let{ File(config.storagePath, it) }
-
+    fun isFileDownloadDone(downloadId: Long?, downloadFile: File?, targetFile: File?): Boolean{
         return if (targetFile?.exists() == true){
             true
         }else if(downloadFile?.exists() == true){
@@ -229,17 +225,24 @@ internal class MapFileManager(private val appCtx: Context) {
         }else{
             false
         }
-
-
     }
     fun refreshMapState(mapPkg: MapPkg): MapPkg {
         val downloadMapFile = mapPkg.fileName?.let { File(config.downloadPath, it) }
         val downloadJsonFile = mapPkg.jsonName?.let { File(config.downloadPath, it) }
 
-        val targetMapFile = mapPkg.fileName?.let { File(config.storagePath, it) }
-        val targetJsonFile = mapPkg.jsonName?.let { File(config.storagePath, it) }
+
+//        TODO Use only the mapPkg.path if exists?
+        val possibleTargetDirs =  listOf(mapPkg.path, flashTargetDir.path, sdTargetDir.path)
+        val targetMapFile = mapPkg.fileName?.let { fileName ->
+            possibleTargetDirs.mapNotNull { File(it, fileName) }.firstOrNull(File::exists)
+        }
+        val targetJsonFile = mapPkg.jsonName?.let {fileName ->
+            targetMapFile?.let { File(it.parent, fileName) }
+                ?: possibleTargetDirs.mapNotNull { File(it, fileName) }.firstOrNull(File::exists)
+        }
 
         if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true) {
+            mapPkg.path = targetMapFile.parent
             if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
@@ -253,7 +256,7 @@ internal class MapFileManager(private val appCtx: Context) {
         if(targetJsonFile?.exists() != true && targetMapFile?.exists() == true){
             if (downloadMapFile?.exists() == false){
                 try {
-                    FileUtils.moveFile(config.storagePath, config.downloadPath, targetMapFile.name)
+                    FileUtils.moveFile(targetMapFile.parent, config.downloadPath, targetMapFile.name)
                 }catch (e: Exception){
                     Timber.e("refreshMapState - failed to move gpkg file to download dir, file: ${targetMapFile.name}, error: ${e.message.toString()}")
                     deleteFile(targetMapFile)
@@ -266,7 +269,7 @@ internal class MapFileManager(private val appCtx: Context) {
         if(targetJsonFile?.exists() == true && targetMapFile?.exists() != true){
             if (downloadJsonFile?.exists() == false){
                 try {
-                    FileUtils.moveFile(config.storagePath, config.downloadPath, targetJsonFile.name)
+                    FileUtils.moveFile(targetJsonFile.parent, config.downloadPath, targetJsonFile.name)
                 }catch (e: Exception){
                     Timber.e("refreshMapState - failed to move json file to download dir, json: ${targetJsonFile.name}, error: ${e.message.toString()}")
                     deleteFile(targetJsonFile)
@@ -276,9 +279,8 @@ internal class MapFileManager(private val appCtx: Context) {
             }
         }
 
-        val mapDone = isFileDownloadDone(mapPkg.MDID, mapPkg.fileName)
-        val jsonDone = isFileDownloadDone(mapPkg.JDID, mapPkg.jsonName)
-
+        val mapDone = isFileDownloadDone(mapPkg.MDID, downloadMapFile, targetMapFile)
+        val jsonDone = isFileDownloadDone(mapPkg.JDID, downloadJsonFile, targetJsonFile)
 
         mapPkg.flowState = if (mapDone && jsonDone){
             DeliveryFlowState.DOWNLOAD_DONE
@@ -334,19 +336,23 @@ internal class MapFileManager(private val appCtx: Context) {
             }
 
             this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
-                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
+                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone, path=rMap.path)
         }
     }
 
     private fun syncStorage(){
         Timber.i("syncStorage")
-        val dir =  File(config.storagePath)
-        val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
-        val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
-        val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
+        val mapFiles = (flashTargetDir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) } ?: arrayOf<File>()) +
+                (sdTargetDir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) } ?: arrayOf<File>())
+
+        val jsonFiles = (flashTargetDir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) } ?: arrayOf<File>()) +
+                (sdTargetDir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) } ?: arrayOf<File>())
+
+        val journalFiles = (flashTargetDir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) } ?: arrayOf<File>()) +
+                (sdTargetDir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) } ?: arrayOf<File>())
 
 //        delete map file when there is no corresponding json file and no record in the DB
-        mapFiles?.forEach { file ->
+        mapFiles.forEach { file ->
             val correspondingJsonFile = File(FileUtils.changeFileExtensionToJson(file.absolutePath))
             if (!this.mapRepo.doesMapFileExist(file.name) && !correspondingJsonFile.exists()) {
                 Timber.d("syncStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
@@ -354,7 +360,7 @@ internal class MapFileManager(private val appCtx: Context) {
             }
         }
 //        delete journal file when there is no corresponding map file
-        journalFiles?.forEach { file ->
+        journalFiles.forEach { file ->
             val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
             if (!correspondingMapFile.exists()) {
                 Timber.d("syncStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
@@ -362,7 +368,8 @@ internal class MapFileManager(private val appCtx: Context) {
             }
         }
 
-        jsonFiles?.forEach { file ->
+        jsonFiles.forEach { file ->
+//            TODO dose json file exist, query also for path
             if (!this.mapRepo.doesJsonFileExist(file.name)) {
                 Timber.d("syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
 
@@ -379,12 +386,14 @@ internal class MapFileManager(private val appCtx: Context) {
                     return@forEach
                 }
 
+
                 val mapPkg = this.refreshMapState(MapPkg(
                     pId = pId,
                     bBox = bBox,
                     state = MapDeliveryState.ERROR,
                     flowState = DeliveryFlowState.MOVE_FILES,
                     url = url,
+                    path = file.path,
                     fileName = FileUtils.changeFileExtensionToMap(file.name),
                     jsonName = file.name,
                     statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
