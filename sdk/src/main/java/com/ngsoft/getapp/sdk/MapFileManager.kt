@@ -66,6 +66,30 @@ internal class MapFileManager(private val appCtx: Context) {
         return null
     }
 
+    fun getAvailableSpaceByPolicy(): Long {
+        val storageList = storageManager.storageVolumes
+        val flashRoot: File?
+        val sdRoot: File?
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+//                TODO use the actual path
+            flashRoot = Environment.getExternalStorageDirectory()
+            sdRoot = Environment.getExternalStorageDirectory()
+        } else {
+            flashRoot = storageList.getOrNull(0)?.directory?.absoluteFile
+            sdRoot = storageList.getOrNull(1)?.directory?.absoluteFile ?: flashRoot
+        }
+
+        val flashSpace = flashRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0
+        val sdSpace = sdRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0
+
+        return when(config.targetStoragePolicy){
+            MapConfigDto.TargetStoragePolicy.sDOnly -> sdSpace
+            MapConfigDto.TargetStoragePolicy.flashThenSD -> flashSpace + sdSpace
+            MapConfigDto.TargetStoragePolicy.sDThenFlash -> flashSpace + sdSpace
+            MapConfigDto.TargetStoragePolicy.flashOnly -> flashSpace
+        }
+    }
+
     fun getAndValidateStorageDirByPolicy(neededSpace: Long): File{
         val flashDir = flashTargetDir
         val sdDir = sdTargetDir

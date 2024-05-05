@@ -203,7 +203,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
                     pref.deviceId, pref.generateDeviceId(), "Yes",
-                    FileUtils.getAvailableSpace(config.storagePath).toString())
+                    mapFileManager.getAvailableSpaceByPolicy().toString())
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),
