@@ -1,12 +1,9 @@
 package com.ngsoft.getapp.sdk
 
-import android.content.Context
+import GetApp.Client.models.MapConfigDto
 import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ngsoft.getapp.sdk.models.MapDeliveryState
-import com.ngsoft.tilescache.models.DeliveryFlowState
-import com.ngsoft.tilescache.models.MapPkg
 import org.junit.After
 import org.junit.BeforeClass
 import org.junit.Test
@@ -151,11 +148,11 @@ class MapFileManagerUnitTest {
 
         assert(!isFileExistsInOriginal(MAP_NAME))
         assert(!isFileExistsInOriginal(JSON_NAME))
-        assert(isFileExistsInTarget(res.first))
-        assert(isFileExistsInTarget(res.second))
+        assert(isFileExistsInTarget(res.first.name))
+        assert(isFileExistsInTarget(res.second.name))
 
-        assert(res.first == MAP_NAME)
-        assert(res.second == JSON_NAME)
+        assert(res.first.name == MAP_NAME)
+        assert(res.second.name == JSON_NAME)
     }
 
     @Test
@@ -168,11 +165,11 @@ class MapFileManagerUnitTest {
 
         assert(!isFileExistsInOriginal(MAP_NAME))
         assert(!isFileExistsInOriginal(JSON_NAME))
-        assert(isFileExistsInTarget(res.first))
-        assert(isFileExistsInTarget(res.second))
+        assert(isFileExistsInTarget(res.first.name))
+        assert(isFileExistsInTarget(res.second.name))
 
-        assert(res.first != MAP_NAME)
-        assert(res.second != JSON_NAME)
+        assert(res.first.name != MAP_NAME)
+        assert(res.second.name != JSON_NAME)
     }
 
     @Test
@@ -186,11 +183,11 @@ class MapFileManagerUnitTest {
 
         assert(!isFileExistsInOriginal(MAP_NAME))
         assert(!isFileExistsInOriginal(JSON_NAME))
-        assert(isFileExistsInTarget(res.first))
-        assert(isFileExistsInTarget(res.second))
+        assert(isFileExistsInTarget(res.first.name))
+        assert(isFileExistsInTarget(res.second.name))
 
-        assert(res.first != MAP_NAME)
-        assert(res.second != JSON_NAME)
+        assert(res.first.name != MAP_NAME)
+        assert(res.second.name != JSON_NAME)
     }
 
     @Test
@@ -203,11 +200,11 @@ class MapFileManagerUnitTest {
 
         assert(!isFileExistsInOriginal(MAP_NAME))
         assert(!isFileExistsInOriginal(JSON_NAME))
-        assert(isFileExistsInTarget(res.first))
-        assert(isFileExistsInTarget(res.second))
+        assert(isFileExistsInTarget(res.first.name))
+        assert(isFileExistsInTarget(res.second.name))
 
-        assert(res.first != MAP_NAME)
-        assert(res.second != JSON_NAME)
+        assert(res.first.name != MAP_NAME)
+        assert(res.second.name != JSON_NAME)
     }
 
     @Test
@@ -221,11 +218,11 @@ class MapFileManagerUnitTest {
 
         assert(!isFileExistsInOriginal(MAP_NAME))
         assert(!isFileExistsInOriginal(JSON_NAME))
-        assert(isFileExistsInTarget(res.first))
-        assert(isFileExistsInTarget(res.second))
+        assert(isFileExistsInTarget(res.first.name))
+        assert(isFileExistsInTarget(res.second.name))
 
-        assert(res.first != MAP_NAME)
-        assert(res.second != JSON_NAME)
+        assert(res.first.name != MAP_NAME)
+        assert(res.second.name != JSON_NAME)
     }
 
     @Test
@@ -240,11 +237,11 @@ class MapFileManagerUnitTest {
 
         assert(!isFileExistsInOriginal(MAP_NAME))
         assert(!isFileExistsInOriginal(JSON_NAME))
-        assert(isFileExistsInTarget(res.first))
-        assert(isFileExistsInTarget(res.second))
+        assert(isFileExistsInTarget(res.first.name))
+        assert(isFileExistsInTarget(res.second.name))
 
-        assert(res.first != MAP_NAME)
-        assert(res.second != JSON_NAME)
+        assert(res.first.name != MAP_NAME)
+        assert(res.second.name != JSON_NAME)
     }
 
 
@@ -275,26 +272,27 @@ class MapFileManagerUnitTest {
     }
 
 
+//    TODO create test where there is no enough place on SD and save on Flash
+
     companion object {
         const val MAP_NAME = "test_map.gpkg"
         const val JSON_NAME = "test_map.json"
 //        @JvmStatic
 //        private lateinit var service: AsioSdkGetMapService
-        private lateinit var appContext: Context
-//        private lateinit var refresh: Method
-        private lateinit var fileManager: MapFileManager
+        private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        private val config = ServiceConfig.getInstance(appContext)
+        //        private lateinit var refresh: Method
+        private var fileManager = MapFileManager(appContext)
         private var originalDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
-        private var targetDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path
+        private var targetDir = fileManager.sdTargetDir.path
+
         @BeforeClass
         @JvmStatic
         fun setup() {
             println("Test setup...")
-            appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            val config = ServiceConfig.getInstance(appContext)
             config.downloadPath = originalDir
-            config.storagePath = targetDir
+            config.targetStoragePolicy = MapConfigDto.TargetStoragePolicy.sDOnly
 
-            fileManager = MapFileManager(appContext)
 //            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path
 //            println("Path: $path")
 //            val cfg = Configuration(
