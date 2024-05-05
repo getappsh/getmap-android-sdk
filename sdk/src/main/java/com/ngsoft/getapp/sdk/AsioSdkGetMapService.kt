@@ -25,6 +25,7 @@ import com.ngsoft.tilescache.models.MapPkg
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.time.format.DateTimeFormatter
 
 
@@ -84,7 +85,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         Timber.i("downloadMap: id: $id")
         Timber.d("downloadMap: bBox - ${mp.boundingBox}")
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
+        if (isEnoughSpace(id)){
             DeliveryForegroundService.startForId(appCtx, id)
         }
 
@@ -105,20 +106,22 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     }
 
 
-    private fun isEnoughSpace(id: String, path: String, requiredSpaceMB: Long): Boolean{
+    private fun isEnoughSpace(id: String): Boolean{
         Timber.i("isEnoughSpace")
-        val availableSpace = FileUtils.getAvailableSpace(path)
-        if ((requiredSpaceMB * 1024 * 1024) >= availableSpace){
-            Timber.e("isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpaceMB", )
+        val requiredSpace = config.minAvailableSpaceMB * 1024 * 1024
+        return try {
+            this.mapFileManager.getAndValidateStorageDirByPolicy(requiredSpace)
+            true
+        }catch (io: IOException){
+            Timber.e("isEnoughSpace - Available Space is lower then then required: $requiredSpace", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
                 statusMsg = appCtx.getString(R.string.delivery_status_failed),
-                statusDescr = appCtx.getString(R.string.error_not_enough_space)
+                statusDescr = io.message
             )
-            return false
+            false
         }
-        return true
     }
     override fun synchronizeMapData(){
         Timber.i("synchronizeMapData")
@@ -233,7 +236,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val id = this.mapRepo.save(mapPkg)
         this.mapRepo.invoke(id)
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
+        if (isEnoughSpace(id)){
             Timber.d("processQrCodeData - execute the auth delivery process")
             DeliveryForegroundService.startForId(appCtx, id)
         }

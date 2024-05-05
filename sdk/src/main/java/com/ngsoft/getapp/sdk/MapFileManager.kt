@@ -66,7 +66,7 @@ internal class MapFileManager(private val appCtx: Context) {
         return null
     }
 
-    private fun getStorageDirByPolicy(neededSpace: Long): File{
+    fun getAndValidateStorageDirByPolicy(neededSpace: Long): File{
         val flashDir = flashTargetDir
         val sdDir = sdTargetDir
 
@@ -86,6 +86,7 @@ internal class MapFileManager(private val appCtx: Context) {
              if(FileUtils.getAvailableSpace(flashDir.path) > neededSpace) {
                  flashDir
              }else {
+                 validateSpace(sdDir, neededSpace)
                  Timber.i("Not enough space in Flash save to SD")
                  sdDir
              }
@@ -94,19 +95,27 @@ internal class MapFileManager(private val appCtx: Context) {
                 if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace) {
                     sdDir
                 }else {
+                    validateSpace(flashDir, neededSpace)
                     Timber.i("Not enough space in SD save to Flash")
                     flashDir
                 }
             }
         }
     }
+
+    private fun validateSpace(directory: File, neededSpace: Long) {
+        if (FileUtils.getAvailableSpace(directory.path) <= neededSpace) {
+            throw IOException(appCtx.getString(R.string.error_not_enough_space))
+        }
+    }
+
 //    TODO clean this
     fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<File, File>{
         //        TODO fined better way to handle when file exist and have not been downloaded
         val pkgFileD = File(config.downloadPath, pkgName)
         val jsonFileD = File(config.downloadPath, jsonName)
 
-        val targetDir = getStorageDirByPolicy(pkgFileD.length() + jsonFileD.length())
+        val targetDir = getAndValidateStorageDirByPolicy(pkgFileD.length() + jsonFileD.length())
         Timber.d("Storage dir ${targetDir.path}")
 
         val pkgFileT = File(targetDir, pkgName)
@@ -139,11 +148,6 @@ internal class MapFileManager(private val appCtx: Context) {
                 Paths.get(targetFile.parent, newName),
                 StandardCopyOption.REPLACE_EXISTING
             )
-        }
-    }
-    private fun validateSpace(directory: File, neededSpace: Long) {
-        if (FileUtils.getAvailableSpace(directory.path) <= neededSpace) {
-            throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
     }
 //    fun moveFileToTargetDir(fileName: String): String {
