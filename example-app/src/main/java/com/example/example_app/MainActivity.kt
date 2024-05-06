@@ -153,9 +153,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 DownloadListAdapter.QR_CODE_BUTTON_CLICK -> generateQrCode(mapId)
                 DownloadListAdapter.UPDATE_BUTTON_CLICK -> updateMap(mapId)
                 DownloadListAdapter.ITEM_VIEW_CLICK -> itemViewClick(
-                    mapId,
-                    downloadListAdapter.availableUpdate
-                )
+                    mapId)
             }
         }, mapServiceManager,this)
         //Set the adapter to listen to changes
@@ -173,6 +171,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         mapServiceManager.service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
+            var atLeastOneUpdated = it.any{
+                it.isUpdated == false
+            }
+            if (atLeastOneUpdated){
+                syncButton.visibility = View.VISIBLE
+            }
+            else{
+                syncButton.visibility = View.INVISIBLE
+            }
         })
         val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
 //        getTracker()
@@ -485,11 +492,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
 
     override fun onSignalDownload() {
-        syncButton.visibility = View.VISIBLE
-    }
-
-    override fun onNotSignalDownload() {
-        syncButton.visibility = View.GONE
+//        if (downloadListAdapter.availableUpdate > 0)
+//            syncButton.visibility = View.VISIBLE
+//        else
+//            syncButton.visibility = View.INVISIBLE
     }
 
 
@@ -515,16 +521,21 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
     }
 
-    private fun itemViewClick(id: String, availableUpdate: Boolean) {
-
-        if (availableUpdate) {
-            TrackHelper.track().dimension(1, "עדכן בול").screen(this).with(tracker)
-            popUp.mapId = id
-            popUp.type = "updateOne"
-            popUp.recyclerView = recyclerView
-            popUp.textM = "האם לבצע עדכון מפה ?"
-            popUp.show(supportFragmentManager, "updateOne")
+    private fun itemViewClick(id: String) {
+    var currMap: MapData? = null
+        GlobalScope.launch(Dispatchers.IO) {
+            currMap = mapServiceManager.service.getDownloadedMap(id)!!
+        withContext(Dispatchers.Main) {
+            if (currMap?.isUpdated == false) {
+                TrackHelper.track().dimension(1, "עדכן בול").screen(this@MainActivity).with(tracker)
+                popUp.mapId = id
+                popUp.type = "updateOne"
+                popUp.recyclerView = recyclerView
+                popUp.textM = "האם לבצע עדכון מפה ?"
+            popUp.show(supportFragmentManager, "updateOne")}
         }
+        }
+
 //        } else {
 //
 //            GlobalScope.launch(Dispatchers.IO) {
