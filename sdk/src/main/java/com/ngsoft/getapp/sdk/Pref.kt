@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
@@ -59,17 +60,18 @@ class Pref private constructor(context: Context) {
         get() = getInt(MATOMO_UPDATE_INTERVAL, 60)
         set(value) = setInt(MATOMO_UPDATE_INTERVAL, value)
 
-    var storagePath: String
-        get() = getString(STORAGE_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path)
-        set(value) = setString(STORAGE_PATH, value)
+    var sdStoragePath: String
+        get() = getString(SD_STORAGE_PATH, "com.asio.gis/gis/maps/raster/מיפוי ענן")
+        set(value) = setString(SD_STORAGE_PATH, value)
 
-    var relativeStoragePath: String
-        get() = getString(RELATIVE_STORAGE_PATH, "com.asio.gis/gis/maps/raster/מיפוי ענן")
-        set(value) = setString(RELATIVE_STORAGE_PATH, value)
 
-    var useSDCard: Boolean
-        get() = getBoolean(USE_SD_CARD, true)
-        set(value) = setBoolean(USE_SD_CARD, value)
+    var flashStoragePath: String
+        get() = getString(FLASH_STORAGE_PATH, "com.asio.gis/gis/maps/raster/מיפוי ענן")
+        set(value) = setString(FLASH_STORAGE_PATH, value)
+
+    var targetStoragePolicy: MapConfigDto.TargetStoragePolicy
+        get() = getEnum(TARGET_STORAGE_POLICY, MapConfigDto.TargetStoragePolicy.sDOnly)
+        set(value) = setEnum(TARGET_STORAGE_POLICY, value)
 
     var downloadPath: String
         get() = getString(DOWNLOAD_PATH, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)
@@ -178,6 +180,19 @@ class Pref private constructor(context: Context) {
         return DateHelper.parse(valueString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     }
 
+    private fun <T : Enum<T>> setEnum(key: String, enumValue: T) {
+        sharedPreferences.edit().putString(key, enumValue.name).apply()
+    }
+
+    private inline fun <reified T : Enum<T>> getEnum(key: String, default: T): T {
+        val value = sharedPreferences.getString(key, null)
+        return if (value != null) {
+            enumValues<T>().firstOrNull { it.name == value } ?: default
+        } else {
+            default
+        }
+    }
+
     @SuppressLint("HardwareIds")
     fun generateDeviceId():String {
         val newDeviceId = Secure.getString(contentResolver, Secure.ANDROID_ID).toString()
@@ -196,9 +211,9 @@ class Pref private constructor(context: Context) {
         private const val MATOMO_DIMENSION_ID = "matomoDimensionId"
         private const val MATOMO_SITE_ID = "matomoSiteId"
         private const val MATOMO_UPDATE_INTERVAL = "matomoUpdateInterval"
-        private const val STORAGE_PATH = "storagePath"
-        private const val RELATIVE_STORAGE_PATH = "relativeStoragePath"
-        private const val USE_SD_CARD = "useSdCard"
+        private const val SD_STORAGE_PATH = "sdStoragePath"
+        private const val FLASH_STORAGE_PATH = "flashStoragePath"
+        private const val TARGET_STORAGE_POLICY = "targetStoragePolicy"
         private const val DOWNLOAD_PATH = "downloadPath"
         private const val DELIVERY_TIMEOUT = "deliveryTimeout"
         private const val DOWNLOAD_TIMEOUT = "downloadTimeout"

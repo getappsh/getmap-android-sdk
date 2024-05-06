@@ -33,7 +33,7 @@ internal object FileUtils {
         return blockSize * availableBlocks // bytes available
     }
 
-    fun moveFile(from: String, to: String, fileName: String): String{
+    fun moveFile(from: String?, to: String, fileName: String): String{
         val uniqueFileName = getUniqueFileName(to, fileName)
 
         Files.move(

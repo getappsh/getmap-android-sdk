@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
@@ -231,21 +232,22 @@ interface GetMapService {
         val baseUrl: String
 
         /**
-         * Path where maps are stored locally.
+         * SD Storage path to stored maps
          */
-        val storagePath: String
+
+        val sdStoragePath: String
 
 
         /**
-         * Relative path to stored maps
+         * Flash Storage path to stored maps
          */
 
-        val relativeStoragePath: String
+        val flashStoragePath: String
 
         /**
-         * Save the map to SD Card when exists
+         * Storage policy
          */
-        var useSDCard: Boolean
+        var targetStoragePolicy: MapConfigDto.TargetStoragePolicy
 
         /**
          * Path where downloaded maps are saved.
