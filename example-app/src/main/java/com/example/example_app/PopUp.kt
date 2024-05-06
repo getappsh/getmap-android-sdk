@@ -5,6 +5,7 @@ import android.content.Context
 import com.example.example_app.matomo.MatomoTracker
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +31,8 @@ class PopUp : DialogFragment() {
     var textM: String = ""
     var mapId = ""
     var type = ""
+    var bullName = ""
+    lateinit var handler: (MapData) -> Unit
     var tracker: Tracker? = null
     var demand = false
     lateinit var recyclerView: RecyclerView
@@ -53,6 +56,7 @@ class PopUp : DialogFragment() {
         textView.text = textM
         buttonDelete.setOnClickListener {
             if (type == "delete") {
+                Log.i("bull name", bullName)
                 CoroutineScope(Dispatchers.IO).launch {
                     val data = service.getDownloadedMap(mapId)
                     if (data != null) {
@@ -65,7 +69,7 @@ class PopUp : DialogFragment() {
                         } else {
                             TrackHelper.track().dimension(1, mapId)
                                 .event("מיפוי ענן", "ניהול בקשות")
-                                .name("מחיקת בול").with(tracker)
+                                .name(" מחיקת בול $bullName").with(tracker)
                             return@launch
                         }
                     } else {
