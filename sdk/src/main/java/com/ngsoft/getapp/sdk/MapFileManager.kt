@@ -9,6 +9,7 @@ import android.os.Build
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
+import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
@@ -269,8 +270,16 @@ class MapFileManager(private val appCtx: Context) {
                 ?: possibleTargetDirs.mapNotNull { File(it, fileName) }.firstOrNull(File::exists)
         }
 
+        if (targetJsonFile?.exists() == true) {
+            val json = JsonUtils.readJson(targetJsonFile.path)
+            mapPkg.footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
+        }
+
         if (targetMapFile?.exists() == true && targetJsonFile?.exists() == true) {
             mapPkg.path = targetMapFile.parent
+            mapPkg.metadata.mapDone = true
+            mapPkg.metadata.jsonDone = true
+
             if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
@@ -365,6 +374,9 @@ class MapFileManager(private val appCtx: Context) {
 
             this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
                 statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone, path=rMap.path)
+            if (map.footprint != rMap.footprint){
+                rMap.footprint?.let { this.mapRepo.setFootprint(map.id.toString(), it) }
+            }
         }
     }
 
