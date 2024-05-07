@@ -338,16 +338,13 @@ class DownloadListAdapter(
                 val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                 if (i.id == downloadData.id) {
                     val firstOffsetDateTime = downloadData.downloadStart
-                    val downloadDone = downloadData.downloadDone
                     if (firstOffsetDateTime != null) {
                         val a = sdf.format(firstOffsetDateTime)
                         holder.demandDate.text = "תאריך בקשה: ${a}"
-                    }else {
-                        val currDate = sdf.format(downloadDone)
-                        holder.demandDate.text = "תאריך סיום: ${currDate}"
+                    } else {
+                        holder.demandDate.text = "תאריך בקשה: לא ידוע"
                     }
                 }
-
             }
         }
     }
