@@ -220,20 +220,20 @@ class MapActivity : AppCompatActivity() {
                 }
 
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
-                    val polygon = paintPolygon(g, "yellow", endName).first
+                    val polygon = createDownloadedPolygon(g, "yellow", endName).first
                     renderableLayer.addRenderable(polygon)
 
-                    val label = paintPolygon(g, "yellow", endName).second
+                    val label = createDownloadedPolygon(g, "yellow", endName).second
                     renderableLayer.addRenderable(label)
                 } else {
                     val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                     val formattedDownloadStart = g.downloadStart?.format(formatter)
                     endName = "${g.statusMsg} $formattedDownloadStart"
 
-                    val polygon = paintPolygon(g, "red", endName).first
+                    val polygon = createDownloadedPolygon(g, "red", endName).first
                     renderableLayer.addRenderable(polygon)
 
-                    val label = paintPolygon(g, "red", endName).second
+                    val label = createDownloadedPolygon(g, "red", endName).second
                     renderableLayer.addRenderable(label)
                 }
             }
@@ -276,7 +276,7 @@ class MapActivity : AppCompatActivity() {
         wwd.requestRedraw()
     }
 
-    private fun paintPolygon(map: MapData, colorType: String , endName: String): Pair<Polygon, Label> {
+    private fun createDownloadedPolygon(map: MapData, colorType: String , endName: String): Pair<Polygon, Label> {
         val nums = map.footprint?.split(",") ?: ArrayList()
         val coords = ArrayList<Position>()
         for (i in 0 until nums.size - 1 step 2) {
@@ -301,26 +301,20 @@ class MapActivity : AppCompatActivity() {
 
     private fun attrsColor(type: String): ShapeAttributes {
         return when (type) {
-            "yellow" -> yellowAttributes()
-            "red" -> redAttributes()
+            "yellow" -> attributes(type)
+            "red" -> attributes(type)
             else -> pinkAttributes()
         }
     }
 
-    private fun yellowAttributes(): ShapeAttributes {
+    private fun attributes(type: String): ShapeAttributes {
         return ShapeAttributes().apply {
             outlineWidth = 5f
-            outlineColor = Color(1f, 1f, 0f, 1f)
-            interiorColor = Color(0f, 0f, 1f, 0f)
-            isDepthTest = false
-            outlineImageSource = ImageSource.fromLineStipple(2, 0xF0F0.toShort())
-        }
-    }
-
-    private fun redAttributes(): ShapeAttributes {
-        return ShapeAttributes().apply {
-            outlineWidth = 5f
-            outlineColor = Color(1f, 0f, 0f, 1f)
+            if (type == "yellow"){
+                outlineColor = Color(1f, 1f, 0f, 1f)
+            } else if (type == "red") {
+                outlineColor = Color(1f, 0f, 0f, 1f)
+            }
             interiorColor = Color(0f, 0f, 1f, 0f)
             isDepthTest = false
             outlineImageSource = ImageSource.fromLineStipple(2, 0xF0F0.toShort())

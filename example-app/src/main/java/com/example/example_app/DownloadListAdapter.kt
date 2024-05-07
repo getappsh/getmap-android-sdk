@@ -213,24 +213,13 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
-                holder.textFileName.visibility = View.VISIBLE
-                holder.textFileName.text = "ההורדה נכשלה"
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.dates.visibility = View.INVISIBLE
-                holder.size.visibility = View.INVISIBLE
-                holder.product.visibility = View.INVISIBLE
-                holder.separator.visibility = View.INVISIBLE
+                holder.dates.text = LocalDate.now().toString()
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
             }
 
             CANCEL -> {
-                holder.textFileName.visibility = View.VISIBLE
-                holder.textFileName.text = "ההורדה בוטלה"
-                holder.dates.visibility = View.INVISIBLE
-                holder.size.visibility = View.INVISIBLE
-                holder.product.visibility = View.INVISIBLE
-                holder.separator.visibility = View.INVISIBLE
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
