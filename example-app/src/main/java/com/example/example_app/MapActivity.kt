@@ -1,12 +1,13 @@
 package com.example.example_app
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.storage.StorageManager
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -15,39 +16,37 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
-import com.arcgismaps.ApiKey
-import com.arcgismaps.ArcGISEnvironment
-import com.arcgismaps.Color
-import com.arcgismaps.LoadStatus
-import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
-import com.arcgismaps.geometry.Polygon
-import com.arcgismaps.geometry.SpatialReference
-import com.arcgismaps.mapping.ArcGISMap
-import com.arcgismaps.mapping.Basemap
-import com.arcgismaps.mapping.Viewpoint
-import com.arcgismaps.mapping.layers.RasterLayer
-import com.arcgismaps.mapping.symbology.CompositeSymbol
-import com.arcgismaps.mapping.symbology.HorizontalAlignment
-import com.arcgismaps.mapping.symbology.SimpleLineSymbol
-import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
-import com.arcgismaps.mapping.symbology.TextSymbol
-import com.arcgismaps.mapping.symbology.VerticalAlignment
-import com.arcgismaps.mapping.view.Graphic
-import com.arcgismaps.mapping.view.GraphicsOverlay
-import com.arcgismaps.mapping.view.MapView
-import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
+import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
+import gov.nasa.worldwind.BasicWorldWindowController
+import gov.nasa.worldwind.WorldWind
+import gov.nasa.worldwind.WorldWindow
+import gov.nasa.worldwind.geom.LookAt
+import gov.nasa.worldwind.geom.Offset
+import gov.nasa.worldwind.geom.Position
+import gov.nasa.worldwind.gesture.GestureRecognizer
+import gov.nasa.worldwind.layer.BackgroundLayer
+import gov.nasa.worldwind.layer.Layer
+import gov.nasa.worldwind.layer.LayerFactory
+import gov.nasa.worldwind.layer.RenderableLayer
+import gov.nasa.worldwind.render.Color
+import gov.nasa.worldwind.render.ImageSource
+import gov.nasa.worldwind.shape.Label
+import gov.nasa.worldwind.shape.Polygon
+import gov.nasa.worldwind.shape.ShapeAttributes
+import gov.nasa.worldwind.shape.TextAttributes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -56,12 +55,11 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
-    private lateinit var mapView: MapView
-    private var isMapScrolling = false
-    private val loadedPolys: ArrayList<Polygon> = ArrayList();
+    lateinit var wwd: WorldWindow
+    private val loadedPolys: ArrayList<kotlin.collections.ArrayList<Position>> = ArrayList()
+    private val allPolygon = mutableListOf<PolyObject>()
 
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
@@ -69,21 +67,40 @@ class MapActivity : AppCompatActivity() {
         Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-        setApiKey()
-
-        mapView = findViewById(R.id.mapView)
         val instance = MapServiceManager.getInstance()
         service = instance.service
+        addGeoPkg()
 
-        lifecycle.addObserver(mapView)
+        wwd = WorldWindow(this)
+        wwd.worldWindowController = PickNavigateController(this)
+        wwd.layers.addLayer(BackgroundLayer())
 
-        val delivery = findViewById<Button>(R.id.deliver)
+        val lookAt = LookAt().set(
+            31.31,
+            35.10,
+            0.0,
+            WorldWind.ABSOLUTE,
+            630000.0,
+            0.0,
+            0.0,
+            0.0
+        )
+        wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+        val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
+        globeLayout.addView(wwd)
+
+        val compass = findViewById<View>(R.id.arrow)
+        compass.setOnClickListener {
+            showNorth()
+        }
+
         var overlayView = findViewById<FrameLayout>(R.id.overlayView)
+        val delivery = findViewById<Button>(R.id.deliver)
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             val blueBorderDrawableId = R.drawable.blue_border
@@ -99,15 +116,9 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
+
         val close = findViewById<Button>(R.id.close)
         close.visibility = View.INVISIBLE
-
-        val compass = findViewById<View>(R.id.arrow)
-        compass.setOnClickListener {
-            lifecycleScope.launch {
-                showNorth()
-            }
-        }
 
         val back = findViewById<Button>(R.id.back)
         back.setOnClickListener {
@@ -145,26 +156,348 @@ class MapActivity : AppCompatActivity() {
             frame.visibility = View.INVISIBLE
             back.visibility = View.VISIBLE
         }
+        drawPolygons()
+    }
 
-        geoPackageRender()
+    private fun addGeoPkg() {
+        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storageList = storageManager.storageVolumes
+        val volume = storageList[1].directory?.absoluteFile ?: ""
+        Log.i("gfgffgf", "$volume")
+        val geoPath = "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
 
-        GlobalScope.launch(Dispatchers.Main) {
-            mapView.onPan.collect {
-               checkBboxBeforeSent()
+        val layerFactory = LayerFactory()
+        layerFactory.createFromGeoPackage(
+            geoPath,
+            object : LayerFactory.Callback {
+                override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
+                    wwd.layers.addLayer(layer)
+                    Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
+                }
+
+                override fun creationFailed(factory: LayerFactory?, layer: Layer?, ex: Throwable?) {
+                    Log.e("gov.nasa.worldwind", "GeoPackage layer creation failed", ex)
+                }
+            }
+        )
+    }
+
+    private fun onDelivery() {
+        Log.d(TAG, "onDelivery: ")
+
+        val pLeftTop =  getFourScreenPoints(wwd).leftTop
+        val pRightBottom = getFourScreenPoints(wwd).rightBottom
+        val pRightTop = getFourScreenPoints(wwd).rightTop
+        val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+
+        GlobalScope.launch(Dispatchers.IO) {
+            val props = MapProperties(
+                "selectedProduct",
+                "${pLeftTop.longitude},${pLeftTop.latitude},${pRightTop.longitude},${pRightTop.latitude},${pRightBottom.longitude},${pRightBottom.latitude},${pLeftBottom.longitude},${pLeftBottom.latitude},${pLeftTop.longitude},${pLeftTop.latitude}",
+                false
+            )
+            val id = service.downloadMap(props, downloadStatusHandler)
+            if (id == null) {
+                this@MapActivity.runOnUiThread { Toast.makeText(applicationContext, "The map already exists, please choose another Bbox", Toast.LENGTH_LONG).show()
+                }
+            }
+            Log.d(TAG, "onDelivery: after download map have been called, id: $id")
+        }
+        val intent = Intent(this@MapActivity, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun drawPolygons() {
+        val gson = Gson()
+        val renderableLayer = RenderableLayer()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            service.getDownloadedMaps().forEach { g ->
+                var endName = "בהורדה"
+                if (g.statusMsg == "הסתיים") {
+                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                }
+
+                if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
+                    val polygon = createDownloadedPolygon(g, "yellow", endName).first
+                    renderableLayer.addRenderable(polygon)
+
+                    val label = createDownloadedPolygon(g, "yellow", endName).second
+                    renderableLayer.addRenderable(label)
+                } else {
+                    val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                    val formattedDownloadStart = g.downloadStart?.format(formatter)
+                    endName = "${g.statusMsg} $formattedDownloadStart"
+
+                    val polygon = createDownloadedPolygon(g, "red", endName).first
+                    renderableLayer.addRenderable(polygon)
+
+                    val label = createDownloadedPolygon(g, "red", endName).second
+                    renderableLayer.addRenderable(label)
+                }
+            }
+        }
+
+        DiscoveryProductsManager.getInstance().products.forEach { p ->
+            run {
+                val json = JSONObject(p.footprint)
+                val type = json.getString("type")
+
+                if (type == "Polygon") {
+                    val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
+                    productPolyDTO.coordinates.forEach { it ->
+                        val points: List<Position> = it.map {
+                            Position.fromDegrees(it[1], it[0], 0.0)
+                        }
+                        val polygon = Polygon(points, attrsColor("pink"))
+                        polygon.displayName = ""
+                        renderableLayer.addRenderable(polygon)
+                    }
+                } else {
+                    val productPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                    productPolyDTO.coordinates.forEach { polygonCoords ->
+                        val rings: MutableList<List<Position>> = mutableListOf()
+                        polygonCoords.forEach { ringCoords ->
+                            val points: MutableList<Position> = ringCoords.map {
+                                Position.fromDegrees(it[1], it[0], 0.0)
+                            }.toMutableList()
+                            rings.add(points)
+                        }
+                        val polygon = Polygon(rings.flatten(), attrsColor("pink"))
+                        polygon.displayName = ""
+                        renderableLayer.addRenderable(polygon)
+                    }
+                }
+            }
+        }
+        renderableLayer.displayName = ""
+        wwd.layers.addLayer(renderableLayer)
+        wwd.requestRedraw()
+    }
+
+    private fun createDownloadedPolygon(map: MapData, colorType: String , endName: String): Pair<Polygon, Label> {
+        val nums = map.footprint?.split(",") ?: ArrayList()
+        val coords = ArrayList<Position>()
+        for (i in 0 until nums.size - 1 step 2) {
+            val lon = nums[i].toDouble()
+            val lat = nums[i + 1].toDouble()
+
+            coords.add(Position.fromDegrees(lat, lon, 0.0))
+        }
+        val polygon = Polygon(coords, attrsColor(colorType))
+        loadedPolys.add(coords)
+        polygon.displayName = ""
+
+        val label = Label(
+            coords.first(),
+            endName,
+            textAttributes()
+        )
+        label.displayName = ""
+
+        return Pair(polygon, label)
+    }
+
+    private fun attrsColor(type: String): ShapeAttributes {
+        return when (type) {
+            "yellow" -> attributes(type)
+            "red" -> attributes(type)
+            else -> pinkAttributes()
+        }
+    }
+
+    private fun attributes(type: String): ShapeAttributes {
+        return ShapeAttributes().apply {
+            outlineWidth = 5f
+            if (type == "yellow"){
+                outlineColor = Color(1f, 1f, 0f, 1f)
+            } else if (type == "red") {
+                outlineColor = Color(1f, 0f, 0f, 1f)
+            }
+            interiorColor = Color(0f, 0f, 1f, 0f)
+            isDepthTest = false
+            outlineImageSource = ImageSource.fromLineStipple(2, 0xF0F0.toShort())
+        }
+    }
+
+    private fun pinkAttributes(): ShapeAttributes {
+        return ShapeAttributes().apply {
+            outlineWidth = 10f
+            outlineColor = Color(240 / 255.0f, 26 / 255.0f, 133 / 255.0f, 1f)
+            interiorColor = Color(0f, 0f, 1f, 0f)
+            isDepthTest = false
+        }
+    }
+
+    private fun textAttributes(): TextAttributes {
+        val textAttrs = TextAttributes()
+        textAttrs.textSize = 35.0F
+        textAttrs.textColor = Color(1f, 1f, 0f, 1f)
+        textAttrs.outlineWidth = 0F
+        textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0)
+
+        return textAttrs
+    }
+
+    private fun checkBboxBeforeSent() {
+        try {
+            val pLeftTop =  getFourScreenPoints(wwd).leftTop
+            val pRightBottom = getFourScreenPoints(wwd).rightBottom
+            val pRightTop = getFourScreenPoints(wwd).rightTop
+            val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+
+            val boxCoordinates = mutableListOf<Position>()
+            boxCoordinates.add(pLeftTop)
+            boxCoordinates.add(pRightTop)
+            boxCoordinates.add(pRightBottom)
+            boxCoordinates.add(pLeftBottom)
+
+            val boxCoordinatesEsri = mutableListOf<Point>()
+            boxCoordinatesEsri.add(Point(pLeftTop.longitude, pLeftTop.latitude))
+            boxCoordinatesEsri.add(Point(pRightTop.longitude, pRightTop.latitude))
+            boxCoordinatesEsri.add(Point(pRightBottom.longitude, pRightBottom.latitude))
+            boxCoordinatesEsri.add(Point(pLeftBottom.longitude, pLeftBottom.latitude))
+
+            val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
+
+            val showKm = findViewById<TextView>(R.id.kmShow)
+            val showBm = findViewById<TextView>(R.id.showMb)
+            var spaceMb = 0
+            val date = findViewById<TextView>(R.id.dateText)
+            val maxMb = service.config.maxMapSizeInMB.toInt()
+            var downloadAble = false
+            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
+            val formattedNum = String.format("%.2f", area)
+            showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
+
+            allPolygon.clear()
+
+            DiscoveryProductsManager.getInstance().products.forEach { p ->
+                run {
+                    val json = JSONObject(p.footprint)
+                    val type = json.getString("type")
+                    val gson = Gson()
+
+                    if (type == "Polygon") {
+                        val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
+                        productPolyDTO.coordinates.forEach { it ->
+                            val points: List<Position> = it.map {
+                                Position.fromDegrees(it[1], it[0], 0.0)
+                            }
+                            detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+                        }
+                    } else if (type == "MultiPolygon") {
+                        val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                        productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
+                            polyCoordinates.forEach { coordinates ->
+                                val points: List<Position> = coordinates.map {
+                                    Position.fromDegrees(it[1], it[0], 0.0)
+                                }
+                                detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+                            }
+                        }
+                    }
+                }
+            }
+            val interPolygon = service.config.mapMinInclusionPct.toDouble()
+            allPolygon.sortByDescending(PolyObject::date)
+            var found = false
+            val boxArea = calculatePolygonArea(boxCoordinates)
+            for (polygon in allPolygon) {
+                if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
+                    spaceMb = calculateMB(pLeftTop, pRightTop, pLeftBottom, polygon.resolution)
+                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    date.text = "צולם : ${polygon.start} - ${polygon.end}"
+                    found = true
+                    downloadAble = true
+                    break
+                }
+            }
+            if (!found && allPolygon.isNotEmpty()) {
+                val firstPolyObject = allPolygon[0]
+                spaceMb = calculateMB(pLeftTop, pRightTop, pLeftBottom, firstPolyObject.resolution)
+                showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                date.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
+                downloadAble = true
+            }
+
+            var inBbox = false
+            loadedPolys.forEach { p ->
+
+                val intersection = intersectionOrNullNasa(p, boxCoordinates)
+                if (intersection != null) {
+                    val intersectionArea = calculatePolygonArea(intersection)
+                    val boxArea = calculatePolygonArea(boxCoordinates)
+                    if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                        downloadAble = false
+                        inBbox = true
+                    }
+                }
+            }
+
+            val overlayView = findViewById<FrameLayout>(R.id.overlayView)
+            if (spaceMb < maxMb && downloadAble) {
+                overlayView.setBackgroundResource(R.drawable.blue_border)
+            } else {
+                overlayView.setBackgroundResource(R.drawable.red_border)
+                if (inBbox){
+                    date.text = "בחר תיחום שאינו חותך בול קיים"
+                } else if (spaceMb > maxMb && downloadAble) {
+                    date.text = "תיחום גדול מנפח מקסימלי להורדה"
+                } else {
+                    date.text = "אין תוצר עדכני באזור זה"
+                    showKm.text = "שטח משוער :אין נתון"
+                    showBm.text = "נפח משוער :אין נתון"
+                }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun calculateMB(leftTop: Position, rightTop: Position, leftBottom: Position,  resolution: BigDecimal): Int {
+        val area = (calculateDistance(leftTop, rightTop) / 1000) * (calculateDistance(leftTop, leftBottom) / 1000)
+        val formattedNum = String.format("%.2f", area)
+        var mb = 0
+        mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
+            (formattedNum.toDouble() * 10).toInt()
+        } else if (resolution.toDouble() == 2.68220901489258E-6) {
+            (formattedNum.toDouble() * 5).toInt()
+        } else {
+            (formattedNum.toDouble() * 2.5).toInt()
+        }
+
+        return mb
+    }
+
+    private fun detectPolygon(map: DiscoveryItem, points:  List<Position>, polygonBoxEsri: com.arcgismaps.geometry.Polygon, boxCoordinates: MutableList<Position>) {
+        val polygonPoints = points.map { Point(it.longitude, it.latitude) }
+
+        val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
+
+        val intersection = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
+        if (intersection != null) {
+            val intersectionArea =  GeometryEngine.area(intersection)
+            val boxArea = calculatePolygonArea(boxCoordinates)
+            val firstOffsetDateTime = map.imagingTimeBeginUTC
+            val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+            val firstDate = sdf.format(firstOffsetDateTime)
+            val secondOffsetDateTime = map.imagingTimeEndUTC
+            val secondDate = sdf.format(secondOffsetDateTime)
+
+            if (abs(intersectionArea) / abs(boxArea) > 0.0) {
+                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg)
+                allPolygon.add(polyObject)
             }
         }
     }
 
-    private fun setApiKey() {
-        val keyId = "runtimelite,1000,rud1971484999,none,GB2PMD17JYCJ5G7XE200"
-        ArcGISEnvironment.apiKey = ApiKey.create(keyId)
-    }
-
-    private fun calculateDistance(point1: Point, point2: Point): Double {
-        val lat1 = Math.toRadians(point1.y)
-        val lon1 = Math.toRadians(point1.x)
-        val lat2 = Math.toRadians(point2.y)
-        val lon2 = Math.toRadians(point2.x)
+    private fun calculateDistance(point1: Position, point2: Position): Double {
+        val lat1 = Math.toRadians(point1.latitude)
+        val lon1 = Math.toRadians(point1.longitude)
+        val lat2 = Math.toRadians(point2.latitude)
+        val lon2 = Math.toRadians(point2.longitude)
 
         val dlon = lon2 - lon1
         val dlat = lat2 - lat1
@@ -178,58 +511,66 @@ class MapActivity : AppCompatActivity() {
         return radius * c
     }
 
-    private fun onDelivery() {
-        Log.d(TAG, "onDelivery: ")
+    private fun intersectionOrNullNasa(polygon1: List<Position>, polygon2: List<Position>): List<Position>? {
+        for (point in polygon1) {
+            if (pointInPolygon(point, polygon2)) {
+                return polygon1
+            }
+        }
+        for (point in polygon2) {
+            if (pointInPolygon(point, polygon1)) {
+                return polygon2
+            }
+        }
+        return null
+    }
 
-        val currentRotation = mapView.rotation
+    private fun pointInPolygon(point: Position, polygon: List<Position>): Boolean {
+        val x = point.latitude
+        val y = point.longitude
+        var inside = false
+        for (i in polygon.indices) {
+            val xi = polygon[i].latitude
+            val yi = polygon[i].longitude
+            val j = if (i == 0) polygon.size - 1 else i - 1
+            val xj = polygon[j].latitude
+            val yj = polygon[j].longitude
 
+            val intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+            if (intersect) inside = !inside
+        }
+        return inside
+    }
+
+    private fun calculatePolygonArea(vertices: List<Position>): Double {
+        var area = 0.0
+        val n = vertices.size
+
+           for (i in 0 until n) {
+            val j = (i + 1) % n
+            val vi = vertices[i]
+            val vj = vertices[j]
+            area += (vi.latitude * vj.longitude - vj.latitude * vi.longitude)
+        }
+
+        area = Math.abs(area) / 2.0
+        return area
+    }
+
+    private fun getFourScreenPoints(wwd: WorldWindow): FourScreenPoints {
         val displayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(displayMetrics)
         val height = displayMetrics.heightPixels
         val width = displayMetrics.widthPixels
 
-        val leftTop = ScreenCoordinate(100.0, height - 550.0)
-        val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
-        val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
-        val leftBottom = ScreenCoordinate(100.0, 550.0)
+        val pLeftTop = wwd.pick(100f, height - 550f).terrainPickedObject().terrainPosition
+        val pRightBottom = wwd.pick(width - 100f, 550f).terrainPickedObject().terrainPosition
+        val pRightTop = wwd.pick(width - 100f, height - 550f).terrainPickedObject().terrainPosition
+        val pLeftBottom = wwd.pick(100f, 550f).terrainPickedObject().terrainPosition
 
-        val pLeftTop = mapView.screenToLocation(leftTop)!!
-        val pRightBottom = mapView.screenToLocation(rightBottom)!!
-        val pRightTop = mapView.screenToLocation(rightTop)!!
-        val pLeftBottom = mapView.screenToLocation(leftBottom)!!
-
-        Log.i("selected points", "${pLeftTop.x},${pLeftTop.y}")
-        Log.i("selected points", "${pRightTop.x},${pRightTop.y}")
-        Log.i("selected points", "${pRightBottom.x},${pRightBottom.y}")
-        Log.i("selected points", "${pLeftBottom.x},${pLeftBottom.y}")
-
-        Log.i("selected points", "${calculateDistance(pLeftTop, pRightTop) / 1000}")
-        Log.i("selected points", "${calculateDistance(pLeftTop, pLeftBottom) / 1000}")
-        Log.i("selected points", "${(calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)}")
-
-        GlobalScope.launch(Dispatchers.IO) {
-            val props = MapProperties(
-                "selectedProduct",
-                "${pLeftTop.x},${pLeftTop.y},${pRightTop.x},${pRightTop.y},${pRightBottom.x},${pRightBottom.y},${pLeftBottom.x},${pLeftBottom.y},${pLeftTop.x},${pLeftTop.y}",
-                false
-            )
-            val id = service.downloadMap(props, downloadStatusHandler)
-            if (id == null) {
-                this@MapActivity.runOnUiThread {
-                    // This is where your UI code goes.
-                    Toast.makeText(
-                        applicationContext,
-                        "The map already exists, please choose another Bbox",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-            Log.d(TAG, "onDelivery: after download map have been called, id: $id")
-        }
-        val intent = Intent(this@MapActivity, MainActivity::class.java)
-        startActivity(intent)
-        finish()
+        return FourScreenPoints(pLeftTop, pRightBottom, pRightTop, pLeftBottom)
     }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val intent = Intent(this@MapActivity, MainActivity::class.java)
@@ -237,317 +578,70 @@ class MapActivity : AppCompatActivity() {
         finish()
     }
 
-    private suspend fun showNorth() {
+    private fun showNorth() {
         val compass = findViewById<View>(R.id.arrow)
         compass.rotation = 0F
-        mapView.setViewpointRotation(0.0)
+        wwd.navigator.heading = 0.0
+        wwd.requestRedraw()
     }
 
-    private fun compassRotation() {
-        var rotation = mapView.mapRotation.value
-        if (rotation < 0) {
-            rotation += 360
+    open inner class PickNavigateController (val context: AppCompatActivity) :
+        BasicWorldWindowController() {
+
+        override fun handleRotate(recognizer: GestureRecognizer?) {
+            super.handleRotate(recognizer)
+            var rotation = wwd.navigator.heading
+            if (rotation < 0) {
+                rotation += 360
+            }
+
+            val compass = findViewById<View>(R.id.arrow)
+            compass.rotation = (180 - (rotation + 180)).toFloat()
         }
-        val compass = findViewById<View>(R.id.arrow)
-        compass.rotation = (180 - (rotation + 180)).toFloat()
-    }
 
-    private fun checkBboxBeforeSent() {
-        try {
-            val displayMetrics = DisplayMetrics()
-            windowManager.defaultDisplay.getMetrics(displayMetrics)
-            val height = displayMetrics.heightPixels
-            val width = displayMetrics.widthPixels
-
-            val leftTop = ScreenCoordinate(100.0, height - 550.0)
-            val rightTop = ScreenCoordinate(width - 100.0, height - 550.0)
-            val rightBottom = ScreenCoordinate(width - 100.0, 550.0)
-            val leftBottom = ScreenCoordinate(100.0, 550.0)
-
-            val pLeftTop = mapView.screenToLocation(leftTop) ?: Point(1.0, 0.0)
-            val pRightBottom = mapView.screenToLocation(rightBottom) ?: Point(0.0, 1.0)
-            val pRightTop = mapView.screenToLocation(rightTop) ?: Point(0.5, 0.0)
-            val pLeftBottom = mapView.screenToLocation(leftBottom) ?: Point(0.0, 0.5)
-
-            val boxCoordinates = mutableListOf<Point>()
-            boxCoordinates.add(pLeftTop)
-            boxCoordinates.add(pRightTop)
-            boxCoordinates.add(pRightBottom)
-            boxCoordinates.add(pLeftBottom)
-//                boxCoordinates.add(pLeftTop)
-
-            val boxPolygon = Polygon(boxCoordinates)
-
-            compassRotation()
-
-            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
-            val showKm = findViewById<TextView>(R.id.kmShow)
-            val showBm = findViewById<TextView>(R.id.showMb)
-            val formattedNum = String.format("%.2f", area)
-            val spaceMb = (formattedNum.toDouble() * 9).toInt()
-            showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
-            showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-            val date = findViewById<TextView>(R.id.dateText)
-            val maxMb = service.config.maxMapSizeInMB.toInt()
-            var zoom = 0
-            var downloadAble = false
-
-            val allPolygon = mutableListOf<PolyObject>()
-
-            DiscoveryProductsManager.getInstance().products.forEach { p ->
-                run {
-                    val json = JSONObject(p.footprint)
-                    val type = json.getString("type")
-                    val gson = Gson()
-
-
-                    if (type == "Polygon") {
-                        val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                        productPolyDTO.coordinates.forEach { coordinates ->
-                            val points: List<Point> = coordinates.map {
-                                Point(it[0], it[1], SpatialReference.wgs84())
-                            }
-                            val polygon = Polygon(points)
-
-                            val intersection =
-                                GeometryEngine.intersectionOrNull(polygon, boxPolygon)
-                            val intersectionArea = GeometryEngine.area(intersection!!)
-                            val boxArea = GeometryEngine.area(boxPolygon)
-                            val firstOffsetDateTime = p.imagingTimeBeginUTC
-                            val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                            val firstDate = sdf.format(firstOffsetDateTime)
-                            val secondOffsetDateTime = p.imagingTimeEndUTC
-                            val secondDate = sdf.format(secondOffsetDateTime)
-                            val interPolygon = service.config.mapMinInclusionPct.toDouble() / 100
-
-                            if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                allPolygon.add(polyObject)
-                            }
-                        }
-                    } else if (type == "MultiPolygon") {
-                        val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                        productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
-                            polyCoordinates.forEach { coordinates ->
-                                val points: List<Point> = coordinates.map {
-                                    Point(it[0], it[1], SpatialReference.wgs84())
-                                }
-                                val polygon = Polygon(points)
-
-                                val intersection = GeometryEngine.intersectionOrNull(polygon, boxPolygon)
-                                val intersectionArea = GeometryEngine.area(intersection!!)
-                                val boxArea = GeometryEngine.area(boxPolygon)
-
-                                val firstOffsetDateTime = p.imagingTimeBeginUTC
-                                val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                                val firstDate = sdf.format(firstOffsetDateTime)
-                                val secondOffsetDateTime = p.imagingTimeEndUTC
-                                val secondDate = sdf.format(secondOffsetDateTime)
-
-                                if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                                    val polyObject = PolyObject(p.ingestionDate, abs(intersectionArea), firstDate, secondDate)
-                                    allPolygon.add(polyObject)
-                                }
+        private var pickGestureDetector = GestureDetector(
+            context, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDoubleTap(e: MotionEvent): Boolean {
+                    if (lookAt.range > 1000) {
+                        val pickedObj = wwd.pick(e.x, e.y).terrainPickedObject()
+                        val totalRange = lookAt.range / 2
+                        val totalLat = lookAt.latitude - pickedObj.terrainPosition.latitude
+                        val totalLon = lookAt.longitude - pickedObj.terrainPosition.longitude
+                        GlobalScope.launch(Dispatchers.Default) {
+                            for (i in 1..100) {
+                                lookAt.range -= totalRange / 100
+                                lookAt.latitude -= totalLat / 100
+                                lookAt.longitude -= totalLon / 100
+                                lookAt.heading = wwd.navigator.heading
+                                wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+                                wwd.requestRedraw()
+                                delay(1)
                             }
                         }
                     }
+                    return true
                 }
             }
-            val dateTextView = findViewById<TextView>(R.id.dateText)
-            val interPolygon = service.config.mapMinInclusionPct.toDouble()
-            allPolygon.sortByDescending(PolyObject::date)
-            var found = false
-            val boxArea = GeometryEngine.area(boxPolygon)
-            for (polygon in allPolygon) {
-                if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
-                    dateTextView.text = "צולם : ${polygon.start} - ${polygon.end}"
-                    found = true
-                    downloadAble = true
-                    break
-                }
-            }
-            if (!found && allPolygon.isNotEmpty()) {
-                val firstPolyObject = allPolygon[0]
-                dateTextView.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
-                downloadAble = true
+        )
+
+        override fun onTouchEvent(event: MotionEvent): Boolean {
+            val consumed = pickGestureDetector.onTouchEvent(event)
+
+            if (!consumed && event.action == MotionEvent.ACTION_UP) {
+                Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
+                checkBboxBeforeSent()
+            } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
+                val showKm = findViewById<TextView>(R.id.kmShow)
+                val showBm = findViewById<TextView>(R.id.showMb)
+                val date = findViewById<TextView>(R.id.dateText)
+                showKm.text = "שטח משוער : מחשב שטח"
+                showBm.text = "נפח משוער : מחשב נפח"
+                date.text = ""
             }
 
-            var inBbox = false
-            loadedPolys.forEach { p ->
-
-                val intersection = GeometryEngine.intersectionOrNull(p, boxPolygon)
-                if (intersection != null) {
-                    val intersectionArea = GeometryEngine.area(intersection)
-                    val boxArea = GeometryEngine.area(boxPolygon)
-                    if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                        downloadAble = false
-                        inBbox = true
-                    }
-                }
-            }
-
-            val overlayView = findViewById<FrameLayout>(R.id.overlayView)
-            if (spaceMb < maxMb && downloadAble) {
-                overlayView.setBackgroundResource(R.drawable.blue_border)
-            } else {
-                overlayView.setBackgroundResource(R.drawable.red_border)
-                date.text = "אין תוצר עדכני באזור זה"
-                if (inBbox){
-                    date.text = "בחר תיחום שאינו חותך בול קיים"
-                } else if (spaceMb > maxMb && downloadAble) {
-                    date.text = "תיחום גדול מנפח מקסימלי להורדה"
-                }
-                showKm.text = "שטח משוער :אין נתון"
-                showBm.text = "נפח משוער :אין נתון"
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
+            return if (!consumed) {
+                super.onTouchEvent(event)
+            } else consumed
         }
-    }
-
-    private fun geoPackageRender() {
-        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes
-        val volume = storageList[1].directory?.absoluteFile ?: ""
-        Log.i("gfgffgf", "$volume")
-        val geoPackage = GeoPackage("${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg")
-        lifecycleScope.launch {
-            geoPackage.load().onSuccess {
-                if (geoPackage.geoPackageRasters.isNotEmpty()) {
-                    val geoPackageRaster = geoPackage.geoPackageRasters.first()
-                    val rasterLayer = RasterLayer(geoPackageRaster)
-
-                    val basemap = Basemap(rasterLayer)
-                    val map = ArcGISMap(basemap)
-                    val graphicsOverlay = GraphicsOverlay()
-                    val gson = Gson()
-                    val yellowOutlineSymbol = SimpleLineSymbol(
-                        SimpleLineSymbolStyle.Dash,
-                        Color.fromRgba(255, 255, 0),
-                        3f
-                    )
-                    val pinkOutlineSymbol = SimpleLineSymbol(
-                        SimpleLineSymbolStyle.Solid,
-                        Color.fromRgba(240, 26, 133),
-                        3f
-                    )
-                    val redOutlineSymbol =
-                        SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.fromRgba(255, 0, 0), 3f)
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        service.getDownloadedMaps().forEach { g ->
-                            val nums = g.footprint?.split(",") ?: ArrayList()
-                            val coords = ArrayList<Point>()
-                            for (i in 0 until nums.size - 1 step 2) {
-                                val lon = nums[i].toDouble()
-                                val lat = nums[i + 1].toDouble()
-
-                                coords.add(Point(lon, lat, SpatialReference.wgs84()))
-                            }
-                            val polygon = Polygon(coords)
-                            loadedPolys.add(polygon)
-                            var endName = "בהורדה"
-                            if (g.statusMsg == "הסתיים") {
-                                endName =
-                                    g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                            }
-                            val textSymbol = TextSymbol(
-                                endName,
-                                Color.fromRgba(255, 255, 0),
-                                14f,
-                                HorizontalAlignment.Center,
-                                VerticalAlignment.Top
-                            )
-
-                            val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                            val compositeSymbol = CompositeSymbol().apply {
-                                if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
-                                    symbols.add(yellowOutlineSymbol)
-                                    symbols.add(textSymbol)
-                                } else {
-                                    symbols.add(redOutlineSymbol)
-                                    val formattedDownloadStart = g.downloadStart?.format(formatter)
-                                    textSymbol.text = "${g.statusMsg} $formattedDownloadStart"
-                                    symbols.add(textSymbol)
-                                }
-                            }
-
-                            val graphic = Graphic(polygon, compositeSymbol)
-
-                            graphicsOverlay.graphics.add(graphic)
-                        }
-
-                    }
-
-
-                    DiscoveryProductsManager.getInstance().products.forEach { p ->
-                        run {
-                            val json = JSONObject(p.footprint)
-                            val type = json.getString("type")
-
-                            if (type == "Polygon") {
-                                val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                                productPolyDTO.coordinates.forEach { it ->
-                                    val points: List<Point> =
-                                        it.map { Point(it[0], it[1], SpatialReference.wgs84()) }
-                                    val polygon = Polygon(points)
-
-                                    val graphic = Graphic(polygon, pinkOutlineSymbol)
-                                    graphicsOverlay.graphics.add(graphic)
-                                }
-                            } else {
-                                val productPolyDTO =
-                                    gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                                productPolyDTO.coordinates.forEach { polygonCoords ->
-                                    val rings: MutableList<List<Point>> = mutableListOf()
-                                    polygonCoords.forEach { ringCoords ->
-                                        val points: MutableList<Point> = mutableListOf()
-                                        ringCoords.forEach { coord ->
-                                            val point = Point(coord[0], coord[1])
-                                            points.add(point)
-                                        }
-                                        rings.add(points)
-                                    }
-                                    val polygon = Polygon(rings.flatten())
-                                    val graphic = Graphic(polygon, pinkOutlineSymbol)
-                                    graphicsOverlay.graphics.add(graphic)
-                                }
-                            }
-                        }
-                    }
-                    mapView.graphicsOverlays.add(graphicsOverlay)
-                    mapView.map = map
-                    mapView.setViewpoint(Viewpoint(31.7270, 34.9, 2000000.0))
-                } else {
-                    Log.i("Error", "No feature tables found in the GeoPackage.")
-                }
-            }.onFailure { error ->
-                Log.i("Error", "Error loading package: ${error.message}")
-            }
-        }
-//        // Inside your MapActivity class
-//
-//        // Initialize the WMTS layer
-//        val wmtsLayer = WmtsLayer("https://your-wmts-service-url.com")
-//
-//        // Set up a callback for when the layer is loaded
-//        wmtsLayer.addDoneLoadingListener {
-//            if (wmtsLayer.loadStatus == LoadStatus.Loaded) {
-//                // Create a new map with the WMTS layer as the basemap
-//                val map = ArcGISMap(Basemap(wmtsLayer))
-//
-//                // Set the map to the MapView
-//                mapView.map = map
-//
-//                // Set the initial viewpoint
-//                mapView.setViewpoint(Viewpoint(31.7270, 34.6, 2000000.0))
-//            } else {
-//                // Handle the case where the layer fails to load
-//                Log.e("WMTS", "Error loading WMTS layer: ${wmtsLayer.loadError.message}")
-//            }
-//        }
-//
-//        // Add the WMTS layer to the map view
-//        mapView.map.operationalLayers.add(wmtsLayer)
     }
 }

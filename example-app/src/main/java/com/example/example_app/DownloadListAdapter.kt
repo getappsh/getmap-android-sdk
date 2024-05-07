@@ -50,14 +50,12 @@ class DownloadListAdapter(
     private val context: Context
     ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
-    var availableUpdate: Boolean = false
     var tracker: Tracker? = null
 
     //Create and define the signal listener
     interface SignalListener {
         fun onSignalSpace()
         fun onSignalDownload()
-        fun onNotSignalDownload()
     }
 
     private val listeners = mutableListOf<SignalListener>()
@@ -66,17 +64,10 @@ class DownloadListAdapter(
         listeners.add(listener)
     }
 
-    fun removeListener(listener: SignalListener) {
-        listeners.remove(listener)
-    }
     fun triggerSpaceSignal() {
         for (listener in listeners) {
             listener.onSignalSpace()
         }
-    }
-    fun triggerNotDownloadSignal(){
-        for (listener in listeners)
-            listener.onNotSignalDownload()
     }
     // Méthode pour déclencher le signal 2 avec des données
     fun triggerDownloadSignal() {
@@ -298,12 +289,10 @@ class DownloadListAdapter(
 
         if (!downloadData.isUpdated) {
             holder.updated.visibility = View.VISIBLE
-            availableUpdate = true
-            triggerDownloadSignal()
-        } else {
-            triggerNotDownloadSignal()
+        } else{
+            holder.updated.visibility = View.INVISIBLE
         }
-
+        triggerDownloadSignal()
 
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
