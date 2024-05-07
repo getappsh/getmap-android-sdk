@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.sdk.old
 
 import android.content.Context
+import android.os.Environment
 import timber.log.Timber
 import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.utils.FileUtils

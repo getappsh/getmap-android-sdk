@@ -36,7 +36,6 @@ internal class ImportCreateFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                     statusDescr = retCreate.statusCode?.messageLog ?: "",
                     downloadProgress = retCreate.progress
                 )
-                this.sendDeliveryStatus(id)
                 return true
             }
             MapImportState.CANCEL -> {

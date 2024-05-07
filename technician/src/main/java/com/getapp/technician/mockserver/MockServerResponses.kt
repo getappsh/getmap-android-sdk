@@ -2,6 +2,7 @@ package com.getapp.technician.mockserver
 
 import GetApp.Client.infrastructure.Serializer
 import GetApp.Client.models.CreateImportResDto
+import GetApp.Client.models.ErrorDto
 import GetApp.Client.models.ImportStatusResDto
 import GetApp.Client.models.PrepareDeliveryResDto
 import GetApp.Client.models.TokensDto
@@ -51,7 +52,7 @@ class MockServerResponses(private val assets: AssetManager) {
         if (config.importCreateStatus == CreateImportResDto.Status.error){
             error = "Libot failed to create requested map";
         }
-        val import = CreateImportResDto("test-1", config.importCreateStatus, messageLog=error)
+        val import = CreateImportResDto("test-1", config.importCreateStatus, ErrorDto(message = error))
 
         return MockResponse()
             .setBody(toJsonString(import))
@@ -63,11 +64,7 @@ class MockServerResponses(private val assets: AssetManager) {
         val status = ImportStatusResDto.Status.done
         val importRes = ImportStatusResDto(
             status = status,
-            deviceId = "device-1",
-            importRequestId = reqId,
-            packageUrl = baseDownloadUrl + getMapFileName(config),
-            fileName = getMapFileName(config),
-            createDate = OffsetDateTime.now())
+            importRequestId = reqId)
 
         return MockResponse()
             .setBody(toJsonString(importRes))

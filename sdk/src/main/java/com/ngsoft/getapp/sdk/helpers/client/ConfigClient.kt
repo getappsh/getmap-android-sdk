@@ -49,6 +49,9 @@ internal object ConfigClient {
         config.matomoSiteId = configDto.matomoSiteId ?: config.matomoSiteId
         config.matomoDimensionId = configDto.matomoDimensionId ?: config.matomoDimensionId
         config.matomoUpdateIntervalMins = configDto.periodicMatomoIntervalMins?.toInt() ?: config.matomoUpdateIntervalMins
+        config.targetStoragePolicy = configDto.targetStoragePolicy ?: config.targetStoragePolicy
+        config.flashStoragePath = configDto.flashStoragePath ?: config.flashStoragePath
+        config.sdStoragePath = configDto.sdStoragePath ?: config.sdStoragePath
 
         Timber.v("updateConfigFromDto - config: $config")
     }

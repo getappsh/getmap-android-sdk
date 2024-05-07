@@ -63,19 +63,18 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler())
         TimberLogger.initTimber()
         Timber.i("Init GetMapService")
-
-        config.storagePath = configuration.storagePath
+        
         config.baseUrl = configuration.baseUrl
+        config.downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
 
-        val dir = Environment.DIRECTORY_DOWNLOADS
-        downloader = PackageDownloader(appCtx, dir)
+        downloader = PackageDownloader(appCtx, config.downloadPath)
 
         pref = Pref.getInstance(appCtx)
 
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
 
-        mapFileManager = MapFileManager(appCtx, downloader)
+        mapFileManager = MapFileManager(appCtx)
 
         cache = TilesCache(appCtx)
 
@@ -111,7 +110,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String {
+    override fun processQrCodeData(data: String): String {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -123,11 +122,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String? {
+    override fun downloadMap(mp: MapProperties): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String? {
+    override fun downloadUpdatedMap(id: String): String? {
         TODO("Not implemented in DefaultGetMapService")
     }
 
@@ -135,11 +134,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
-        TODO("Not implemented in DefaultGetMapService")
-    }
-
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String {
+    override fun resumeDownload(id: String): String {
         TODO("Not implemented in DefaultGetMapService")
     }
     override fun getDownloadedMap(id: String): MapData? {
@@ -208,7 +203,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
                     pref.deviceId, pref.generateDeviceId(), "Yes",
-                    FileUtils.getAvailableSpace(config.storagePath).toString())
+                    mapFileManager.getAvailableSpaceByPolicy().toString())
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),

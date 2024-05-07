@@ -22,10 +22,10 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.DownloadMetadata
 import com.ngsoft.tilescache.models.MapPkg
-import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.time.format.DateTimeFormatter
 
 
@@ -67,7 +67,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String?{
+    override fun downloadMap(mp: MapProperties): String?{
         Timber.i("downloadMap")
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
@@ -79,20 +79,20 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val id = this.mapRepo.create(
             mp.productId, mp.boundingBox, MapDeliveryState.START,
-            appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START, downloadStatusHandler)
+            appCtx.getString(R.string.delivery_status_req_sent), DeliveryFlowState.START)
         this.mapRepo.invoke(id)
 
         Timber.i("downloadMap: id: $id")
         Timber.d("downloadMap: bBox - ${mp.boundingBox}")
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
+        if (isEnoughSpace(id)){
             DeliveryForegroundService.startForId(appCtx, id)
         }
 
         return id
     }
     
-    override fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String?{
+    override fun downloadUpdatedMap(id: String): String?{
         Timber.i("downloadUpdatedMap")
         val mapPkg  = this.mapRepo.getById(id)
         if (mapPkg == null){
@@ -102,120 +102,32 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mp = MapProperties(mapPkg.pId, mapPkg.footprint ?: mapPkg.bBox, false)
 
-        return this.downloadMap(mp, downloadStatusHandler)
+        return this.downloadMap(mp)
     }
 
 
-    private fun isEnoughSpace(id: String, path: String, requiredSpaceMB: Long): Boolean{
+    private fun isEnoughSpace(id: String): Boolean{
         Timber.i("isEnoughSpace")
-        val availableSpace = FileUtils.getAvailableSpace(path)
-        if ((requiredSpaceMB * 1024 * 1024) >= availableSpace){
-            Timber.e("isEnoughSpace - Available Space: $availableSpace is lower then then required: $requiredSpaceMB", )
+        val requiredSpace = config.minAvailableSpaceMB * 1024 * 1024
+        return try {
+            this.mapFileManager.getAndValidateStorageDirByPolicy(requiredSpace)
+            true
+        }catch (io: IOException){
+            Timber.e("isEnoughSpace - Available Space is lower then then required: $requiredSpace", )
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
                 statusMsg = appCtx.getString(R.string.delivery_status_failed),
-                statusDescr = appCtx.getString(R.string.error_not_enough_space)
+                statusDescr = io.message
             )
-            return false
+            false
         }
-        return true
     }
     override fun synchronizeMapData(){
         Timber.i("synchronizeMapData")
-        syncDatabase ()
-        syncStorage()
+        mapFileManager.synchronizeMapData()
     }
 
-    private fun syncDatabase (){
-        Timber.i("syncDatabase")
-        val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.DONE ||
-                    it.state == MapDeliveryState.ERROR || it.state == MapDeliveryState.CANCEL ||
-                    it.state == MapDeliveryState.PAUSE || it.state == MapDeliveryState.DELETED ||
-                    it.state == MapDeliveryState.DOWNLOAD}
-
-        for (map in mapsData) {
-            Timber.d("syncDatabase  - map id: ${map.id}, state: ${map.state}")
-
-            if (map.state == MapDeliveryState.DELETED) {
-                mapFileManager.deleteMapFiles(map.fileName, map.jsonName)
-                continue
-            }
-
-            val rMap = mapFileManager.refreshMapState(map.copy())
-            if(map.state == MapDeliveryState.DOWNLOAD || map.state == MapDeliveryState.CONTINUE){
-                if ((rMap.metadata.mapDone ||!downloader.isDownloadFailed(map.MDID)) &&
-                    (rMap.metadata.jsonDone || !downloader.isDownloadFailed(map.JDID))){
-                    continue
-                }
-            }
-
-            this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
-                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone)
-        }
-    }
-
-    private fun syncStorage(){
-        Timber.i("syncStorage")
-        val dir =  File(config.storagePath)
-        val mapFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.MAP_EXTENSION) }
-        val jsonFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JSON_EXTENSION) }
-        val journalFiles = dir.listFiles { _, name -> name.endsWith(FileUtils.JOURNAL_EXTENSION) }
-
-//        delete map file when there is no corresponding json file and no record in the DB
-        mapFiles?.forEach { file ->
-            val correspondingJsonFile = File(FileUtils.changeFileExtensionToJson(file.absolutePath))
-            if (!this.mapRepo.doesMapFileExist(file.name) && !correspondingJsonFile.exists()) {
-                Timber.d("syncStorage - Not found corresponding json file for mapFile: ${file.name}, delete it.")
-                file.delete()
-            }
-        }
-//        delete journal file when there is no corresponding map file
-        journalFiles?.forEach { file ->
-            val correspondingMapFile = File(FileUtils.changeFileExtensionToMap(file.absolutePath))
-            if (!correspondingMapFile.exists()) {
-                Timber.d("syncStorage - Not found corresponding map file for journalFile: ${file.name}, delete it.")
-                file.delete()
-            }
-        }
-
-        jsonFiles?.forEach { file ->
-            if (!this.mapRepo.doesJsonFileExist(file.name)) {
-                Timber.d("syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
-
-                val pId: String; val bBox: String; val url: String?;
-                try{
-                    val json = JsonUtils.readJson(file.path)
-                    pId = json.getString("id")
-                    bBox = json.getString("productBoundingBox")
-                    url =  if (json.has("downloadUrl")) json.getString("downloadUrl") else null
-                }catch (e: JSONException){
-                    Timber.e("syncStorage - not valid json object: ${e.message.toString()}")
-                    Timber.d("syncStorage - delete json file: ${file.name}")
-                    file.delete()
-                    return@forEach
-                }
-
-                val mapPkg = mapFileManager.refreshMapState(MapPkg(
-                    pId = pId,
-                    bBox = bBox,
-                    state = MapDeliveryState.ERROR,
-                    flowState = DeliveryFlowState.MOVE_FILES,
-                    url = url,
-                    fileName = FileUtils.changeFileExtensionToMap(file.name),
-                    jsonName = file.name,
-                    statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
-                ))
-
-                val id = this.mapRepo.save(mapPkg)
-                Timber.d("syncStorage - new map id: $id, deliveryFlowState: ${mapPkg.flowState} ")
-                if (mapPkg.flowState == DeliveryFlowState.MOVE_FILES){
-                    Timber.i("syncStorage - execute delivery flow for map id: $id")
-                    DeliveryForegroundService.startForId(appCtx, id)
-                }
-            }
-        }
-    }
 
     override fun cancelDownload(id: String) {
         Timber.d("cancelDownload - for id: $id")
@@ -231,12 +143,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         this.mapRepo.remove(id)
     }
 
-    override fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String{
+    override fun resumeDownload(id: String): String{
         Timber.i("resumeDownload for id: $id")
 //        TODO all this needs to be as part of delivery manager
         Thread{
             val mapPkg = this.mapRepo.getById(id)
-            this.mapRepo.setListener(id, downloadStatusHandler)
 
             if (mapPkg == null ||
                 !(mapPkg.state == MapDeliveryState.PAUSE ||
@@ -271,11 +182,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         if (mapPkg.jsonName == null || mapPkg.url == null){
-            val errorMsg = "generateQrCode - Missing data, not found jsonName or download url"
+            val errorMsg = "generateQrCode - Data missing, not found jsonName or download url"
             Timber.e( errorMsg)
             throw Exception(errorMsg)
         }
-        val file = File(config.storagePath, mapPkg.jsonName!!)
+        val file = File(mapPkg.path, mapPkg.jsonName!!)
         val json = JsonUtils.readJson(file.path)
 
         Timber.d("generateQrCode - append download url to json")
@@ -286,7 +197,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return qrManager.generateQrCode(json.toString(), width, height)
     }
 
-    override fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String{
+    override fun processQrCodeData(data: String): String{
         Timber.i("processQrCodeData")
 
         val jsonString = qrManager.processQrCodeData(data)
@@ -303,7 +214,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         this.mapRepo.getByBBox(bBox, footprint).forEach {
 //            TODO put ingestionDate in the DB Table
-            val sIngDate = mapFileManager.getJsonString(it.jsonName)?.getString("ingestionDate") ?: return@forEach
+            val sIngDate = mapFileManager.getJsonString(it.path, it.jsonName)?.getString("ingestionDate") ?: return@forEach
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
                 Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )
@@ -323,10 +234,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
 
         val id = this.mapRepo.save(mapPkg)
-        this.mapRepo.setListener(id, downloadStatusHandler)
         this.mapRepo.invoke(id)
 
-        if (isEnoughSpace(id, config.storagePath, config.minAvailableSpaceMB)){
+        if (isEnoughSpace(id)){
             Timber.d("processQrCodeData - execute the auth delivery process")
             DeliveryForegroundService.startForId(appCtx, id)
         }
@@ -347,10 +257,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit) {
         Timber.i("setOnInventoryUpdatesListener")
         MapRepo.onInventoryUpdatesListener = listener
-    }
-    override fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit) {
-        Timber.i("registerDownloadHandler, downloadId: $id")
-        this.mapRepo.setListener(id, downloadStatusHandler)
     }
 
     @Suppress("DEPRECATION")  // Deprecated for third party Services.

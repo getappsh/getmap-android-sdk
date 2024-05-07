@@ -1,7 +1,15 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.content.Context
+import android.content.Context.STORAGE_SERVICE
+import android.os.Build
+import android.os.Environment
+import android.os.storage.StorageManager
+import android.widget.Toast
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import timber.log.Timber
+import java.io.File
 import java.time.OffsetDateTime
 
 internal class ServiceConfig private constructor(private var appContext: Context): GetMapService.GeneralConfig{
@@ -30,12 +38,62 @@ internal class ServiceConfig private constructor(private var appContext: Context
             field = value
             pref.baseUrl = value
         }
-    override var storagePath: String = pref.storagePath
+
+    override var sdStoragePath: String = pref.sdStoragePath
         set(value) {
-            field = value
-            pref.storagePath = value
+            if (field != value){
+                field = value
+                pref.sdStoragePath = value
+//                updateStoragePath()
+            }
         }
 
+
+    override var flashStoragePath: String = pref.flashStoragePath
+        set(value) {
+            if (field != value){
+                field = value
+                pref.flashStoragePath = value
+//                updateStoragePath()
+            }
+        }
+
+    override var targetStoragePolicy: MapConfigDto.TargetStoragePolicy = pref.targetStoragePolicy
+        set(value){
+            if (field != value){
+                field = value
+                pref.targetStoragePolicy = targetStoragePolicy
+//                updateStoragePath()
+            }
+        }
+
+//    private fun updateStoragePath(){
+//        val storageManager: StorageManager = appContext.getSystemService(STORAGE_SERVICE) as StorageManager
+//        val storageList = storageManager.storageVolumes;
+//
+//        val base = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+//            Environment.getExternalStorageDirectory()
+//        } else if (this.useSDCard && storageList.size > 1){
+//            storageList[1].directory?.absoluteFile
+//        }else {
+//            storageList[0].directory?.absoluteFile
+//        }
+//
+//        try {
+//            val storageDir = File(base, this.relativeStoragePath)
+//            storageDir.mkdirs()
+//            if (storagePath != storageDir.absolutePath){
+//                storagePath  = storageDir.absolutePath
+////                TODO Toast message?
+//                Thread {
+//                    MapFileManager(appContext).synchronizeMapData()
+//                }.start()
+//            }
+//        }catch (e: Exception){
+//            Timber.e("Error update storage path. useSD: $useSDCard, relativePath: $relativeStoragePath, error: ${e.message}")
+//            Toast.makeText(appContext, "Error update storage path, error: ${e.message}", Toast.LENGTH_LONG).show()
+//        }
+//    }
     override var downloadPath: String = pref.downloadPath
         set(value) {
             field = value
@@ -152,7 +210,7 @@ internal class ServiceConfig private constructor(private var appContext: Context
         }
 
     override fun toString(): String {
-        return "ServiceConfig(storagePath='$storagePath', downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate, lastServerInventoryJob=$lastServerInventoryJob)"
+        return "ServiceConfig(sdStoragePath='$sdStoragePath', flashStoragePath='$flashStoragePath', targetStoragePolicy=$targetStoragePolicy, downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate, lastServerInventoryJob=$lastServerInventoryJob)"
     }
 }
 

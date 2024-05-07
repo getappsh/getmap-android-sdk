@@ -48,6 +48,7 @@ data class MapPkg (
     var fileName: String? = null,
     var jsonName: String? = null,
     var url: String? = null,
+    var path: String? = null,
     var downloadProgress: Int = 0,
     var statusDescr: String? = null,
     var cancelDownload: Boolean = false,

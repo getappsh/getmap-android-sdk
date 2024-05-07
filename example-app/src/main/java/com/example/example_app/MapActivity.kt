@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.google.gson.Gson
@@ -63,9 +64,6 @@ class MapActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
-    private val downloadStatusHandler: (MapData) -> Unit = { data ->
-        Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
-    }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -162,7 +160,7 @@ class MapActivity : AppCompatActivity() {
     private fun addGeoPkg() {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
-        val volume = storageList[1].directory?.absoluteFile ?: ""
+        val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
         Log.i("gfgffgf", "$volume")
         val geoPath = "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
 
@@ -196,7 +194,7 @@ class MapActivity : AppCompatActivity() {
                 "${pLeftTop.longitude},${pLeftTop.latitude},${pRightTop.longitude},${pRightTop.latitude},${pRightBottom.longitude},${pRightBottom.latitude},${pLeftBottom.longitude},${pLeftBottom.latitude},${pLeftTop.longitude},${pLeftTop.latitude}",
                 false
             )
-            val id = service.downloadMap(props, downloadStatusHandler)
+            val id = service.downloadMap(props)
             if (id == null) {
                 this@MapActivity.runOnUiThread { Toast.makeText(applicationContext, "The map already exists, please choose another Bbox", Toast.LENGTH_LONG).show()
                 }

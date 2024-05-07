@@ -40,7 +40,6 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
     private lateinit var nebulaParamAdapter: NebulaParamAdapter
-
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,9 +51,8 @@ class SettingsActivity : AppCompatActivity() {
         recyclerView.layoutManager = layoutManager
         var params = emptyArray<NebulaParam>()
         var notif: Toast? = null
-        var tracker: Tracker?
+        val tracker: Tracker?
         tracker = MatomoTracker.getTracker(this)
-
         nebulaParamAdapter = NebulaParamAdapter(params) { _, name ->
             if (notif != null) {
                 notif?.cancel()
@@ -219,16 +217,12 @@ class SettingsActivity : AppCompatActivity() {
 //        instance: MapServiceManager,
 //        context: Context,
     ): Configuration {
-        var pathSd: String = intent.getStringExtra("pathSd").toString()
 //        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 //        val imei = telephonyManager.imei
         val cfg = Configuration(
             serviceParams[0].value,
             "rony@example.com",
             "rony123",
-            //            File("/storage/1115-0C18/com.asio.gis").path,
-            //            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).path,
-            pathSd,
             16,
 //            imei //Talk with Ronny and with asio
             null
@@ -276,7 +270,7 @@ private fun saveLocalToService(
 
     var notifValidation: Toast? = null
     val reg = Regex("[a-zA-Z]")
-      if (params[1].value != "")
+    if (params[1].value != "")
         if (!params[1].value.contains(regex = reg))
             service.config.downloadRetry = params[1].value.toInt()
         else {
@@ -285,7 +279,7 @@ private fun saveLocalToService(
         }
     else {
         params[1].value = service.config.downloadRetry.toString()
-          NotifyValidity(notifValidation,context)
+        NotifyValidity(notifValidation, context)
     }
     if (params[2].value != "")
         if (!params[2].value.contains(regex = reg))
@@ -294,8 +288,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[2].value = service.config.deliveryTimeoutMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[2].value = service.config.deliveryTimeoutMins.toString()
     }
     if (params[3].value != "") service.config.matomoUrl = params[3].value
@@ -306,8 +300,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[4].value = service.config.matomoUpdateIntervalMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[4].value = service.config.matomoUpdateIntervalMins.toString()
     }
     if (params[5].value != "")
@@ -317,8 +311,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[5].value = service.config.maxMapSizeInMB.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[5].value = service.config.maxMapSizeInMB.toString()
     }
     if (params[7].value != "")
@@ -328,8 +322,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[7].value = service.config.maxParallelDownloads.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[7].value = service.config.maxParallelDownloads.toString()
     }
     if (params[8].value != "")
@@ -339,8 +333,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[8].value = service.config.minAvailableSpaceMB.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[8].value = service.config.minAvailableSpaceMB.toString()
     }
     if (params[9].value != "")
@@ -350,8 +344,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[9].value = service.config.periodicConfIntervalMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[9].value = service.config.periodicConfIntervalMins.toString()
     }
     if (params[10].value != "")
@@ -361,8 +355,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[10].value = service.config.periodicInventoryIntervalMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[10].value = service.config.periodicInventoryIntervalMins.toString()
     }
     if (params[11].value != "")
@@ -417,10 +411,6 @@ private fun hasChanged(
 
 
     return toReturn
-}
-
-private fun <E> ArrayList<E>.add(index: E, element: E) {
-
 }
 
 private fun NotifyValidity(notification: Toast?, context: Context) {

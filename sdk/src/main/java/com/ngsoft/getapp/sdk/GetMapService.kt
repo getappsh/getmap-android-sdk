@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.MapConfigDto
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
@@ -59,42 +60,31 @@ interface GetMapService {
     fun cancelDownload(id: String)
 
     /**
-     * Register download handler to on going download
-     *
-     * @param id Map id
-     * @param downloadStatusHandler delivery progress handler
-     * @receiver see [MapData]
-     */
-    fun registerDownloadHandler(id: String, downloadStatusHandler: (MapData) -> Unit)
-    /**
      * Resume download
      *
      * @param id Map id
-     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun resumeDownload(id: String, downloadStatusHandler: (MapData) -> Unit): String
+    fun resumeDownload(id: String): String
 
     /**
      * Deliver extent tiles
      *
      * @param mp map properties to deliver
-     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun downloadMap(mp: MapProperties, downloadStatusHandler: (MapData) -> Unit): String?
+    fun downloadMap(mp: MapProperties): String?
 
     /**
      * Download updated map
      *
      * @param id Map id
-     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun downloadUpdatedMap(id: String, downloadStatusHandler: (MapData) -> Unit): String?
+    fun downloadUpdatedMap(id: String): String?
 
     /**
      * Synchronize Map data by reading the files from storage, and syncing them against the DB
@@ -138,11 +128,10 @@ interface GetMapService {
     /**
      * Process QR code data.
      * @param data from the QR code
-     * @param downloadStatusHandler delivery progress handler
      * @receiver see [MapData]
      * @return map download id
      */
-    fun processQrCodeData(data: String, downloadStatusHandler: (MapData) -> Unit): String
+    fun processQrCodeData(data: String): String
 
     /**
      * Get extent updates
@@ -243,9 +232,22 @@ interface GetMapService {
         val baseUrl: String
 
         /**
-         * Path where maps are stored locally.
+         * SD Storage path to stored maps
          */
-        val storagePath: String
+
+        val sdStoragePath: String
+
+
+        /**
+         * Flash Storage path to stored maps
+         */
+
+        val flashStoragePath: String
+
+        /**
+         * Storage policy
+         */
+        var targetStoragePolicy: MapConfigDto.TargetStoragePolicy
 
         /**
          * Path where downloaded maps are saved.
