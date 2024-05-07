@@ -129,12 +129,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
         val tp = mapServiceManager.service.config.targetStoragePolicy
-        if((tp == MapConfigDto.TargetStoragePolicy.sDOnly || tp == MapConfigDto.TargetStoragePolicy.sDThenFlash) && storageList.getOrNull(1)?.directory?.absoluteFile == null ) {
-            Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT).show()
+        if ((tp == MapConfigDto.TargetStoragePolicy.sDOnly || tp == MapConfigDto.TargetStoragePolicy.sDThenFlash) && storageList.getOrNull(
+                1
+            )?.directory?.absoluteFile == null
+        ) {
+            Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT)
+                .show()
         }
-
         tracker = MatomoTracker.getTracker(this)
-//
+
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
@@ -142,7 +145,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //            Log.d(TAG, "onCreate - setOnInventoryUpdatesListener: $data")
 //
 //        }
-
 
         dismissLoadingDialog()
 
@@ -156,9 +158,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 DownloadListAdapter.QR_CODE_BUTTON_CLICK -> generateQrCode(mapId)
                 DownloadListAdapter.UPDATE_BUTTON_CLICK -> updateMap(mapId)
                 DownloadListAdapter.ITEM_VIEW_CLICK -> itemViewClick(
-                    mapId)
+                    mapId
+                )
             }
-        }, mapServiceManager,this)
+        }, mapServiceManager, this)
         //Set the adapter to listen to changes
         downloadListAdapter.addListener(this)
 
@@ -174,13 +177,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         mapServiceManager.service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
-            var atLeastOneUpdated = it.any{
+            var atLeastOneUpdated = it.any {
                 it.isUpdated == false
             }
-            if (atLeastOneUpdated){
+            if (atLeastOneUpdated) {
                 syncButton.visibility = View.VISIBLE
-            }
-            else{
+            } else {
                 syncButton.visibility = View.INVISIBLE
             }
         })
@@ -188,10 +190,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        getTracker()
 
         swipeRecycler.setOnRefreshListener {
-            TrackHelper.track().event("מיפוי ענן", "ניהול בולים").name("רענון").with(tracker)
-            GlobalScope.launch(Dispatchers.IO) {
-//                mapServiceManager.service.synchronizeMapData()
+            TrackHelper.track().event("מיפוי ענן", "ניהול בולים").name("רענון")
+                .with(tracker)
+            CoroutineScope(Dispatchers.IO).launch {
                 CoroutineScope(Dispatchers.Default).launch {
+//                    tracker?.dispatch()
                     mapServiceManager.service.synchronizeMapData()
                 }
             }
@@ -232,7 +235,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
         //Matomo tracker
         // The `Tracker` instance from the previous step
-        val tracker = tracker
         // Track a screen view
         TrackHelper.track().screen("מסך ראשי")
             .with(tracker)
@@ -278,9 +280,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     override fun onResume() {
         super.onResume()
-        tracker?.dispatch()
+        TrackHelper.track().screen("מסך ראשי")
+            .with(tracker)
+//        tracker?.dispatch()
         mapServiceManager = MapServiceManager.getInstance()
 //        Log.d("a", "sa")
+    }
+
+    override fun onDestroy() {
+        TrackHelper.track().screen("${this}/אפליקציה קרסה").with(tracker)
+        tracker?.dispatch()
+        super.onDestroy()
     }
 
     private fun onDiscovery() {
@@ -371,108 +381,109 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         return String.format("%.2f %s", size, units[index])
     }
 
-    private fun getAvailableSpace(): String{
+    private fun getAvailableSpace(): String {
         val availableBytes = MapFileManager(this).getAvailableSpaceByPolicy()
         availableSpaceInMb = availableBytes.toDouble() / (1024 * 1024)
         return "מקום פנוי להורדה: ${formatBytes(availableBytes)}"
     }
-    fun GetAvailableSpaceInSdCard(): String {
-        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes;
-        val flashMem = storageList[0].directory
-        val externalFilesDirs = getExternalFilesDirs(null)
-        var sdCardDirectory: File? = null
+//    fun GetAvailableSpaceInSdCard(): String {
+//        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+//        val storageList = storageManager.storageVolumes;
+//        val flashMem = storageList[0].directory
+//        val externalFilesDirs = getExternalFilesDirs(null)
+//        var sdCardDirectory: File? = null
+//
+//        for (file in externalFilesDirs) {
+//            if (Environment.isExternalStorageRemovable(file)) {
+//                sdCardDirectory = file
+//                break
+//            }
+//        }
+//        var availableSd: String = ""
+//        var availableFlash: String = ""
+//        sdCardDirectory?.let {
+//            availableSd = AvailableSpace(it)
+//        }
+//        flashMem.let {
+//            availableFlash = AvailableSpace(it)
+//        }
+//        val shorter = shorterSpace(availableSd, availableFlash)
+//        GetAvailableSpaceInMb(shorter)
+//        return shorter
+//    }
 
-        for (file in externalFilesDirs) {
-            if (Environment.isExternalStorageRemovable(file)) {
-                sdCardDirectory = file
-                break
-            }
-        }
-        var availableSd: String = ""
-        var availableFlash: String = ""
-        sdCardDirectory?.let {
-            availableSd = AvailableSpace(it)
-        }
-        flashMem.let {
-            availableFlash = AvailableSpace(it)
-        }
-        val shorter = shorterSpace(availableSd, availableFlash)
-        GetAvailableSpaceInMb(shorter)
-        return shorter
-    }
+//    private fun GetAvailableSpaceInMb(shorter: String) {
+//        availableSpaceInMb =
+//            shorter.substringAfter(":").substring(1, shorter.substringAfter(":").length - 3)
+//                .toDouble()
+//        val availableSpaceType = shorter.substringAfterLast(" ")
+//        if (availableSpaceType != "MB") {
+//            availableSpaceInMb *= 1024
+//        }
+//    }
 
-    private fun GetAvailableSpaceInMb(shorter: String) {
-        availableSpaceInMb =
-            shorter.substringAfter(":").substring(1, shorter.substringAfter(":").length - 3)
-                .toDouble()
-        val availableSpaceType = shorter.substringAfterLast(" ")
-        if (availableSpaceType != "MB") {
-            availableSpaceInMb *= 1024
-        }
-    }
+//    private fun shorterSpace(mem1: String, mem2: String): String {
+//
+//        if (mem1.contains("MB") && mem2.contains("GB")) {
+//            return mem1
+//        } else if ((mem1.contains("GB") && mem2.contains("GB")) || (mem1.contains("MB") && mem2.contains(
+//                "MB"
+//            ))
+//        ) {
+//            val mem1Number =
+//                mem1.substringAfter(":").substring(1, mem1.substringAfter(":").length - 3)
+//                    .toDouble()
+//            val mem2Number =
+//                mem2.substringAfter(":").substring(1, mem1.substringAfter(":").length - 3)
+//                    .toDouble()
+//            if (mem1Number > mem2Number) {
+//                return mem2
+//            } else return mem1
+//        }
+//        return mem2
+//    }
 
-    private fun shorterSpace(mem1: String, mem2: String): String {
+//    fun AvailableSpace(it: File?): String {
+//        val stat = StatFs(it?.absolutePath)
+//        val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
+//        val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)
+//        val megabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024)
+//
+//        return if (gigabytesAvailable >= 1) {
+//            String.format("מקום פנוי להורדה: %.2f GB", gigabytesAvailable)
+//        } else {
+//            String.format("מקום פנוי להורדה: %.2f MB", megabytesAvailable)
+//        }
+//    }
 
-        if (mem1.contains("MB") && mem2.contains("GB")) {
-            return mem1
-        } else if ((mem1.contains("GB") && mem2.contains("GB")) || (mem1.contains("MB") && mem2.contains(
-                "MB"
-            ))
-        ) {
-            val mem1Number =
-                mem1.substringAfter(":").substring(1, mem1.substringAfter(":").length - 3)
-                    .toDouble()
-            val mem2Number =
-                mem2.substringAfter(":").substring(1, mem1.substringAfter(":").length - 3)
-                    .toDouble()
-            if (mem1Number > mem2Number) {
-                return mem2
-            } else return mem1
-        }
-        return mem2
-    }
-
-    fun AvailableSpace(it: File?): String {
-        val stat = StatFs(it?.absolutePath)
-        val bytesAvailable: Long = stat.blockSizeLong * stat.availableBlocksLong
-        val gigabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024 * 1024)
-        val megabytesAvailable = bytesAvailable.toDouble() / (1024 * 1024)
-
-        return if (gigabytesAvailable >= 1) {
-            String.format("מקום פנוי להורדה: %.2f GB", gigabytesAvailable)
-        } else {
-            String.format("מקום פנוי להורדה: %.2f MB", megabytesAvailable)
-        }
-    }
-
-    private fun discoveryDialogPicker(products: List<DiscoveryItem>) {
-        Log.d(TAG, "dialogPicker")
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Choose product")
-
-        val productsStrings = products.map { it.productName }.toTypedArray()
-        val checkedItem = -1
-        builder.setSingleChoiceItems(productsStrings, checkedItem) { dialog, which ->
-            selectedProduct = products[which]
-            Log.d(TAG, "dialogPicker: selected item " + selectedProduct.productName)
-
-//            selectedProductView.text = ("Selected Product:\n" + selectedProduct.productName)
-            deliveryButton.isEnabled = true
-            updateDate = selectedProduct.ingestionDate!!.toLocalDateTime()
-
-        }
-
-        builder.setPositiveButton("OK") { dialog, which ->
-
-        }
-//        builder.setNegativeButton("Cancel", null)
-
-        val dialog = builder.create()
-        dialog.show()
-    }
+//    private fun discoveryDialogPicker(products: List<DiscoveryItem>) {
+//        Log.d(TAG, "dialogPicker")
+//        val builder = AlertDialog.Builder(this)
+//        builder.setTitle("Choose product")
+//
+//        val productsStrings = products.map { it.productName }.toTypedArray()
+//        val checkedItem = -1
+//        builder.setSingleChoiceItems(productsStrings, checkedItem) { dialog, which ->
+//            selectedProduct = products[which]
+//            Log.d(TAG, "dialogPicker: selected item " + selectedProduct.productName)
+//
+////            selectedProductView.text = ("Selected Product:\n" + selectedProduct.productName)
+//            deliveryButton.isEnabled = true
+//            updateDate = selectedProduct.ingestionDate!!.toLocalDateTime()
+//
+//        }
+//
+//        builder.setPositiveButton("OK") { dialog, which ->
+//
+//        }
+////        builder.setNegativeButton("Cancel", null)
+//
+//        val dialog = builder.create()
+//        dialog.show()
+//    }
 
     private fun onDelete(id: String) {
+        Log.i("onCreate Tracker Refreshea", "${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
@@ -480,7 +491,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                        map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
             } else {
                 popUp.bullName = ""
@@ -500,6 +512,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun onCancel(id: String) {
         TrackHelper.track().screen("/עצירת בקשה").with(tracker)
+        GlobalScope.launch(Dispatchers.IO) {
+            val map = mapServiceManager.service.getDownloadedMap(id)
+            if (map!!.fileName != null) {
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                        map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                popUp.bullName = endName
+            } else {
+                popUp.bullName = ""
+            }
+        }
         popUp.mapId = id
         popUp.type = "cancelled"
         popUp.textM = "האם לעצור את ההורדה ?"
@@ -552,15 +574,28 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         var currMap: MapData? = null
         GlobalScope.launch(Dispatchers.IO) {
             currMap = mapServiceManager.service.getDownloadedMap(id)!!
-        withContext(Dispatchers.Main) {
-            if (currMap?.isUpdated == false) {
-                TrackHelper.track().dimension(1, "עדכן בול").screen(this@MainActivity).with(tracker)
-                popUp.mapId = id
-                popUp.type = "updateOne"
-                popUp.recyclerView = recyclerView
-                popUp.textM = "האם לבצע עדכון מפה ?"
-            popUp.show(supportFragmentManager, "updateOne")}
-        }
+            withContext(Dispatchers.Main) {
+                if (currMap?.isUpdated == false) {
+                    TrackHelper.track().dimension(1, "עדכן בול").screen(this@MainActivity)
+                        .with(tracker)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val map = mapServiceManager.service.getDownloadedMap(id)
+                        if (map!!.fileName != null) {
+                            val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                                    map.fileName!!.substringAfterLast('_')
+                                        .substringBefore('Z') + "Z"
+                            popUp.bullName = endName
+                        } else {
+                            popUp.bullName = ""
+                        }
+                    }
+                    popUp.mapId = id
+                    popUp.type = "updateOne"
+                    popUp.recyclerView = recyclerView
+                    popUp.textM = "האם לבצע עדכון מפה ?"
+                    popUp.show(supportFragmentManager, "updateOne")
+                }
+            }
         }
 
 //        } else {

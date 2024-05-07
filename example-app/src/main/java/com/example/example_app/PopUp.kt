@@ -61,15 +61,15 @@ class PopUp : DialogFragment() {
                     val data = service.getDownloadedMap(mapId)
                     if (data != null) {
                         if (data.statusMsg != "הסתיים") {
-                            TrackHelper.track().dimension(1, mapId)
+                            TrackHelper.track().dimension(1, bullName)
                                 .event("מיפוי ענן", "ניהול בולים")
                                 .name("מחיקת בקשה").with(tracker)
                             return@launch
 
                         } else {
-                            TrackHelper.track().dimension(1, mapId)
+                            TrackHelper.track().dimension(1, bullName)
                                 .event("מיפוי ענן", "ניהול בקשות")
-                                .name(" מחיקת בול $bullName").with(tracker)
+                                .name("מחיקת בול").with(tracker)
                             return@launch
                         }
                     } else {
@@ -101,14 +101,14 @@ class PopUp : DialogFragment() {
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
             } else if (type == "updateOne") {
-                TrackHelper.track().dimension(1, mapId).event("מיפוי ענן", "ניהול בולים")
+                TrackHelper.track().dimension(1, bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
                     service.downloadUpdatedMap(mapId)
                     recyclerView.smoothScrollToPosition(0)
                 }
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(1, mapId).event("מיפוי ענן", "ניהול בקשות")
+                TrackHelper.track().dimension(1, bullName).event("מיפוי ענן", "ניהול בקשות")
                     .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
