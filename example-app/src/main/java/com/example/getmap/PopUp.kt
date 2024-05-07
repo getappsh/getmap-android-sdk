@@ -1,8 +1,6 @@
-package com.example.example_app
+package com.example.getmap
 
-import MapDataMetaData
-import android.content.Context
-import com.example.example_app.matomo.MatomoTracker
+import com.example.getmap.matomo.MatomoTracker
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -16,13 +14,11 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 
