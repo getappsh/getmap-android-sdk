@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.getMap
 
 import android.content.Intent
 import android.os.Build
@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.google.gson.Gson

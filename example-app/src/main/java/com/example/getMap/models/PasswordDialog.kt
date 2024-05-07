@@ -7,8 +7,8 @@ import android.widget.EditText
 import android.widget.Switch
 import android.widget.Toast
 import android.widget.ToggleButton
-import com.example.example_app.R
-import com.example.example_app.models.ConfigParam
+import com.example.getMap.R
+import com.example.getMap.models.ConfigParam
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 

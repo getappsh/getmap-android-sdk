@@ -1,8 +1,7 @@
-package com.example.example_app
+package com.example.getMap
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
 import android.widget.ImageView
 import android.widget.TextView
 import com.ngsoft.getapp.sdk.Configuration

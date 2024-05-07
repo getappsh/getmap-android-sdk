@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.getMap
 
 import java.math.BigDecimal
 import java.time.OffsetDateTime

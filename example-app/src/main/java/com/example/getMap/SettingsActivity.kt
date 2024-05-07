@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.getMap
 
 import PasswordDialog
 import android.animation.ObjectAnimator
@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
-import android.view.animation.RotateAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageButton
@@ -20,13 +19,12 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.rotationMatrix
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.example_app.matomo.MatomoTracker
-import com.example.example_app.models.ConfigParam.NebulaParamAdapter
-import com.example.example_app.models.ConfigParam.NebulaParam
+import com.example.getMap.matomo.MatomoTracker
+import com.example.getMap.models.ConfigParam.NebulaParamAdapter
+import com.example.getMap.models.ConfigParam.NebulaParam
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.Dispatchers

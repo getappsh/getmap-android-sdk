@@ -1,7 +1,6 @@
-package com.example.example_app.models
+package com.example.getMap.models
 
 import android.text.Editable
-import android.text.InputType
 import android.text.InputType.TYPE_CLASS_TEXT
 import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -11,11 +10,10 @@ import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.example_app.R
+import com.example.getMap.R
 import com.google.android.material.textfield.TextInputEditText
 
 class ConfigParam {

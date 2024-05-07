@@ -1,8 +1,8 @@
-package com.example.example_app
+package com.example.getMap
 
 import GetApp.Client.models.MapConfigDto
 import android.app.ProgressDialog
-import com.example.example_app.matomo.MatomoTracker
+import com.example.getMap.matomo.MatomoTracker
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
@@ -11,7 +11,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.StatFs
 import android.os.storage.StorageManager
 import android.provider.Settings
 import android.util.Log
@@ -51,7 +50,6 @@ import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
-import java.io.File
 import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.R)

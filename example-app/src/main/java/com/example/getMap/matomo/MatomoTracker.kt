@@ -1,4 +1,4 @@
-package com.example.example_app.matomo
+package com.example.getMap.matomo
 
 import android.content.ComponentCallbacks2
 import android.content.Context

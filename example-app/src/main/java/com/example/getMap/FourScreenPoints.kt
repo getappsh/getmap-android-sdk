@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.getMap
 
 import gov.nasa.worldwind.geom.Position
 

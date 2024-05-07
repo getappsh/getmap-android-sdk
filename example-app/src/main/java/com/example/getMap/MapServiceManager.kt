@@ -1,21 +1,11 @@
-package com.example.example_app
+package com.example.getMap
 
 import android.content.Context
 import android.os.Build
-import android.os.storage.StorageManager
-import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.GetMapServiceFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.processNextEventInCurrentThread
-import java.io.IOException
 import kotlin.jvm.Throws
 
 @RequiresApi(Build.VERSION_CODES.R)
