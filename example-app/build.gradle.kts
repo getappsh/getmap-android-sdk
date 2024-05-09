@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.example_app"
+    namespace = "com.example.getmap"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.example_app"
+        applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
         versionCode = 2

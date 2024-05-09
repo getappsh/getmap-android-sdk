@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.getmap
 
 import android.content.Intent
 import android.os.Build
@@ -16,12 +16,10 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.arcgismaps.data.GeoPackage
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
-import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import gov.nasa.worldwind.BasicWorldWindowController
 import gov.nasa.worldwind.WorldWind
