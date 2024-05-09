@@ -415,7 +415,7 @@ private fun hasChanged(
     if (params[10].value != "")
         if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
             toReturn["periodicInventoryIntervalMins"] = params[10].value
-    if (params[11].value != "" || params[11].value.toInt() < 0)
+    if (params[11].value != "" && params[11].value.toInt() > 0)
         if (service.config.matomoSiteId != params[11].value)
             toReturn["matomoSiteId"] = params[11].value
     if (params[12].value != "")
