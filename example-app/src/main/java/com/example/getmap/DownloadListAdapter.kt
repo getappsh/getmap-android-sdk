@@ -33,9 +33,12 @@ import org.matomo.sdk.extra.TrackHelper
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.time.Duration
 
 
 class DownloadListAdapter(
@@ -48,6 +51,7 @@ class DownloadListAdapter(
 
     var availableUpdate: Boolean = false
     var tracker: Tracker? = null
+
 
     //Create and define the signal listener
     interface SignalListener {
@@ -180,9 +184,12 @@ class DownloadListAdapter(
 
         when (downloadData.deliveryState) {
             START -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
-                    .with(tracker)
-
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
+                        .with(tracker)
+                }
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
@@ -199,8 +206,12 @@ class DownloadListAdapter(
             }
 
             DONE -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
-                    .with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadDone!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
+                        .with(tracker)
+                }
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
