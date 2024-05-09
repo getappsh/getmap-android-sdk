@@ -124,5 +124,6 @@ class PopUp : DialogFragment() {
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
         )
+        dialog?.setCancelable(false)
     }
 }

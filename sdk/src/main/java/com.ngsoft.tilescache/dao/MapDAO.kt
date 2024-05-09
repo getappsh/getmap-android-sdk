@@ -9,6 +9,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.tilescache.models.DeliveryFlowState
 
 import com.ngsoft.tilescache.models.MapPkg
+import java.time.LocalDateTime
 
 @Dao
 interface MapDAO {
@@ -80,7 +81,8 @@ interface MapDAO {
             "ELSE downloadStart " +
             "END, " +
             "downloadDone = CASE " +
-            "WHEN :state = 'DONE' THEN strftime('%s', 'now')  " +
+            "WHEN :downloadDone is not null THEN :downloadDone  " +
+            "WHEN :state = 'DONE' AND state != 'DONE' THEN strftime('%s', 'now')  " +
             "ELSE downloadDone " +
             "END " +
             "WHERE id = :id")
@@ -106,6 +108,7 @@ interface MapDAO {
         jsonDone: Boolean?=null,
         footprint: String?=null,
         isUpdated: Boolean?=null,
-        cancelDownload: Boolean?=null
+        cancelDownload: Boolean?=null,
+        downloadDone: LocalDateTime?=null,
     )
 }

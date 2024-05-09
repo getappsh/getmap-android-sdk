@@ -22,6 +22,9 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class MapFileManager(private val appCtx: Context) {
 
@@ -280,9 +283,12 @@ class MapFileManager(private val appCtx: Context) {
             mapPkg.metadata.mapDone = true
             mapPkg.metadata.jsonDone = true
 
+            val lastModified = targetMapFile.lastModified().coerceAtLeast(targetJsonFile.lastModified())
+            mapPkg.downloadDone = LocalDateTime.ofInstant(Instant.ofEpochMilli(lastModified), ZoneOffset.UTC)
             if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
+
                 mapPkg.statusMsg = appCtx.getString(R.string.delivery_status_done)
             } else {
                 mapPkg.flowState = DeliveryFlowState.MOVE_FILES
@@ -373,7 +379,8 @@ class MapFileManager(private val appCtx: Context) {
             }
 
             this.mapRepo.update(map.id.toString(), state = rMap.state, flowState = rMap.flowState, statusDescr = rMap.statusDescr,
-                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone, path=rMap.path)
+                statusMsg = rMap.statusMsg, mapDone = rMap.metadata.mapDone, jsonDone = rMap.metadata.jsonDone, path=rMap.path,
+                downloadDone = rMap.downloadDone)
             if (map.footprint != rMap.footprint){
                 rMap.footprint?.let { this.mapRepo.setFootprint(map.id.toString(), it) }
             }

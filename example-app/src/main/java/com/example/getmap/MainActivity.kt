@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private lateinit var updateDate: LocalDateTime
     private lateinit var selectedProduct: DiscoveryItem
     private var availableSpaceInMb: Double = 0.0
+    private var isReplacingActivity = false
 
 
     //    private lateinit var selectedProductView: TextView
@@ -273,21 +274,25 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         settingButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
+            isReplacingActivity = true
+            finish()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        TrackHelper.track().screen("מסך ראשי")
-            .with(tracker)
+//    override fun onResume() {
+//        super.onResume()
+//        TrackHelper.track().screen("מסך ראשי")
+//            .with(tracker)
 //        tracker?.dispatch()
-        mapServiceManager = MapServiceManager.getInstance()
+//        mapServiceManager = MapServiceManager.getInstance()
 //        Log.d("a", "sa")
-    }
+//    }
 
     override fun onDestroy() {
-        TrackHelper.track().screen("${this}/אפליקציה קרסה").with(tracker)
-        tracker?.dispatch()
+        if (!isReplacingActivity) {
+            tracker?.dispatch()
+            Log.d("getmap", "matomo send when on destroy")
+        }
         super.onDestroy()
     }
 
@@ -315,6 +320,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
                     val intent = Intent(this@MainActivity, MapActivity::class.java)
                     startActivity(intent)
+                    isReplacingActivity = true
                     finish()
 //                    discoveryDialogPicker(products)
 

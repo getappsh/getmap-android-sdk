@@ -4,6 +4,7 @@ package com.example.getmap
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -32,9 +33,12 @@ import org.matomo.sdk.extra.TrackHelper
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.time.Duration
 
 
 class DownloadListAdapter(
@@ -47,6 +51,7 @@ class DownloadListAdapter(
 
     var availableUpdate: Boolean = false
     var tracker: Tracker? = null
+
 
     //Create and define the signal listener
     interface SignalListener {
@@ -142,12 +147,7 @@ class DownloadListAdapter(
             val jsonText = Gson().fromJson(jsonFile.toString(), MapDataMetaData::class.java)
             val region = jsonText.region[0]
             holder.size.text = occupiedSpace(geo)
-            holder.product.text = "תוצר: ${
-                jsonText.id.subSequence(
-                    jsonText.id.length - 4,
-                    jsonText.id.length
-                )
-            }"
+            holder.product.text = "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
             deliveryDate(manager, downloadData, holder)
             holder.textFileName.text = "${region} - ${endName}"
             val startDate = jsonText.sourceDateStart.substringBefore('T')
@@ -162,9 +162,13 @@ class DownloadListAdapter(
                 manager.service.getDownloadedMaps().forEach { i ->
                     val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                     val stopDate = i.downloadStop
-                    if (stopDate != null){
+                    val startDate = i.downloadStart
+                    if (stopDate != null && i.statusMsg == "בוטל") {
                         val a = sdf.format(stopDate)
                         holder.demandDate.text = "תאריך עצירה: ${a}"
+                    } else if (i.statusMsg == "בהורדה") {
+                        val a = sdf.format(startDate)
+                        holder.demandDate.text = "תאריך בקשה: ${a}"
                     }
                 }
             }
@@ -180,8 +184,12 @@ class DownloadListAdapter(
 
         when (downloadData.deliveryState) {
             START -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
-                    .with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
+                        .with(tracker)
+                }
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
@@ -198,9 +206,12 @@ class DownloadListAdapter(
             }
 
             DONE -> {
-
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
-                    .with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadDone!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
+                        .with(tracker)
+                }
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
@@ -338,16 +349,13 @@ class DownloadListAdapter(
                 val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                 if (i.id == downloadData.id) {
                     val firstOffsetDateTime = downloadData.downloadStart
-                    val downloadDone = downloadData.downloadDone
                     if (firstOffsetDateTime != null) {
                         val a = sdf.format(firstOffsetDateTime)
                         holder.demandDate.text = "תאריך בקשה: ${a}"
-                    }else {
-                        val currDate = sdf.format(downloadDone)
-                        holder.demandDate.text = "תאריך סיום: ${currDate}"
+                    } else {
+                        holder.demandDate.text = "תאריך בקשה: לא ידוע"
                     }
                 }
-
             }
         }
     }
