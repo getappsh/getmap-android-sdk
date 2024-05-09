@@ -4,6 +4,7 @@ import PasswordDialog
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -234,10 +235,18 @@ class SettingsActivity : AppCompatActivity() {
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        hideKeyboard()
-        super.onBackPressed()
+        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (!inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)) {
+            val intent = Intent(this@SettingsActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        } else {
+            hideKeyboard()
+        }
     }
+
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
