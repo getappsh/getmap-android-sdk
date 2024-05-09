@@ -4,6 +4,7 @@ package com.example.getmap
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -142,12 +143,7 @@ class DownloadListAdapter(
             val jsonText = Gson().fromJson(jsonFile.toString(), MapDataMetaData::class.java)
             val region = jsonText.region[0]
             holder.size.text = occupiedSpace(geo)
-            holder.product.text = "תוצר: ${
-                jsonText.id.subSequence(
-                    jsonText.id.length - 4,
-                    jsonText.id.length
-                )
-            }"
+            holder.product.text = "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
             deliveryDate(manager, downloadData, holder)
             holder.textFileName.text = "${region} - ${endName}"
             val startDate = jsonText.sourceDateStart.substringBefore('T')
@@ -162,9 +158,13 @@ class DownloadListAdapter(
                 manager.service.getDownloadedMaps().forEach { i ->
                     val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                     val stopDate = i.downloadStop
-                    if (stopDate != null){
+                    val startDate = i.downloadStart
+                    if (stopDate != null && i.statusMsg == "בוטל") {
                         val a = sdf.format(stopDate)
                         holder.demandDate.text = "תאריך עצירה: ${a}"
+                    } else if (i.statusMsg == "בהורדה") {
+                        val a = sdf.format(startDate)
+                        holder.demandDate.text = "תאריך בקשה: ${a}"
                     }
                 }
             }
@@ -182,6 +182,8 @@ class DownloadListAdapter(
             START -> {
                 TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
                     .with(tracker)
+                saveToSharedPreferences(context, downloadData.id!!)
+
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
@@ -198,7 +200,6 @@ class DownloadListAdapter(
             }
 
             DONE -> {
-
                 TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
                     .with(tracker)
                 holder.sizeLayout.visibility = View.VISIBLE
@@ -321,6 +322,28 @@ class DownloadListAdapter(
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun getSumMapDone(): Int {
+        var sum = 0
+        CoroutineScope(Dispatchers.Default).launch {
+            manager.service.getDownloadedMaps().forEach { i ->
+               if (i.statusMsg == "הסתיים") {
+                   sum += 1
+               }
+            }
+        }
+        return sum
+    }
+
+    private fun saveToSharedPreferences(context: Context, name: String) {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        val namesSet: MutableSet<String> = sharedPreferences.getStringSet("downloaded_names", HashSet())!!
+        namesSet.add(name)
+        editor.putStringSet("downloaded_names", namesSet)
+        editor.apply()
     }
 
     override fun getItemCount(): Int {

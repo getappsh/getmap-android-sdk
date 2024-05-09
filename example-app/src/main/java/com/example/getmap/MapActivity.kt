@@ -224,7 +224,7 @@ class MapActivity : AppCompatActivity() {
                     renderableLayer.addRenderable(label)
                 } else {
                     val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                    val formattedDownloadStart = g.downloadStart?.format(formatter)
+                    val formattedDownloadStart = g.downloadStop?.format(formatter)
                     endName = "${g.statusMsg} $formattedDownloadStart"
 
                     val polygon = createDownloadedPolygon(g, "red", endName).first
