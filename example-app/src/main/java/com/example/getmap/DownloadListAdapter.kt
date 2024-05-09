@@ -182,7 +182,6 @@ class DownloadListAdapter(
             START -> {
                 TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
                     .with(tracker)
-                saveToSharedPreferences(context, downloadData.id!!)
 
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
@@ -322,28 +321,6 @@ class DownloadListAdapter(
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    private fun getSumMapDone(): Int {
-        var sum = 0
-        CoroutineScope(Dispatchers.Default).launch {
-            manager.service.getDownloadedMaps().forEach { i ->
-               if (i.statusMsg == "הסתיים") {
-                   sum += 1
-               }
-            }
-        }
-        return sum
-    }
-
-    private fun saveToSharedPreferences(context: Context, name: String) {
-        val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-        val editor: SharedPreferences.Editor = sharedPreferences.edit()
-        val namesSet: MutableSet<String> = sharedPreferences.getStringSet("downloaded_names", HashSet())!!
-        namesSet.add(name)
-        editor.putStringSet("downloaded_names", namesSet)
-        editor.apply()
     }
 
     override fun getItemCount(): Int {
