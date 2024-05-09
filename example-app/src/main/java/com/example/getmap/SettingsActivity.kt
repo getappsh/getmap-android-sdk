@@ -1,5 +1,6 @@
 package com.example.getmap
 
+import GetApp.Client.models.MapConfigDto
 import PasswordDialog
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
@@ -39,6 +40,7 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
     private lateinit var nebulaParamAdapter: NebulaParamAdapter
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +112,7 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
                 val url = params[0].value
-                if (url != service.config.baseUrl) {
+                if (url != service.config.baseUrl && url != "") {
                     try {
                         instance.resetService()
                         instance.initService(this, SaveConfiguration(params))
@@ -207,7 +209,11 @@ class SettingsActivity : AppCompatActivity() {
             NebulaParam("Matomo site id", service.config.matomoSiteId),
             NebulaParam("Matomo dimension id", service.config.matomoDimensionId),
             NebulaParam("Min inclusion needed", service.config.mapMinInclusionPct.toString()),
-        )
+            NebulaParam("Download Path", service.config.downloadPath),
+            NebulaParam("Flash Storage Path", service.config.flashStoragePath),
+            NebulaParam("Target Storage Policy", service.config.targetStoragePolicy.value, true),
+
+            )
         nebulaParamAdapter.updateAll(params)
     }
 
@@ -257,14 +263,6 @@ class SettingsActivity : AppCompatActivity() {
 
 }
 
-fun onParamClick(context: Context, param: NebulaParam) {
-    Toast.makeText(
-        context,
-        "You can't change the ${param.name} field ! ",
-        Toast.LENGTH_LONG
-    ).show()
-}
-
 private fun dateFormat(date: OffsetDateTime?): String? {
     return date?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
 }
@@ -274,6 +272,12 @@ private fun saveLocalToService(
     service: GetMapService,
     context: Context,
 ) {
+
+    var targetTypes: HashMap<String, MapConfigDto.TargetStoragePolicy> = hashMapOf()
+    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.sDOnly
+    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.flashThenSD
+    targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.sDThenFlash
+    targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.flashOnly
 
     var notifValidation: Toast? = null
     val reg = Regex("[a-zA-Z]")
@@ -354,6 +358,7 @@ private fun saveLocalToService(
     else {
         NotifyValidity(notifValidation, context)
         params[9].value = service.config.periodicConfIntervalMins.toString()
+
     }
     if (params[10].value != "")
         if (!params[10].value.contains(regex = reg))
@@ -366,6 +371,14 @@ private fun saveLocalToService(
         NotifyValidity(notifValidation, context)
         params[10].value = service.config.periodicInventoryIntervalMins.toString()
     }
+    if (params[16].value != ""){
+        service.config.targetStoragePolicy = targetTypes[params[16].value]!!
+    }
+    else {
+        NotifyValidity(notifValidation, context)
+        params[16].value = service.config.targetStoragePolicy.toString()
+    }
+
     if (params[11].value != "")
         service.config.matomoSiteId = params[11].value
     if (params[12].value != "")
@@ -409,7 +422,7 @@ private fun hasChanged(
     if (params[10].value != "")
         if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
             toReturn["periodicInventoryIntervalMins"] = params[10].value
-    if (params[11].value != "")
+    if (params[11].value != "" && params[11].value.toInt() > 0)
         if (service.config.matomoSiteId != params[11].value)
             toReturn["matomoSiteId"] = params[11].value
     if (params[12].value != "")
