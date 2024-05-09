@@ -63,12 +63,11 @@ class ConfigParam {
             val dropdownButton = holder.itemView.findViewById<ImageButton>(R.id.dropdownButton)
             defineType(holder)
             if (nebulaParam.isDropdown && holder.nameTextView.text == "Target Storage Policy" && isEditing) {
-                // Afficher le bouton de menu déroulant seulement si c'est le dernier élément
+                // Show the button only for the last item
                 dropdownButton.visibility = View.VISIBLE
                 dropdownButton.setOnClickListener {
-                    // Gérer le clic sur le bouton de menu déroulant
                     showDropdownMenu(holder.itemView.context, holder.nameTextView.text.toString()) { selectedValue ->
-                        // Mettre à jour la valeur du nebulaParam avec la sélection de l'utilisateur
+                        // Update the value with the value selected
                         nebulaParam.value = selectedValue
                         holder.valueTextView.text = selectedValue
                     }
@@ -77,17 +76,6 @@ class ConfigParam {
                 dropdownButton.visibility = View.GONE
                 holder.valueTextView.visibility = View.VISIBLE
             }
-//            if (holder.nameTextView.text == "Target Storage Policy") {
-//                val dropdownButton = holder.itemView.findViewById<ImageButton>(R.id.dropdownButton)
-//                dropdownButton.visibility = View.VISIBLE
-//                if (isEditing){
-//
-//                dropdownButton.setOnClickListener {
-//                    Log.i("BUTTON IN RECYCLERVIEW", "CLICKED")
-//
-//                }
-//                }
-//            }
 
             if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url" || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path")
                 && !isEditing
@@ -127,7 +115,7 @@ class ConfigParam {
             })
         }
         private fun showDropdownMenu(context: Context, title: String, onItemSelected: (String) -> Unit) {
-            val dropdownItems = arrayOf("sdOnly","flashThenSD","SDThenFlash","FlashOnly")
+            val dropdownItems = arrayOf("SDOnly","FlashThenSD","SDThenFlash","FlashOnly")
             val builder = AlertDialog.Builder(context)
             builder.setTitle(title)
                 .setItems(dropdownItems) { dialog, which ->

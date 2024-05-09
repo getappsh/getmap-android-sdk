@@ -267,8 +267,8 @@ private fun saveLocalToService(
 ) {
 
     var targetTypes: HashMap<String, MapConfigDto.TargetStoragePolicy> = hashMapOf()
-    targetTypes["sdOnly"] = MapConfigDto.TargetStoragePolicy.sDOnly
-    targetTypes["flashThenSD"] = MapConfigDto.TargetStoragePolicy.flashThenSD
+    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.sDOnly
+    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.flashThenSD
     targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.sDThenFlash
     targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.flashOnly
 
