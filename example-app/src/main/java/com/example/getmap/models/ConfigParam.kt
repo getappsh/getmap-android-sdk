@@ -3,6 +3,7 @@ package com.example.getmap.models
 import android.app.AlertDialog
 import android.content.Context
 import android.text.Editable
+import android.text.InputType
 import android.text.InputType.TYPE_CLASS_TEXT
 import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.getmap.R
@@ -34,10 +36,12 @@ class ConfigParam {
     // Adapter Class
     class NebulaParamAdapter(
         private var Params: Array<NebulaParam>,
-        private val itemClickListener: (Int, String) -> Unit,
+//        private val itemClickListener: (Int, String) -> Unit,
     ) : RecyclerView.Adapter<NebulaParamViewHolder>() {
         private var isEditing = false
         private var context: Context? = null
+        var notif: Toast? = null
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NebulaParamViewHolder {
             this.context = parent.context
             val view = LayoutInflater.from(parent.context)
@@ -60,10 +64,14 @@ class ConfigParam {
             val dropdownButton = holder.itemView.findViewById<ImageButton>(R.id.dropdownButton)
             defineType(holder)
             if (nebulaParam.isDropdown && holder.nameTextView.text == "Target Storage Policy" && isEditing) {
+                valItemView.isFocusable = false
                 // Show the button only for the last item
                 dropdownButton.visibility = View.VISIBLE
                 dropdownButton.setOnClickListener {
-                    showDropdownMenu(holder.itemView.context, holder.nameTextView.text.toString()) { selectedValue ->
+                    showDropdownMenu(
+                        holder.itemView.context,
+                        holder.nameTextView.text.toString()
+                    ) { selectedValue ->
                         // Update the value with the value selected
                         nebulaParam.value = selectedValue
                         holder.valueTextView.text = selectedValue
@@ -74,7 +82,8 @@ class ConfigParam {
                 holder.valueTextView.visibility = View.VISIBLE
             }
 
-            if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url" || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path")
+            if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url"
+                        || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path")
                 && !isEditing
             ) {
                 holder.valueTextView.transformationMethod =
@@ -83,19 +92,29 @@ class ConfigParam {
                 holder.valueTextView.transformationMethod =
                     HideReturnsTransformationMethod.getInstance()
 
-            if ((holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed")
-                || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path" && isEditing
+            // Add an onclickListener that will Toast if it is a non changing params
+            if ((holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed"
+                || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path") && isEditing
             ) {
                 holder.valueTextView.isEnabled = false
                 itemNameLayout.setOnClickListener {
-                    itemClickListener(position, holder.nameTextView.text.toString())
+                    showPopup(itemNameLayout.text.toString())
                 }
                 itemViewLayout.setOnClickListener {
-                    itemClickListener(position, holder.nameTextView.text.toString())
+                    showPopup(itemNameLayout.text.toString())
+
+                }
+                valItemView.setOnClickListener {
+                    showPopup(itemNameLayout.text.toString())
                 }
             }
-            valItemView.setOnClickListener {
-                itemClickListener(position, holder.nameTextView.text.toString())
+            //Remove the onclickListener of the popUp for the non changing params
+            else if (!(holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed"
+                        || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path") || !isEditing
+            ){
+                itemNameLayout.setOnClickListener(null)
+                itemViewLayout.setOnClickListener(null)
+                valItemView.setOnClickListener(null)
             }
 
 //            holder.descriptionTextView.isEnabled = isEditingList[holder.adapterPosition]
@@ -105,14 +124,37 @@ class ConfigParam {
                     Params[holder.adapterPosition].value = s.toString()
                 }
 
-                override fun beforeTextChanged(s: CharSequence?,start: Int,count: Int,after: Int,) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {
+                }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             })
         }
-        private fun showDropdownMenu(context: Context, title: String, onItemSelected: (String) -> Unit) {
-            val dropdownItems = arrayOf("SDOnly","FlashThenSD","SDThenFlash","FlashOnly")
+
+        private fun showPopup(name: String) {
+            if (notif != null) {
+                notif?.cancel()
+            }
+            notif = Toast.makeText(
+                this.context,
+                "You can't change the $name field ! ",
+                Toast.LENGTH_SHORT
+            )
+            notif?.show()
+        }
+
+        private fun showDropdownMenu(
+            context: Context,
+            title: String,
+            onItemSelected: (String) -> Unit,
+        ) {
+            val dropdownItems = arrayOf("SDOnly", "FlashThenSD", "SDThenFlash", "FlashOnly")
             val builder = AlertDialog.Builder(context)
             builder.setTitle(title)
                 .setItems(dropdownItems) { dialog, which ->
