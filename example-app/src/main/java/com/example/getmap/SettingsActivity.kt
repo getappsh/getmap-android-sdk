@@ -51,20 +51,10 @@ class SettingsActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
         var params = emptyArray<NebulaParam>()
-        var notif: Toast? = null
         val tracker: Tracker?
         tracker = MatomoTracker.getTracker(this)
-        nebulaParamAdapter = NebulaParamAdapter(params) { _, name ->
-            if (notif != null) {
-                notif?.cancel()
-            }
-            notif = Toast.makeText(
-                this,
-                "You can't change the $name field ! ",
-                Toast.LENGTH_SHORT
-            )
-            notif?.show()
-        }
+        nebulaParamAdapter = NebulaParamAdapter(params)
+
         recyclerView.adapter = nebulaParamAdapter
         loadConfig(service)
         params = nebulaParamAdapter.getParams()
