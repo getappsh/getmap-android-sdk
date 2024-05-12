@@ -45,6 +45,7 @@
                     android:background="@color/zxing_transparent"
                     android:gravity="center|start"
                     android:hint="Value"
+                    android:textIsSelectable="true"
                     android:imeOptions="actionDone"
                     android:maxWidth="50dp"
                     android:paddingStart="7dp" />

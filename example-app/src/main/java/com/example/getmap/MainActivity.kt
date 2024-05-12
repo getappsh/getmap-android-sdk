@@ -692,9 +692,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val barcodeLauncher: ActivityResultLauncher<ScanOptions> = registerForActivityResult(
         ScanContract()
     ) { result ->
-        if (result.contents == null) {
-            Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
-        } else {
+        if (result.contents == null) {} else {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
 
             GlobalScope.launch(Dispatchers.IO) {

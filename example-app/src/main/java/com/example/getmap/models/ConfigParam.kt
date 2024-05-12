@@ -63,6 +63,9 @@ class ConfigParam {
             val itemNameLayout = holder.itemView.findViewById<TextView>(R.id.param_name)
             val dropdownButton = holder.itemView.findViewById<ImageButton>(R.id.dropdownButton)
             defineType(holder)
+            valItemView.setTextIsSelectable(false)
+            valItemView.post { if(!(nebulaParam.isDropdown && holder.nameTextView.text == "Target Storage Policy"
+                        && isEditing)) valItemView.setTextIsSelectable(true) }
             if (nebulaParam.isDropdown && holder.nameTextView.text == "Target Storage Policy" && isEditing) {
                 valItemView.isFocusable = false
                 // Show the button only for the last item

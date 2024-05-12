@@ -257,6 +257,7 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
+                holder.textFileName.text = ""
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
