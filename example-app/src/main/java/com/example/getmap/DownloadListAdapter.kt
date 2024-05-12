@@ -335,7 +335,7 @@ class DownloadListAdapter(
     }
 
     override fun getItemCount(): Int {
-        val sortedList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart }
+        val sortedList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart?.toInstant()?.toEpochMilli() ?: 0 }
         return sortedList.size
     }
 
