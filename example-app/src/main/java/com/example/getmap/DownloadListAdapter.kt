@@ -335,7 +335,8 @@ class DownloadListAdapter(
     }
 
     override fun getItemCount(): Int {
-        return asyncListDiffer.currentList.size
+        val sortedList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart }
+        return sortedList.size
     }
 
     fun saveData(dataResponse: List<MapData>) {
