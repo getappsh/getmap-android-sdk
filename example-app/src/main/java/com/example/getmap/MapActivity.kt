@@ -194,10 +194,6 @@ class MapActivity : AppCompatActivity() {
                 false
             )
             val id = service.downloadMap(props)
-            if (id == null) {
-                this@MapActivity.runOnUiThread { Toast.makeText(applicationContext, "The map already exists, please choose another Bbox", Toast.LENGTH_LONG).show()
-                }
-            }
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }
         val intent = Intent(this@MapActivity, MainActivity::class.java)
