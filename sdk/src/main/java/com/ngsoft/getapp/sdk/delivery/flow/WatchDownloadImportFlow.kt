@@ -66,8 +66,8 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 //            Reason.DOWNLOAD_STARTED -> TODO()
 //            Reason.DOWNLOAD_BLOCK_UPDATED -> TODO()
 
-//            Reason.REPORTING -> TODO()
-//            Reason.OBSERVER_ATTACHED -> TODO()
+//            Reason.DOWNLOAD_REMOVED -> TODO()
+//             Reason.DOWNLOAD_DELETED -> TODO()
 
                 Reason.DOWNLOAD_WAITING_ON_NETWORK -> {
 //                TODO Try to get the error message
@@ -104,9 +104,9 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     latch.countDown()
                 }
 
-//                Reason.DOWNLOAD_REMOVED -> TODO()
-//                Reason.DOWNLOAD_DELETED -> TODO()
-
+                Reason.REPORTING,
+                Reason.OBSERVER_ATTACHED,
+                Reason.DOWNLOAD_QUEUED,
                 Reason.DOWNLOAD_PROGRESS_CHANGED,
                 Reason.DOWNLOAD_COMPLETED,
                 Reason.DOWNLOAD_RESUMED -> {
@@ -128,9 +128,12 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         var mapPkg = mapRepo.getById(id)
 
         when(download.status){
+            Status.QUEUED -> {
+                mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued))
+            }
+
             Status.NONE,
             Status.ADDED,
-            Status.QUEUED,
             Status.DOWNLOADING -> {
                 if (mapPkg?.metadata?.mapDone == false){
                     val progress = if (download.progress >= 0) download.progress else mapPkg.downloadProgress
@@ -140,7 +143,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 }
             }
             Status.COMPLETED -> {
-                mapPkg = mapRepo.updateAndReturn(id, mapDone = true)
+                mapPkg = mapRepo.updateAndReturn(id, mapDone = true, fileName = FileUtils.getFileNameFromUri(download.file))
                 Timber.i("downloadFile - id: $id, Map Done: ${mapPkg?.metadata?.mapDone}, Json Done: ${mapPkg?.metadata?.jsonDone}, state: ${mapPkg?.state} ")
                 if (mapPkg?.state == MapDeliveryState.ERROR){
                     latch.countDown()
