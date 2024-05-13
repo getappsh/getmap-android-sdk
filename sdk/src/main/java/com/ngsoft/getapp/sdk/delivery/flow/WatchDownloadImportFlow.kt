@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk.delivery.flow
 
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.delivery.DeliveryContext
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
@@ -54,7 +55,6 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
     override fun onChanged(data: Download, reason: Reason) {
         coroutineScope.launch {
 
-
             Timber.d("onChanged - id: $id - reason: ${reason.name} - status: ${data.status} - file: ${data.file}")
             Timber.d("onChanged - ${data.toString()}")
             val isJson = data.id == downloadJsonId
@@ -82,7 +82,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     mapRepo.update(
                         id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
                             R.string.delivery_status_failed
-                        ), statusDescr = data.error.toString()
+                        ), statusDescr = FetchDownloader.getErrorMessage(data.error)
                     )
                     fetch.cancel(downloadMapId).cancel(downloadJsonId)
                     latch.countDown()
