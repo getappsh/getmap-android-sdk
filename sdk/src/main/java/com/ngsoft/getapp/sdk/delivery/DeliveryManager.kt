@@ -2,7 +2,6 @@ package com.ngsoft.getapp.sdk.delivery
 
 import android.app.Application
 import android.content.Context
-import android.os.Environment
 import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
@@ -50,7 +49,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 DeliveryFlowState.IMPORT_CREATE -> ImportStatusFlow(dlvContext).execute(id)
                 DeliveryFlowState.IMPORT_STATUS -> ImportDeliveryFlow(dlvContext).execute(id)
                 DeliveryFlowState.IMPORT_DELIVERY -> DownloadImportFlow(dlvContext).execute(id)
-                DeliveryFlowState.DOWNLOAD ->  WatchDownloadImportFlow(dlvContext).execute(id)
+                DeliveryFlowState.DOWNLOAD -> WatchDownloadImportFlow(dlvContext).execute(id)
                 DeliveryFlowState.DOWNLOAD_DONE -> MoveImportFilesFlow(dlvContext).execute(id)
                 DeliveryFlowState.MOVE_FILES -> ValidateImportFlow(dlvContext).execute(id)
                 DeliveryFlowState.DONE -> false
