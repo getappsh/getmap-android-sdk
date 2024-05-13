@@ -3,12 +3,10 @@ package com.ngsoft.getapp.sdk.downloader
 import android.content.Context
 import com.ngsoft.getapp.sdk.ServiceConfig
 import com.ngsoft.getapp.sdk.utils.FileUtils
-import com.tonyodev.fetch2.Error
-import com.tonyodev.fetch2.Fetch
-import com.tonyodev.fetch2.FetchConfiguration
-import com.tonyodev.fetch2.Request
+import com.tonyodev.fetch2.*
 import timber.log.Timber
 import java.nio.file.Paths
+import java.util.concurrent.CountDownLatch
 
 
 object FetchDownloader{
@@ -33,6 +31,30 @@ object FetchDownloader{
         }
     }
 
+    fun Fetch.isDownloadFailed(id: Int?): Boolean {
+        val download = this.getDownloadSync(id)
+        return download == null || download.status == Status.FAILED
+
+    }
+
+    fun Fetch.isDownloadDone(id: Int?): Boolean {
+        val download = this.getDownloadSync(id)
+        return download == null || download.status == Status.COMPLETED
+    }
+    fun Fetch.getDownloadSync(id: Int?): Download? {
+        id ?: return null
+
+        var download: Download? = null
+        val latch = CountDownLatch(1)
+
+        this.getDownload(id){
+            download = it
+            latch.countDown()
+        }
+
+        latch.await()
+        return download
+    }
     fun Fetch.downloadFile(url: String, fileName: String? = null, groupId: Int? = null): Int{
         Timber.d("Download file")
 
