@@ -18,6 +18,7 @@ import android.net.ConnectivityManager
 import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
@@ -71,6 +72,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         downloader = PackageDownloader(appCtx, config.downloadPath)
 
         pref = Pref.getInstance(appCtx)
+        FetchDownloader.init(appCtx)
 
         batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
 

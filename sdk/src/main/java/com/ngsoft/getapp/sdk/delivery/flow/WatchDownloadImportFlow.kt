@@ -2,7 +2,7 @@ package com.ngsoft.getapp.sdk.delivery.flow
 
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.delivery.DeliveryContext
-import com.ngsoft.getapp.sdk.downloader.FetchDownloader
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader.message
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
@@ -82,7 +82,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     mapRepo.update(
                         id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
                             R.string.delivery_status_failed
-                        ), statusDescr = FetchDownloader.getErrorMessage(data.error)
+                        ), statusDescr = data.error.message()
                     )
                     fetch.cancel(downloadMapId).cancel(downloadJsonId)
                     latch.countDown()
