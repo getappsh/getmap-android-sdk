@@ -24,6 +24,7 @@ import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.tonyodev.fetch2.Fetch
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -116,6 +117,13 @@ internal class DeliveryManager private constructor(appCtx: Context){
         Thread{
             try{
                 this.mapRepo.setCancelDownload(id)
+                this.mapRepo.getById(id)?.let {mapPkg ->
+                    if (mapPkg.flowState == DeliveryFlowState.DOWNLOAD || mapPkg.flowState == DeliveryFlowState.IMPORT_DELIVERY){
+                        val fetch = Fetch.Impl.getDefaultInstance()
+                        val ids = listOfNotNull(mapPkg.MDID?.toInt(), mapPkg.JDID?.toInt())
+                        fetch.pause(ids)
+                    }
+                }
 //                Force cancel
                 TimeUnit.SECONDS.sleep(7)
                 if (this.mapRepo.isDownloadCanceled(id)){
