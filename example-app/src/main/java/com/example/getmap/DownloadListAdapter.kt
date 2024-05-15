@@ -1,4 +1,4 @@
-package com.example.example_app
+package com.example.getmap
 
 
 import MapDataMetaData
@@ -17,19 +17,16 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
-import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.arcgismaps.ArcGISEnvironment.applicationContext
-import com.example.example_app.matomo.MatomoTracker
+import com.example.getmap.matomo.MatomoTracker
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
@@ -38,31 +35,33 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.time.Duration
 
 
 class DownloadListAdapter(
     private val onButtonClick: (Int, String, Any?) -> Unit,
     private val manager: MapServiceManager,
-    private val context: Context
-    ) :
+    private val context: Context,
+) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
 
     var availableUpdate: Boolean = false
     var tracker: Tracker? = null
 
+
     //Create and define the signal listener
     interface SignalListener {
         fun onSignalSpace()
         fun onSignalDownload()
-        fun onNotSignalDownload()
     }
 
 
-//    @RequiresApi(Build.VERSION_CODES.R)
+    //    @RequiresApi(Build.VERSION_CODES.R)
 //    TODO Way is it needed?
     private val pathAvailable = "" /* manager.service.config.storagePath */
 
@@ -72,18 +71,12 @@ class DownloadListAdapter(
         listeners.add(listener)
     }
 
-    fun removeListener(listener: SignalListener) {
-        listeners.remove(listener)
-    }
     fun triggerSpaceSignal() {
         for (listener in listeners) {
             listener.onSignalSpace()
         }
     }
-    fun triggerNotDownloadSignal(){
-        for (listener in listeners)
-            listener.onNotSignalDownload()
-    }
+
     // Méthode pour déclencher le signal 2 avec des données
     fun triggerDownloadSignal() {
         for (listener in listeners) {
@@ -145,41 +138,46 @@ class DownloadListAdapter(
 //                    File.separator
             downloadData.path ?: ""
         )
-        if (directory.exists()) {
-            val files: Array<File> = directory.listFiles()!!
-            var geo: File = File("dnfjosh")
-            for (file in files.iterator()) {
-                if (file.name.substringBefore('.') == downloadData.jsonName?.substringBefore('.') &&
-                    file.name.substringAfter('.') == "gpkg"
-                ) {
-                    geo = file
-                    continue
-                }
-                if (file.name == downloadData.jsonName) {
-                    val text = file.readText()
-                    //Take the 3 letters that identify bbox
-                    val endName = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                    val jsonText = Gson().fromJson(text, MapDataMetaData::class.java)
-                    val region = jsonText.region[0]
-                    holder.size.text = occupiedSpace(geo)
-                    holder.product.text = "תוצר: ${
-                        jsonText.id.subSequence(
-                            jsonText.id.length - 4,
-                            jsonText.id.length
-                        )
-                    }"
-                    deliveryDate(manager, downloadData, holder)
-                    holder.textFileName.text = "${region} - ${endName}"
-                    val startDate = jsonText.sourceDateStart.substringBefore('T')
-                    val endDate = jsonText.sourceDateEnd.substringBefore('T')
-                    var startDateFormatted = formatDate(startDate)
-                    var endDateFormatted = formatDate(endDate)
-                    val tsoulam = "צולם: "
-                    holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
+        var geo = File(downloadData.path, downloadData.fileName ?: "")
+
+        //Take the 3 letters that identify bbox
+        val jsonFile = downloadData.getJson()
+        if (jsonFile != null) {
+
+            val endName = downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+            val jsonText = Gson().fromJson(jsonFile.toString(), MapDataMetaData::class.java)
+            val region = jsonText.region[0]
+            holder.size.text = occupiedSpace(geo)
+            holder.product.text = "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
+            deliveryDate(manager, downloadData, holder)
+            holder.textFileName.text = "${region} - ${endName}"
+            val startDate = jsonText.sourceDateStart.substringBefore('T')
+            val endDate = jsonText.sourceDateEnd.substringBefore('T')
+            var startDateFormatted = formatDate(startDate)
+            var endDateFormatted = formatDate(endDate)
+            val tsoulam = "צולם: "
+            holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
+
+        }  else {
+            CoroutineScope(Dispatchers.Default).launch {
+                manager.service.getDownloadedMaps().forEach { i ->
+                    val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                    val stopDate = i.downloadStop
+                    val startDate = i.downloadStart
+                    if (stopDate != null && i.statusMsg == "בוטל") {
+                        val a = sdf.format(stopDate)
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך עצירה: ${a}"
+                        }
+                    } else if (i.statusMsg == "בהורדה") {
+                        val a = sdf.format(startDate)
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך בקשה: ${a}"
+                        }
+                    }
                 }
             }
         }
-
 
         holder.textStatus.text = downloadData.statusMsg
         holder.progressBar.progress = downloadData.progress
@@ -191,8 +189,12 @@ class DownloadListAdapter(
 
         when (downloadData.deliveryState) {
             START -> {
-                TrackHelper.track().event("מיפוי ענן","ניהול בקשות").name("הורדת בול")
-                    .with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
+                    TrackHelper.track().dimension(1,downloadData.footprint).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
+                        .with(tracker)
+                }
                 holder.sizeLayout.visibility = View.GONE
                 deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
@@ -209,8 +211,14 @@ class DownloadListAdapter(
             }
 
             DONE -> {
-                TrackHelper.track().event("מיפוי ענן","ניהול בקשות").name("בול הורד בהצלחה")
-                    .with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                val name = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                if (downloadData.downloadDone!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
+                    TrackHelper.track().dimension(1,name).event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
+
+                        .with(tracker)
+                }
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
@@ -228,22 +236,42 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
+                holder.textFileName.text = "ההורדה נכשלה"
+                holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
+                holder.percentage.visibility = View.VISIBLE
                 holder.dates.text = LocalDate.now().toString()
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
+                holder.sizeLayout.visibility = View.GONE
+                holder.textStatus.visibility = View.VISIBLE
             }
 
             CANCEL -> {
+                holder.dates.visibility = View.GONE
+                holder.textStatus.visibility = View.VISIBLE
+                holder.textStatus.text = "בוטל - הורדה מחדש תתחיל מ-0%"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
+                holder.textFileName.text = "ההורדה בוטלה"
+                holder.size.visibility = View.INVISIBLE
+                holder.product.visibility = View.INVISIBLE
+                holder.separator.visibility = View.INVISIBLE
+                holder.dates.visibility = View.INVISIBLE
+                holder.percentage.visibility = View.VISIBLE
+                holder.sizeLayout.visibility = View.GONE
             }
 
             PAUSE -> {
+                holder.textFileName.text = ""
                 holder.btnDelete.visibility = View.VISIBLE
+                holder.percentage.visibility = View.VISIBLE
+                holder.textStatus.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
+                holder.sizeLayout.visibility = View.GONE
+                holder.dates.visibility = View.GONE
             }
 
             CONTINUE -> {
@@ -262,7 +290,7 @@ class DownloadListAdapter(
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textFileName.visibility = View.GONE
                 holder.dates.visibility = View.GONE
-                holder.btnCancelResume.visibility = View. VISIBLE
+                holder.btnCancelResume.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.btnQRCode.visibility = View.GONE
                 holder.size.visibility = View.GONE
@@ -304,12 +332,10 @@ class DownloadListAdapter(
 
         if (!downloadData.isUpdated) {
             holder.updated.visibility = View.VISIBLE
-            availableUpdate = true
-            triggerDownloadSignal()
         } else {
-            triggerNotDownloadSignal()
+            holder.updated.visibility = View.INVISIBLE
         }
-
+        triggerDownloadSignal()
 
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
@@ -317,7 +343,8 @@ class DownloadListAdapter(
     }
 
     override fun getItemCount(): Int {
-        return asyncListDiffer.currentList.size
+        val sortList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart ?: OffsetDateTime.MIN  }
+        return sortList.size
     }
 
     fun saveData(dataResponse: List<MapData>) {
@@ -332,15 +359,16 @@ class DownloadListAdapter(
                 if (i.id == downloadData.id) {
                     val firstOffsetDateTime = downloadData.downloadStart
                     if (firstOffsetDateTime != null) {
-
                         val a = sdf.format(firstOffsetDateTime)
-                        holder.demandDate.text = "תאריך בקשה: ${a}"
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך בקשה: ${a}"
+                        }
                     } else {
-                        val currDate = LocalDateTime.now().format(sdf)
-                        holder.demandDate.text = "תאריך בקשה: ${currDate}"
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך בקשה: לא ידוע"
+                        }
                     }
                 }
-
             }
         }
     }
