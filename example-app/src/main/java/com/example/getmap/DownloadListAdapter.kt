@@ -187,7 +187,7 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
                 if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("הורדת בול")
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול ${downloadData.footprint}")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
