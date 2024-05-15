@@ -59,57 +59,42 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
             Timber.d("onChanged - ${data.toString()}")
             val isJson = data.id == downloadJsonId
 
-            when (reason) {
-//            Reason.NOT_SPECIFIED -> TODO()
-//            Reason.DOWNLOAD_ADDED -> TODO()
-//            Reason.DOWNLOAD_QUEUED -> TODO()
-//            Reason.DOWNLOAD_STARTED -> TODO()
-//            Reason.DOWNLOAD_BLOCK_UPDATED -> TODO()
-
-//            Reason.DOWNLOAD_REMOVED -> TODO()
-//             Reason.DOWNLOAD_DELETED -> TODO()
-
-                Reason.DOWNLOAD_WAITING_ON_NETWORK -> {
+            if (reason == Reason.DOWNLOAD_WAITING_ON_NETWORK){
 //                TODO Try to get the error message
                     mapRepo.update(
                         id,
                         state = MapDeliveryState.DOWNLOAD,
                         statusDescr = "Waiting on network"
                     )
-                }
+            }
 
-                Reason.DOWNLOAD_ERROR -> {
+            when (data.status) {
+//                Status.REMOVED -> TODO()
+                Status.DELETED,
+                Status.CANCELLED -> {
+                    latch.countDown()
+                }
+                Status.FAILED -> {
                     mapRepo.update(
                         id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
                             R.string.delivery_status_failed
-                        ), statusDescr = data.error.message()
+                        ), statusDescr = data.error.message(), flowState = DeliveryFlowState.IMPORT_DELIVERY
                     )
                     fetch.cancel(downloadMapId).cancel(downloadJsonId)
                     latch.countDown()
                 }
-
-                Reason.DOWNLOAD_CANCELLED -> {
-                    latch.countDown()
-                }
-                Reason.DOWNLOAD_PAUSED -> {
+                Status.PAUSED -> {
                     fetch.pause(downloadMapId).pause(downloadJsonId)
-                    mapRepo.update(
-                        id,
-                        state = MapDeliveryState.CANCEL,
-                        flowState = DeliveryFlowState.IMPORT_DELIVERY,
-                        statusMsg = app.getString(
-                            R.string.delivery_status_canceled
-                        ),
-                    )
+                    mapRepo.update(id, state = MapDeliveryState.CANCEL, flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMsg = app.getString(
+                            R.string.delivery_status_canceled))
                     latch.countDown()
                 }
 
-                Reason.REPORTING,
-                Reason.OBSERVER_ATTACHED,
-                Reason.DOWNLOAD_QUEUED,
-                Reason.DOWNLOAD_PROGRESS_CHANGED,
-                Reason.DOWNLOAD_COMPLETED,
-                Reason.DOWNLOAD_RESUMED -> {
+                Status.ADDED,
+                Status.NONE,
+                Status.QUEUED,
+                Status.DOWNLOADING,
+                Status.COMPLETED -> {
                     if (isJson) {
                         onJsonChange(data, reason)
                     } else {
@@ -117,8 +102,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     }
                 }
 
-                else -> {
-                }
+                else -> {}
             }
         }
 
@@ -208,7 +192,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 
             if (res.isNotEmpty()){
                 Timber.e("handleJsonDone - map already exists, set to error", )
-                this.mapRepo.update(id, state = MapDeliveryState.ERROR,
+                this.mapRepo.update(id, state = MapDeliveryState.ERROR, flowState = DeliveryFlowState.IMPORT_DELIVERY,
                     statusMsg = app.getString(R.string.error_map_already_exists),
                     jsonName = "fail.json", fileName ="fail.gpkg")
 
