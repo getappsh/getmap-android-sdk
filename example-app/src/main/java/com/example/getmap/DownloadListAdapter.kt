@@ -28,6 +28,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import java.io.File
@@ -165,10 +166,14 @@ class DownloadListAdapter(
                     val startDate = i.downloadStart
                     if (stopDate != null && i.statusMsg == "בוטל") {
                         val a = sdf.format(stopDate)
-                        holder.demandDate.text = "תאריך עצירה: ${a}"
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך עצירה: ${a}"
+                        }
                     } else if (i.statusMsg == "בהורדה") {
                         val a = sdf.format(startDate)
-                        holder.demandDate.text = "תאריך בקשה: ${a}"
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך בקשה: ${a}"
+                        }
                     }
                 }
             }
@@ -336,8 +341,8 @@ class DownloadListAdapter(
     }
 
     override fun getItemCount(): Int {
-        val sortedList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart?.toInstant()?.toEpochMilli() ?: 0 }
-        return sortedList.size
+        val sortList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart ?: OffsetDateTime.MIN  }
+        return sortList.size
     }
 
     fun saveData(dataResponse: List<MapData>) {
@@ -353,9 +358,13 @@ class DownloadListAdapter(
                     val firstOffsetDateTime = downloadData.downloadStart
                     if (firstOffsetDateTime != null) {
                         val a = sdf.format(firstOffsetDateTime)
-                        holder.demandDate.text = "תאריך בקשה: ${a}"
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך בקשה: ${a}"
+                        }
                     } else {
-                        holder.demandDate.text = "תאריך בקשה: לא ידוע"
+                        withContext(Dispatchers.Main) {
+                            holder.demandDate.text = "תאריך בקשה: לא ידוע"
+                        }
                     }
                 }
             }

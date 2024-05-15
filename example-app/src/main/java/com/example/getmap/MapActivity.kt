@@ -418,9 +418,11 @@ class MapActivity : AppCompatActivity() {
             var inBbox = false
             loadedPolys.forEach { p ->
 
-                val intersection = intersectionOrNullNasa(p, boxCoordinates)
+                val polygonPoints = p.map { Point(it.longitude, it.latitude) }
+                val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
+                val intersection = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
                 if (intersection != null) {
-                    val intersectionArea = calculatePolygonArea(intersection)
+                    val intersectionArea =  GeometryEngine.area(intersection)
                     val boxArea = calculatePolygonArea(boxCoordinates)
                     if (abs(intersectionArea) / abs(boxArea) > 0.0) {
                         downloadAble = false
