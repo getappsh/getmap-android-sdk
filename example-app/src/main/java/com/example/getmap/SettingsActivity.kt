@@ -126,12 +126,13 @@ class SettingsActivity : AppCompatActivity() {
             "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
         lastInventory.text = "lastConfig: ${dateFormat(service.config.lastInventoryCheck)}"
 
-        val refresh_text = findViewById<ImageButton>(R.id.refresh_button_conf)
-        refresh_text.setOnClickListener {
+        val refreshButton = findViewById<ImageButton>(R.id.refresh_button_conf)
+        refreshButton.setOnClickListener {
             TrackHelper.track().dimension(1, "הגדרות").event("מיפוי ענן", "שינוי הגדרות")
                 .name("רענון הגדרות")
                 .with(tracker)
-            rotateInfinitely(refresh_text)
+            rotateInfinitely(refreshButton)
+            refreshButton.isEnabled = false
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     lastConfig.text = "Loading..."
@@ -162,6 +163,7 @@ class SettingsActivity : AppCompatActivity() {
                             "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
                     }
                     loadConfig(service)
+                    refreshButton.isEnabled = true
                 }
             }
         }
@@ -233,7 +235,8 @@ class SettingsActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         if (!inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)) {
             val intent = Intent(this@SettingsActivity, MainActivity::class.java)
             startActivity(intent)
@@ -361,10 +364,9 @@ private fun saveLocalToService(
         NotifyValidity(notifValidation, context)
         params[10].value = service.config.periodicInventoryIntervalMins.toString()
     }
-    if (params[16].value != ""){
+    if (params[16].value != "") {
         service.config.targetStoragePolicy = targetTypes[params[16].value]!!
-    }
-    else {
+    } else {
         NotifyValidity(notifValidation, context)
         params[16].value = service.config.targetStoragePolicy.toString()
     }
