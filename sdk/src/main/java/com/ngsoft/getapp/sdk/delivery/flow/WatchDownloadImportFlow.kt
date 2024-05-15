@@ -75,12 +75,18 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     latch.countDown()
                 }
                 Status.FAILED -> {
-                    mapRepo.update(
-                        id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
-                            R.string.delivery_status_failed
-                        ), statusDescr = data.error.message(), flowState = DeliveryFlowState.IMPORT_DELIVERY
-                    )
-                    fetch.cancel(downloadMapId).cancel(downloadJsonId)
+                    if(data.error.httpResponse?.code == 404 || data.error.httpResponse?.code == 403){
+                        Timber.e("watchDownloadProgress - download status is ${data.error.httpResponse?.code}")
+                        handleMapNotExistsOnServer(id)
+                    }else{
+                        mapRepo.update(
+                            id, state = MapDeliveryState.ERROR, statusMsg = app.getString(
+                                R.string.delivery_status_failed
+                            ), statusDescr = data.error.message(), flowState = DeliveryFlowState.IMPORT_DELIVERY
+                        )
+                        fetch.cancel(downloadMapId).cancel(downloadJsonId)
+                    }
+
                     latch.countDown()
                 }
                 Status.PAUSED -> {

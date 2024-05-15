@@ -6,6 +6,7 @@ import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.tonyodev.fetch2.Fetch
 import timber.log.Timber
 
 internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
@@ -36,8 +37,10 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
             downloadProgress = 0, mapDone = false,
             jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0)
         this.mapRepo.setMapUpdated(id, false)
-        mapPkg.JDID?.let { downloader.cancelDownload(it) }
-        mapPkg.MDID?.let { downloader.cancelDownload(it) }
+
+        val fetch = Fetch.Impl.getDefaultInstance()
+        mapPkg.JDID?.let { fetch.delete(it.toInt()) }
+        mapPkg.MDID?.let { fetch.delete(it.toInt()) }
 
     }
 // TODO dose not need to be here
