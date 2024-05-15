@@ -187,7 +187,7 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
                 if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול ${downloadData.footprint}")
+                    TrackHelper.track().dimension(1,downloadData.footprint).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
@@ -208,8 +208,9 @@ class DownloadListAdapter(
             DONE -> {
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                val name = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 if (downloadData.downloadDone!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
+                    TrackHelper.track().dimension(1,name).event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.VISIBLE
