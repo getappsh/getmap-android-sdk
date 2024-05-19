@@ -96,8 +96,8 @@ class SettingsActivity : AppCompatActivity() {
                 if (hasChanged.isNotEmpty()) {
                     hasChanged.forEach { e ->
                         TrackHelper.track().dimension(1, e.value)
-                            .event("מיפוי ענן", "נתונים השתנו ב-${e.key}")
-                            .name("שינוי הגדרות")
+                            .event("מיפוי ענן", "שינוי הגדרות")
+                            .name("נתונים השתנו ב-${e.key}")
                             .with(tracker)
                     }
                 }
