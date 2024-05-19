@@ -7,15 +7,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.example_app"
+    namespace = "com.example.getmap"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.example_app"
+        applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
         versionCode = 2
-        versionName = "1.1"
+        versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -58,6 +58,7 @@ android {
 dependencies {
 //    implementation("com.esri.arcgisruntime:arcgis-android:100.10.0")
     implementation("com.esri:arcgis-maps-kotlin:200.3.0")
+    implementation("gov.nasa.worldwind.android:worldwind:0.8.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(project(mapOf("path" to ":sdk")))

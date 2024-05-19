@@ -107,7 +107,8 @@ internal class MapRepo(ctx: Context) {
         mapAttempt: Int? = null,
         mapDone: Boolean? = null,
         jsonAttempt: Int? = null,
-        jsonDone: Boolean? = null
+        jsonDone: Boolean? = null,
+        downloadDone: LocalDateTime? = null,
     ) {
         this.dao.updateMapFields(
             id,
@@ -128,7 +129,8 @@ internal class MapRepo(ctx: Context) {
             mapAttempt=mapAttempt,
             mapDone=mapDone,
             jsonAttempt=jsonAttempt,
-            jsonDone=jsonDone
+            jsonDone=jsonDone,
+            downloadDone=downloadDone
         )
         invoke(id)
     }

@@ -1,16 +1,17 @@
-package com.example.example_app
+package com.example.getmap
 
+import GetApp.Client.models.MapConfigDto
 import PasswordDialog
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
-import android.view.animation.RotateAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageButton
@@ -20,13 +21,12 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.rotationMatrix
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.example_app.matomo.MatomoTracker
-import com.example.example_app.models.ConfigParam.NebulaParamAdapter
-import com.example.example_app.models.ConfigParam.NebulaParam
+import com.example.getmap.matomo.MatomoTracker
+import com.example.getmap.models.ConfigParam.NebulaParamAdapter
+import com.example.getmap.models.ConfigParam.NebulaParam
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
 import kotlinx.coroutines.Dispatchers
@@ -51,21 +51,10 @@ class SettingsActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
         var params = emptyArray<NebulaParam>()
-        var notif: Toast? = null
-        var tracker: Tracker?
+        val tracker: Tracker?
         tracker = MatomoTracker.getTracker(this)
+        nebulaParamAdapter = NebulaParamAdapter(params)
 
-        nebulaParamAdapter = NebulaParamAdapter(params) { _, name ->
-            if (notif != null) {
-                notif?.cancel()
-            }
-            notif = Toast.makeText(
-                this,
-                "You can't change the $name field ! ",
-                Toast.LENGTH_SHORT
-            )
-            notif?.show()
-        }
         recyclerView.adapter = nebulaParamAdapter
         loadConfig(service)
         params = nebulaParamAdapter.getParams()
@@ -113,7 +102,7 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
                 val url = params[0].value
-                if (url != service.config.baseUrl) {
+                if (url != service.config.baseUrl && url != "") {
                     try {
                         instance.resetService()
                         instance.initService(this, SaveConfiguration(params))
@@ -137,12 +126,13 @@ class SettingsActivity : AppCompatActivity() {
             "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
         lastInventory.text = "lastConfig: ${dateFormat(service.config.lastInventoryCheck)}"
 
-        val refresh_text = findViewById<ImageButton>(R.id.refresh_button_conf)
-        refresh_text.setOnClickListener {
+        val refreshButton = findViewById<ImageButton>(R.id.refresh_button_conf)
+        refreshButton.setOnClickListener {
             TrackHelper.track().dimension(1, "הגדרות").event("מיפוי ענן", "שינוי הגדרות")
                 .name("רענון הגדרות")
                 .with(tracker)
-            rotateInfinitely(refresh_text)
+            rotateInfinitely(refreshButton)
+            refreshButton.isEnabled = false
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     lastConfig.text = "Loading..."
@@ -153,9 +143,10 @@ class SettingsActivity : AppCompatActivity() {
                         service.fetchInventoryUpdates()
 
                     } catch (e: Exception) {
-                        lastConfig.text = "lastConfig: an error occured"
-                        lastServerConfig.text = "lastServerConfig: an error occured"
-                        lastInventory.text = "lastInventory: an error occured"
+                        lastConfig.text = e.message.toString()
+                        Log.e("Fetch Config", e.message.toString())
+                        lastServerConfig.text = e.message.toString()
+                        lastInventory.text = e.message.toString()
                     }
                 }
                 withContext(Dispatchers.Main) {
@@ -172,6 +163,7 @@ class SettingsActivity : AppCompatActivity() {
                             "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
                     }
                     loadConfig(service)
+                    refreshButton.isEnabled = true
                 }
             }
         }
@@ -209,7 +201,11 @@ class SettingsActivity : AppCompatActivity() {
             NebulaParam("Matomo site id", service.config.matomoSiteId),
             NebulaParam("Matomo dimension id", service.config.matomoDimensionId),
             NebulaParam("Min inclusion needed", service.config.mapMinInclusionPct.toString()),
-        )
+            NebulaParam("Download Path", service.config.downloadPath),
+            NebulaParam("Flash Storage Path", service.config.flashStoragePath),
+            NebulaParam("Target Storage Policy", service.config.targetStoragePolicy.value, true),
+
+            )
         nebulaParamAdapter.updateAll(params)
     }
 
@@ -237,10 +233,19 @@ class SettingsActivity : AppCompatActivity() {
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        hideKeyboard()
-        super.onBackPressed()
+        val inputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (!inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)) {
+            val intent = Intent(this@SettingsActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        } else {
+            hideKeyboard()
+        }
     }
+
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
@@ -249,14 +254,6 @@ class SettingsActivity : AppCompatActivity() {
         return super.onTouchEvent(event)
     }
 
-}
-
-fun onParamClick(context: Context, param: NebulaParam) {
-    Toast.makeText(
-        context,
-        "You can't change the ${param.name} field ! ",
-        Toast.LENGTH_LONG
-    ).show()
 }
 
 private fun dateFormat(date: OffsetDateTime?): String? {
@@ -269,9 +266,15 @@ private fun saveLocalToService(
     context: Context,
 ) {
 
+    var targetTypes: HashMap<String, MapConfigDto.TargetStoragePolicy> = hashMapOf()
+    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.sDOnly
+    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.flashThenSD
+    targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.sDThenFlash
+    targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.flashOnly
+
     var notifValidation: Toast? = null
     val reg = Regex("[a-zA-Z]")
-      if (params[1].value != "")
+    if (params[1].value != "")
         if (!params[1].value.contains(regex = reg))
             service.config.downloadRetry = params[1].value.toInt()
         else {
@@ -280,7 +283,7 @@ private fun saveLocalToService(
         }
     else {
         params[1].value = service.config.downloadRetry.toString()
-          NotifyValidity(notifValidation,context)
+        NotifyValidity(notifValidation, context)
     }
     if (params[2].value != "")
         if (!params[2].value.contains(regex = reg))
@@ -289,8 +292,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[2].value = service.config.deliveryTimeoutMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[2].value = service.config.deliveryTimeoutMins.toString()
     }
     if (params[3].value != "") service.config.matomoUrl = params[3].value
@@ -301,8 +304,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[4].value = service.config.matomoUpdateIntervalMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[4].value = service.config.matomoUpdateIntervalMins.toString()
     }
     if (params[5].value != "")
@@ -312,8 +315,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[5].value = service.config.maxMapSizeInMB.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[5].value = service.config.maxMapSizeInMB.toString()
     }
     if (params[7].value != "")
@@ -323,8 +326,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[7].value = service.config.maxParallelDownloads.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[7].value = service.config.maxParallelDownloads.toString()
     }
     if (params[8].value != "")
@@ -334,8 +337,8 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[8].value = service.config.minAvailableSpaceMB.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[8].value = service.config.minAvailableSpaceMB.toString()
     }
     if (params[9].value != "")
@@ -345,9 +348,10 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[9].value = service.config.periodicConfIntervalMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[9].value = service.config.periodicConfIntervalMins.toString()
+
     }
     if (params[10].value != "")
         if (!params[10].value.contains(regex = reg))
@@ -356,10 +360,17 @@ private fun saveLocalToService(
             NotifyValidity(notifValidation, context)
             params[10].value = service.config.periodicInventoryIntervalMins.toString()
         }
-    else{
-        NotifyValidity(notifValidation,context)
+    else {
+        NotifyValidity(notifValidation, context)
         params[10].value = service.config.periodicInventoryIntervalMins.toString()
     }
+    if (params[16].value != "") {
+        service.config.targetStoragePolicy = targetTypes[params[16].value]!!
+    } else {
+        NotifyValidity(notifValidation, context)
+        params[16].value = service.config.targetStoragePolicy.toString()
+    }
+
     if (params[11].value != "")
         service.config.matomoSiteId = params[11].value
     if (params[12].value != "")
@@ -403,7 +414,7 @@ private fun hasChanged(
     if (params[10].value != "")
         if (service.config.periodicInventoryIntervalMins != params[10].value.toInt())
             toReturn["periodicInventoryIntervalMins"] = params[10].value
-    if (params[11].value != "")
+    if (params[11].value != "" && params[11].value.toInt() > 0)
         if (service.config.matomoSiteId != params[11].value)
             toReturn["matomoSiteId"] = params[11].value
     if (params[12].value != "")
@@ -412,10 +423,6 @@ private fun hasChanged(
 
 
     return toReturn
-}
-
-private fun <E> ArrayList<E>.add(index: E, element: E) {
-
 }
 
 private fun NotifyValidity(notification: Toast?, context: Context) {

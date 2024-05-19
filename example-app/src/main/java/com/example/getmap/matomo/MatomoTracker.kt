@@ -1,4 +1,4 @@
-package com.example.example_app.matomo
+package com.example.getmap.matomo
 
 import android.content.ComponentCallbacks2
 import android.content.Context
@@ -17,9 +17,11 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
 
         @Volatile private var tracker: Tracker? = null
         @Volatile private var siteId: String? = null
+        @Volatile private lateinit var pref: Pref
         fun getTracker(context: Context): Tracker{
-            val pref = Pref.getInstance(context)
-            if (siteId != pref.matomoSiteId || tracker?.apiUrl != pref.matomoUrl){
+            pref = Pref.getInstance(context)
+
+            if ((siteId != null && siteId != pref.matomoSiteId) || (tracker != null && tracker?.apiUrl != pref.matomoUrl)){
                 rebuildTracker(context)
             }
             if(tracker?.dispatchInterval != 1000L * 60 * pref.matomoUpdateIntervalMins){
@@ -33,9 +35,10 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
         }
 
         private fun initTracker(context: Context): Tracker{
-            val pref = Pref.getInstance(context)
+            Log.d(TAG, "init tracker")
             val tracker = TrackerBuilder.createDefault(pref.matomoUrl, pref.matomoSiteId.toInt())
                 .build(Matomo.getInstance(context))
+            siteId = pref.matomoSiteId
             tracker.dispatchInterval =  1000L * 60 * pref.matomoUpdateIntervalMins
             tracker.dispatchTimeout = 1000 * 15
             Log.d(TAG, "Matomo dispatchInterval: ${tracker.dispatchInterval},timeout: ${tracker.dispatchTimeout}, sessionTimeout: ${tracker.sessionTimeout}")
@@ -43,6 +46,7 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
         }
 
         private fun rebuildTracker(context: Context){
+            Log.d(TAG, "rebuild tracker")
             tracker?.dispatchInterval = -1
             tracker?.dispatch()
             synchronized(this){

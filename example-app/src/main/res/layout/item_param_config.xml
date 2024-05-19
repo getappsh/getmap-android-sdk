@@ -10,12 +10,12 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@drawable/nebula_item_shape">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@drawable/nebula_item_shape"
             android:orientation="vertical">
 
@@ -31,16 +31,38 @@
                 android:textStyle="bold"
                 tools:text="param_name" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/value_nebula"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-7dp"
-                android:layout_marginBottom="5dp"
-                android:imeOptions="actionDone"
-                android:background="@color/zxing_transparent"
-                android:hint="Value"
-                android:paddingStart="7dp" />
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/value_nebula"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="0.5"
+                    android:background="@color/zxing_transparent"
+                    android:gravity="center|start"
+                    android:hint="Value"
+                    android:textIsSelectable="true"
+                    android:imeOptions="actionDone"
+                    android:maxWidth="50dp"
+                    android:paddingStart="7dp" />
+
+                <ImageButton
+                    android:id="@+id/dropdownButton"
+                    android:layout_width="5dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="0.1"
+                    android:background="@null"
+                    android:scaleType="center"
+                    android:src="@drawable/baseline_arrow_drop_down_24"
+                    android:visibility="invisible" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

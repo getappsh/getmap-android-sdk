@@ -1,10 +1,9 @@
-package com.example.example_app
+package com.example.getmap
 
-import MapDataMetaData
-import android.content.Context
-import com.example.example_app.matomo.MatomoTracker
+import com.example.getmap.matomo.MatomoTracker
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,13 +14,11 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 
@@ -30,6 +27,8 @@ class PopUp : DialogFragment() {
     var textM: String = ""
     var mapId = ""
     var type = ""
+    var bullName = ""
+    lateinit var handler: (MapData) -> Unit
     var tracker: Tracker? = null
     var demand = false
     lateinit var recyclerView: RecyclerView
@@ -53,17 +52,18 @@ class PopUp : DialogFragment() {
         textView.text = textM
         buttonDelete.setOnClickListener {
             if (type == "delete") {
+                Log.i("bull name", bullName)
                 CoroutineScope(Dispatchers.IO).launch {
                     val data = service.getDownloadedMap(mapId)
                     if (data != null) {
                         if (data.statusMsg != "הסתיים") {
-                            TrackHelper.track().dimension(1, mapId)
+                            TrackHelper.track().dimension(1, bullName)
                                 .event("מיפוי ענן", "ניהול בולים")
                                 .name("מחיקת בקשה").with(tracker)
                             return@launch
 
                         } else {
-                            TrackHelper.track().dimension(1, mapId)
+                            TrackHelper.track().dimension(1, bullName)
                                 .event("מיפוי ענן", "ניהול בקשות")
                                 .name("מחיקת בול").with(tracker)
                             return@launch
@@ -86,6 +86,7 @@ class PopUp : DialogFragment() {
                     .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
 
                 GlobalScope.launch(Dispatchers.IO) {
+
                     service.getDownloadedMaps().forEach { mapData ->
                         if (!mapData.isUpdated) {
                             service.downloadUpdatedMap(
@@ -96,14 +97,14 @@ class PopUp : DialogFragment() {
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
             } else if (type == "updateOne") {
-                TrackHelper.track().dimension(1, mapId).event("מיפוי ענן", "ניהול בולים")
+                TrackHelper.track().dimension(1, bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
                     service.downloadUpdatedMap(mapId, {})
                     recyclerView.smoothScrollToPosition(0)
                 }
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(1, mapId).event("מיפוי ענן", "ניהול בקשות")
+                TrackHelper.track().dimension(1, bullName).event("מיפוי ענן", "ניהול בקשות")
                     .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
@@ -123,5 +124,6 @@ class PopUp : DialogFragment() {
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
         )
+        dialog?.setCancelable(false)
     }
 }
