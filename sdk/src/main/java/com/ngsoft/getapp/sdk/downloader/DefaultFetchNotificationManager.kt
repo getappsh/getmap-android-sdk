@@ -152,10 +152,10 @@ internal abstract class DefaultFetchNotificationManager(context: Context) : Fetc
                                                 R.drawable.fetch_notification_pause,
                                                 context.getString(R.string.fetch_notification_download_pause),
                                                 getActionPendingIntent(downloadNotification, PAUSE))
-                                        .addAction(
-                                                R.drawable.fetch_notification_cancel,
-                                                context.getString(R.string.fetch_notification_download_cancel),
-                                                getActionPendingIntent(downloadNotification, CANCEL))
+//                                        .addAction(
+//                                                R.drawable.fetch_notification_cancel,
+//                                                context.getString(R.string.fetch_notification_download_cancel),
+//                                                getActionPendingIntent(downloadNotification, CANCEL))
                         }
                         downloadNotification.isPaused -> {
                                 notificationBuilder.setTimeoutAfter(getNotificationTimeOutMillis())
@@ -163,10 +163,10 @@ internal abstract class DefaultFetchNotificationManager(context: Context) : Fetc
                                                 R.drawable.fetch_notification_resume,
                                                 context.getString(R.string.fetch_notification_download_resume),
                                                 getActionPendingIntent(downloadNotification, RESUME))
-                                        .addAction(
-                                                R.drawable.fetch_notification_cancel,
-                                                context.getString(R.string.fetch_notification_download_cancel),
-                                                getActionPendingIntent(downloadNotification, CANCEL))
+//                                        .addAction(
+//                                                R.drawable.fetch_notification_cancel,
+//                                                context.getString(R.string.fetch_notification_download_cancel),
+//                                                getActionPendingIntent(downloadNotification, CANCEL))
                         }
                         downloadNotification.isQueued -> {
                                 notificationBuilder.setTimeoutAfter(getNotificationTimeOutMillis())
