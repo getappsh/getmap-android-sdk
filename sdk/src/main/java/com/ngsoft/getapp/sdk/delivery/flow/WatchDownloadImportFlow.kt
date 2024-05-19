@@ -49,6 +49,9 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         Timber.i("watchDownloadImport - toContinue: $toContinue")
         fetch.removeFetchObserversForDownload(downloadMapId, this)
         fetch.removeFetchObserversForDownload(downloadJsonId, this)
+        if (!toContinue) {
+            sendDeliveryStatus(id)
+        }
         return toContinue
     }
 
@@ -129,7 +132,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     val progress = if (download.progress >= 0) download.progress else mapPkg.downloadProgress
                     mapRepo.update(id = id, downloadProgress = progress, fileName = FileUtils.getFileNameFromUri(download.file),
                         state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_download), statusDescr = "")
-                    sendDeliveryStatus(id)
+                    sendDeliveryStatus(id, download=download)
                 }
             }
             Status.COMPLETED -> {
@@ -141,7 +144,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 }
 
                 if (mapPkg?.metadata?.jsonDone == true){
-                    handleDownloadDone(id)
+                    handleDownloadDone(id, download)
                 }
 //                TODO old version makes validation if json is done, check if needed too.
             }
@@ -177,10 +180,10 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 
     }
 
-    private fun handleDownloadDone(id: String){
+    private fun handleDownloadDone(id: String, download: Download? = null){
         Timber.d("handleDownloadDone - downloading Done")
         mapRepo.update(id = id, flowState = DeliveryFlowState.DOWNLOAD_DONE, downloadProgress = 100, statusDescr = "")
-        sendDeliveryStatus(id)
+        sendDeliveryStatus(id, download=download)
         toContinue = true
         latch.countDown()
     }

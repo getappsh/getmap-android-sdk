@@ -66,7 +66,7 @@ internal object MapDeliveryClient {
         return result
     }
 
-    fun sendDeliveryStatus(client: GetAppClient, mapRepo: MapRepo, id: String, deviceId: String, state: MapDeliveryState?=null) {
+    fun sendDeliveryStatus(client: GetAppClient, mapRepo: MapRepo, id: String, deviceId: String, state: MapDeliveryState?=null, downloaded: Long?=null, downloadedBytesPerSecond: Long?=null, etaInMilliSeconds: Long?=null) {
         val mapPkg = mapRepo.getById(id) ?: return
         val deliveryStatus = DeliveryStatus(
             state = state ?: mapPkg.state,
@@ -74,7 +74,10 @@ internal object MapDeliveryClient {
             progress = mapPkg.downloadProgress,
             start = mapPkg.downloadStart?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
             stop = mapPkg.downloadStop?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
-            done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) }
+            done = mapPkg.downloadDone?.let { OffsetDateTime.of(it, ZoneOffset.UTC) },
+            downloaded = downloaded,
+            downloadedBytesPerSecond = downloadedBytesPerSecond,
+            etaInMilliSeconds = etaInMilliSeconds
         )
 
         Timber.d("sendDeliveryStatus: id: $id, state: ${deliveryStatus.state}, request id: ${deliveryStatus.reqId}")
@@ -103,7 +106,11 @@ internal object MapDeliveryClient {
             downloadStart = deliveryStatus.start,
             downloadStop = deliveryStatus.stop,
             downloadDone = deliveryStatus.done,
-            currentTime = OffsetDateTime.now()
+            currentTime = OffsetDateTime.now(),
+            bitNumber = deliveryStatus.downloaded?.toBigDecimal(),
+            downloadSpeed = deliveryStatus.downloadedBytesPerSecond?.toBigDecimal(),
+            downloadEstimateTime = deliveryStatus.etaInMilliSeconds?.toBigDecimal()
+
         )
         Thread {
             try {

@@ -6,6 +6,7 @@ import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.tonyodev.fetch2.Download
 import com.tonyodev.fetch2.Fetch
 import timber.log.Timber
 
@@ -23,8 +24,12 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
 
     abstract fun execute(id: String): Boolean
 
-    protected fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null) {
-        MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, state)
+    protected fun sendDeliveryStatus(id: String, state: MapDeliveryState?=null, download: Download? = null) {
+
+        val dbps = if (download?.downloadedBytesPerSecond?.toInt() != -1) download?.downloadedBytesPerSecond else null
+        val eta = if (download?.etaInMilliSeconds?.toInt() != -1) download?.etaInMilliSeconds else null
+
+        MapDeliveryClient.sendDeliveryStatus(client, mapRepo, id, pref.deviceId, state, downloaded=download?.downloaded, downloadedBytesPerSecond=dbps, etaInMilliSeconds=eta)
     }
 
     protected fun handleMapNotExistsOnServer(id: String){
