@@ -14,7 +14,6 @@ import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
 import android.content.Context.BATTERY_SERVICE
 import android.graphics.Bitmap
-import android.net.ConnectivityManager
 import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
@@ -36,7 +35,7 @@ import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getapp.sdk.old.DownloadProgress
-import com.ngsoft.getapp.sdk.utils.FileUtils
+import com.ngsoft.getapp.sdk.utils.NetworkUtil
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.TilesCache
@@ -162,31 +161,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 //==================================================================================================
 
 
-    private fun getBandwidthQuality(): Int? {
-        val connectivityManager = appCtx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        val network = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
-
-        if (networkCapabilities != null) {
-            val downloadSpeedMbps = networkCapabilities.linkDownstreamBandwidthKbps / 1000 // Convert to Mbps
-//            return when {
-//                downloadSpeedMbps >= 50 -> 10
-//                downloadSpeedMbps >= 40 -> 9
-//                downloadSpeedMbps >= 30 -> 8
-//                downloadSpeedMbps >= 20 -> 7
-//                downloadSpeedMbps >= 10 -> 6
-//                downloadSpeedMbps >= 5 -> 5
-//                downloadSpeedMbps >= 3 -> 4
-//                downloadSpeedMbps >= 2 -> 3
-//                downloadSpeedMbps >= 1 -> 2
-//                else -> 1
-//            }
-            return downloadSpeedMbps
-        }
-
-        return null
-    }
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
         Timber.i("getDiscoveryCatalog")
 
@@ -196,7 +171,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusMap,
             GeneralDiscoveryDto(
                 PersonalDiscoveryDto("user-1","idNumber-123","personalNumber-123"),
-                SituationalDiscoveryDto( BigDecimal("23"), bandwidth=getBandwidthQuality()?.let { BigDecimal(it) },
+                SituationalDiscoveryDto( BigDecimal("23"), bandwidth=NetworkUtil.getBandwidthQuality(appCtx)?.let { BigDecimal(it) },
                     OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), true,
                     batteryPower.toBigDecimal(),
                     GeoLocationDto("33.4","23.3", "344")

@@ -7,9 +7,9 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
+import com.ngsoft.getapp.sdk.utils.NetworkUtil
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.tonyodev.fetch2.Download
-import com.tonyodev.fetch2.Fetch
 import com.tonyodev.fetch2.Status
 import com.tonyodev.fetch2core.FetchObserver
 import com.tonyodev.fetch2core.Reason
@@ -122,6 +122,9 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         when(download.status){
             Status.QUEUED -> {
                 mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued))
+                if (!NetworkUtil.isInternetAvailable(app)){
+                    mapRepo.update(id, statusDescr = app.getString(R.string.delivery_status_description_queued_no_internet_connection))
+                }
             }
 
             Status.NONE,
