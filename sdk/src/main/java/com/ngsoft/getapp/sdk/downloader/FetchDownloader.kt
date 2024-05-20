@@ -33,7 +33,7 @@ object FetchDownloader{
 
     fun Fetch.isDownloadFailed(id: Int?): Boolean {
         val download = this.getDownloadSync(id)
-        return download == null || download.status == Status.FAILED
+        return download?.status == Status.FAILED
 
     }
 
