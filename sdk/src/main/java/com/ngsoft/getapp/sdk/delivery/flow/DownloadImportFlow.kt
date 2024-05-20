@@ -17,10 +17,8 @@ internal class DownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
         val pkgUrl = mapPkg.url!!
         val jsonUrl = FileUtils.changeFileExtensionToJson(pkgUrl)
 
-        val fetch = Fetch.Impl.getDefaultInstance()
-
-        val jsonDownloadId = if(!mapPkg.metadata.jsonDone) fetch.downloadFile(jsonUrl) else null
-        val pkgDownloadId = if(!mapPkg.metadata.mapDone) fetch.downloadFile(pkgUrl) else null
+        val jsonDownloadId = if(!mapPkg.metadata.jsonDone) this.fetch.downloadFile(jsonUrl) else null
+        val pkgDownloadId = if(!mapPkg.metadata.mapDone) this.fetch.downloadFile(pkgUrl) else null
         Timber.d("downloadImport - jsonDownloadId: $jsonDownloadId, pkgDownloadId: $pkgDownloadId")
 
         val statusMessage = if(mapPkg.metadata.validationAttempt <= 0) app.getString(R.string.delivery_status_download) else app.getString(

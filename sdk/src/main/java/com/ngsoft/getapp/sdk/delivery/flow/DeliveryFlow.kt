@@ -16,11 +16,11 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
 
     protected var config = dlvCtx.config
     protected var mapRepo = dlvCtx.mapRepo
-    protected var downloader = dlvCtx.downloader
     protected var mapFileManager =  dlvCtx.mapFileManager
     protected var pref = dlvCtx.pref
     protected var client = dlvCtx.client
     protected val app = dlvCtx.app
+    protected val fetch = Fetch.Impl.getDefaultInstance()
 
     abstract fun execute(id: String): Boolean
 
@@ -43,26 +43,8 @@ internal abstract class DeliveryFlow(dlvCtx: DeliveryContext) {
             jsonDone = false, mapAttempt = 0, jsonAttempt = 0, connectionAttempt = 0, validationAttempt = 0)
         this.mapRepo.setMapUpdated(id, false)
 
-        val fetch = Fetch.Impl.getDefaultInstance()
         mapPkg.JDID?.let { fetch.delete(it.toInt()) }
         mapPkg.MDID?.let { fetch.delete(it.toInt()) }
 
-    }
-// TODO dose not need to be here
-    protected fun downloadFile(url: String): Long {
-        Timber.i("downloadFile")
-        val fileName = try {
-            val storagePath = mapFileManager.getAndValidateStorageDirByPolicy((config.minAvailableSpaceMB * 1024 * 1024)).path
-            // TODO note suer why its have been done
-            FileUtils.getUniqueFileName(storagePath, FileUtils.getFileNameFromUri(url))
-        }catch (e: Exception){
-            FileUtils.getFileNameFromUri(url)
-        }
-
-        val downloadId = downloader.downloadFile(url, fileName){
-            Timber.d("downloadImport - completionHandler: processing download ID=$it completion event...")
-        }
-
-        return downloadId
     }
 }

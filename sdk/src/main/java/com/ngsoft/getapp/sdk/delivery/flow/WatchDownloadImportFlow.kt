@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch
 internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx), FetchObserver<Download> {
 
 
-    private val fetch = Fetch.Impl.getDefaultInstance()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private var toContinue = false
@@ -58,8 +57,8 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
     override fun onChanged(data: Download, reason: Reason) {
         coroutineScope.launch {
 
-            Timber.d("onChanged - id: $id - reason: ${reason.name} - status: ${data.status} - file: ${data.file}")
-            Timber.d("onChanged - ${data.toString()}")
+            Timber.i("onChanged - id: $id - reason: ${reason.name} - status: ${data.status} - file: ${data.file}")
+            Timber.d("onChanged - ${data}")
             val isJson = data.id == downloadJsonId
 
             if (reason == Reason.DOWNLOAD_WAITING_ON_NETWORK){

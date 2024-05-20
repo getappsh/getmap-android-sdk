@@ -6,7 +6,6 @@ import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.ngsoft.getapp.sdk.MapFileManager
-import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.ServiceConfig
@@ -32,12 +31,11 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     private var config = ServiceConfig.getInstance(appCtx)
     private var mapRepo = MapRepo(appCtx)
-    private var downloader = PackageDownloader(appCtx, config.downloadPath)
     private var mapFileManager =  MapFileManager(appCtx)
     private var pref = Pref.getInstance(appCtx)
     private var client = GetAppClient(ConnectionConfig(pref.baseUrl, pref.username, pref.password))
     private val app = appCtx as Application
-    private val dlvContext = DeliveryContext(config=config, mapRepo=mapRepo, downloader=downloader, mapFileManager=mapFileManager, pref=pref, client=client, app=app)
+    private val dlvContext = DeliveryContext(config=config, mapRepo=mapRepo, mapFileManager=mapFileManager, pref=pref, client=client, app=app)
 
     fun executeDeliveryFlow(id: String){
         Timber.d("executeDeliveryFlow - for id: $id")

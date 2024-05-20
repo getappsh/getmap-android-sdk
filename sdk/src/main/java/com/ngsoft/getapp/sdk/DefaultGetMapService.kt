@@ -19,6 +19,8 @@ import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader.downloadFile
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadDone
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
@@ -38,6 +40,7 @@ import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.TilesCache
+import com.tonyodev.fetch2.Fetch
 import timber.log.Timber
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -50,9 +53,7 @@ import kotlin.time.TimeSource
 
 internal open class DefaultGetMapService(private val appCtx: Context) : GetMapService {
 
-    private val _tag = "DefaultGetMapService"
     protected lateinit var client: GetAppClient
-    protected lateinit var downloader: PackageDownloader
     protected lateinit var pref: Pref
     private lateinit var batteryManager: BatteryManager
     protected lateinit var mapFileManager: MapFileManager
@@ -68,8 +69,6 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         config.baseUrl = configuration.baseUrl
         config.downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
         client = GetAppClient(ConnectionConfig(configuration.baseUrl, configuration.user, configuration.password))
-
-        downloader = PackageDownloader(appCtx, config.downloadPath)
 
         pref = Pref.getInstance(appCtx)
         FetchDownloader.init(appCtx)
@@ -304,20 +303,21 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
             deliveryStatus.url!!
 
         var completed = false
-        var downloadId: Long = -1
+        var downloadId: Int = -1
 
-        val downloadCompletionHandler: (Long) -> Unit = {
-            Timber.d("processing download ID=$it completion event...")
-            completed = it == downloadId
-        }
+        val fetch = Fetch.Impl.getDefaultInstance()
 
-        downloadId = downloader.downloadFile(file2download, onDownloadCompleted = downloadCompletionHandler)
+        downloadId = fetch.downloadFile(file2download)
 
         val timeoutTime = TimeSource.Monotonic.markNow() + 15.minutes
 
         while(!completed){
             TimeUnit.SECONDS.sleep(1)
             Timber.d("awaiting download completion...")
+
+            if (fetch.isDownloadDone(downloadId)){
+                completed = true
+            }
 
             if(timeoutTime.hasPassedNow()){
                 Timber.d("download wait loop - timed out")
