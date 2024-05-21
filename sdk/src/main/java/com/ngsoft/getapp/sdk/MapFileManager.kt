@@ -25,6 +25,7 @@ import java.nio.file.StandardCopyOption
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import kotlin.math.max
 
 class MapFileManager(private val appCtx: Context) {
 
@@ -111,7 +112,7 @@ class MapFileManager(private val appCtx: Context) {
                 flashDir
             }
             MapConfigDto.TargetStoragePolicy.flashThenSD -> {
-             if(FileUtils.getAvailableSpace(flashDir.path) > neededSpace) {
+             if(FileUtils.getAvailableSpace(flashDir.path) > max(config.minAvailableSpaceMB * 1024 * 1024, neededSpace)) {
                  flashDir
              }else {
                  validateSpace(sdDir, neededSpace)

@@ -96,8 +96,8 @@ class SettingsActivity : AppCompatActivity() {
                 if (hasChanged.isNotEmpty()) {
                     hasChanged.forEach { e ->
                         TrackHelper.track().dimension(1, e.value)
-                            .event("מיפוי ענן", "נתונים השתנו ב-${e.key}")
-                            .name("שינוי הגדרות")
+                            .event("מיפוי ענן", "שינוי הגדרות")
+                            .name("נתונים השתנו ב-${e.key}")
                             .with(tracker)
                     }
                 }
@@ -135,30 +135,33 @@ class SettingsActivity : AppCompatActivity() {
             refreshButton.isEnabled = false
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    lastConfig.text = "Loading..."
-                    lastInventory.text = "Loading..."
-                    lastServerConfig.text = "Loading..."
+                    withContext(Dispatchers.Main){
+                        lastConfig.text = "Loading..."
+                        lastInventory.text = "Loading..."
+                        lastServerConfig.text = "Loading..."
+                    }
                     try {
                         service.fetchConfigUpdates()
                         service.fetchInventoryUpdates()
-
                     } catch (e: Exception) {
-                        lastConfig.text = e.message.toString()
+                        withContext(Dispatchers.Main) {
+                        lastConfig.text = "lastConfig error: " + e.message.toString()
                         Log.e("Fetch Config", e.message.toString())
-                        lastServerConfig.text = e.message.toString()
-                        lastInventory.text = e.message.toString()
+                        lastServerConfig.text ="lastServerConfig error: " + e.message.toString()
+                        lastInventory.text ="lastInventory error: " + e.message.toString()
+                        }
                     }
                 }
                 withContext(Dispatchers.Main) {
-                    if (!lastConfig.text.contains("error")) {
+                    if (!(lastConfig.text.contains("error"))) {
                         lastConfig.text =
                             "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
                     }
-                    if (!lastServerConfig.text.contains("error")) {
+                    if (!(lastServerConfig.text.contains("error"))) {
                         lastServerConfig.text =
-                            "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
+                            "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate) }"
                     }
-                    if (!lastInventory.text.contains("error")) {
+                    if (!(lastInventory.text.contains("error"))) {
                         lastInventory.text =
                             "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
                     }
@@ -430,7 +433,6 @@ private fun NotifyValidity(notification: Toast?, context: Context) {
     notifValidation?.cancel()
     notifValidation = Toast.makeText(context, "Please enter valid entry", Toast.LENGTH_SHORT)
     notifValidation?.show()
-
 }
 
 fun rotateInfinitely(view: View, duration: Long = 2500L): ObjectAnimator {

@@ -26,7 +26,6 @@ class MapData(
         return try {
             JsonUtils.readJson(Paths.get(path, jsonName).toString())
         }catch (e: Exception){
-            Timber.e("Failed to read json: ${e.message}")
             null
         }
     }

@@ -58,13 +58,13 @@ class PopUp : DialogFragment() {
                     if (data != null) {
                         if (data.statusMsg != "הסתיים") {
                             TrackHelper.track().dimension(1, bullName)
-                                .event("מיפוי ענן", "ניהול בולים")
+                                .event("מיפוי ענן", "ניהול בקשות")
                                 .name("מחיקת בקשה").with(tracker)
                             return@launch
 
                         } else {
                             TrackHelper.track().dimension(1, bullName)
-                                .event("מיפוי ענן", "ניהול בקשות")
+                                .event("מיפוי ענן", "ניהול בולים")
                                 .name("מחיקת בול").with(tracker)
                             return@launch
                         }

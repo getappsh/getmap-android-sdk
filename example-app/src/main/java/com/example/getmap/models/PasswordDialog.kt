@@ -34,14 +34,14 @@ class PasswordDialog(
         builder.setPositiveButton("Submit") { dialog, _ ->
             val password = editTextPassword.text.toString()
             if (password == "10052") {
-                TrackHelper.track().event("מיפוי ענן","הכנסת סיסמא תקינה").with(tracker)
+                TrackHelper.track().event("מיפוי ענן","שינוי הגדרות").name("הכנסת סיסמא תקינה").with(tracker)
                 cancelButton.visibility = View.VISIBLE
                 applyServerConfig.isEnabled = true
                 for (i in 0..(params.size - 1)) {
                     configParamAdapter.setIsEditing(isChecked, i, params[i])
                 }
             } else {
-                TrackHelper.track().event("מיפוי ענן","הכנסת סיסמא לא תקינה").with(tracker)
+                TrackHelper.track().event("מיפוי ענן","שינוי הגדרות").name("הכנסת סיסמא לא תקינה").with(tracker)
                 Toast.makeText(context, "Incorrect Password", Toast.LENGTH_SHORT).show()
                 editConf.isChecked = false
                 dialog.dismiss()
