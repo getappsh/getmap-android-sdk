@@ -18,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.CountDownLatch
 
 internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx), FetchObserver<Download> {
@@ -115,15 +117,34 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         }
 
     }
+    private fun checkUrlStatus(url: String): Int? {
+        val responseCode: Int?
+        try{
+            val connection = URL(url).openConnection() as HttpURLConnection
+            connection.requestMethod = "HEAD"
+            connection.connect()
+            responseCode = connection.responseCode
+            connection.disconnect()
+        }catch (e: Exception){
+            return null
+        }
+        return responseCode
+    }
 
     private  fun onMapChange(download: Download, reason: Reason){
         var mapPkg = mapRepo.getById(id)
 
         when(download.status){
             Status.QUEUED -> {
-                if(download.autoRetryAttempts > 0){
+                if(download.autoRetryAttempts > 1){
                     mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued_try_again))
-                }else {
+                }else if(download.autoRetryAttempts == 1){
+                    val statusCode = checkUrlStatus(download.url)
+                    if (statusCode == 404 || statusCode == 403){
+                        handleMapNotExistsOnServer(id)
+                        latch.countDown()
+                    }
+                } else {
                     mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued))
                 }
 
