@@ -112,7 +112,7 @@ class MapFileManager(private val appCtx: Context) {
                 flashDir
             }
             MapConfigDto.TargetStoragePolicy.flashThenSD -> {
-             if(FileUtils.getAvailableSpace(flashDir.path) > max(config.minAvailableSpaceMB * 1024 * 1024, neededSpace)) {
+             if(FileUtils.getAvailableSpace(flashDir.path) > max((config.maxMapSizeInMB + 500) * 1024 * 1024, neededSpace)) {
                  flashDir
              }else {
                  validateSpace(sdDir, neededSpace)
