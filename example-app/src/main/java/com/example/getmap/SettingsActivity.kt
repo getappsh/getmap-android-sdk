@@ -145,10 +145,10 @@ class SettingsActivity : AppCompatActivity() {
                         service.fetchInventoryUpdates()
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
-                        lastConfig.text = "lastConfig error: " + e.message.toString()
+                        lastConfig.text = "lastConfig error: Network error occured"
                         Log.e("Fetch Config", e.message.toString())
-                        lastServerConfig.text ="lastServerConfig error: " + e.message.toString()
-                        lastInventory.text ="lastInventory error: " + e.message.toString()
+                        lastServerConfig.text ="lastServerConfig error: Network error occured"
+                        lastInventory.text ="lastInventory error: Network error occured"
                         }
                     }
                 }
