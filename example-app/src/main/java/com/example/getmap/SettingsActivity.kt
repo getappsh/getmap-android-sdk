@@ -101,9 +101,9 @@ class SettingsActivity : AppCompatActivity() {
                 val hasChanged: LinkedHashMap<String, String> = hasChanged(service, params)
                 if (hasChanged.isNotEmpty()) {
                     hasChanged.forEach { e ->
-                        TrackHelper.track().dimension(1, e.value)
+                        TrackHelper.track()
                             .event("מיפוי ענן", "שינוי הגדרות")
-                            .name("נתונים השתנו ב-${e.key}")
+                            .name(" נתונים השתנו ב${e.key}")
                             .with(tracker)
                     }
                 }
@@ -134,7 +134,7 @@ class SettingsActivity : AppCompatActivity() {
 
         val refreshButton = findViewById<ImageButton>(R.id.refresh_button_conf)
         refreshButton.setOnClickListener {
-            TrackHelper.track().dimension(1, "הגדרות").event("מיפוי ענן", "שינוי הגדרות")
+            TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("רענון הגדרות")
                 .with(tracker)
             rotateInfinitely(refreshButton)
