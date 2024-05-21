@@ -555,11 +555,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun generateQrCode(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
                 runOnUiThread {
-                    val name = map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                    TrackHelper.track().dimension(1,name).event("מיפוי ענן", "שיתוף")
+                    TrackHelper.track().dimension(1, id).event("מיפוי ענן", "שיתוף")
                         .name("שליחת בול בסריקה").with(tracker)
                     showQRCodeDialog(qrCode)
                 }
@@ -701,7 +699,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
                     withContext(Dispatchers.Main) {
-                        TrackHelper.track()
+                        TrackHelper.track().dimension(1, result.contents)
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
