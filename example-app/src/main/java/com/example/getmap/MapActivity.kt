@@ -98,18 +98,19 @@ class MapActivity : AppCompatActivity() {
 
         var overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
+        val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             val blueBorderDrawableId = R.drawable.blue_border
             if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == true) {
                 checkBboxBeforeSent()
                 if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == false) {
-                    Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
                 } else {
                     this.onDelivery()
                 }
             } else {
-                Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -328,7 +329,7 @@ class MapActivity : AppCompatActivity() {
         textAttrs.textSize = 35.0F
         textAttrs.textColor = Color(1f, 1f, 0f, 1f)
         textAttrs.outlineWidth = 0F
-        textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0)
+        textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, -0.3)
 
         return textAttrs
     }
@@ -399,9 +400,11 @@ class MapActivity : AppCompatActivity() {
             val boxArea = calculatePolygonArea(boxCoordinates)
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
-                    spaceMb = calculateMB(pLeftTop, pRightTop, pLeftBottom, polygon.resolution)
+                    val km = String.format("%.2f", abs(polygon.intersection * 10000))
+                    spaceMb = calculateMB(km, polygon.resolution)
+                    showKm.text = "שטח משוער :${km} קמ\"ר"
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                    date.text = "צולם : ${polygon.start} - ${polygon.end}"
+                    date.text = "צולם : ${polygon.end} - ${polygon.start}"
                     found = true
                     downloadAble = true
                     break
@@ -409,9 +412,11 @@ class MapActivity : AppCompatActivity() {
             }
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
-                spaceMb = calculateMB(pLeftTop, pRightTop, pLeftBottom, firstPolyObject.resolution)
+                val km = String.format("%.2f", abs(firstPolyObject.intersection * 10000))
+                spaceMb = calculateMB(km, firstPolyObject.resolution)
+                showKm.text = "שטח משוער :${km} קמ\"ר"
                 showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                date.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
+                date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
                 downloadAble = true
             }
 
@@ -451,9 +456,7 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun calculateMB(leftTop: Position, rightTop: Position, leftBottom: Position,  resolution: BigDecimal): Int {
-        val area = (calculateDistance(leftTop, rightTop) / 1000) * (calculateDistance(leftTop, leftBottom) / 1000)
-        val formattedNum = String.format("%.2f", area)
+    private fun calculateMB(formattedNum : String,  resolution: BigDecimal): Int {
         var mb = 0
         mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
             (formattedNum.toDouble() * 10).toInt()

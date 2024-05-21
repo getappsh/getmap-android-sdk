@@ -58,6 +58,12 @@ class SettingsActivity : AppCompatActivity() {
         recyclerView.adapter = nebulaParamAdapter
         loadConfig(service)
         params = nebulaParamAdapter.getParams()
+        val version = findViewById<TextView>(R.id.textView)
+        try {
+            version.text = "version: " + applicationContext.packageManager.getPackageInfo(applicationContext.packageName, 0).versionName
+        } catch (e: Exception) {
+            version.text = ""
+        }
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
         val lastConfig = findViewById<TextView>(R.id.last_config)
