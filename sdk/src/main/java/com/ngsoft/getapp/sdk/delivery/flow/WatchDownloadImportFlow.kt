@@ -77,8 +77,8 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     latch.countDown()
                 }
                 Status.FAILED -> {
+                    Timber.e("onChanged - failed, error code: ${data.error.httpResponse?.code}")
                     if(data.error.httpResponse?.code == 404 || data.error.httpResponse?.code == 403){
-                        Timber.e("watchDownloadProgress - download status is ${data.error.httpResponse?.code}")
                         handleMapNotExistsOnServer(id)
                     }else{
                         mapRepo.update(
@@ -121,9 +121,14 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 
         when(download.status){
             Status.QUEUED -> {
-                mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued))
+                if(download.autoRetryAttempts > 0){
+                    mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued_try_again))
+                }else {
+                    mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued))
+                }
+
                 if (!NetworkUtil.isInternetAvailable(app)){
-                    mapRepo.update(id, statusDescr = app.getString(R.string.delivery_status_description_queued_no_internet_connection))
+                    mapRepo.update(id, statusMsg = app.getString(R.string.delivery_status_connection_issue_queued), statusDescr = app.getString(R.string.delivery_status_description_queued_no_internet_connection))
                 }
             }
 
@@ -215,7 +220,6 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
 
         }catch (e: Exception){
             Timber.e("Failed to get footprint from json, error: ${e.message.toString()}")
-//            TODO why do not set the state to error?
             null
         }
     }

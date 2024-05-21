@@ -62,6 +62,7 @@ object FetchDownloader{
 
         val file = Paths.get(downloadDir, name)
         val request = Request(url, file.toString())
+        request.enqueueAction = EnqueueAction.UPDATE_ACCORDINGLY
 
         groupId?.let { request.groupId = groupId }
 
