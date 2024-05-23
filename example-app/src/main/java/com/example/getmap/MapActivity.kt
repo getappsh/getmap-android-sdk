@@ -193,7 +193,7 @@ class MapActivity : AppCompatActivity() {
                 "${pLeftTop.longitude},${pLeftTop.latitude},${pRightTop.longitude},${pRightTop.latitude},${pRightBottom.longitude},${pRightBottom.latitude},${pLeftBottom.longitude},${pLeftBottom.latitude},${pLeftTop.longitude},${pLeftTop.latitude}",
                 false
             )
-            val id = service.downloadMap(props)
+            val id = service.downloadMap(props, {})
             Log.d(TAG, "onDelivery: after download map have been called, id: $id")
         }
         val intent = Intent(this@MapActivity, MainActivity::class.java)
