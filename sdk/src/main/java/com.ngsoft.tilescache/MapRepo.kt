@@ -276,6 +276,7 @@ internal class MapRepo(ctx: Context) {
 
     fun setMapUpdated(id: String, isUpdated: Boolean){
         this.dao.updateMapFields(id, isUpdated=isUpdated)
+        this.invoke(id)
     }
     fun getMapsToUpdate(): List<String>{
         return this.getAll().filter { !it.isUpdated }.map { it.id.toString() }
