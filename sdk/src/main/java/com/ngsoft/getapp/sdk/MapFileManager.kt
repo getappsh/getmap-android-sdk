@@ -37,25 +37,27 @@ class MapFileManager(private val appCtx: Context) {
 
     val flashTargetDir: File
         get(){
-            val storageList = storageManager.storageVolumes
-            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
-//                TODO use the actual path
-                Environment.getExternalStorageDirectory()
-            }else{
-                File(storageList[0].directory?.absoluteFile, config.flashStoragePath)
-            }
+            return File(getBaseStorageDir(true), config.flashStoragePath)
         }
 
     val sdTargetDir: File
         get() {
-            val storageList = storageManager.storageVolumes
-            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
+            return File(getBaseStorageDir(false) ?: getBaseStorageDir(true), config.sdStoragePath)
+        }
+
+    private fun getBaseStorageDir(flash: Boolean): File? {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R){
 //                TODO use the actual path
-                Environment.getExternalStorageDirectory()
+            Environment.getExternalStorageDirectory()
+        }else{
+            val storageList = storageManager.storageVolumes
+            return if (flash){
+                storageList.getOrNull(0)?.directory?.absoluteFile
             }else{
-                if (storageList.size > 1) File(storageList[1].directory?.absoluteFile, config.sdStoragePath) else flashTargetDir
+                storageList.getOrNull(1)?.directory?.absoluteFile
             }
         }
+    }
 
     fun getJsonString(dirPath: String?, jsonName: String?): JSONObject?{
         jsonName ?: return null
@@ -95,6 +97,22 @@ class MapFileManager(private val appCtx: Context) {
         }
     }
 
+    fun getInventorySize(flash: Boolean): Long {
+        val baseDir = if (flash) flashTargetDir else sdTargetDir
+        val files = this.mapRepo.getAll()
+            .filter { it.path?.startsWith(baseDir.path) == true }
+            .map { mapPkg ->
+                listOfNotNull(
+                    mapPkg.fileName?.let { Paths.get(mapPkg.path, it) },
+                    mapPkg.fileName?.let { Paths.get(mapPkg.path, FileUtils.changeFileExtensionToJournal(it)) },
+                    mapPkg.jsonName?.let { Paths.get(mapPkg.path, it) })
+                .map { it.toString() }
+            }
+            .flatten()
+
+        return FileUtils.sumFileSize(files)
+    }
+
     fun getAndValidateStorageDirByPolicy(neededSpace: Long): File{
         val flashDir = flashTargetDir
         val sdDir = sdTargetDir
@@ -105,26 +123,32 @@ class MapFileManager(private val appCtx: Context) {
         return when(config.targetStoragePolicy){
             MapConfigDto.TargetStoragePolicy.sDOnly -> {
                 validateSpace(sdDir, neededSpace)
+                validateInventorySpace(true)
                 sdDir
             }
             MapConfigDto.TargetStoragePolicy.flashOnly -> {
                 validateSpace(flashDir, neededSpace)
+                validateInventorySpace(false)
                 flashDir
             }
             MapConfigDto.TargetStoragePolicy.flashThenSD -> {
-             if(FileUtils.getAvailableSpace(flashDir.path) > max(config.minAvailableSpaceMB * 1024 * 1024, neededSpace)) {
+             if(FileUtils.getAvailableSpace(flashDir.path) > max(config.minAvailableSpaceMB * 1024 * 1024, neededSpace) &&
+                 getInventorySize(true) <= (config.flashInventoryMaxSizeMB * 1024 * 1024)) {
                  flashDir
              }else {
                  validateSpace(sdDir, neededSpace)
+                 validateInventorySpace(false)
                  Timber.i("Not enough space in Flash save to SD")
                  sdDir
              }
             }
             MapConfigDto.TargetStoragePolicy.sDThenFlash -> {
-                if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace) {
+                if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace &&
+                    getInventorySize(false)  <= (config.sdInventoryMaxSizeMB * 1024 * 1024)) {
                     sdDir
                 }else {
                     validateSpace(flashDir, neededSpace)
+                    validateInventorySpace(true)
                     Timber.i("Not enough space in SD save to Flash")
                     flashDir
                 }
@@ -135,6 +159,13 @@ class MapFileManager(private val appCtx: Context) {
     private fun validateSpace(directory: File, neededSpace: Long) {
         if (FileUtils.getAvailableSpace(directory.path) <= neededSpace) {
             throw IOException(appCtx.getString(R.string.error_not_enough_space))
+        }
+    }
+
+    private fun validateInventorySpace(flash: Boolean){
+        val size = if (flash) config.flashInventoryMaxSizeMB else config.sdInventoryMaxSizeMB
+        if (getInventorySize(flash) > (size * 1024 * 1024)){
+            throw IOException(appCtx.getString(R.string.error_max_inventory_size))
         }
     }
 
