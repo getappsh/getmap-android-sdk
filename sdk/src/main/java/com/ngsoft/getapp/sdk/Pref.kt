@@ -137,6 +137,14 @@ class Pref private constructor(context: Context) {
         get() = getInt(MAP_MIN_INCLUSION, 60)
         set(value) = setInt(MAP_MIN_INCLUSION, value)
 
+    var flashInventoryMaxSizeMB: Long
+        get() = getLong(FLASH_MAX_INVENTORY_SIZE_IN_MB, 2000)
+        set(value) = setLong(FLASH_MAX_INVENTORY_SIZE_IN_MB, value)
+
+    var sdInventoryMaxSizeMB: Long
+        get() = getLong(SD_MAX_INVENTORY_SIZE_IN_MB, 1000)
+        set(value) = setLong(SD_MAX_INVENTORY_SIZE_IN_MB, value)
+
     private fun getString(key: String, defValue: String): String{
         return sharedPreferences.getString(key, defValue) ?: defValue
     }
@@ -230,6 +238,8 @@ class Pref private constructor(context: Context) {
         private const val LAST_SERVER_INVENTORY_JOB = "lastServerInventoryJob"
         private const val MIN_AVAILABLE_SPACE = "minAvailableSpace"
         private const val MAP_MIN_INCLUSION= "mapMinInclusionPct"
+        private const val FLASH_MAX_INVENTORY_SIZE_IN_MB = "flashMaxInventorySizeInMB"
+        private const val SD_MAX_INVENTORY_SIZE_IN_MB = "sdMaxInventorySizeInMB"
 
 
         private var instance: Pref? = null
