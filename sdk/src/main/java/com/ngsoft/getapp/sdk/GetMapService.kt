@@ -277,7 +277,7 @@ interface GetMapService {
         /**
          * Maximum allowable size for a map in Square Kilometer.
          */
-        var maxMapAreaSqKm: Long
+        val maxMapAreaSqKm: Long
 
         /**
          * Maximum inventory size on the Flash in MB
@@ -289,7 +289,7 @@ interface GetMapService {
          * Maximum inventory size on the SD card in MB
          */
 
-        val sdInventoryMaxSizeMB: Long
+        var sdInventoryMaxSizeMB: Long
 
         /**
          * Maximum number of parallel downloads allowed.
