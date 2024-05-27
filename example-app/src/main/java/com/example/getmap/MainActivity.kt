@@ -206,40 +206,41 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         val discovery = findViewById<Button>(R.id.discovery)
         discovery.setOnClickListener {
-            var sizeExcedeed = false
-            CoroutineScope(Dispatchers.IO).launch {
-                    sizeExcedeed = MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
-            }
-            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExcedeed) {
-                GlobalScope.launch(Dispatchers.IO) {
-                    var count = 0
-                    mapServiceManager.service.getDownloadedMaps().forEach { m ->
-                        if (m.statusMsg == "בקשה נשלחה" || m.statusMsg == "בקשה בהפקה" || m.statusMsg == "בהורדה") {
-                            count += 1
-                        }
-                    }
-                    if (count < mapServiceManager.service.config.maxParallelDownloads) {
-                        withContext(Dispatchers.Main) {
-                            this@MainActivity.onDiscovery()
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                applicationContext,
-                                "יש כבר מספר הורדות מקסימלי",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
+            CoroutineScope(Dispatchers.Main).launch {
+                val sizeExceeded = withContext(Dispatchers.IO) {
+                    MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
                 }
-            } else {
-                Toast.makeText(
-                    applicationContext,
-                    "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                    Toast.LENGTH_LONG
-                ).show()
+                Log.i("SIZE EXCEDEED", "$sizeExceeded")
+                if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
+                    val count = withContext(Dispatchers.IO) {
+                        var count = 0
+                        mapServiceManager.service.getDownloadedMaps().forEach { m ->
+                            if (m.statusMsg == "בקשה נשלחה" || m.statusMsg == "בקשה בהפקה" || m.statusMsg == "בהורדה") {
+                                count += 1
+                            }
+                        }
+                        count
+                    }
+
+                    if (count < mapServiceManager.service.config.maxParallelDownloads) {
+                        this@MainActivity.onDiscovery()
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "יש כבר מספר הורדות מקסימלי",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
+
         //Matomo tracker
         // The `Tracker` instance from the previous step
         // Track a screen view
@@ -247,7 +248,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             .with(tracker)
 
         //Phone number
-        requestPhonePermission()
+//        requestPhonePermission()
+        
         // Monitor your app installs
         TrackHelper.track().download().with(tracker)
         //Example of an event for matomo, have to put differents per action
@@ -268,21 +270,24 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         scanQRButton = findViewById(R.id.scanQR)
         scanQRButton.setOnClickListener {
-            var sizeExcedeed = false
-            CoroutineScope(Dispatchers.IO).launch {
-                    sizeExcedeed = MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
-            }
-            if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExcedeed) {
-                barcodeLauncher.launch(ScanOptions())
-                TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
-            } else {
-                Toast.makeText(
-                    applicationContext,
-                    "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                    Toast.LENGTH_LONG
-                ).show()
+            CoroutineScope(Dispatchers.Main).launch {
+                val sizeExceeded = withContext(Dispatchers.IO) {
+                    MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
+                }
+
+                if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
+                    barcodeLauncher.launch(ScanOptions())
+                    TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
+
 
 
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
@@ -311,39 +316,39 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         super.onDestroy()
     }
     //Telephone Number of the Olar
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == phoneNumberPermissionCode) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                // Permissions granted
-                val telephonyManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED ||
-                    ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED) {
-
-                    val phoneNumber = telephonyManager.line1Number ?: "אין למכשיר מספר טלפון"
-                    Log.i("PhoneNumber", "phoneNumber: $phoneNumber")
-                }
-            } else {
-                // Permissions denied
-                Log.i("PhoneNumber", "Permissions denied")
-            }
-        }
-    }
-
-
-    private fun requestPhonePermission() {
-        requestPermissions(
-            arrayOf(
-                android.Manifest.permission.READ_PHONE_STATE,
-                android.Manifest.permission.READ_SMS,
-                android.Manifest.permission.READ_PHONE_NUMBERS
-            ), phoneNumberPermissionCode
-        )
-    }
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        if (requestCode == phoneNumberPermissionCode) {
+//            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+//                // Permissions granted
+//                val telephonyManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+//                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED ||
+//                    ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED) {
+//
+//                    val phoneNumber = telephonyManager.line1Number ?: "אין למכשיר מספר טלפון"
+//                    Log.i("PhoneNumber", "phoneNumber: $phoneNumber")
+//                }
+//            } else {
+//                // Permissions denied
+//                Log.i("PhoneNumber", "Permissions denied")
+//            }
+//        }
+//    }
+//
+//
+//    private fun requestPhonePermission() {
+//        requestPermissions(
+//            arrayOf(
+//                android.Manifest.permission.READ_PHONE_STATE,
+//                android.Manifest.permission.READ_SMS,
+//                android.Manifest.permission.READ_PHONE_NUMBERS
+//            ), phoneNumberPermissionCode
+//        )
+//    }
 
 
 
