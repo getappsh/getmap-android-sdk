@@ -59,7 +59,7 @@ class MapFileManager(private val appCtx: Context) {
         }
     }
 
-    fun getJsonString(dirPath: String?, jsonName: String?): JSONObject?{
+    internal fun getJsonString(dirPath: String?, jsonName: String?): JSONObject?{
         jsonName ?: return null
         val targetFile = File(dirPath, jsonName)
         if (targetFile.exists()){
@@ -74,17 +74,8 @@ class MapFileManager(private val appCtx: Context) {
     }
 
     fun getAvailableSpaceByPolicy(): Long {
-        val storageList = storageManager.storageVolumes
-        val flashRoot: File?
-        val sdRoot: File?
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-//                TODO use the actual path
-            flashRoot = Environment.getExternalStorageDirectory()
-            sdRoot = Environment.getExternalStorageDirectory()
-        } else {
-            flashRoot = storageList.getOrNull(0)?.directory?.absoluteFile
-            sdRoot = storageList.getOrNull(1)?.directory?.absoluteFile ?: flashRoot
-        }
+        val flashRoot: File? = getBaseStorageDir(true)
+        val sdRoot: File? = getBaseStorageDir(false) ?: flashRoot
 
         val flashSpace = flashRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0
         val sdSpace = sdRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0
@@ -97,7 +88,19 @@ class MapFileManager(private val appCtx: Context) {
         }
     }
 
-    fun getInventorySize(flash: Boolean): Long {
+    fun isInventorySizeExceedingPolicy(): Boolean {
+        return when(config.targetStoragePolicy){
+            MapConfigDto.TargetStoragePolicy.sDOnly ->
+                isInventorySizeExceeded(false)
+            MapConfigDto.TargetStoragePolicy.flashThenSD ->
+                isInventorySizeExceeded(true) || isInventorySizeExceeded(false)
+            MapConfigDto.TargetStoragePolicy.sDThenFlash ->
+                isInventorySizeExceeded(false) || isInventorySizeExceeded(true)
+            MapConfigDto.TargetStoragePolicy.flashOnly ->
+                isInventorySizeExceeded(true)
+        }
+    }
+    internal fun getInventorySize(flash: Boolean): Long {
         val baseDir = if (flash) flashTargetDir else sdTargetDir
         val files = this.mapRepo.getAll()
             .filter { it.path?.startsWith(baseDir.path) == true }
@@ -113,7 +116,7 @@ class MapFileManager(private val appCtx: Context) {
         return FileUtils.sumFileSize(files)
     }
 
-    fun getAndValidateStorageDirByPolicy(neededSpace: Long): File{
+    internal fun getAndValidateStorageDirByPolicy(neededSpace: Long): File{
         val flashDir = flashTargetDir
         val sdDir = sdTargetDir
 
@@ -123,12 +126,12 @@ class MapFileManager(private val appCtx: Context) {
         return when(config.targetStoragePolicy){
             MapConfigDto.TargetStoragePolicy.sDOnly -> {
                 validateSpace(sdDir, neededSpace)
-                validateInventorySpace(true)
+                validateInventorySize(true)
                 sdDir
             }
             MapConfigDto.TargetStoragePolicy.flashOnly -> {
                 validateSpace(flashDir, neededSpace)
-                validateInventorySpace(false)
+                validateInventorySize(false)
                 flashDir
             }
             MapConfigDto.TargetStoragePolicy.flashThenSD -> {
@@ -137,7 +140,7 @@ class MapFileManager(private val appCtx: Context) {
                  flashDir
              }else {
                  validateSpace(sdDir, neededSpace)
-                 validateInventorySpace(false)
+                 validateInventorySize(false)
                  Timber.i("Not enough space in Flash save to SD")
                  sdDir
              }
@@ -148,7 +151,7 @@ class MapFileManager(private val appCtx: Context) {
                     sdDir
                 }else {
                     validateSpace(flashDir, neededSpace)
-                    validateInventorySpace(true)
+                    validateInventorySize(true)
                     Timber.i("Not enough space in SD save to Flash")
                     flashDir
                 }
@@ -158,19 +161,25 @@ class MapFileManager(private val appCtx: Context) {
 
     private fun validateSpace(directory: File, neededSpace: Long) {
         if (FileUtils.getAvailableSpace(directory.path) <= neededSpace) {
+            Timber.e("Not enough space in ${directory.path}, needed: $neededSpace")
             throw IOException(appCtx.getString(R.string.error_not_enough_space))
         }
     }
 
-    private fun validateInventorySpace(flash: Boolean){
-        val size = if (flash) config.flashInventoryMaxSizeMB else config.sdInventoryMaxSizeMB
-        if (getInventorySize(flash) > (size * 1024 * 1024)){
+    private fun validateInventorySize(flash: Boolean){
+        if (isInventorySizeExceeded(flash)){
+            Timber.e("Inventory size exceeded. (flash: $flash)")
             throw IOException(appCtx.getString(R.string.error_max_inventory_size))
         }
     }
 
+    private fun isInventorySizeExceeded(flash: Boolean): Boolean {
+        val size = if (flash) config.flashInventoryMaxSizeMB else config.sdInventoryMaxSizeMB
+        return getInventorySize(flash) > (size * 1024 * 1024)
+    }
+
 //    TODO clean this
-    fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<File, File>{
+    internal fun moveFilesToTargetDir(pkgName: String, jsonName: String): Pair<File, File>{
         //        TODO fined better way to handle when file exist and have not been downloaded
         val pkgFileD = File(config.downloadPath, pkgName)
         val jsonFileD = File(config.downloadPath, jsonName)
@@ -229,7 +238,7 @@ class MapFileManager(private val appCtx: Context) {
 //    }
 
     @Throws(Exception::class)
-    fun deleteMap(mapPkg: MapPkg?){
+    internal fun deleteMap(mapPkg: MapPkg?){
         if (mapPkg == null ||
             mapPkg.state == MapDeliveryState.START ||
             mapPkg.state == MapDeliveryState.DOWNLOAD ||
@@ -245,7 +254,7 @@ class MapFileManager(private val appCtx: Context) {
 
         this.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
     }
-    fun deleteMapFiles(mapName: String?, jsonName: String?){
+    internal fun deleteMapFiles(mapName: String?, jsonName: String?){
         if (mapName != null){
             deleteFileFromAllLocations(mapName)
             val journalName = FileUtils.changeFileExtensionToJournal(mapName)
@@ -281,7 +290,7 @@ class MapFileManager(private val appCtx: Context) {
         }
     }
 
-    fun isFileDownloadDone(downloadId: Long?, downloadFile: File?, targetFile: File?): Boolean{
+    internal fun isFileDownloadDone(downloadId: Long?, downloadFile: File?, targetFile: File?): Boolean{
         return if (targetFile?.exists() == true){
             true
         }else if(downloadFile?.exists() == true){
@@ -290,7 +299,7 @@ class MapFileManager(private val appCtx: Context) {
             false
         }
     }
-    fun refreshMapState(mapPkg: MapPkg): MapPkg {
+    internal fun refreshMapState(mapPkg: MapPkg): MapPkg {
         val downloadMapFile = mapPkg.fileName?.let { File(config.downloadPath, it) }
         val downloadJsonFile = mapPkg.jsonName?.let { File(config.downloadPath, it) }
 
@@ -382,7 +391,7 @@ class MapFileManager(private val appCtx: Context) {
     }
 
 
-    fun synchronizeMapData(){
+    internal fun synchronizeMapData(){
         Timber.d("synchronizeMapData")
         syncDatabase ()
         syncStorage()
