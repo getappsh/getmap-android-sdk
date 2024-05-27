@@ -33,6 +33,17 @@ internal object FileUtils {
         return blockSize * availableBlocks // bytes available
     }
 
+    fun sumFileSize(filePaths: List<String>): Long {
+        var sum = 0L
+        for (filePath in filePaths) {
+            val file = File(filePath)
+            if (file.exists() && file.isFile) {
+                sum += file.length()
+            }
+        }
+        return sum
+    }
+
     fun moveFile(from: String?, to: String, fileName: String): String{
         val uniqueFileName = getUniqueFileName(to, fileName)
 
