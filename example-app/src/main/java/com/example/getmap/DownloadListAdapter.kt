@@ -195,7 +195,7 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
                 if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().dimension(1,downloadData.footprint).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
+                    TrackHelper.track().dimension(manager.service.config.matomoSiteId.toInt(),downloadData.footprint).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
@@ -218,7 +218,7 @@ class DownloadListAdapter(
                 val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
                 val name = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 if (downloadData.downloadDone!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().dimension(1,name).event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
+                    TrackHelper.track().dimension(manager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
 
                         .with(tracker)
                 }
