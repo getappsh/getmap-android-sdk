@@ -52,6 +52,8 @@ internal object ConfigClient {
         config.targetStoragePolicy = configDto.targetStoragePolicy ?: config.targetStoragePolicy
         config.flashStoragePath = configDto.flashStoragePath ?: config.flashStoragePath
         config.sdStoragePath = configDto.sdStoragePath ?: config.sdStoragePath
+        config.flashInventoryMaxSizeMB = configDto.flashInventoryMaxSizeMB?.toLong() ?:  config.flashInventoryMaxSizeMB
+        config.sdInventoryMaxSizeMB = configDto.sdInventoryMaxSizeMB?.toLong() ?: config.sdInventoryMaxSizeMB
 
         Timber.v("updateConfigFromDto - config: $config")
     }

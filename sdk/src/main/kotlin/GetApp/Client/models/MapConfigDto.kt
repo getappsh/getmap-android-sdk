@@ -39,6 +39,8 @@ import com.squareup.moshi.JsonClass
  * @param sdStoragePath 
  * @param flashStoragePath 
  * @param targetStoragePolicy 
+ * @param sdInventoryMaxSizeMB 
+ * @param flashInventoryMaxSizeMB 
  * @param lastCheckingMapUpdatesDate 
  * @param lastConfigUpdateDate 
  */
@@ -96,6 +98,12 @@ data class MapConfigDto (
 
     @Json(name = "targetStoragePolicy")
     val targetStoragePolicy: MapConfigDto.TargetStoragePolicy? = TargetStoragePolicy.sDOnly,
+
+    @Json(name = "sdInventoryMaxSizeMB")
+    val sdInventoryMaxSizeMB: java.math.BigDecimal? = null,
+
+    @Json(name = "flashInventoryMaxSizeMB")
+    val flashInventoryMaxSizeMB: java.math.BigDecimal? = null,
 
     @Json(name = "lastCheckingMapUpdatesDate")
     val lastCheckingMapUpdatesDate: java.time.OffsetDateTime? = null,
