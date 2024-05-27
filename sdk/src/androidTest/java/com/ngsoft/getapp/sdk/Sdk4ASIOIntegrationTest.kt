@@ -80,7 +80,7 @@ class Sdk4ASIOIntegrationTest {
 
 
         }
-        val id = service.downloadMap(props)
+        val id = service.downloadMap(props, {})
 
         assert(id != null)
         mapId = id!!;
