@@ -25,7 +25,6 @@ import GetApp.Client.models.ImportStatusResDto
 import GetApp.Client.models.InventoryUpdatesReqDto
 import GetApp.Client.models.InventoryUpdatesResDto
 import GetApp.Client.models.MapConfigDto
-import GetApp.Client.models.MapPutDto
 import GetApp.Client.models.OfferingMapResDto
 
 import com.squareup.moshi.Json
@@ -597,81 +596,6 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/map/offering",
-            query = localVariableQuery,
-            headers = localVariableHeaders,
-            requiresAuthentication = true,
-            body = localVariableBody
-        )
-    }
-
-    /**
-     * 
-     * This service message allow to update props for a map
-     * @param mapId 
-     * @param mapPutDto 
-     * @return MapPutDto
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun getMapControllerPutDeviceName(mapId: kotlin.String, mapPutDto: MapPutDto) : MapPutDto {
-        val localVarResponse = getMapControllerPutDeviceNameWithHttpInfo(mapId = mapId, mapPutDto = mapPutDto)
-
-        return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as MapPutDto
-            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
-            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
-            ResponseType.ClientError -> {
-                val localVarError = localVarResponse as ClientError<*>
-                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
-            }
-            ResponseType.ServerError -> {
-                val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
-            }
-        }
-    }
-
-    /**
-     * 
-     * This service message allow to update props for a map
-     * @param mapId 
-     * @param mapPutDto 
-     * @return ApiResponse<MapPutDto?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(IllegalStateException::class, IOException::class)
-    fun getMapControllerPutDeviceNameWithHttpInfo(mapId: kotlin.String, mapPutDto: MapPutDto) : ApiResponse<MapPutDto?> {
-        val localVariableConfig = getMapControllerPutDeviceNameRequestConfig(mapId = mapId, mapPutDto = mapPutDto)
-
-        return request<MapPutDto, MapPutDto>(
-            localVariableConfig
-        )
-    }
-
-    /**
-     * To obtain the request config of the operation getMapControllerPutDeviceName
-     *
-     * @param mapId 
-     * @param mapPutDto 
-     * @return RequestConfig
-     */
-    fun getMapControllerPutDeviceNameRequestConfig(mapId: kotlin.String, mapPutDto: MapPutDto) : RequestConfig<MapPutDto> {
-        val localVariableBody = mapPutDto
-        val localVariableQuery: MultiValueMap = mutableMapOf()
-        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders["Content-Type"] = "application/json"
-        localVariableHeaders["Accept"] = "application/json"
-
-        return RequestConfig(
-            method = RequestMethod.PUT,
-            path = "/api/map/{mapId}".replace("{"+"mapId"+"}", encodeURIComponent(mapId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

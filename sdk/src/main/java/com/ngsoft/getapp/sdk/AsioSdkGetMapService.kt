@@ -113,7 +113,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             this.mapFileManager.getAndValidateStorageDirByPolicy(requiredSpace)
             true
         }catch (io: IOException){
-            Timber.e("isEnoughSpace - Available Space is lower then then required: $requiredSpace", )
+            Timber.e("isEnoughSpace - error: ${io.message}")
             this.mapRepo.update(
                 id = id,
                 state = MapDeliveryState.ERROR,
