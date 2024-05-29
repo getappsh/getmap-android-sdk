@@ -35,8 +35,8 @@ class Sdk4ASIOIntegrationTest {
             val appContext = InstrumentationRegistry.getInstrumentation().targetContext
             val cfg = Configuration(
                 "http://getapp-dev.getapp.sh:3000",
-                "rony@example.com",
-                "rony123",
+                BuildConfig.USERNAME,
+                BuildConfig.PASSWORD,
                 16,
                 null
             )

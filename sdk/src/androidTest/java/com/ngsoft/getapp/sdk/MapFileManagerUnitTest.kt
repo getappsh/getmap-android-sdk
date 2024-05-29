@@ -297,8 +297,8 @@ class MapFileManagerUnitTest {
 //            println("Path: $path")
 //            val cfg = Configuration(
 //                "http://localhost:3333",
-//                "rony@example.com",
-//                "rony123",
+//                BuildConfig.USERNAME,
+//                BuildConfig.PASSWORD,
 //                path,
 //                16,
 //                null
