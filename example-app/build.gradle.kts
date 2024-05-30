@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
-import java.net.URI
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
@@ -9,6 +9,8 @@ plugins {
 android {
     namespace = "com.example.getmap"
     compileSdk = 33
+
+    android.buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.example.getmap"
@@ -21,6 +23,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "USERNAME", "\"${getPropertyFromFile("USERNAME")}\"")
+        buildConfigField("String", "PASSWORD", "\"${getPropertyFromFile("PASSWORD")}\"")
     }
 
     buildTypes {
@@ -32,19 +37,24 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         dataBinding = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/*"
@@ -88,6 +98,8 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.preference:preference:1.2.0")
+    implementation(project(":sdk"))
+    implementation(project(":sdk"))
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -95,4 +107,11 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+fun getPropertyFromFile(propertyName: String): String {
+    val props = Properties()
+    val file = rootProject.file("secrets.properties")
+    FileInputStream(file).use { props.load(it) }
+    return props.getProperty(propertyName)
 }

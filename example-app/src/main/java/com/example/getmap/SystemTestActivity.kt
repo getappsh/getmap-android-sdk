@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
+import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.SystemTest
 import kotlinx.coroutines.Dispatchers
@@ -36,8 +37,8 @@ class SystemTestActivity : AppCompatActivity() {
 
         val cfg = Configuration(
             "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
-            "rony@example.com",
-            "rony123",
+            BuildConfig.USERNAME,
+            BuildConfig.PASSWORD,
             16,
             null
         )

@@ -212,7 +212,10 @@ class MapActivity : AppCompatActivity() {
                 if (g.statusMsg == "הסתיים") {
                     endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 }
+                if (g.statusMsg == "בהורדה" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
+                    endName = g.statusMsg!!
 
+                }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                     val polygon = createDownloadedPolygon(g, "yellow", endName).first
                     renderableLayer.addRenderable(polygon)
