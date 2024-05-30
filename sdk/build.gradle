@@ -20,7 +20,9 @@ android {
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        buildConfigField "String", "ENCRYPTION_KEY", "\""+getEncryptionKey()+"\""
+        buildConfigField "String", "ENCRYPTION_KEY", "\""+getPropertyFromFile("ENCRYPTION_KEY")+"\""
+        buildConfigField "String", "USERNAME", "\""+getPropertyFromFile("USERNAME")+"\""
+        buildConfigField "String", "PASSWORD", "\""+getPropertyFromFile("PASSWORD")+"\""
 
         ksp {
             arg('room.schemaLocation', "$projectDir/schemas")
@@ -63,10 +65,10 @@ android {
     }
 }
 
-def getEncryptionKey(){
+def getPropertyFromFile(String propertyName) {
     def Properties props = new Properties()
     props.load(new FileInputStream(new File('secrets.properties')))
-    return props['ENCRYPTION_KEY']
+    return props[propertyName]
 }
 dependencies {
 

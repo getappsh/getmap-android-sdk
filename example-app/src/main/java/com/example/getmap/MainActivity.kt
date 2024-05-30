@@ -117,8 +117,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             val cfg = Configuration(
                 url,
 //            "http://getapp-test.getapp.sh:3000",
-                "rony@example.com",
-                "rony123",
+                BuildConfig.USERNAME,
+                BuildConfig.PASSWORD,
                 16,
                 null
             )

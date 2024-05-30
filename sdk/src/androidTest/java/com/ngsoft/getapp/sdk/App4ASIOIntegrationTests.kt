@@ -39,8 +39,8 @@ class App4ASIOIntegrationTests {
             val appContext = InstrumentationRegistry.getInstrumentation().targetContext
             val cfg = Configuration(
                 "http://getapp-dev.getapp.sh:3000",
-                "rony@example.com",
-                "rony123",
+                BuildConfig.USERNAME,
+                BuildConfig.PASSWORD,
                 //currently downloads file to a path within the public external storage directory
                 16,
                 null

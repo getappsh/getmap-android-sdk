@@ -217,8 +217,8 @@ class SettingsActivity : AppCompatActivity() {
 //        val imei = telephonyManager.imei
         val cfg = Configuration(
             serviceParams[0].value,
-            "rony@example.com",
-            "rony123",
+            BuildConfig.USERNAME,
+            BuildConfig.PASSWORD,
             16,
 //            imei //Talk with Ronny and with asio
             null
