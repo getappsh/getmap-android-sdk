@@ -2,12 +2,10 @@ package com.ngsoft.getapp.sdk.delivery
 
 import android.app.Application
 import android.content.Context
-import android.os.Environment
 import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.ngsoft.getapp.sdk.MapFileManager
-import com.ngsoft.getapp.sdk.PackageDownloader
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.ServiceConfig
@@ -25,6 +23,7 @@ import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import com.tonyodev.fetch2.Fetch
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -32,12 +31,11 @@ internal class DeliveryManager private constructor(appCtx: Context){
 
     private var config = ServiceConfig.getInstance(appCtx)
     private var mapRepo = MapRepo(appCtx)
-    private var downloader = PackageDownloader(appCtx, config.downloadPath)
     private var mapFileManager =  MapFileManager(appCtx)
     private var pref = Pref.getInstance(appCtx)
     private var client = GetAppClient(ConnectionConfig(pref.baseUrl, pref.username, pref.password))
     private val app = appCtx as Application
-    private val dlvContext = DeliveryContext(config=config, mapRepo=mapRepo, downloader=downloader, mapFileManager=mapFileManager, pref=pref, client=client, app=app)
+    private val dlvContext = DeliveryContext(config=config, mapRepo=mapRepo, mapFileManager=mapFileManager, pref=pref, client=client, app=app)
 
     fun executeDeliveryFlow(id: String){
         Timber.d("executeDeliveryFlow - for id: $id")
@@ -50,7 +48,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 DeliveryFlowState.IMPORT_CREATE -> ImportStatusFlow(dlvContext).execute(id)
                 DeliveryFlowState.IMPORT_STATUS -> ImportDeliveryFlow(dlvContext).execute(id)
                 DeliveryFlowState.IMPORT_DELIVERY -> DownloadImportFlow(dlvContext).execute(id)
-                DeliveryFlowState.DOWNLOAD ->  WatchDownloadImportFlow(dlvContext).execute(id)
+                DeliveryFlowState.DOWNLOAD -> WatchDownloadImportFlow(dlvContext).execute(id)
                 DeliveryFlowState.DOWNLOAD_DONE -> MoveImportFilesFlow(dlvContext).execute(id)
                 DeliveryFlowState.MOVE_FILES -> ValidateImportFlow(dlvContext).execute(id)
                 DeliveryFlowState.DONE -> false
@@ -117,6 +115,13 @@ internal class DeliveryManager private constructor(appCtx: Context){
         Thread{
             try{
                 this.mapRepo.setCancelDownload(id)
+                this.mapRepo.getById(id)?.let {mapPkg ->
+                    if (mapPkg.flowState == DeliveryFlowState.DOWNLOAD || mapPkg.flowState == DeliveryFlowState.IMPORT_DELIVERY){
+                        val fetch = Fetch.Impl.getDefaultInstance()
+                        val ids = listOfNotNull(mapPkg.MDID?.toInt(), mapPkg.JDID?.toInt())
+                        fetch.pause(ids)
+                    }
+                }
 //                Force cancel
                 TimeUnit.SECONDS.sleep(7)
                 if (this.mapRepo.isDownloadCanceled(id)){

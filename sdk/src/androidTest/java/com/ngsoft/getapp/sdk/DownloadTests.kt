@@ -6,6 +6,7 @@ import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ngsoft.getapp.sdk.old.DownloadProgress
+import com.ngsoft.getapp.sdk.old.PackageDownloader
 import com.ngsoft.getapp.sdk.old.PackagesDownloader
 import com.ngsoft.getappclient.VpnExceptionInterceptor
 import okhttp3.OkHttpClient

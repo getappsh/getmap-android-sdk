@@ -9,4 +9,7 @@ data class DeliveryStatus (
     val start: OffsetDateTime?,
     val stop: OffsetDateTime?,
     val done: OffsetDateTime?,
+    val downloaded: Long? = null,
+    val downloadedBytesPerSecond: Long? = null,
+    val etaInMilliSeconds: Long? = null,
     )
