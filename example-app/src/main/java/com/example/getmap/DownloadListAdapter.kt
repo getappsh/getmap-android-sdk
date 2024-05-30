@@ -89,6 +89,7 @@ class DownloadListAdapter(
             listener.onSignalDownload()
         }
     }
+    var region = ""
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textFileName: TextView = itemView.findViewById(R.id.textFileName)
@@ -161,12 +162,12 @@ class DownloadListAdapter(
 
             val endName = downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
             val jsonText = Gson().fromJson(jsonFile.toString(), MapDataMetaData::class.java)
-            val region = jsonText.region[0]
+            region = jsonText.region[0]
             holder.size.text = occupiedSpace(geo)
             holder.product.text =
                 "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
             deliveryDate(manager, downloadData, holder)
-            holder.textFileName.text = "${region} - ${endName}"
+            holder.textFileName.text = "${region} ${endName}"
             val startDate = jsonText.sourceDateStart.substringBefore('T')
             val endDate = jsonText.sourceDateEnd.substringBefore('T')
             var startDateFormatted = formatDate(startDate)
@@ -236,8 +237,7 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime =
                     localDateTime.minus(Duration.ofSeconds(1))
-                val name =
-                    downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 if (downloadData.downloadDone!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
@@ -249,6 +249,7 @@ class DownloadListAdapter(
                 }
 
                 holder.loadingColor.setColor(loadEmpty)
+                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
@@ -276,6 +277,8 @@ class DownloadListAdapter(
                 holder.sizeLayout.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.loadingColor.setColor(errorColor)
+                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
+                holder.progressBar.progressDrawable = holder.percentageBarColorView
             }
 
             CANCEL -> {
@@ -283,6 +286,8 @@ class DownloadListAdapter(
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textStatus.text = "בוטל - הורדה מחדש תתחיל מ-0%"
                 holder.loadingColor.setColor(canceledColor)
+                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
+                holder.progressBar.progressDrawable = holder.percentageBarColorView
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
@@ -298,6 +303,8 @@ class DownloadListAdapter(
             PAUSE -> {
                 holder.textFileName.text = ""
                 holder.loadingColor.setColor(canceledColor)
+                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
+                holder.progressBar.progressDrawable = holder.percentageBarColorView
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
@@ -312,6 +319,8 @@ class DownloadListAdapter(
                 holder.percentage.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
                 holder.loadingColor.setColor(loadingColor)
+                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
+                holder.progressBar.progressDrawable = holder.percentageBarColorView
                 holder.btnQRCode.visibility = View.GONE
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
