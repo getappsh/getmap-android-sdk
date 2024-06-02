@@ -1,5 +1,7 @@
 import java.net.URI
 
+
+
 pluginManagement {
     repositories {
         google()
@@ -21,5 +23,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "getapp-sdk"
+include(":system-test")
 include(":sdk")
 include(":example-app")

@@ -7,6 +7,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import java.io.Serializable
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -29,7 +30,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         val testId: Int,
         var success: Boolean? = null,
         var message: String? = null
-    )
+    ): Serializable
 
     private var service: AsioSdkGetMapService
     private var mapRepo: MapRepo
