@@ -55,6 +55,7 @@ import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
+import com.example.getmap.airwatch.AirWatchSdkManager
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -69,7 +70,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var isReplacingActivity = false
     private val phoneNumberPermissionCode = 100
     private var phoneNumber = ""
-
+    private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
@@ -111,6 +112,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         availableSpace.text = getAvailableSpace()
 
         if (!mapServiceManager.isInit) {
+            sdkAirWatchSdkManager.startRetrying()
+            var imeiEven: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber","imei").toString()
+            Log.i("IEMEI", imeiEven.toString())
+            if (imeiEven == "imei")
+                imeiEven = null
 
             var url = Pref.getInstance(this).baseUrl
             if (url.isEmpty()) url =
@@ -121,7 +127,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 BuildConfig.USERNAME,
                 BuildConfig.PASSWORD,
                 16,
-                null
+                imeiEven
             )
 
             try {
@@ -192,7 +198,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         })
         val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
 //        getTracker()
-
         swipeRecycler.setOnRefreshListener {
             TrackHelper.track().event("מיפוי ענן", "ניהול בולים").name("רענון")
                 .with(tracker)
@@ -247,7 +252,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         // Track a screen view
         TrackHelper.track().screen("מסך ראשי")
             .with(tracker)
-
         //Phone number
 //        requestPhonePermission()
         
@@ -330,7 +334,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED ||
 //                    ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED) {
 //
-//                    val phoneNumber = telephonyManager.line1Number ?: "אין למכשיר מספר טלפון"
+//                    val phoneNumber = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)  ?: "אין למכשיר מספר טלפון"
 //                    Log.i("PhoneNumber", "phoneNumber: $phoneNumber")
 //                }
 //            } else {

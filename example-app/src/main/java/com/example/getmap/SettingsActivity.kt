@@ -234,14 +234,14 @@ class SettingsActivity : AppCompatActivity() {
 
     // Block that allow to hide the keyboard with touch on the screen
     private fun hideKeyboard() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val inputMethodManager =
-            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         if (!inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)) {
             val intent = Intent(this@SettingsActivity, MainActivity::class.java)
             startActivity(intent)

@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
+import com.android.build.gradle.internal.tasks.getNativeLibsFiles
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -26,6 +28,10 @@ android {
 
         buildConfigField("String", "USERNAME", "\"${getPropertyFromFile("USERNAME")}\"")
         buildConfigField("String", "PASSWORD", "\"${getPropertyFromFile("PASSWORD")}\"")
+        buildConfigField("String", "AW_USER_NAME", "\"${getPropertyFromFile("AW_USER_NAME")}\"")
+        buildConfigField("String", "AW_PASSWORD", "\"${getPropertyFromFile("AW_PASSWORD")}\"")
+        buildConfigField("String", "AW_API", "\"${getPropertyFromFile("AW_API")}\"")
+        buildConfigField("String", "AIRWATCH_TENANT", "\"${getPropertyFromFile("AIRWATCH_TENANT")}\"")
     }
 
     buildTypes {
@@ -78,6 +84,10 @@ dependencies {
     implementation("com.squareup.moshi:moshi-adapters:1.13.0")
     implementation("androidx.room:room-runtime:2.5.2")
     implementation("com.google.code.gson:gson:2.8.9")
+    implementation(files("libs/AirWatchSDK-23.07.aar"))
+    implementation(files("libs/FeatureModule-android-2.0.2.aar"))
+    implementation(files("libs/sdk-fm-extension-android-2.0.2.aar"))
+    implementation(files("libs/ws1-android-logger-23.07.aar"))
 
     implementation( "com.github.matomo-org:matomo-sdk-android:4.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
