@@ -58,7 +58,7 @@ import kotlin.math.sqrt
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
     lateinit var wwd: WorldWindow
-    private val loadedPolys: ArrayList<kotlin.collections.ArrayList<Position>> = ArrayList()
+    private val loadedPolys: ArrayList<ArrayList<Position>> = ArrayList()
     private val allPolygon = mutableListOf<PolyObject>()
 
     private val TAG = MainActivity::class.qualifiedName
@@ -96,7 +96,7 @@ class MapActivity : AppCompatActivity() {
             showNorth()
         }
 
-        var overlayView = findViewById<FrameLayout>(R.id.overlayView)
+        val overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
         val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
@@ -395,6 +395,7 @@ class MapActivity : AppCompatActivity() {
                 }
             }
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
+            var checkBetweenPolygon = true
             allPolygon.sortByDescending(PolyObject::date)
             var found = false
             val boxArea = calculatePolygonArea(boxCoordinates)
@@ -407,7 +408,26 @@ class MapActivity : AppCompatActivity() {
                     date.text = "צולם : ${polygon.end} - ${polygon.start}"
                     found = true
                     downloadAble = true
+                    checkBetweenPolygon = false
                     break
+                }
+            }
+            if (checkBetweenPolygon) {
+                var allPolygonArea = 0.0
+                allPolygon.forEach { polygon ->
+                    allPolygonArea += polygon.intersection
+                }
+                for (polygon in allPolygon) {
+                    if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
+                        val km = String.format("%.2f", abs(polygon.intersection * 10000))
+                        spaceMb = calculateMB(km, polygon.resolution)
+                        showKm.text = "שטח משוער :${km} קמ\"ר"
+                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                        date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                        found = true
+                        downloadAble = true
+                        break
+                    }
                 }
             }
             if (!found && allPolygon.isNotEmpty()) {
@@ -551,7 +571,7 @@ class MapActivity : AppCompatActivity() {
             area += (vi.latitude * vj.longitude - vj.latitude * vi.longitude)
         }
 
-        area = Math.abs(area) / 2.0
+        area = abs(area) / 2.0
         return area
     }
 
