@@ -5,6 +5,9 @@ import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +18,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
@@ -50,9 +54,8 @@ class DownloadListAdapter(
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
 
-    var availableUpdate: Boolean = false
     var tracker: Tracker? = null
-
+    var notifValidation: Toast? = null
 
     //Create and define the signal listener
     interface SignalListener {
@@ -314,7 +317,11 @@ class DownloadListAdapter(
                     )?.constantState
                 ) == true
             ) {
+                if (isInternetAvailable(this.context)){
                 onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!, pathAvailable)
+                }else{
+                    NotifyValidity(notifValidation,this.context)
+                }
             } else {
                 onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!, pathAvailable)
             }
@@ -339,6 +346,18 @@ class DownloadListAdapter(
 
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
+        }
+    }
+
+    private fun isInternetAvailable(context: Context):Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return when {
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            else -> false
         }
     }
 
@@ -382,6 +401,12 @@ class DownloadListAdapter(
         } else {
             String.format("נפח: %.2f mb", megabytesAvailable)
         }
+    }
+    private fun NotifyValidity(notification: Toast?, context: Context) {
+        notifValidation = notification
+        notifValidation?.cancel()
+        notifValidation = Toast.makeText(context,"ודא שה-VPN פועל",Toast.LENGTH_LONG)
+        notifValidation?.show()
     }
 
     fun formatDate(inputDate: String): String {
