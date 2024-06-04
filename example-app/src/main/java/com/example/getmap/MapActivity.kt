@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.google.gson.Gson
@@ -412,21 +413,22 @@ class MapActivity : AppCompatActivity() {
                     break
                 }
             }
-            if (checkBetweenPolygon) {
-                var allPolygonArea = 0.0
-                allPolygon.forEach { polygon ->
-                    allPolygonArea += polygon.intersection
-                }
-                for (polygon in allPolygon) {
-                    if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
-                        val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                        spaceMb = calculateMB(km, polygon.resolution)
-                        showKm.text = "שטח משוער :${km} קמ\"ר"
-                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                        date.text = "צולם : ${polygon.end} - ${polygon.start}"
-                        found = true
-                        downloadAble = true
-                        break
+            if (checkBetweenPolygon && allPolygon.isNotEmpty()) {
+                val unionGeometry = unionIntersections(allPolygon)
+                val allPolygonArea = GeometryEngine.area(unionGeometry)
+
+                if (allPolygon.size > 1) {
+                    for (polygon in allPolygon) {
+                        if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
+                            val km = String.format("%.2f", abs(polygon.intersection * 10000))
+                            spaceMb = calculateMB(km, polygon.resolution)
+                            showKm.text = "שטח משוער :${km} קמ\"ר"
+                            showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                            date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            found = true
+                            downloadAble = true
+                            break
+                        }
                     }
                 }
             }
@@ -476,6 +478,14 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    private fun unionIntersections(polygons: MutableList<PolyObject>): Geometry {
+        var unionPolygon = polygons[0].geometry
+        for (i in 1 until polygons.size) {
+            unionPolygon = GeometryEngine.union(unionPolygon, polygons[i].geometry)
+        }
+        return unionPolygon
+    }
+
     private fun calculateMB(formattedNum : String,  resolution: BigDecimal): Int {
         var mb = 0
         mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
@@ -505,7 +515,7 @@ class MapActivity : AppCompatActivity() {
             val secondDate = sdf.format(secondOffsetDateTime)
 
             if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg)
+                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg, intersection)
                 allPolygon.add(polyObject)
             }
         }
