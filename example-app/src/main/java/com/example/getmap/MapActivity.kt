@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.google.gson.Gson
@@ -58,7 +59,7 @@ import kotlin.math.sqrt
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
     lateinit var wwd: WorldWindow
-    private val loadedPolys: ArrayList<kotlin.collections.ArrayList<Position>> = ArrayList()
+    private val loadedPolys: ArrayList<ArrayList<Position>> = ArrayList()
     private val allPolygon = mutableListOf<PolyObject>()
 
     private val TAG = MainActivity::class.qualifiedName
@@ -96,7 +97,7 @@ class MapActivity : AppCompatActivity() {
             showNorth()
         }
 
-        var overlayView = findViewById<FrameLayout>(R.id.overlayView)
+        val overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
         val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
@@ -395,6 +396,7 @@ class MapActivity : AppCompatActivity() {
                 }
             }
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
+            var checkBetweenPolygon = true
             allPolygon.sortByDescending(PolyObject::date)
             var found = false
             val boxArea = calculatePolygonArea(boxCoordinates)
@@ -407,7 +409,27 @@ class MapActivity : AppCompatActivity() {
                     date.text = "צולם : ${polygon.end} - ${polygon.start}"
                     found = true
                     downloadAble = true
+                    checkBetweenPolygon = false
                     break
+                }
+            }
+            if (checkBetweenPolygon && allPolygon.isNotEmpty()) {
+                val unionGeometry = unionIntersections(allPolygon)
+                val allPolygonArea = GeometryEngine.area(unionGeometry)
+
+                if (allPolygon.size > 1) {
+                    for (polygon in allPolygon) {
+                        if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
+                            val km = String.format("%.2f", abs(polygon.intersection * 10000))
+                            spaceMb = calculateMB(km, polygon.resolution)
+                            showKm.text = "שטח משוער :${km} קמ\"ר"
+                            showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                            date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            found = true
+                            downloadAble = true
+                            break
+                        }
+                    }
                 }
             }
             if (!found && allPolygon.isNotEmpty()) {
@@ -456,6 +478,14 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    private fun unionIntersections(polygons: MutableList<PolyObject>): Geometry {
+        var unionPolygon = polygons[0].geometry
+        for (i in 1 until polygons.size) {
+            unionPolygon = GeometryEngine.union(unionPolygon, polygons[i].geometry)
+        }
+        return unionPolygon
+    }
+
     private fun calculateMB(formattedNum : String,  resolution: BigDecimal): Int {
         var mb = 0
         mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
@@ -485,7 +515,7 @@ class MapActivity : AppCompatActivity() {
             val secondDate = sdf.format(secondOffsetDateTime)
 
             if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg)
+                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg, intersection)
                 allPolygon.add(polyObject)
             }
         }
@@ -551,7 +581,7 @@ class MapActivity : AppCompatActivity() {
             area += (vi.latitude * vj.longitude - vj.latitude * vi.longitude)
         }
 
-        area = Math.abs(area) / 2.0
+        area = abs(area) / 2.0
         return area
     }
 
