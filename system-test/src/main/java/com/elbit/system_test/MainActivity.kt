@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -69,9 +71,6 @@ class MainActivity : AppCompatActivity() {
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
 
 
-        TestForegroundService.start(this)
-
-
         localReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val bundle = intent?.getBundleExtra("bundle")
@@ -120,5 +119,17 @@ class MainActivity : AppCompatActivity() {
 
         // Update the TextView with the test name
         testNameTextView.text = testResult?.name ?: "Loading..."
+    }
+
+
+    fun stopTest(view: View){
+        TestForegroundService.stop(this)
+        Toast.makeText(this, "Stopping Test, it may take a few seconds...", Toast.LENGTH_SHORT).show()
+    }
+    fun startTest(view: View) {
+        if (!TestForegroundService.start(this)){
+            Toast.makeText(this, "Test already running", Toast.LENGTH_SHORT).show()
+        }
+
     }
 }

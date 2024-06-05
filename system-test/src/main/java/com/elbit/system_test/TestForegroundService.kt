@@ -17,12 +17,29 @@ import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 
 class TestForegroundService: Service() {
 
+    private var runService = true;
+
     companion object {
-        fun start(context: Context){
+
+        private const val START = "START"
+        private const val STOP = "STOP"
+
+        fun start(context: Context): Boolean{
             if (!isServiceRunning(context, TestForegroundService::class.java)) {
                 val serviceIntent = Intent(context, TestForegroundService::class.java)
+                serviceIntent.action = START
                 context.startForegroundService(serviceIntent)
+                return true
             }
+            return false
+        }
+
+        fun stop(context: Context){
+            Log.d("TestForegroundService", "stop")
+            val serviceIntent = Intent(context, TestForegroundService::class.java)
+            serviceIntent.action = STOP
+            context.startForegroundService(serviceIntent)
+
         }
 
         fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
@@ -45,22 +62,46 @@ class TestForegroundService: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("TestForegroundService", "onStartCommand")
 
+        when(intent?.action){
+            START -> {
+                runService = true
+                Thread{
+                    var waitSeconds = 0
+                    while (true) {
+                        if (waitSeconds == 0){
+                            runJob()
+                        }
 
-        Thread{
-            while (true) {
-                runJob()
-                Thread.sleep(1000 * 60 * 60)
+                        Thread.sleep(1000)
+                        waitSeconds++
+                        if (waitSeconds == 60 * 60){
+                            waitSeconds = 0
+                        }
+
+
+                        if (!runService){
+                            stopService()
+                            break
+                        }
+                    }
+                }.start()
             }
-        }.start()
+            STOP -> {
+                runService = false
+            }
+        }
+
 
         return START_STICKY
     }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     private fun stopService(){
         Log.d("TestForegroundService", "stopService")
+        unregisterReceiver(SystemTestResReceiver)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
 
@@ -72,11 +113,6 @@ class TestForegroundService: Service() {
         registerReceiver(SystemTestResReceiver, IntentFilter(SystemTestReceiver.ACTION_SYSTEM_TEST_RESULTS))
         val runSystemTestIntent = Intent(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
         sendBroadcast(runSystemTestIntent)
-
-        Thread.sleep(1000 * 60)
-        Log.d("TestForegroundService", "jobFinished")
-        unregisterReceiver(SystemTestResReceiver)
-//        stopService()
     }
 
     private fun createNotification(): Notification {

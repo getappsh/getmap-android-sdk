@@ -22,7 +22,6 @@ object SystemTestResReceiver: BroadcastReceiver() {
             Log.d("SystemTestResReceiver", "key: $key, value: $value")
         }
 
-
         val localIntent = Intent("ACTION_UPDATE_UI")
 
         localIntent.putExtra("bundle", bundle)
