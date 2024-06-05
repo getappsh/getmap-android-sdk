@@ -34,7 +34,7 @@ object SystemTestReceiver: BroadcastReceiver() {
             )
 
             GlobalScope.launch(Dispatchers.IO) {
-                val systemTest = SystemTest(context, cfg)
+                val systemTest = SystemTest.getInstance(context, cfg)
 
                 systemTest.run { testReport ->
                     // Broadcast the test results to the second app

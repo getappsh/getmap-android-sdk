@@ -1,14 +1,22 @@
 package com.ngsoft.getappclient
 
 import GetApp.Client.apis.DeliveryApi
+import GetApp.Client.apis.DeviceBugReportApi
 import GetApp.Client.apis.DeviceDiscoveryApi
 import GetApp.Client.apis.GetMapApi
-import timber.log.Timber
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
+import timber.log.Timber
+import java.io.File
+import java.io.IOException
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
+
 
 //TODO make it singleton
 internal class GetAppClient(config: ConnectionConfig) {
@@ -18,6 +26,7 @@ internal class GetAppClient(config: ConnectionConfig) {
     val deviceApi: DeviceDiscoveryApi
     val getMapApi: GetMapApi
     val deliveryApi: DeliveryApi
+    val bugReportApi: DeviceBugReportApi
 
     init {
         if (config.baseUrl.isEmpty())
@@ -46,6 +55,7 @@ internal class GetAppClient(config: ConnectionConfig) {
         deviceApi = DeviceDiscoveryApi(config.baseUrl, client)
         getMapApi = GetMapApi(config.baseUrl, client)
         deliveryApi = DeliveryApi(config.baseUrl, client)
+        bugReportApi = DeviceBugReportApi(config.baseUrl, client)
 
     }
 
@@ -57,5 +67,30 @@ internal class GetAppClient(config: ConnectionConfig) {
             property?.setter?.call(companionInstance, token)
         }
     }
+
+    @Throws(IOException::class)
+    fun uploadFile(url: String, filePath: String) {
+        val client = OkHttpClient()
+        val file = File(filePath)
+
+        val requestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("file", file.name,
+                file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
+            )
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .put(requestBody)
+            .build()
+
+        val response = client.newCall(request).execute()
+        if (!response.isSuccessful) {
+            throw IOException("Failed to upload file: ${response.code}")
+        }
+    }
+
+
 
 }
