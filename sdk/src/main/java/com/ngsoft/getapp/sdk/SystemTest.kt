@@ -106,7 +106,7 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
         // TODO: Get the real sdk version name
         val res = client.bugReportApi.bugReportControllerReportNewBug(NewBugReportDto(
             deviceId = pref.deviceId,
-            agentVersion = "0.8.2",
+            agentVersion = BuildConfig.VERSION_NAME,
             description = description
         ))
         Timber.d("Report Id: ${res.bugId}")
