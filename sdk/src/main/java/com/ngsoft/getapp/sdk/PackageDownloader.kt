@@ -37,7 +37,7 @@ internal class PackageDownloader(private val context: Context, private val downl
         override fun onReceive(contxt: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
             if(id != -1L) {
-                Timber.d("Download with ID = $id finished!")
+//                Timber.d("Download with ID = $id finished!")
                 downloadCompletedHandler?.invoke(id!!)
             }
         }

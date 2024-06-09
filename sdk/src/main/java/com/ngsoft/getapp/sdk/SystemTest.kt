@@ -90,7 +90,11 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
             testReport.forEach {
                 sb.append("|${it.value?.name}-> success: ${it.value?.success} ")
                 }
-            sendLogs(sb.toString())
+            try {
+                sendLogs(sb.toString())
+            }catch (e: Exception){
+                Timber.e(e)
+            }
         }
 
         tree?.clear()
@@ -107,11 +111,8 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
         ))
         Timber.d("Report Id: ${res.bugId}")
         val filePath = tree?.getFileName(0) ?: return
-        try {
-            client.uploadFile(res.uploadLogsUrl, filePath)
-        }catch (e: Exception){
-            Timber.e(e)
-        }
+        client.uploadFile(res.uploadLogsUrl, filePath)
+
 
 
     }
