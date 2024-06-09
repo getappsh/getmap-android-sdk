@@ -19,9 +19,9 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
-import GetApp.Client.models.RefreshTokenDto
-import GetApp.Client.models.TokensDto
-import GetApp.Client.models.UserLoginDto
+import GetApp.Client.models.BugReportDto
+import GetApp.Client.models.NewBugReportDto
+import GetApp.Client.models.NewBugReportResDto
 
 import com.squareup.moshi.Json
 
@@ -39,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,10 +48,10 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * Get Refresh Token
-     * This service message allows a user to get a refresh token.
-     * @param refreshTokenDto 
-     * @return TokensDto
+     * Get Bug Report
+     * This endpoint allows a user to fetch the details of a bug report using its unique identifier.
+     * @param bugId 
+     * @return BugReportDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -60,11 +60,11 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun loginControllerGetRefreshToken(refreshTokenDto: RefreshTokenDto) : TokensDto {
-        val localVarResponse = loginControllerGetRefreshTokenWithHttpInfo(refreshTokenDto = refreshTokenDto)
+    fun bugReportControllerGetBugReport(bugId: kotlin.String) : BugReportDto {
+        val localVarResponse = bugReportControllerGetBugReportWithHttpInfo(bugId = bugId)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as TokensDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as BugReportDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -79,51 +79,50 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * Get Refresh Token
-     * This service message allows a user to get a refresh token.
-     * @param refreshTokenDto 
-     * @return ApiResponse<TokensDto?>
+     * Get Bug Report
+     * This endpoint allows a user to fetch the details of a bug report using its unique identifier.
+     * @param bugId 
+     * @return ApiResponse<BugReportDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun loginControllerGetRefreshTokenWithHttpInfo(refreshTokenDto: RefreshTokenDto) : ApiResponse<TokensDto?> {
-        val localVariableConfig = loginControllerGetRefreshTokenRequestConfig(refreshTokenDto = refreshTokenDto)
+    fun bugReportControllerGetBugReportWithHttpInfo(bugId: kotlin.String) : ApiResponse<BugReportDto?> {
+        val localVariableConfig = bugReportControllerGetBugReportRequestConfig(bugId = bugId)
 
-        return request<RefreshTokenDto, TokensDto>(
+        return request<Unit, BugReportDto>(
             localVariableConfig
         )
     }
 
     /**
-     * To obtain the request config of the operation loginControllerGetRefreshToken
+     * To obtain the request config of the operation bugReportControllerGetBugReport
      *
-     * @param refreshTokenDto 
+     * @param bugId 
      * @return RequestConfig
      */
-    fun loginControllerGetRefreshTokenRequestConfig(refreshTokenDto: RefreshTokenDto) : RequestConfig<RefreshTokenDto> {
-        val localVariableBody = refreshTokenDto
+    fun bugReportControllerGetBugReportRequestConfig(bugId: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders["Content-Type"] = "application/json"
         localVariableHeaders["Accept"] = "application/json"
 
         return RequestConfig(
-            method = RequestMethod.POST,
-            path = "/api/login/refresh",
+            method = RequestMethod.GET,
+            path = "/api/bug-report/{bugId}".replace("{"+"bugId"+"}", encodeURIComponent(bugId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
-            requiresAuthentication = false,
+            requiresAuthentication = true,
             body = localVariableBody
         )
     }
 
     /**
-     * User Login
-     * This service message allows a user to log in and receive a token.
-     * @param userLoginDto 
-     * @return TokensDto
+     * Report New Bug
+     * This endpoint allows a user to report a new bug associated with a specific device.
+     * @param newBugReportDto 
+     * @return NewBugReportResDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -132,11 +131,11 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun loginControllerGetToken(userLoginDto: UserLoginDto) : TokensDto {
-        val localVarResponse = loginControllerGetTokenWithHttpInfo(userLoginDto = userLoginDto)
+    fun bugReportControllerReportNewBug(newBugReportDto: NewBugReportDto) : NewBugReportResDto {
+        val localVarResponse = bugReportControllerReportNewBugWithHttpInfo(newBugReportDto = newBugReportDto)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as TokensDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NewBugReportResDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -151,31 +150,31 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * User Login
-     * This service message allows a user to log in and receive a token.
-     * @param userLoginDto 
-     * @return ApiResponse<TokensDto?>
+     * Report New Bug
+     * This endpoint allows a user to report a new bug associated with a specific device.
+     * @param newBugReportDto 
+     * @return ApiResponse<NewBugReportResDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun loginControllerGetTokenWithHttpInfo(userLoginDto: UserLoginDto) : ApiResponse<TokensDto?> {
-        val localVariableConfig = loginControllerGetTokenRequestConfig(userLoginDto = userLoginDto)
+    fun bugReportControllerReportNewBugWithHttpInfo(newBugReportDto: NewBugReportDto) : ApiResponse<NewBugReportResDto?> {
+        val localVariableConfig = bugReportControllerReportNewBugRequestConfig(newBugReportDto = newBugReportDto)
 
-        return request<UserLoginDto, TokensDto>(
+        return request<NewBugReportDto, NewBugReportResDto>(
             localVariableConfig
         )
     }
 
     /**
-     * To obtain the request config of the operation loginControllerGetToken
+     * To obtain the request config of the operation bugReportControllerReportNewBug
      *
-     * @param userLoginDto 
+     * @param newBugReportDto 
      * @return RequestConfig
      */
-    fun loginControllerGetTokenRequestConfig(userLoginDto: UserLoginDto) : RequestConfig<UserLoginDto> {
-        val localVariableBody = userLoginDto
+    fun bugReportControllerReportNewBugRequestConfig(newBugReportDto: NewBugReportDto) : RequestConfig<NewBugReportDto> {
+        val localVariableBody = newBugReportDto
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Content-Type"] = "application/json"
@@ -183,10 +182,10 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/login",
+            path = "/api/bug-report",
             query = localVariableQuery,
             headers = localVariableHeaders,
-            requiresAuthentication = false,
+            requiresAuthentication = true,
             body = localVariableBody
         )
     }

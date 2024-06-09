@@ -1,17 +1,25 @@
-package com.example.getmap
+package com.elbit.system_test
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import com.ngsoft.getapp.sdk.BuildConfig
-import com.ngsoft.getapp.sdk.Configuration
-import com.ngsoft.getapp.sdk.SystemTest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
-class SystemTestActivity : AppCompatActivity() {
+import com.ngsoft.getapp.sdk.SystemTest
+import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
+
+
+class MainActivity : AppCompatActivity() {
 
     private lateinit var testDiscoveryIcon: ImageView
     private lateinit var testDiscoveryName: TextView
@@ -31,20 +39,18 @@ class SystemTestActivity : AppCompatActivity() {
     private lateinit var testInventoryUpdatesIcon: ImageView
     private lateinit var testInventoryUpdatesName: TextView
 
+
+    private lateinit var localReceiver: BroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_system_test)
-
-        val cfg = Configuration(
-            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
-            BuildConfig.USERNAME,
-            BuildConfig.PASSWORD,
-            16,
-            null
-        )
-
-
-        val systemTest = SystemTest.getInstance(this, cfg)
+        enableEdgeToEdge()
+        setContentView(R.layout.activity_main)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         testDiscoveryIcon = findViewById(R.id.testDiscoveryIcon)
         testDiscoveryName = findViewById(R.id.testDiscoveryName)
@@ -64,18 +70,31 @@ class SystemTestActivity : AppCompatActivity() {
         testInventoryUpdatesIcon = findViewById(R.id.testInventoryUpdatesIcon)
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
 
-        GlobalScope.launch(Dispatchers.IO) {
-            systemTest.run { testReport ->
-                runOnUiThread {
-                    updateTestResults(testReport)
-                }
+
+        localReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val bundle = intent?.getBundleExtra("bundle")
+                val myMap: HashMap<Int, SystemTest.TestResults?> = bundle?.getSerializable(
+                    SystemTestReceiver.EXTRA_TEST_RESULTS
+                ) as? HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?> ?: HashMap()
+
+                updateTestResults(myMap)
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, IntentFilter("ACTION_UPDATE_UI"))
 
     }
 
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(localReceiver)
+    }
 
-    private fun updateTestResults(testReport: HashMap<Int, SystemTest.TestResults?>) {
+    private fun updateTestResults(testReport: HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?>) {
         updateTestResult(testDiscoveryIcon, testDiscoveryName, testReport[SystemTest.TEST_DISCOVERY])
         updateTestResult(testConfigIcon, testConfigName, testReport[SystemTest.TEST_CONFIG])
         updateTestResult(testImportIcon, testImportName, testReport[SystemTest.TEST_IMPORT])
@@ -84,7 +103,7 @@ class SystemTestActivity : AppCompatActivity() {
         updateTestResult(testInventoryUpdatesIcon, testInventoryUpdatesName, testReport[SystemTest.TEST_INVENTORY_UPDATES])
     }
 
-    private fun updateTestResult(iconImageView: ImageView, testNameTextView: TextView, testResult: SystemTest.TestResults?) {
+    private fun updateTestResult(iconImageView: ImageView, testNameTextView: TextView, testResult: com.ngsoft.getapp.sdk.SystemTest.TestResults?) {
         // Update the icon based on the test result
         when {
             testResult?.success == null -> {
@@ -100,5 +119,17 @@ class SystemTestActivity : AppCompatActivity() {
 
         // Update the TextView with the test name
         testNameTextView.text = testResult?.name ?: "Loading..."
+    }
+
+
+    fun stopTest(view: View){
+        TestForegroundService.stop(this)
+        Toast.makeText(this, "Stopping Test, it may take a few seconds...", Toast.LENGTH_SHORT).show()
+    }
+    fun startTest(view: View) {
+        if (!TestForegroundService.start(this)){
+            Toast.makeText(this, "Test already running", Toast.LENGTH_SHORT).show()
+        }
+
     }
 }

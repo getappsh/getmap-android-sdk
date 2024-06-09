@@ -46,8 +46,8 @@ class DeployApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the consumer to report of the deploy status. When deploy done the device content relevant service will notify. Another option on this service are update delete content on the device.
+     * Update Deploy Status
+     * This service message allows the consumer to report the deploy status. When deploy is done, the device content relevant service will notify. Another option on this service is to update delete content on the device.
      * @param deployStatusDto 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -76,8 +76,8 @@ class DeployApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the consumer to report of the deploy status. When deploy done the device content relevant service will notify. Another option on this service are update delete content on the device.
+     * Update Deploy Status
+     * This service message allows the consumer to report the deploy status. When deploy is done, the device content relevant service will notify. Another option on this service is to update delete content on the device.
      * @param deployStatusDto 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured

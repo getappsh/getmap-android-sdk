@@ -1,20 +1,26 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.NewBugReportDto
 import android.content.Context
-import androidx.lifecycle.LiveData
-import com.ngsoft.getapp.sdk.models.MapData
+import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.getappclient.ConnectionConfig
+import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
+import fr.bipi.treessence.file.FileLoggerTree
+import timber.log.Timber
+import java.io.Serializable
 import java.util.concurrent.TimeUnit
+import java.util.logging.FileHandler
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
 typealias TestReportUpdater = (HashMap<Int, SystemTest.TestResults?>) -> Unit
 
-class SystemTest(private val appCtx: Context,  configuration: Configuration) {
+class SystemTest private constructor(appCtx: Context,  configuration: Configuration) {
     companion object{
         const val TEST_DISCOVERY = 0
         const val TEST_CONFIG = 1
@@ -22,6 +28,24 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         const val TEST_DOWNLOAD = 3
         const val TEST_FILE_MOVE = 4
         const val TEST_INVENTORY_UPDATES = 5
+
+        private val lock = Any()
+
+
+        @Volatile
+        private var instance: SystemTest? = null
+
+        fun getInstance(appContext: Context, configuration: Configuration): SystemTest {
+            if (instance == null) {
+                synchronized(this) {
+                    if (instance == null) {
+                        instance = SystemTest(appContext, configuration)
+                    }
+                }
+            }
+            return instance!!
+        }
+
     }
 
     data class TestResults(
@@ -29,23 +53,81 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
         val testId: Int,
         var success: Boolean? = null,
         var message: String? = null
-    )
+    ): Serializable
 
-    private var service: AsioSdkGetMapService
+    private var service: AsioSdkGetMapService = AsioSdkGetMapService(appCtx)
     private var mapRepo: MapRepo
+    private var client: GetAppClient
+    private var pref: Pref
     private var testReport = hashMapOf<Int, TestResults?>()
+    private var tree: FileLoggerTree? = null
+
 
     init {
-        service = AsioSdkGetMapService(appCtx)
         service.init(configuration)
         mapRepo = MapRepo(appCtx)
+        pref = Pref.getInstance(appCtx)
+        client = GetAppClient(ConnectionConfig(pref.baseUrl, pref.username, pref.password))
     }
+
+    private fun setUp(){
+        tree = TimberLogger.getBugReportTree()
+        tree?.apply { Timber.plant(this) }
+        Timber.i("Setup - Test")
+        tree?.files?.forEach{
+            Timber.d("File: ${it.absolutePath}")
+        }
+    }
+
+    private fun tearDown(){
+        Timber.i("Teardown - Test")
+        tree?.apply { Timber.uproot(this) }
+
+        closeFileHandler()
+
+        if (testReport.any{it.value?.success != true}){
+            val sb = StringBuilder()
+            testReport.forEach {
+                sb.append("|${it.value?.name}-> success: ${it.value?.success} ")
+                }
+            try {
+                sendLogs(sb.toString())
+            }catch (e: Exception){
+                Timber.e(e)
+            }
+        }
+
+        tree?.clear()
+
+    }
+
+    private fun sendLogs(description: String? = "SystemTest"){
+        Timber.d("Send Logs")
+        // TODO: Get the real sdk version name
+        val res = client.bugReportApi.bugReportControllerReportNewBug(NewBugReportDto(
+            deviceId = pref.deviceId,
+            agentVersion = BuildConfig.VERSION_NAME,
+            description = description
+        ))
+        Timber.d("Report Id: ${res.bugId}")
+        val filePath = tree?.getFileName(0) ?: return
+        client.uploadFile(res.uploadLogsUrl, filePath)
+
+
+
+    }
+
     fun run(reportUpdater: TestReportUpdater){
-        initTestReport(reportUpdater)
-        testDiscovery(reportUpdater)
-        testConfig(reportUpdater)
-        testDelivery(reportUpdater)
-        testInventoryUpdates(reportUpdater)
+        synchronized(lock){
+            setUp()
+            initTestReport(reportUpdater)
+            testDiscovery(reportUpdater)
+            testConfig(reportUpdater)
+            testDelivery(reportUpdater)
+            testInventoryUpdates(reportUpdater)
+            tearDown()
+        }
+
     }
 
     private fun initTestReport(reportUpdater: TestReportUpdater){
@@ -60,6 +142,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     }
 
     fun testDiscovery(reportUpdater: TestReportUpdater){
+        Timber.i("Test Discovery")
         testReport[TEST_DISCOVERY] = TestResults("Discovery", TEST_DISCOVERY)
         reportUpdater(testReport)
         try {
@@ -73,6 +156,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     }
 
     fun testConfig(reportUpdater: TestReportUpdater){
+        Timber.i("Test Config")
         testReport[TEST_CONFIG] = TestResults("Config", TEST_CONFIG)
         reportUpdater(testReport)
 
@@ -93,6 +177,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
     }
 
     fun testInventoryUpdates(reportUpdater: TestReportUpdater){
+        Timber.i("Test Inventory Updates")
         testReport[TEST_INVENTORY_UPDATES] = TestResults("Inventory Updates", TEST_INVENTORY_UPDATES)
         reportUpdater(testReport)
 
@@ -108,6 +193,7 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
 
     @OptIn(ExperimentalTime::class)
     fun testDelivery(reportUpdater: TestReportUpdater){
+        Timber.i("Test Delivery")
         testReport[TEST_IMPORT] = TestResults("Import Map", TEST_IMPORT)
         reportUpdater(testReport)
 
@@ -183,6 +269,14 @@ class SystemTest(private val appCtx: Context,  configuration: Configuration) {
 
         }
         service.deleteMap(id)
+    }
+
+
+    private fun closeFileHandler(){
+        val fileHandlerField = FileLoggerTree::class.java.getDeclaredField("fileHandler")
+        fileHandlerField.isAccessible = true
+        val fileHandler = fileHandlerField.get(tree) as FileHandler?
+        fileHandler?.close()
     }
 
 }

@@ -48,8 +48,8 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
-     * 
-     * This service message allow to device post the discovery context for getting offers softwares and maps for GetApp agent. 
+     * Discover Catalog
+     * This service message allows a device to post the discovery context for getting offers, software, and maps for the GetApp agent.
      * @param discoveryMessageDto 
      * @return DiscoveryResDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -79,8 +79,8 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
-     * 
-     * This service message allow to device post the discovery context for getting offers softwares and maps for GetApp agent. 
+     * Discover Catalog
+     * This service message allows a device to post the discovery context for getting offers, software, and maps for the GetApp agent.
      * @param discoveryMessageDto 
      * @return ApiResponse<DiscoveryResDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -120,8 +120,8 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
-     * 
-     * This service message allow to IM device pull the discovery context of other agents.
+     * IM Pull Discovery Devices
+     * This service message allows an IM device to pull the discovery context of other agents.
      * @param requestBody 
      * @return kotlin.collections.List<DeviceDiscoverResDto>
      * @throws IllegalStateException If the request is not correctly configured
@@ -151,8 +151,8 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
-     * 
-     * This service message allow to IM device pull the discovery context of other agents.
+     * IM Pull Discovery Devices
+     * This service message allows an IM device to pull the discovery context of other agents.
      * @param requestBody 
      * @return ApiResponse<kotlin.collections.List<DeviceDiscoverResDto>?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -192,8 +192,8 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
-     * 
-     * This service message allow to IM device push the discovery context of other agents.
+     * IM Push Discovery Devices
+     * This service message allows an IM device to push the discovery context of other agents.
      * @param requestBody 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -222,8 +222,8 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
-     * 
-     * This service message allow to IM device push the discovery context of other agents.
+     * IM Push Discovery Devices
+     * This service message allows an IM device to push the discovery context of other agents.
      * @param requestBody 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
