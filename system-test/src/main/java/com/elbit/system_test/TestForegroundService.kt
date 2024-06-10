@@ -18,6 +18,7 @@ import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 class TestForegroundService: Service() {
 
     private var runService = true;
+    private var jobThread: Thread? = null
 
     companion object {
 
@@ -26,6 +27,7 @@ class TestForegroundService: Service() {
 
         fun start(context: Context): Boolean{
             if (!isServiceRunning(context, TestForegroundService::class.java)) {
+                BatteryOptimizationUtil.openBatteryOptimizationSettingsForApp(context)
                 val serviceIntent = Intent(context, TestForegroundService::class.java)
                 serviceIntent.action = START
                 context.startForegroundService(serviceIntent)
@@ -65,10 +67,11 @@ class TestForegroundService: Service() {
         when(intent?.action){
             START -> {
                 runService = true
-                Thread{
+                jobThread = Thread{
                     var waitSeconds = 0
                     while (true) {
                         if (waitSeconds == 0){
+                            Log.d("TestForegroundService", "runJob")
                             runJob()
                         }
 
@@ -84,10 +87,18 @@ class TestForegroundService: Service() {
                             break
                         }
                     }
-                }.start()
+                }
+                jobThread?.start()
+
+
+
             }
             STOP -> {
                 runService = false
+                if (jobThread?.isAlive == false){
+                    Log.d("TestForegroundService", "isAlive false")
+                    stopService()
+                }
             }
         }
 
@@ -110,6 +121,7 @@ class TestForegroundService: Service() {
 
     private fun runJob(){
         Log.d("TestForegroundService", "runJob")
+        SharedPreferencesHelper.writeStartTestTime(this)
         registerReceiver(SystemTestResReceiver, IntentFilter(SystemTestReceiver.ACTION_SYSTEM_TEST_RESULTS))
         val runSystemTestIntent = Intent(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
         sendBroadcast(runSystemTestIntent)

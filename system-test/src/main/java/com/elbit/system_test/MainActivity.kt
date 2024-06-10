@@ -1,10 +1,7 @@
 package com.elbit.system_test
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -13,10 +10,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import com.ngsoft.getapp.sdk.SystemTest
-import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,8 +37,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var testInventoryUpdatesIcon: ImageView
     private lateinit var testInventoryUpdatesName: TextView
 
+    private lateinit var savedTimeTextView: TextView
 
-    private lateinit var localReceiver: BroadcastReceiver
+    private lateinit var isRunningImageView: ImageView;
+
+    private var runningThread: Thread? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,28 +71,57 @@ class MainActivity : AppCompatActivity() {
         testInventoryUpdatesIcon = findViewById(R.id.testInventoryUpdatesIcon)
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
 
+        savedTimeTextView = findViewById(R.id.savedTimeTextView)
 
-        localReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val bundle = intent?.getBundleExtra("bundle")
-                val myMap: HashMap<Int, SystemTest.TestResults?> = bundle?.getSerializable(
-                    SystemTestReceiver.EXTRA_TEST_RESULTS
-                ) as? HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?> ?: HashMap()
+        isRunningImageView = findViewById(R.id.isRunning)
 
-                updateTestResults(myMap)
-            }
+
+        TestResultsLiveData.LiveDataManager.testResults().observe(this) {
+            Log.d("MainActivity", "Received test results: $it")
+            updateTestResults(it)
+            displaySavedTime()
         }
+        updateRunningState()
+
     }
+
 
     override fun onStart() {
         super.onStart()
-        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, IntentFilter("ACTION_UPDATE_UI"))
-
+        if (runningThread == null || !runningThread!!.isAlive) {
+            // Create a new instance of the thread and start it
+            runningThread = Thread {
+                while (true) {
+                    try {
+                        updateRunningState()
+                        Thread.sleep(2000)
+                    } catch (interruptedException: InterruptedException) {
+                        return@Thread
+                    }
+                }
+            }
+            runningThread?.start()
+        }
+        displaySavedTime()
     }
+
 
     override fun onStop() {
         super.onStop()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(localReceiver)
+        runningThread?.interrupt()
+    }
+    private fun displaySavedTime() {
+        val savedTime = SharedPreferencesHelper.readCurrentTime(this)
+        if (savedTime != 0L) {
+            val formattedTime = formatTime(savedTime)
+            savedTimeTextView.text = "Started At: $formattedTime"
+        }
+    }
+
+    private fun formatTime(timeInMillis: Long): String {
+        val date = Date(timeInMillis)
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return format.format(date)
     }
 
     private fun updateTestResults(testReport: HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?>) {
@@ -121,15 +151,27 @@ class MainActivity : AppCompatActivity() {
         testNameTextView.text = testResult?.name ?: "Loading..."
     }
 
+    fun updateRunningState(){
+        val isRunning = TestForegroundService.isServiceRunning(this, TestForegroundService::class.java)
+        if (isRunning) {
+            isRunningImageView.setImageResource(android.R.drawable.presence_online)
+        } else {
+            isRunningImageView.setImageResource(android.R.drawable.presence_busy)
+
+        }
+    }
+
 
     fun stopTest(view: View){
         TestForegroundService.stop(this)
         Toast.makeText(this, "Stopping Test, it may take a few seconds...", Toast.LENGTH_SHORT).show()
+        updateRunningState()
     }
     fun startTest(view: View) {
         if (!TestForegroundService.start(this)){
             Toast.makeText(this, "Test already running", Toast.LENGTH_SHORT).show()
         }
+        updateRunningState()
 
     }
 }
