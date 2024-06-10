@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.ngsoft.getapp.sdk.SystemTest
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver.EXTRA_TEST_RESULTS
 
@@ -21,10 +20,7 @@ object SystemTestResReceiver: BroadcastReceiver() {
         myMap.forEach { (key, value) ->
             Log.d("SystemTestResReceiver", "key: $key, value: $value")
         }
-
-        val localIntent = Intent("ACTION_UPDATE_UI")
-
-        localIntent.putExtra("bundle", bundle)
-        LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent)
+        // Update the LiveData with the received test results
+        TestResultsLiveData.LiveDataManager.updateResults(myMap)
     }
 }

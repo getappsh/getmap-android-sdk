@@ -1,10 +1,7 @@
 package com.elbit.system_test
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -13,10 +10,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import com.ngsoft.getapp.sdk.SystemTest
-import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 
 
 class MainActivity : AppCompatActivity() {
@@ -38,9 +33,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var testInventoryUpdatesIcon: ImageView
     private lateinit var testInventoryUpdatesName: TextView
-
-
-    private lateinit var localReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,27 +63,11 @@ class MainActivity : AppCompatActivity() {
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
 
 
-        localReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val bundle = intent?.getBundleExtra("bundle")
-                val myMap: HashMap<Int, SystemTest.TestResults?> = bundle?.getSerializable(
-                    SystemTestReceiver.EXTRA_TEST_RESULTS
-                ) as? HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?> ?: HashMap()
-
-                updateTestResults(myMap)
-            }
+        TestResultsLiveData.LiveDataManager.testResults().observe(this) {
+            Log.d("MainActivity", "Received test results: $it")
+            updateTestResults(it)
         }
-    }
 
-    override fun onStart() {
-        super.onStart()
-        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, IntentFilter("ACTION_UPDATE_UI"))
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(localReceiver)
     }
 
     private fun updateTestResults(testReport: HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?>) {
