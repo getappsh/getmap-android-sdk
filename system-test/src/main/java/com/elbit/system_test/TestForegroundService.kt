@@ -77,7 +77,7 @@ class TestForegroundService: Service() {
 
                         Thread.sleep(1000)
                         waitSeconds++
-                        if (waitSeconds == 60){
+                        if (waitSeconds == 60 * 60){
                             waitSeconds = 0
                         }
 
