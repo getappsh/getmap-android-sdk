@@ -18,6 +18,7 @@ import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 class TestForegroundService: Service() {
 
     private var runService = true;
+    private var jobThread: Thread? = null
 
     companion object {
 
@@ -65,16 +66,17 @@ class TestForegroundService: Service() {
         when(intent?.action){
             START -> {
                 runService = true
-                Thread{
+                jobThread = Thread{
                     var waitSeconds = 0
                     while (true) {
                         if (waitSeconds == 0){
+                            Log.d("TestForegroundService", "runJob")
                             runJob()
                         }
 
                         Thread.sleep(1000)
                         waitSeconds++
-                        if (waitSeconds == 60 * 60){
+                        if (waitSeconds == 60){
                             waitSeconds = 0
                         }
 
@@ -84,10 +86,18 @@ class TestForegroundService: Service() {
                             break
                         }
                     }
-                }.start()
+                }
+                jobThread?.start()
+
+
+
             }
             STOP -> {
                 runService = false
+                if (jobThread?.isAlive == false){
+                    Log.d("TestForegroundService", "isAlive false")
+                    stopService()
+                }
             }
         }
 
@@ -110,6 +120,7 @@ class TestForegroundService: Service() {
 
     private fun runJob(){
         Log.d("TestForegroundService", "runJob")
+        SharedPreferencesHelper.writeStartTestTime(this)
         registerReceiver(SystemTestResReceiver, IntentFilter(SystemTestReceiver.ACTION_SYSTEM_TEST_RESULTS))
         val runSystemTestIntent = Intent(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
         sendBroadcast(runSystemTestIntent)

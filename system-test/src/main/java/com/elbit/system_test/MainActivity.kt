@@ -12,6 +12,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 import com.ngsoft.getapp.sdk.SystemTest
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class MainActivity : AppCompatActivity() {
@@ -33,6 +36,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var testInventoryUpdatesIcon: ImageView
     private lateinit var testInventoryUpdatesName: TextView
+
+    private lateinit var savedTimeTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,12 +67,30 @@ class MainActivity : AppCompatActivity() {
         testInventoryUpdatesIcon = findViewById(R.id.testInventoryUpdatesIcon)
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
 
+        savedTimeTextView = findViewById(R.id.savedTimeTextView)
+
+
 
         TestResultsLiveData.LiveDataManager.testResults().observe(this) {
             Log.d("MainActivity", "Received test results: $it")
             updateTestResults(it)
+            displaySavedTime()
         }
 
+    }
+
+    private fun displaySavedTime() {
+        val savedTime = SharedPreferencesHelper.readCurrentTime(this)
+        if (savedTime != 0L) {
+            val formattedTime = formatTime(savedTime)
+            savedTimeTextView.text = "Started At: $formattedTime"
+        }
+    }
+
+    private fun formatTime(timeInMillis: Long): String {
+        val date = Date(timeInMillis)
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return format.format(date)
     }
 
     private fun updateTestResults(testReport: HashMap<Int, com.ngsoft.getapp.sdk.SystemTest.TestResults?>) {
