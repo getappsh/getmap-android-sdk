@@ -27,6 +27,7 @@ class TestForegroundService: Service() {
 
         fun start(context: Context): Boolean{
             if (!isServiceRunning(context, TestForegroundService::class.java)) {
+                BatteryOptimizationUtil.openBatteryOptimizationSettingsForApp(context)
                 val serviceIntent = Intent(context, TestForegroundService::class.java)
                 serviceIntent.action = START
                 context.startForegroundService(serviceIntent)
