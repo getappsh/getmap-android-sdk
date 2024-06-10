@@ -39,6 +39,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var savedTimeTextView: TextView
 
+    private lateinit var isRunningImageView: ImageView;
+
+    private var runningThread: Thread? = null;
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -69,6 +73,7 @@ class MainActivity : AppCompatActivity() {
 
         savedTimeTextView = findViewById(R.id.savedTimeTextView)
 
+        isRunningImageView = findViewById(R.id.isRunning)
 
 
         TestResultsLiveData.LiveDataManager.testResults().observe(this) {
@@ -76,9 +81,35 @@ class MainActivity : AppCompatActivity() {
             updateTestResults(it)
             displaySavedTime()
         }
+        updateRunningState()
 
     }
 
+
+    override fun onStart() {
+        super.onStart()
+        if (runningThread == null || !runningThread!!.isAlive) {
+            // Create a new instance of the thread and start it
+            runningThread = Thread {
+                while (true) {
+                    try {
+                        updateRunningState()
+                        Thread.sleep(2000)
+                    } catch (interruptedException: InterruptedException) {
+                        return@Thread
+                    }
+                }
+            }
+            runningThread?.start()
+        }
+        displaySavedTime()
+    }
+
+
+    override fun onStop() {
+        super.onStop()
+        runningThread?.interrupt()
+    }
     private fun displaySavedTime() {
         val savedTime = SharedPreferencesHelper.readCurrentTime(this)
         if (savedTime != 0L) {
@@ -120,15 +151,27 @@ class MainActivity : AppCompatActivity() {
         testNameTextView.text = testResult?.name ?: "Loading..."
     }
 
+    fun updateRunningState(){
+        val isRunning = TestForegroundService.isServiceRunning(this, TestForegroundService::class.java)
+        if (isRunning) {
+            isRunningImageView.setImageResource(android.R.drawable.presence_online)
+        } else {
+            isRunningImageView.setImageResource(android.R.drawable.presence_busy)
+
+        }
+    }
+
 
     fun stopTest(view: View){
         TestForegroundService.stop(this)
         Toast.makeText(this, "Stopping Test, it may take a few seconds...", Toast.LENGTH_SHORT).show()
+        updateRunningState()
     }
     fun startTest(view: View) {
         if (!TestForegroundService.start(this)){
             Toast.makeText(this, "Test already running", Toast.LENGTH_SHORT).show()
         }
+        updateRunningState()
 
     }
 }
