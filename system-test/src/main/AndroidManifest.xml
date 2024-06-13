@@ -27,6 +27,11 @@
             android:name=".TestForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+        <service
+            android:name=".TestJobService"
+            android:exported="true"
+            android:process=":TestJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

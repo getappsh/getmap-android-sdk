@@ -103,7 +103,6 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
 
     private fun sendLogs(description: String? = "SystemTest"){
         Timber.d("Send Logs")
-        // TODO: Get the real sdk version name
         val res = client.bugReportApi.bugReportControllerReportNewBug(NewBugReportDto(
             deviceId = pref.deviceId,
             agentVersion = BuildConfig.VERSION_NAME,

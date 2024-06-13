@@ -151,8 +151,8 @@ class MainActivity : AppCompatActivity() {
         testNameTextView.text = testResult?.name ?: "Loading..."
     }
 
-    fun updateRunningState(){
-        val isRunning = TestForegroundService.isServiceRunning(this, TestForegroundService::class.java)
+    private fun updateRunningState(){
+        val isRunning = JobSchedulerUtil.isJobScheduled(this)
         if (isRunning) {
             isRunningImageView.setImageResource(android.R.drawable.presence_online)
         } else {
@@ -163,13 +163,15 @@ class MainActivity : AppCompatActivity() {
 
 
     fun stopTest(view: View){
-        TestForegroundService.stop(this)
+        JobSchedulerUtil.cancelScheduledJob(this)
         Toast.makeText(this, "Stopping Test, it may take a few seconds...", Toast.LENGTH_SHORT).show()
         updateRunningState()
     }
     fun startTest(view: View) {
-        if (!TestForegroundService.start(this)){
+        if (!JobSchedulerUtil.scheduleJobIfNotScheduled(this)){
             Toast.makeText(this, "Test already running", Toast.LENGTH_SHORT).show()
+        }else{
+            BatteryOptimizationUtil.openBatteryOptimizationSettingsForApp(this)
         }
         updateRunningState()
 
