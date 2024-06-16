@@ -1,0 +1,41 @@
+name: Build AAR
+
+on:
+  push:
+    branches:
+      - build-aar
+  pull_request:
+    branches:
+      - build-aar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build AAR
+        run: ./gradlew :sdk:assembleDebug
+
+      - name: Upload AAR
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-aar-build
+          path: sdk/build/outputs/aar/sdk-debug-0.8.2-test.aar
