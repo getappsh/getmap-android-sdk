@@ -8,7 +8,7 @@
             <solid android:color="#DDD" />
         </shape>
     </item>
-    <item>
+    <item android:id="@+id/loading_color_id">
         <rotate
             android:fromDegrees="270"
             android:toDegrees="270">

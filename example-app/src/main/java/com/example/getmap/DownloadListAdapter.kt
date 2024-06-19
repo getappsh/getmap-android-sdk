@@ -5,6 +5,9 @@ import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.RotateDrawable
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -19,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.ColorRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
@@ -211,6 +215,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.green)
             }
 
             DONE -> {
@@ -236,6 +241,8 @@ class DownloadListAdapter(
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
                 holder.separator.visibility = View.VISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.loadEmpty)
+
             }
 
             ERROR -> {
@@ -249,6 +256,7 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.red)
             }
 
             CANCEL -> {
@@ -266,6 +274,7 @@ class DownloadListAdapter(
                 holder.dates.visibility = View.INVISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.sizeLayout.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.blue)
             }
 
             PAUSE -> {
@@ -277,6 +286,7 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.dates.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.blue)
             }
 
             CONTINUE -> {
@@ -287,6 +297,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.green)
             }
 
             DOWNLOAD -> {
@@ -301,6 +312,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.GONE
                 holder.product.visibility = View.GONE
                 holder.separator.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.green)
             }
 
             DELETED -> {
@@ -349,6 +361,14 @@ class DownloadListAdapter(
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
         }
+    }
+
+    private fun updateProgressBarColor(progressBar: ProgressBar, @ColorRes colorResId: Int) {
+        val layerDrawable = progressBar.progressDrawable as LayerDrawable
+        val rotateDrawable = layerDrawable.findDrawableByLayerId(R.id.loading_color_id) as RotateDrawable
+        val shapeDrawable = rotateDrawable.drawable as GradientDrawable
+        shapeDrawable.setColor(ContextCompat.getColor(context, colorResId))
+        progressBar.progressDrawable = layerDrawable
     }
 
     private fun isInternetAvailable(context: Context):Boolean {
