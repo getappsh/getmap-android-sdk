@@ -150,6 +150,9 @@ class SettingsActivity : AppCompatActivity() {
                         service.fetchConfigUpdates()
                         service.fetchInventoryUpdates()
                     } catch (e: Exception) {
+                        TrackHelper.track().dimension(instance.service.config.matomoDimensionId.toInt(), "הגדרות").event("מיפוי ענן", "שינוי הגדרות")
+                            .name("ניסיון חיבור לשרת נכשל - תקלת רשת")
+                            .with(tracker)
                         withContext(Dispatchers.Main) {
                         lastConfig.text = "lastConfig error: Network error occured"
                         Log.e("Fetch Config", e.message.toString())
