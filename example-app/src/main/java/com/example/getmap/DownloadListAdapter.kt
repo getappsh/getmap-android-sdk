@@ -267,6 +267,7 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -282,12 +283,13 @@ class DownloadListAdapter(
             }
 
             CANCEL -> {
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה בוטלה").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text = "בוטל - הורדה מחדש תתחיל מ-0%"
                 holder.loadingColor.setColor(canceledColor)
                 holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
                 holder.progressBar.progressDrawable = holder.percentageBarColorView
+                holder.textStatus.text = "בוטל - ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE

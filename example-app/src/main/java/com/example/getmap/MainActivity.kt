@@ -394,6 +394,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
                     Log.i("hghfhffhg", e.message!!)
                 }
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בדיסקוברי").with(tracker)
             }
 
         }
@@ -625,6 +626,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     showQRCodeDialog(qrCode)
                 }
             } catch (e: Exception) {
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr").with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
 
@@ -767,6 +769,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .name("קבלת בול בסריקה").with(tracker)
                     }
                 } catch (e: Exception) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בקבלת בול בסריקה").with(tracker)
                     runOnUiThread { showErrorDialog(e.message.toString()) }
                 }
 
