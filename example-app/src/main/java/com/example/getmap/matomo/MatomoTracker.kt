@@ -19,17 +19,19 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
         @Volatile private var siteId: String? = null
         @Volatile private lateinit var pref: Pref
         fun getTracker(context: Context): Tracker{
+            Log.v(TAG, "getTracker")
+
             pref = Pref.getInstance(context)
 
             if ((siteId != null && siteId != pref.matomoSiteId) || (tracker != null && tracker?.apiUrl != pref.matomoUrl)){
                 rebuildTracker(context)
             }
-            if(tracker?.dispatchInterval != 1000L * 60 * pref.matomoUpdateIntervalMins){
-                tracker?.dispatchInterval = 1000L * 60 * pref.matomoUpdateIntervalMins
+            if(tracker?.dispatchInterval != pref.matomoUpdateIntervalMins.toLong()){
+                tracker?.dispatchInterval = pref.matomoUpdateIntervalMins.toLong()
             }
 
             return tracker ?: synchronized(this) {
-                context.registerComponentCallbacks(MatomoTracker())
+                context.applicationContext.registerComponentCallbacks(MatomoTracker())
                 tracker ?: initTracker(context).also { tracker = it }
             }
         }
@@ -39,7 +41,7 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
             val tracker = TrackerBuilder.createDefault(pref.matomoUrl, pref.matomoSiteId.toInt())
                 .build(Matomo.getInstance(context))
             siteId = pref.matomoSiteId
-            tracker.dispatchInterval =  1000L * 60 * pref.matomoUpdateIntervalMins
+            tracker.dispatchInterval =  pref.matomoUpdateIntervalMins.toLong()
             tracker.dispatchTimeout = 1000 * 15
             Log.d(TAG, "Matomo dispatchInterval: ${tracker.dispatchInterval},timeout: ${tracker.dispatchTimeout}, sessionTimeout: ${tracker.sessionTimeout}")
             return tracker
@@ -59,13 +61,16 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
 
 
     override fun onConfigurationChanged(newConfig: Configuration) {
+        Log.d(TAG, "onConfigurationChanged")
     }
 
     override fun onLowMemory() {
+        Log.d(TAG, "onLowMemory")
         tracker?.dispatch()
     }
 
     override fun onTrimMemory(level: Int) {
+        Log.d(TAG, "onTrimMemory")
         if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN || level == ComponentCallbacks2.TRIM_MEMORY_COMPLETE) {
             tracker?.dispatch()
         }
