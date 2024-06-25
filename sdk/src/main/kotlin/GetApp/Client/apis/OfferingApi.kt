@@ -46,8 +46,8 @@ class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
-     * 
+     * Get Offering of Component
+     * This service message allows retrieval of the offering of a specific component by catalog ID.
      * @param catalogId 
      * @return ComponentDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -77,8 +77,8 @@ class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
-     * 
+     * Get Offering of Component
+     * This service message allows retrieval of the offering of a specific component by catalog ID.
      * @param catalogId 
      * @return ApiResponse<ComponentDto?>
      * @throws IllegalStateException If the request is not correctly configured

@@ -6,6 +6,7 @@ import com.example.getmap.matomo.MatomoTracker
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.net.Uri
@@ -42,6 +43,7 @@ import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
+import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -302,6 +304,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             isReplacingActivity = true
             finish()
         }
+
+        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
     }
 
 //    override fun onResume() {

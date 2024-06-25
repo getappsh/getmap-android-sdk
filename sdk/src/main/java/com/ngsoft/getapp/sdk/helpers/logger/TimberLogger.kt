@@ -28,4 +28,18 @@ internal object TimberLogger {
      }
 
 
+    fun getBugReportTree(): FileLoggerTree {
+        val fileTree = FileLoggerTree.Builder()
+            .withFileName("report%g.log")
+            .withDirName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/GetApp/bug-report")
+            .withMinPriority(Log.VERBOSE)
+            .withFileLimit(1)
+            .withSizeLimit(1024 * 1024 * 10)
+            .appendToFile(true)
+            .build()
+
+        return fileTree
+    }
+
+
 }

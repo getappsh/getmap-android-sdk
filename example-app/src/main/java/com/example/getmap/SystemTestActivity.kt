@@ -44,7 +44,7 @@ class SystemTestActivity : AppCompatActivity() {
         )
 
 
-        val systemTest = SystemTest(this, cfg)
+        val systemTest = SystemTest.getInstance(this, cfg)
 
         testDiscoveryIcon = findViewById(R.id.testDiscoveryIcon)
         testDiscoveryName = findViewById(R.id.testDiscoveryName)

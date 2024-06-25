@@ -20,6 +20,8 @@ android {
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
+        buildConfigField "long", "VERSION_CODE", "${defaultConfig.versionCode}"
+        buildConfigField "String","VERSION_NAME","\"${defaultConfig.versionName}\""
         buildConfigField "String", "ENCRYPTION_KEY", "\""+getPropertyFromFile("ENCRYPTION_KEY")+"\""
         buildConfigField "String", "USERNAME", "\""+getPropertyFromFile("USERNAME")+"\""
         buildConfigField "String", "PASSWORD", "\""+getPropertyFromFile("PASSWORD")+"\""

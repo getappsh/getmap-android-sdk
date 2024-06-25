@@ -48,7 +48,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
+     * Get Prepared Delivery Status
      * Get status of prepared delivery
      * @param catalogId 
      * @return PrepareDeliveryResDto
@@ -79,7 +79,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
+     * Get Prepared Delivery Status
      * Get status of prepared delivery
      * @param catalogId 
      * @return ApiResponse<PrepareDeliveryResDto?>
@@ -119,7 +119,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
+     * Prepare Delivery
      * Prepare delivery
      * @param prepareDeliveryReqDto 
      * @return PrepareDeliveryResDto
@@ -150,7 +150,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
+     * Prepare Delivery
      * Prepare delivery
      * @param prepareDeliveryReqDto 
      * @return ApiResponse<PrepareDeliveryResDto?>
@@ -191,8 +191,8 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
-     * This service message allows the consumer to report of the delivery status
+     * Update Delivery Status
+     * This service message allows the consumer to report the delivery status
      * @param deliveryStatusDto 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -221,8 +221,8 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
-     * 
-     * This service message allows the consumer to report of the delivery status
+     * Update Delivery Status
+     * This service message allows the consumer to report the delivery status
      * @param deliveryStatusDto 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured

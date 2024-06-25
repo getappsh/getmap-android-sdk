@@ -218,10 +218,10 @@ class MapActivity : AppCompatActivity() {
 
                 }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
-                    val polygon = createDownloadedPolygon(g, "yellow", endName).first
+                    val polygon = createDownloadedPolygon(g, "green", endName).first
                     renderableLayer.addRenderable(polygon)
 
-                    val label = createDownloadedPolygon(g, "yellow", endName).second
+                    val label = createDownloadedPolygon(g, "green", endName).second
                     renderableLayer.addRenderable(label)
                 } else {
                     val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
@@ -299,7 +299,7 @@ class MapActivity : AppCompatActivity() {
 
     private fun attrsColor(type: String): ShapeAttributes {
         return when (type) {
-            "yellow" -> attributes(type)
+            "green" -> attributes(type)
             "red" -> attributes(type)
             else -> pinkAttributes()
         }
@@ -308,8 +308,8 @@ class MapActivity : AppCompatActivity() {
     private fun attributes(type: String): ShapeAttributes {
         return ShapeAttributes().apply {
             outlineWidth = 5f
-            if (type == "yellow"){
-                outlineColor = Color(1f, 1f, 0f, 1f)
+            if (type == "green"){
+                outlineColor = Color(0f, 1f, 0f, 1f)
             } else if (type == "red") {
                 outlineColor = Color(1f, 0f, 0f, 1f)
             }
