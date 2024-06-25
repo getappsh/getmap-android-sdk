@@ -5,9 +5,10 @@ import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.RotateDrawable
+import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -22,6 +23,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.ColorRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
@@ -106,17 +108,8 @@ class DownloadListAdapter(
         val product: TextView = itemView.findViewById(R.id.product)
         val sizeLayout: LinearLayout = itemView.findViewById(R.id.size_layout)
         val separator: TextView = itemView.findViewById(R.id.lign_separator)
-        var percentageBarColorView: LayerDrawable =
-            ContextCompat.getDrawable(context, R.drawable.progress_bar_shape) as LayerDrawable
-        var loadingColor: GradientDrawable =
-            percentageBarColorView.getDrawable(0) as GradientDrawable
     }
 
-
-    val canceledColor = ContextCompat.getColor(context, R.color.blue)
-    val errorColor = ContextCompat.getColor(context, R.color.red)
-    val loadingColor = ContextCompat.getColor(context, R.color.green)
-    val loadEmpty = ContextCompat.getColor(context, R.color.loadEmpty)
 
     private val diffUtil = object : DiffUtil.ItemCallback<MapData>() {
         override fun areItemsTheSame(oldItem: MapData, newItem: MapData): Boolean {
@@ -231,6 +224,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.green)
             }
 
             DONE -> {
@@ -247,9 +241,6 @@ class DownloadListAdapter(
 
                         .with(tracker)
                 }
-
-                holder.loadingColor.setColor(loadEmpty)
-                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
                 holder.sizeLayout.visibility = View.VISIBLE
                 holder.percentage.visibility = View.GONE
                 holder.textStatus.visibility = View.GONE
@@ -264,6 +255,8 @@ class DownloadListAdapter(
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
                 holder.separator.visibility = View.VISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.loadEmpty)
+
             }
 
             ERROR -> {
@@ -277,18 +270,13 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.loadingColor.setColor(errorColor)
-                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
-                holder.progressBar.progressDrawable = holder.percentageBarColorView
+                updateProgressBarColor(holder.progressBar, R.color.red)
             }
 
             CANCEL -> {
                 TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה בוטלה").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.loadingColor.setColor(canceledColor)
-                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
-                holder.progressBar.progressDrawable = holder.percentageBarColorView
                 holder.textStatus.text = "בוטל - ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
@@ -300,13 +288,11 @@ class DownloadListAdapter(
                 holder.dates.visibility = View.INVISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.sizeLayout.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.blue)
             }
 
             PAUSE -> {
                 holder.textFileName.text = ""
-                holder.loadingColor.setColor(canceledColor)
-                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
-                holder.progressBar.progressDrawable = holder.percentageBarColorView
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
@@ -314,19 +300,18 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.dates.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.blue)
             }
 
             CONTINUE -> {
                 holder.btnDelete.visibility = View.GONE
                 holder.percentage.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.square)
-                holder.loadingColor.setColor(loadingColor)
-                holder.percentageBarColorView.setDrawableByLayerId(R.id.loading_color_id, holder.loadingColor)
-                holder.progressBar.progressDrawable = holder.percentageBarColorView
                 holder.btnQRCode.visibility = View.GONE
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.green)
             }
 
             DOWNLOAD -> {
@@ -341,6 +326,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.GONE
                 holder.product.visibility = View.GONE
                 holder.separator.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.green)
             }
 
             DELETED -> {
@@ -389,6 +375,13 @@ class DownloadListAdapter(
         holder.itemView.setOnClickListener {
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
         }
+    }
+    private fun updateProgressBarColor(progressBar: ProgressBar, @ColorRes colorResId: Int) {
+        val layerDrawable = progressBar.progressDrawable as LayerDrawable
+        val rotateDrawable = layerDrawable.findDrawableByLayerId(R.id.loading_color_id) as RotateDrawable
+        val shapeDrawable = rotateDrawable.drawable as GradientDrawable
+        shapeDrawable.setColor(ContextCompat.getColor(context, colorResId))
+        progressBar.progressDrawable = layerDrawable
     }
 
     private fun isInternetAvailable(context: Context): Boolean {
