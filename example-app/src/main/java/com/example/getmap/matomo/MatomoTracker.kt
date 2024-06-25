@@ -8,6 +8,8 @@ import com.ngsoft.getapp.sdk.Pref
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
+import org.matomo.sdk.dispatcher.DispatchMode
+import org.matomo.sdk.extra.TrackHelper
 
 
 class MatomoTracker private constructor(): ComponentCallbacks2{
@@ -66,13 +68,23 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
 
     override fun onLowMemory() {
         Log.d(TAG, "onLowMemory")
-        tracker?.dispatch()
+        cacheEvents()
     }
 
     override fun onTrimMemory(level: Int) {
         Log.d(TAG, "onTrimMemory")
         if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN || level == ComponentCallbacks2.TRIM_MEMORY_COMPLETE) {
-            tracker?.dispatch()
+            cacheEvents()
+
+            TrackHelper.track().event("מיפוי ענן", "Tracker").name("onTrimMemory").with(tracker)
+
+
         }
+    }
+
+    private fun cacheEvents(){
+        tracker?.dispatchMode = DispatchMode.EXCEPTION
+        tracker?.dispatchBlocking()
+        tracker?.dispatchMode = DispatchMode.ALWAYS
     }
 }
