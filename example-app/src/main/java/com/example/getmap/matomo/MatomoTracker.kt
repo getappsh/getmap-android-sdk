@@ -56,14 +56,37 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
             siteId = pref.matomoSiteId
             tracker.dispatchInterval = -1
             tracker.dispatchTimeout = 1000 * 15
+            tracker.offlineCacheSize = 10 * 1024 * 1024
+            tracker.offlineCacheAge = 86400000 * 3
+
             Log.d(TAG, "Matomo dispatchInterval: ${dispatchInterval},timeout: ${tracker.dispatchTimeout}, sessionTimeout: ${tracker.sessionTimeout}")
 
             tracker.addTrackingCallback { trackMe: TrackMe? ->
                 scheduleDispatchJob(context, dispatchInterval)
+                printTrackMe(trackMe)
                 trackMe
             }
             return tracker
         }
+
+        private fun printTrackMe(trackMe: TrackMe?){
+            trackMe ?: return
+            val sb = StringBuilder()
+            sb.append("TrackMe{");
+            val mQueryParams = trackMe.toMap()
+
+            for (entry in mQueryParams.entries) {
+                sb.append(entry.key).append("=").append(entry.value).append(", ");
+            }
+            // Remove the last comma and space
+            if (sb.length > 8) {
+                sb.setLength(sb.length - 2);
+            }
+            sb.append("}");
+            Log.v(TAG, sb.toString())
+        }
+
+
 
         private fun rebuildTracker(context: Context){
             Log.d(TAG, "rebuild tracker")
