@@ -331,7 +331,7 @@ class MapActivity : AppCompatActivity() {
     private fun textAttributes(): TextAttributes {
         val textAttrs = TextAttributes()
         textAttrs.textSize = 35.0F
-        textAttrs.textColor = Color(1f, 1f, 0f, 1f)
+        textAttrs.textColor = Color(0f, 1f, 0f, 1f)
         textAttrs.outlineWidth = 0F
         textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, -0.3)
 

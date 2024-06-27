@@ -22,7 +22,7 @@ import kotlin.time.TimeSource
 
 internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMapService(appCtx) {
 
-    private val _tag = "AsioAppGetMapService"
+    private lateinit var downloader: PackageDownloader
     private lateinit var packagesDownloader: PackagesDownloader
     private lateinit var extentUpdates: ExtentUpdates
     private var zoomLevel: Int = 0
@@ -33,7 +33,8 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
         super.init(configuration)
         zoomLevel = configuration.zoomLevel
 
-        packagesDownloader = PackagesDownloader(appCtx, config.downloadPath, super.downloader)
+        downloader = PackageDownloader(appCtx, config.downloadPath)
+        packagesDownloader = PackagesDownloader(appCtx, config.downloadPath, downloader)
         extentUpdates = ExtentUpdates(appCtx)
 
         return true

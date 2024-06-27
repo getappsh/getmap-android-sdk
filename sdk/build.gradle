@@ -73,6 +73,7 @@ def getPropertyFromFile(String propertyName) {
     return props[propertyName]
 }
 dependencies {
+    implementation 'com.github.tonyofrancis.Fetch:xfetch2:3.1.6'
 
     implementation 'com.esri:arcgis-maps-kotlin:200.3.0'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'

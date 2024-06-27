@@ -6,6 +6,8 @@ import android.os.Environment
 import android.os.storage.StorageManager
 import android.content.Context.STORAGE_SERVICE
 import android.os.Build
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadDone
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadFailed
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
@@ -14,6 +16,7 @@ import com.ngsoft.getapp.sdk.utils.JsonUtils
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
+import com.tonyodev.fetch2.Fetch
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
@@ -30,8 +33,8 @@ import kotlin.math.max
 class MapFileManager(private val appCtx: Context) {
 
     val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
-    private val downloader =  PackageDownloader(appCtx, config.downloadPath)
     private val mapRepo = MapRepo(appCtx)
+    private val fetch: Fetch by lazy { Fetch.Impl.getDefaultInstance() }
 
     private val storageManager = appCtx.getSystemService(STORAGE_SERVICE) as StorageManager
 
@@ -249,8 +252,8 @@ class MapFileManager(private val appCtx: Context) {
             throw Exception(errorMsg)
         }
 
-        mapPkg.JDID?.let { downloader.cancelDownload(it) }
-        mapPkg.MDID?.let { downloader.cancelDownload(it) }
+        mapPkg.JDID?.let { fetch.delete(it.toInt()) }
+        mapPkg.MDID?.let { fetch.delete(it.toInt()) }
 
         this.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
     }
@@ -294,7 +297,7 @@ class MapFileManager(private val appCtx: Context) {
         return if (targetFile?.exists() == true){
             true
         }else if(downloadFile?.exists() == true){
-            downloader.isDownloadDone(downloadId)
+            fetch.isDownloadDone(downloadId?.toInt())
         }else{
             false
         }
@@ -368,7 +371,7 @@ class MapFileManager(private val appCtx: Context) {
 
         mapPkg.flowState = if (mapDone && jsonDone){
             DeliveryFlowState.DOWNLOAD_DONE
-        }else if (!downloader.isDownloadFailed(mapPkg.MDID) && !downloader.isDownloadFailed(mapPkg.JDID) &&
+        }else if (!fetch.isDownloadFailed(mapPkg.MDID?.toInt()) && !fetch.isDownloadFailed(mapPkg.JDID?.toInt()) &&
             downloadJsonFile?.exists() == true && downloadMapFile?.exists() == true){
             DeliveryFlowState.DOWNLOAD
         } else if(mapPkg.url != null) {
@@ -413,8 +416,8 @@ class MapFileManager(private val appCtx: Context) {
 
             val rMap = this.refreshMapState(map.copy())
             if(map.state == MapDeliveryState.DOWNLOAD || map.state == MapDeliveryState.CONTINUE){
-                if ((rMap.metadata.mapDone ||!downloader.isDownloadFailed(map.MDID)) &&
-                    (rMap.metadata.jsonDone || !downloader.isDownloadFailed(map.JDID))){
+                if ((rMap.metadata.mapDone ||!fetch.isDownloadFailed(map.MDID?.toInt())) &&
+                    (rMap.metadata.jsonDone || !fetch.isDownloadFailed(map.JDID?.toInt()))){
                     continue
                 }
             }
