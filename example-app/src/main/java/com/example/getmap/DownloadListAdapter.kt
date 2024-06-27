@@ -59,8 +59,9 @@ class DownloadListAdapter(
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
 
-    var tracker: Tracker? = null
-    var notifValidation: Toast? = null
+    private var notifValidation: Toast? = null
+    var availableUpdate: Boolean = false
+    private var tracker: Tracker = MatomoTracker.getTracker(context)
 
     //Create and define the signal listener
     interface SignalListener {
@@ -125,7 +126,6 @@ class DownloadListAdapter(
     private val asyncListDiffer = AsyncListDiffer(this, diffUtil)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        tracker = MatomoTracker.getTracker(this.context)
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.list_item_download, parent, false)
         return ViewHolder(view)

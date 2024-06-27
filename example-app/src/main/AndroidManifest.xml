@@ -75,6 +75,10 @@
         </receiver>
 
         <service
+            android:name=".matomo.MatomoDispatchService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
             android:name="com.ngsoft.getapp.sdk.jobs.InventoryUpdatesService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />

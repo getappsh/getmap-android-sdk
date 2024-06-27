@@ -124,6 +124,10 @@ class ConfigParam {
             holder.valueTextView.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     // Update the value in the Params array when the user edits the EditText
+                    // TODO way dose it happened?
+                    if (holder.adapterPosition <= -1){
+                        return
+                    }
                     Params[holder.adapterPosition].value = s.toString()
                 }
 
