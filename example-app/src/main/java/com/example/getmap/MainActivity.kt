@@ -58,6 +58,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
+import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -240,10 +241,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Toast.makeText(
-                        applicationContext,
+                    Snackbar.make(findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                        Toast.LENGTH_LONG
+                        Snackbar.LENGTH_LONG
                     ).show()
                 }
             }
@@ -256,7 +256,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             .with(tracker)
         //Phone number
 //        requestPhonePermission()
-        
+
         // Monitor your app installs
         TrackHelper.track().download().with(tracker)
         //Example of an event for matomo, have to put differents per action

@@ -27,6 +27,7 @@ import androidx.annotation.ColorRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -174,12 +175,12 @@ class DownloadListAdapter(
                     val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                     val stopDate = i.downloadStop
                     val startDate = i.downloadStart
-                    if (stopDate != null && i.statusMsg == "בוטל") {
+                    if (stopDate != null && i.statusMsg == "בוטל" || i.statusMsg == "ההורדה נכשלה") {
                         val a = sdf.format(stopDate)
                         withContext(Dispatchers.Main) {
                             holder.demandDate.text = "תאריך עצירה: ${a}"
                         }
-                    } else if (i.statusMsg == "בהורדה") {
+                    } else if (i.statusMsg == "בהורדה" || i.statusMsg == "בקשה בהפקה" || i.statusMsg == "בקשה נשלחה") {
                         val a = sdf.format(startDate)
                         withContext(Dispatchers.Main) {
                             holder.demandDate.text = "תאריך בקשה: ${a}"
@@ -211,9 +212,8 @@ class DownloadListAdapter(
                     ).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
-                updateProgressBarColor(holder.progressBar, R.color.green)
                 holder.sizeLayout.visibility = View.GONE
-                deliveryDate(manager, downloadData, holder)
+//                deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
@@ -225,7 +225,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
-                updateProgressBarColor(holder.progressBar, R.color.green)
+                updateProgressBarColor(holder.progressBar, R.color.green, R.color.loadEmpty)
             }
 
             DONE -> {
@@ -256,13 +256,12 @@ class DownloadListAdapter(
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
                 holder.separator.visibility = View.VISIBLE
-                updateProgressBarColor(holder.progressBar, R.color.loadEmpty)
+                updateProgressBarColor(holder.progressBar, R.color.loadEmpty, R.color.loadEmpty)
 
             }
 
             ERROR -> {
                 TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
-                updateProgressBarColor(holder.progressBar, R.color.red)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -272,7 +271,7 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                updateProgressBarColor(holder.progressBar, R.color.red)
+                updateProgressBarColor(holder.progressBar, R.color.red, R.color.light_red)
             }
 
             CANCEL -> {
@@ -289,11 +288,12 @@ class DownloadListAdapter(
                 holder.dates.visibility = View.INVISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.sizeLayout.visibility = View.GONE
-                updateProgressBarColor(holder.progressBar, R.color.blue)
+                updateProgressBarColor(holder.progressBar, R.color.blue, R.color.light_blue)
             }
 
             PAUSE -> {
-                holder.textFileName.text = ""
+                holder.textFileName.text = "ההורדה נעצרה"
+                holder.textStatus.text = "נעצר: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
@@ -301,7 +301,7 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.dates.visibility = View.GONE
-                updateProgressBarColor(holder.progressBar, R.color.blue)
+                updateProgressBarColor(holder.progressBar, R.color.blue, R.color.light_blue)
             }
 
             CONTINUE -> {
@@ -312,7 +312,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
-                updateProgressBarColor(holder.progressBar, R.color.green)
+                updateProgressBarColor(holder.progressBar, R.color.green, R.color.loadEmpty)
             }
 
             DOWNLOAD -> {
@@ -327,7 +327,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.GONE
                 holder.product.visibility = View.GONE
                 holder.separator.visibility = View.GONE
-                updateProgressBarColor(holder.progressBar, R.color.green)
+                updateProgressBarColor(holder.progressBar, R.color.green, R.color.loadEmpty)
             }
 
             DELETED -> {
@@ -377,11 +377,14 @@ class DownloadListAdapter(
             onButtonClick(ITEM_VIEW_CLICK, downloadData.id!!, pathAvailable)
         }
     }
-    private fun updateProgressBarColor(progressBar: ProgressBar, @ColorRes colorResId: Int) {
+
+    private fun updateProgressBarColor(progressBar: ProgressBar, percentageColor: Int, backgroundColor: Int) {
         val layerDrawable = progressBar.progressDrawable as LayerDrawable
         val rotateDrawable = layerDrawable.findDrawableByLayerId(R.id.loading_color_id) as RotateDrawable
         val shapeDrawable = rotateDrawable.drawable as GradientDrawable
-        shapeDrawable.setColor(ContextCompat.getColor(context, colorResId))
+        val backgroundDrawable = layerDrawable.findDrawableByLayerId(R.id.background) as GradientDrawable
+        backgroundDrawable.setColor(ContextCompat.getColor(context, backgroundColor))
+        shapeDrawable.setColor(ContextCompat.getColor(context, percentageColor))
         progressBar.progressDrawable = layerDrawable
     }
 
