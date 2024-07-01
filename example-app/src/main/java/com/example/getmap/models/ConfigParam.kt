@@ -85,8 +85,7 @@ class ConfigParam {
                 holder.valueTextView.visibility = View.VISIBLE
             }
 
-            if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url"
-                        || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path")
+            if ((holder.nameTextView.text == "URL" || holder.nameTextView.text == "Matomo Url")
                 && !isEditing
             ) {
                 holder.valueTextView.transformationMethod =
@@ -97,7 +96,7 @@ class ConfigParam {
 
             // Add an onclickListener that will Toast if it is a non changing params
             if ((holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed"
-                || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path") && isEditing
+                || holder.nameTextView.text == "Sd Storage Path" || holder.nameTextView.text == "Flash Storage Path") && isEditing
             ) {
                 holder.valueTextView.isEnabled = false
                 itemNameLayout.setOnClickListener {
@@ -113,7 +112,7 @@ class ConfigParam {
             }
             //Remove the onclickListener of the popUp for the non changing params
             else if (!(holder.nameTextView.text == "Max MapArea in SqKm" || holder.nameTextView.text == "Min inclusion needed"
-                        || holder.nameTextView.text == "Download Path" || holder.nameTextView.text == "Flash Storage Path") || !isEditing
+                        || holder.nameTextView.text == "Sd Storage Path" || holder.nameTextView.text == "Flash Storage Path") || !isEditing
             ){
                 itemNameLayout.setOnClickListener(null)
                 itemViewLayout.setOnClickListener(null)
@@ -177,7 +176,7 @@ class ConfigParam {
 
             val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
             val stringNames = arrayOf("Matomo dimension id", "Matomo site id")
-            val passwordNames = arrayOf("URL", "Matomo Url", "Download Path", "Flash Storage Path")
+            val passwordNames = arrayOf("URL", "Matomo Url", "Sd Storage Path", "Flash Storage Path")
             if (passwordNames.contains(Params[holder.adapterPosition].name))
                 valItemView.inputType = TYPE_TEXT_VARIATION_PASSWORD
             else if (stringNames.contains(Params[holder.adapterPosition].name))
