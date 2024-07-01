@@ -25,6 +25,7 @@ android {
         buildConfigField "String", "ENCRYPTION_KEY", "\""+getPropertyFromFile("ENCRYPTION_KEY")+"\""
         buildConfigField "String", "USERNAME", "\""+getPropertyFromFile("USERNAME")+"\""
         buildConfigField "String", "PASSWORD", "\""+getPropertyFromFile("PASSWORD")+"\""
+        buildConfigField "String", "BASE_URL", "\""+getPropertyFromFile("BASE_URL")+"\""
 
         ksp {
             arg('room.schemaLocation', "$projectDir/schemas")

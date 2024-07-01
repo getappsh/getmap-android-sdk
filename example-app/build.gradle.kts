@@ -26,6 +26,7 @@ android {
 
         buildConfigField("String", "USERNAME", "\"${getPropertyFromFile("USERNAME")}\"")
         buildConfigField("String", "PASSWORD", "\"${getPropertyFromFile("PASSWORD")}\"")
+        buildConfigField("String", "BASE_URL", "\"${getPropertyFromFile("BASE_URL")}\"")
     }
 
     buildTypes {
