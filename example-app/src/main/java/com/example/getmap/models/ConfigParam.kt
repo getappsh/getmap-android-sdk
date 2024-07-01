@@ -176,7 +176,7 @@ class ConfigParam {
 
             val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
             val stringNames = arrayOf("Matomo dimension id", "Matomo site id")
-            val passwordNames = arrayOf("URL", "Matomo Url", "Download Path", "Sd Storage Path", "Flash Storage Path")
+            val passwordNames = arrayOf("URL", "Matomo Url")
             if (passwordNames.contains(Params[holder.adapterPosition].name))
                 valItemView.inputType = TYPE_TEXT_VARIATION_PASSWORD
             else if (stringNames.contains(Params[holder.adapterPosition].name))
