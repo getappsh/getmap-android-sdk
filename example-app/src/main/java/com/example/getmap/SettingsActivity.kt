@@ -212,7 +212,7 @@ class SettingsActivity : AppCompatActivity() {
             NebulaParam("Min inclusion needed", service.config.mapMinInclusionPct.toString()),
             NebulaParam("Download Path", service.config.downloadPath),
             //15
-            NebulaParam("Download Path", service.config.downloadPath),
+            NebulaParam("Sd Storage Path", service.config.sdStoragePath),
             NebulaParam("Flash Storage Path", service.config.flashStoragePath),
             NebulaParam("Target Storage Policy", service.config.targetStoragePolicy.value, true),
             NebulaParam("flashInventoryMaxSizeMB",service.config.flashInventoryMaxSizeMB.toString()),
