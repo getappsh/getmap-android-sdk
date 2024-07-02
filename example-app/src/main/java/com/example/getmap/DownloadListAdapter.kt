@@ -170,23 +170,16 @@ class DownloadListAdapter(
             holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
 
         } else {
-            CoroutineScope(Dispatchers.Default).launch {
-                manager.service.getDownloadedMaps().forEach { i ->
-                    val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                    val stopDate = i.downloadStop
-                    val startDate = i.downloadStart
-                    if (stopDate != null && i.statusMsg == "בוטל" || i.statusMsg == "ההורדה נכשלה") {
-                        val a = sdf.format(stopDate)
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך עצירה: ${a}"
-                        }
-                    } else if (i.statusMsg == "בהורדה" || i.statusMsg == "בקשה בהפקה" || i.statusMsg == "בקשה נשלחה") {
-                        val a = sdf.format(startDate)
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך בקשה: ${a}"
-                        }
-                    }
-                }
+            val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+            val stopDate = downloadData.downloadStop
+            val startDate = downloadData.downloadStart
+            if (downloadData.statusMsg == "בהורדה" || downloadData.statusMsg == "בקשה בהפקה" || downloadData.statusMsg == "בקשה נשלחה") {
+                val a = sdf.format(startDate)
+                holder.demandDate.text = "תאריך בקשה: ${a}"
+            }
+            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה") {
+                val a = sdf.format(stopDate)
+                holder.demandDate.text = "תאריך עצירה: ${a}"
             }
         }
 
