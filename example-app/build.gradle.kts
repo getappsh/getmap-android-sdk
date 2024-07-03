@@ -32,6 +32,7 @@ android {
         buildConfigField("String", "AW_PASSWORD", "\"${getPropertyFromFile("AW_PASSWORD")}\"")
         buildConfigField("String", "AW_API", "\"${getPropertyFromFile("AW_API")}\"")
         buildConfigField("String", "AIRWATCH_TENANT", "\"${getPropertyFromFile("AIRWATCH_TENANT")}\"")
+        buildConfigField("String", "BASE_URL", "\"${getPropertyFromFile("BASE_URL")}\"")
     }
 
     buildTypes {

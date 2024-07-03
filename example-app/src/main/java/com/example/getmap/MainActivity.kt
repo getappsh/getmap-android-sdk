@@ -122,11 +122,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 imeiEven = null
 
             var url = Pref.getInstance(this).baseUrl
-            if (url.isEmpty()) url =
-                "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link"
+            if (url.isEmpty()) url = BuildConfig.BASE_URL
+
             val cfg = Configuration(
                 url,
-//            "http://getapp-test.getapp.sh:3000",
                 BuildConfig.USERNAME,
                 BuildConfig.PASSWORD,
                 16,
