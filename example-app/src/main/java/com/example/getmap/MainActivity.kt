@@ -58,6 +58,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
+import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -130,13 +131,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
             if (url.isEmpty()) {
-                url = "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link"
+                url = BuildConfig.BASE_URL
                 Log.d("$TAG - AIRWATCH", "URL is empty, new url is $url")
             }
             Log.d("$TAG - AIRWATCH", "Before configuration of the Sdk, the Imei and url from the airwatch are : $imeiEven / $url")
+
             val cfg = Configuration(
                 url,
-//            "http://getapp-test.getapp.sh:3000",
                 BuildConfig.USERNAME,
                 BuildConfig.PASSWORD,
                 16,
@@ -251,10 +252,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Toast.makeText(
-                        applicationContext,
+                    Snackbar.make(findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                        Toast.LENGTH_LONG
+                        Snackbar.LENGTH_LONG
                     ).show()
                 }
             }
