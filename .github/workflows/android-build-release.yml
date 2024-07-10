@@ -48,6 +48,22 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
+      - name: Bump version in build.gradle.kts
+        id: bump_version
+        run: |
+          VERSION_CODE=$(grep -oP 'versionCode\s*=\s*\K\d+' example-app/build.gradle.kts)
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+          sed -i "s/versionCode\s*=\s*${VERSION_CODE}/versionCode = ${NEW_VERSION_CODE}/" example-app/build.gradle.kts
+
+          VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' example-app/build.gradle.kts)
+          NEW_VERSION_NAME=$(echo $VERSION_NAME | awk -F. -v OFS=. '{$NF = $NF + 1; print}')
+          sed -i "s/versionName\s*=\s*\"${VERSION_NAME}\"/versionName = \"${NEW_VERSION_NAME}\"/" example-app/build.gradle.kts
+
+          FULL_VERSION_NAME="v${NEW_VERSION_NAME}-CM"
+          echo "VERSION_CODE=${NEW_VERSION_CODE}" >> $GITHUB_ENV
+          echo "VERSION_NAME=${NEW_VERSION_NAME}" >> $GITHUB_ENV
+          echo "FULL_VERSION_NAME=${FULL_VERSION_NAME}" >> $GITHUB_ENV
+
       - name: Build the app
         run: ./gradlew :example-app:assembleDebug
 
@@ -57,18 +73,53 @@ jobs:
           name: app-debug
           path: example-app/build/outputs/apk/debug/*.apk
 
+      - name: Upload modified build.gradle.kts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-gradle-kts
+          path: example-app/build.gradle.kts
+
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Download APK
         uses: actions/download-artifact@v2
         with:
           name: app-debug
           path: app-debug
 
+      - name: Download modified build.gradle.kts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-gradle-kts
+          path: example-app/
+
       - run: ls -R
+
+      - run: example-app/build.gradle.kts
+
+      - name: Commit version bump
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add example-app/build.gradle.kts
+          git commit -m "Bump version to ${{ env.FULL_VERSION_NAME }} [skip ci]"
+          git push origin build
+
+      - name: Create and push tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag ${{ env.FULL_VERSION_NAME }}
+          git push origin ${{ env.FULL_VERSION_NAME }}
+      
 
       - name: Create Release
         id: create_release
@@ -76,8 +127,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ env.FULL_VERSION_NAME }}
+          release_name: Release ${{ env.FULL_VERSION_NAME }}
           draft: true
           prerelease: false
 
