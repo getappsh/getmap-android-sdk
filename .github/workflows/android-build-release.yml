@@ -63,6 +63,11 @@ jobs:
           echo "VERSION_CODE=${NEW_VERSION_CODE}" >> $GITHUB_ENV
           echo "VERSION_NAME=${NEW_VERSION_NAME}" >> $GITHUB_ENV
           echo "FULL_VERSION_NAME=${FULL_VERSION_NAME}" >> $GITHUB_ENV
+          
+          echo $FULL_VERSION_NAME
+          echo $VERSION_NAME
+          echo $VERSION_CODE
+
 
       - name: Build the app
         run: ./gradlew :example-app:assembleDebug
@@ -84,6 +89,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - run: |
+          echo ${{ env.FULL_VERSION_NAME }}
+          echo ${{ env.VERSION_CODE }}
+          echo ${{ env.VERSION_NAME }}
+
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
