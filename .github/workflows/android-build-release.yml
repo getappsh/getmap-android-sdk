@@ -44,6 +44,9 @@ jobs:
           echo "BASE_URL=https://getapp.com" >> ./secrets.properties
           echo "ENCRYPTION_KEY=somekey" >> ./secrets.properties
 
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
       - name: Build the app
         run: ./gradlew :example-app:assembleDebug
 
