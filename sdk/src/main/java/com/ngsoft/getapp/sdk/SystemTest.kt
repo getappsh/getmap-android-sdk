@@ -143,7 +143,7 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
 
     fun testDiscovery(reportUpdater: TestReportUpdater){
         Timber.i("Test Discovery")
-        testReport[TEST_DISCOVERY] = TestResults("Discovery", TEST_DISCOVERY)
+        testReport[TEST_DISCOVERY] = TestResults("בחירת תיחום", TEST_DISCOVERY)
         reportUpdater(testReport)
         try {
             service.getDiscoveryCatalog(MapProperties("system-test", "1.1.1.1", false))
@@ -157,7 +157,7 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
 
     fun testConfig(reportUpdater: TestReportUpdater){
         Timber.i("Test Config")
-        testReport[TEST_CONFIG] = TestResults("Config", TEST_CONFIG)
+        testReport[TEST_CONFIG] = TestResults("קבלת קונפיגורציה", TEST_CONFIG)
         reportUpdater(testReport)
 
         val lastUpdate = service.config.lastConfigCheck
@@ -178,7 +178,7 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
 
     fun testInventoryUpdates(reportUpdater: TestReportUpdater){
         Timber.i("Test Inventory Updates")
-        testReport[TEST_INVENTORY_UPDATES] = TestResults("Inventory Updates", TEST_INVENTORY_UPDATES)
+        testReport[TEST_INVENTORY_UPDATES] = TestResults("סטטוס עדכניות מפות", TEST_INVENTORY_UPDATES)
         reportUpdater(testReport)
 
         try {
@@ -194,7 +194,7 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
     @OptIn(ExperimentalTime::class)
     fun testDelivery(reportUpdater: TestReportUpdater){
         Timber.i("Test Delivery")
-        testReport[TEST_IMPORT] = TestResults("Import Map", TEST_IMPORT)
+        testReport[TEST_IMPORT] = TestResults("הפקת מפה", TEST_IMPORT)
         reportUpdater(testReport)
 
         val props = MapProperties(
@@ -209,8 +209,8 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
         val id = service.downloadMap(props);
         if (id == null){
             testReport[TEST_IMPORT]?.success = false
-            testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD, false)
-            testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE, false)
+            testReport[TEST_DOWNLOAD] = TestResults("הורדת מפות", TEST_DOWNLOAD, false)
+            testReport[TEST_FILE_MOVE] = TestResults("העברת קבצים", TEST_FILE_MOVE, false)
             reportUpdater(testReport)
             return
         }
@@ -229,14 +229,14 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
                 testReport[TEST_IMPORT]?.success = true
 
                 if (testReport[TEST_DOWNLOAD] == null){
-                    testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD)
+                    testReport[TEST_DOWNLOAD] = TestResults("הורדת מפות", TEST_DOWNLOAD)
                 }
                 reportUpdater(testReport)
             }
             if (flowState >= DeliveryFlowState.DOWNLOAD_DONE){
                 testReport[TEST_DOWNLOAD]?.success = true
                 if (testReport[TEST_FILE_MOVE] == null){
-                    testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE)
+                    testReport[TEST_FILE_MOVE] = TestResults("העברת קבצים", TEST_FILE_MOVE)
                 }
                 reportUpdater(testReport)
             }
@@ -256,11 +256,11 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
 
                 }
                 if (testReport[TEST_DOWNLOAD]?.success != true){
-                    testReport[TEST_DOWNLOAD] = TestResults("Download Map", TEST_DOWNLOAD, false)
+                    testReport[TEST_DOWNLOAD] = TestResults("הורדת מפות", TEST_DOWNLOAD, false)
                     testReport[TEST_DOWNLOAD]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
                 }
                 if (testReport[TEST_FILE_MOVE]?.success != true){
-                    testReport[TEST_FILE_MOVE] = TestResults("Move Files", TEST_FILE_MOVE, false)
+                    testReport[TEST_FILE_MOVE] = TestResults("העברת קבצים", TEST_FILE_MOVE, false)
                     testReport[TEST_FILE_MOVE]?.message = if (timeoutTime.hasPassedNow()) "Time-out" else mapPkg.statusDescr
                 }
                 reportUpdater(testReport)

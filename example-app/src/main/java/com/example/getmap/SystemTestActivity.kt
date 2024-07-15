@@ -36,13 +36,11 @@ class SystemTestActivity : AppCompatActivity() {
         setContentView(R.layout.activity_system_test)
 
         val cfg = Configuration(
-            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
+            BuildConfig.BASE_URL,
             BuildConfig.USERNAME,
             BuildConfig.PASSWORD,
             16,
-            null
-        )
-
+            null)
 
         val systemTest = SystemTest.getInstance(this, cfg)
 
@@ -99,6 +97,6 @@ class SystemTestActivity : AppCompatActivity() {
         }
 
         // Update the TextView with the test name
-        testNameTextView.text = testResult?.name ?: "Loading..."
+        testNameTextView.text = testResult?.name ?: "טוען..."
     }
 }
