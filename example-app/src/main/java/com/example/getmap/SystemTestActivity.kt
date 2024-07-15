@@ -9,7 +9,9 @@ import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.SystemTest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 
 class SystemTestActivity : AppCompatActivity() {
 
@@ -61,7 +63,6 @@ class SystemTestActivity : AppCompatActivity() {
 
         testInventoryUpdatesIcon = findViewById(R.id.testInventoryUpdatesIcon)
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
-
         GlobalScope.launch(Dispatchers.IO) {
             systemTest.run { testReport ->
                 runOnUiThread {
