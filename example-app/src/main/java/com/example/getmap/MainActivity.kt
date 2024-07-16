@@ -1,6 +1,7 @@
 package com.example.getmap
 
 import GetApp.Client.models.MapConfigDto
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import com.example.getmap.matomo.MatomoTracker
 import android.content.DialogInterface
@@ -97,6 +98,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val popUp = PopUp()
 
 
+    @SuppressLint("MissingInflatedId")
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -305,6 +307,27 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
         registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        deleteFail.setOnClickListener {
+            val dialogBuilder = android.app.AlertDialog.Builder(this)
+            dialogBuilder.setMessage("האם למחוק את כל הפתקים שנכשלו בהורדה?")
+            dialogBuilder.setPositiveButton("כן") { _, _ ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                        if (map.statusMsg == "נכשל") {
+                            mapServiceManager.service.deleteMap(map.id!!)
+                        }
+                    }
+                }
+            }
+            dialogBuilder.setNegativeButton("לא", null)
+            val popUpMessage = dialogBuilder.create()
+            popUpMessage.show()
+        }
+
+        val pdFile = findViewById<ImageButton>(R.id.pdfFile)
+        pdFile.setOnClickListener {}
     }
 
 //    override fun onResume() {
