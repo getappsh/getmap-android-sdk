@@ -74,12 +74,8 @@ object ReportUtils {
 
     private fun getReport(cursor: Cursor): Report {
         val id = cursor.getLong(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_ID))
-        val type = VariantReport.fromString(
-            cursor.getString(
-                cursor.getColumnIndexOrThrow(
-                    ReportDatabaseHelper.COLUMN_TYPE
-                )
-            )
+        val type = VariantReportEnum.fromString(
+            cursor.getString(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_TYPE))
         )
         val path = cursor.getString(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_PATH))
         val title = cursor.getString(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_TITLE))

@@ -28,7 +28,7 @@ class ReportDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
         val createTable = ("CREATE TABLE $TABLE_REPORTS ("
                 + "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "$COLUMN_NAME TEXT,"
-                + "$COLUMN_TYPE TEXT,"
+                + "$COLUMN_TYPE TEXT CHECK ($COLUMN_TYPE IN ('Event', 'Screen')) NOT NULL,"
                 + "$COLUMN_PATH TEXT,"
                 + "$COLUMN_TITLE TEXT,"
                 + "$COLUMN_CATEGORY TEXT,"

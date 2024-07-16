@@ -4,7 +4,7 @@ import java.util.Date
 
 data class Report(
     val id: Long,
-    val type: VariantReport,
+    val type: VariantReportEnum,
     val path: String? = null,
     val title: String? = null,
     val category: String? = null,
@@ -15,3 +15,26 @@ data class Report(
     val dimValue: String? = null,
     val createdAt: Date? = null
 )
+
+
+enum class VariantReportEnum {
+    Event,
+    Screen;
+
+    companion object {
+        fun fromString(typeString: String): VariantReportEnum {
+            return when (typeString) {
+                "Event" -> Event
+                "Screen" -> Screen
+                else -> throw IllegalArgumentException("Unknown type_enum value: $typeString")
+            }
+        }
+    }
+
+    override fun toString(): String {
+        return when (this) {
+            Event -> "Event"
+            Screen -> "Screen"
+        }
+    }
+}
