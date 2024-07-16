@@ -1,10 +1,12 @@
-package com.example.getmap.matomo_content_provider
+package com.example.getmap.matomo.provider
 
 import Report
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
-import com.example.completecontentprovider.VariantReport
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object ReportUtils {
 
@@ -21,6 +23,13 @@ object ReportUtils {
             put(ReportDatabaseHelper.COLUMN_DIMVALUE, report.dimValue)
         }
         db.insert(ReportDatabaseHelper.TABLE_REPORTS, null, values)
+    @SuppressLint("ConstantLocale")
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+    private fun stringToDate(dateString: String?): Date? {
+        return dateString?.let {
+            dateFormat.parse(it)
+        }
     }
 
     fun getReport(cursor: Cursor): Report {
@@ -40,7 +49,10 @@ object ReportUtils {
         val value = cursor.getFloat(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_VALUE))
         val dimId = cursor.getInt(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_DIMID))
         val dimValue = cursor.getString(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_DIMVALUE))
+        val createdAtString = cursor.getString(cursor.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_CREATED_AT))
+        val createdAt = stringToDate(createdAtString)
 
-        return Report(id, type, path, title, category, action, name, value, dimId, dimValue)
+
+        return Report(id, type, path, title, category, action, name, value, dimId, dimValue, createdAt)
     }
 }

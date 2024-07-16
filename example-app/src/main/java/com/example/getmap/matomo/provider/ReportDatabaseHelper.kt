@@ -1,4 +1,4 @@
-package com.example.getmap.matomo_content_provider
+package com.example.getmap.matomo.provider
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -21,6 +21,7 @@ class ReportDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
         const val COLUMN_VALUE = "value"
         const val COLUMN_DIMID = "dimId"
         const val COLUMN_DIMVALUE = "dimValue"
+        const val COLUMN_CREATED_AT = "created_at"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -34,7 +35,8 @@ class ReportDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
                 + "$COLUMN_ACTION TEXT,"
                 + "$COLUMN_VALUE FLOAT,"
                 + "$COLUMN_DIMID INTEGER,"
-                + "$COLUMN_DIMVALUE TEXT)")
+                + "$COLUMN_DIMVALUE TEXT,"
+                + "$COLUMN_CREATED_AT DATETIME DEFAULT CURRENT_TIMESTAMP)") // Add the new column with default value
         db.execSQL(createTable)
     }
 
