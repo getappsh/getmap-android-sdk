@@ -65,6 +65,11 @@
 
         </activity>
 
+        <provider
+            android:name=".matomo.provider.ReportProvider"
+            android:authorities="com.example.getmap.matomo.provider"
+            android:exported="false" />
+
         <receiver
             android:name="com.ngsoft.getapp.sdk.jobs.BootReceiver"
             android:enabled="true"

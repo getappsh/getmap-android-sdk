@@ -1,4 +1,4 @@
-package com.example.completecontentprovider
+package com.example.getmap.matomo.provider
 
 import android.content.ContentProvider
 import android.content.ContentUris
@@ -9,12 +9,11 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
-import com.example.getmap.matomo_content_provider.ReportDatabaseHelper
 
 class ReportProvider : ContentProvider() {
 
     companion object {
-        private const val AUTHORITY = "com.example.completecontentprovider.provider"
+        private const val AUTHORITY = "com.example.getmap.matomo.provider"
         private const val REPORTS_PATH = "reports"
         val CONTENT_URI: Uri = Uri.parse("content://$AUTHORITY/$REPORTS_PATH")
 
