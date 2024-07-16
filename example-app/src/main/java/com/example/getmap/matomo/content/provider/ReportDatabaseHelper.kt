@@ -1,4 +1,4 @@
-package com.example.getmap.matomo.provider
+package com.example.getmap.matomo.content.provider
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

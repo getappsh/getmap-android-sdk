@@ -66,8 +66,8 @@
         </activity>
 
         <provider
-            android:name=".matomo.provider.ReportProvider"
-            android:authorities="com.example.getmap.matomo.provider"
+            android:name=".matomo.content.provider.ReportProvider"
+            android:authorities="com.example.getmap.matomo.content.provider"
             android:exported="false" />
 
         <receiver

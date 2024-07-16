@@ -1,4 +1,4 @@
-package com.example.getmap.matomo.provider
+package com.example.getmap.matomo.content.provider
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver

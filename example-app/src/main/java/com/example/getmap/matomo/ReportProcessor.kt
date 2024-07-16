@@ -1,9 +1,9 @@
 package com.example.getmap.matomo
 
 import android.content.ContentResolver
-import com.example.getmap.matomo.provider.Report
-import com.example.getmap.matomo.provider.ReportUtils
-import com.example.getmap.matomo.provider.VariantReportEnum
+import com.example.getmap.matomo.content.provider.Report
+import com.example.getmap.matomo.content.provider.ReportUtils
+import com.example.getmap.matomo.content.provider.VariantReportEnum
 import org.matomo.sdk.QueryParams
 import org.matomo.sdk.TrackMe
 import org.matomo.sdk.Tracker
