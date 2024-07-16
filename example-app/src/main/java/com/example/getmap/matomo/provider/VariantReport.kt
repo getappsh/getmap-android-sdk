@@ -1,4 +1,4 @@
-package com.example.completecontentprovider
+package com.example.getmap.matomo.provider
 
 sealed class VariantReport {
     class Event(val value: String) : VariantReport()

@@ -62,7 +62,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
-import com.example.getmap.matomo_content_provider.ReportDatabaseHelper
+import com.example.getmap.matomo.provider.ReportUtils
 import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
