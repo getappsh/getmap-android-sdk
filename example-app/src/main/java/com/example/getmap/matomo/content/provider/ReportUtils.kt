@@ -7,6 +7,7 @@ import android.database.Cursor
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 object ReportUtils {
 
@@ -64,7 +65,9 @@ object ReportUtils {
     }
 
     @SuppressLint("ConstantLocale")
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
 
     private fun stringToDate(dateString: String?): Date? {
         return dateString?.let {

@@ -1,6 +1,7 @@
 package com.example.getmap.matomo
 
 import android.content.ContentResolver
+import android.util.Log
 import com.example.getmap.matomo.content.provider.Report
 import com.example.getmap.matomo.content.provider.ReportUtils
 import com.example.getmap.matomo.content.provider.VariantReportEnum
@@ -17,6 +18,7 @@ object ReportProcessor {
     fun process(tracker: Tracker, contentResolver: ContentResolver) {
         val reports = ReportUtils.readReports(contentResolver)
         reports.forEach { report ->
+            Log.d("ReportProcessor", "Processing report: $report")
             buildEvent(report)?.let { tracker.track(it) }
             ReportUtils.deleteReport(contentResolver, report.id)
         }
