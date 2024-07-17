@@ -25,6 +25,8 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,6 +61,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
+import com.github.barteksc.pdfviewer.PDFView
 import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -326,8 +329,22 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             popUpMessage.show()
         }
 
+        val pdfView = findViewById<PDFView>(R.id.pdfView)
+        pdfView.visibility = View.INVISIBLE
         val pdFile = findViewById<ImageButton>(R.id.pdfFile)
-        pdFile.setOnClickListener {}
+        pdFile.setOnClickListener {
+            pdfView.visibility = View.VISIBLE
+            pdfView.fromAsset("strategy.pdf").load()
+
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (pdfView.visibility == View.VISIBLE) {
+                    pdfView.visibility = View.INVISIBLE
+                }
+            }
+        })
     }
 
 //    override fun onResume() {
