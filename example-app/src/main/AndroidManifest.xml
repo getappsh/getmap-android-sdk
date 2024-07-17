@@ -20,6 +20,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <permission android:name="com.getmap.matomo.provider.READ_ONLY"
+        android:protectionLevel="signature" />
+    <permission android:name="com.getmap.matomo.provider.WRITE_ONLY"
+        android:protectionLevel="signature" />
 
     <application
         android:allowBackup="true"
@@ -67,8 +71,10 @@
 
         <provider
             android:name=".matomo.content.provider.ReportProvider"
-            android:authorities="com.example.getmap.matomo.content.provider"
-            android:exported="false" />
+            android:authorities="com.getmap.matomo.provider"
+            android:exported="true"
+            android:readPermission="com.getmap.matomo.provider.READ_ONLY"
+            android:writePermission="com.getmap.matomo.provider.WRITE_ONLY"/>
 
         <receiver
             android:name="com.ngsoft.getapp.sdk.jobs.BootReceiver"

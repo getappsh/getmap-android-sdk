@@ -13,7 +13,7 @@ import android.net.Uri
 class ReportProvider : ContentProvider() {
 
     companion object {
-        private const val AUTHORITY = "com.example.getmap.matomo.content.provider"
+        private const val AUTHORITY = "com.getmap.matomo.provider"
         private const val REPORTS_PATH = "reports"
         val CONTENT_URI: Uri = Uri.parse("content://$AUTHORITY/$REPORTS_PATH")
 
