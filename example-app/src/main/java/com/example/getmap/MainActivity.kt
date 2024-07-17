@@ -1,14 +1,11 @@
 package com.example.getmap
 
 import GetApp.Client.models.MapConfigDto
-import ReportLoader
 import android.app.ProgressDialog
 import com.example.getmap.matomo.MatomoTracker
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.IntentFilter
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.net.Uri
@@ -17,7 +14,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.provider.Settings
-import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,15 +28,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
-import androidx.loader.app.LoaderManager
-import androidx.loader.content.Loader
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-//import com.arcgismaps.geometry.Point
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.BuildConfig
@@ -62,11 +54,11 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
-import com.example.getmap.matomo.provider.ReportUtils
+import com.example.getmap.matomo.ReportProcessor
 import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
-class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener,LoaderManager.LoaderCallbacks<Cursor> {
+class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private var tracker: Tracker? = null
     private val TAG = MainActivity::class.qualifiedName
@@ -322,20 +314,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener,Loa
             finish()
         }
 
-        registerReceiver(
-            SystemTestReceiver,
-            IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
-        )
+        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        TrackHelper.track().screen("מסך ראשי")
-//            .with(tracker)
-//        tracker?.dispatch()
-//        mapServiceManager = MapServiceManager.getInstance()
-//        Log.d("a", "sa")
-//    }
+    override fun onResume() {
+        super.onResume()
+        CoroutineScope(Dispatchers.IO).launch{
+            tracker?.let { ReportProcessor.process(it, contentResolver)}
+        }
+    }
+
 
     override fun onDestroy() {
         if (!isReplacingActivity) {
@@ -344,6 +332,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener,Loa
         }
         super.onDestroy()
     }
+
+
     //Telephone Number of the Olar
 //    override fun onRequestPermissionsResult(
 //        requestCode: Int,
@@ -820,38 +810,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener,Loa
             )
         }
         return tracker!!
-    }
-
-    fun initializeMatomoProvider(){
-        val loader =  LoaderManager.getInstance(this).initLoader(0, null, this@MainActivity)
-
-    }
-
-    override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
-        return ReportLoader(this)
-    }
-
-    override fun onLoadFinished(loader: Loader<Cursor>, data: Cursor?) {
-        if (data != null) {
-            val reports = StringBuilder()
-            while (data.moveToNext()) {
-                val name = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_NAME))
-                val type = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_TYPE))
-                val path = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_PATH))
-                val title = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_TITLE))
-                val category = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_CATEGORY))
-                val action = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_ACTION))
-                val value = data.getFloat(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_VALUE))
-                val dimId = data.getInt(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_DIMID))
-                val dimValue = data.getString(data.getColumnIndexOrThrow(ReportDatabaseHelper.COLUMN_DIMVALUE))
-                reports.append("Name: $name, Type: $type, Path: $path, Title: $title, Category: $category, Action: $action, Value: $value, DimId: $dimId, DimValue: $dimValue\n")
-            }
-//            textView.text = reports.toString()
-        }
-    }
-
-    override fun onLoaderReset(loader: Loader<Cursor>) {
-//        textView.text = ""
     }
 
 }
