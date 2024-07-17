@@ -18,8 +18,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 5
-        versionName = "2.0.3"
+        versionCode = 4
+        versionName = "2.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -65,6 +65,15 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/*"
+        }
+    }
+
+
+    applicationVariants.configureEach{
+        val variant = this
+        variant.outputs.configureEach {
+            val variantOutputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            variantOutputImpl.outputFileName ="cloud-mapping-${variant.versionName}-${variant.name}.apk"
         }
     }
     dependencies{
