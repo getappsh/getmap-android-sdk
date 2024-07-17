@@ -117,22 +117,13 @@ jobs:
           git push origin build --tags
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: $FULL_VERSION_NAME
-          release_name: Release ${{ env.FULL_VERSION_NAME }}
+          name: Release ${{ env.FULL_VERSION_NAME }}
           draft: true
           prerelease: false
+          files: app-debug/*.apk
 
-      - name: Upload APK to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app-debug/example-app-debug.apk
-          asset_name: example-app-debug.apk
-          asset_content_type: application/vnd.android.package-archive
+
+
