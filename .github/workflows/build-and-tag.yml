@@ -3,10 +3,10 @@ name: Build and Tag
 on:
   push:
     branches:
-      - build
+      - main
   pull_request:
     branches:
-      - build
+      - main
 
 jobs:
   build:
@@ -59,8 +59,8 @@ jobs:
           echo "New full version name: $FULL_VERSION_NAME"
           echo "New version code: $NEW_VERSION_CODE"
 
-#      - name: Build the app
-#        run: ./gradlew :example-app:assembleDebug
+      - name: Build the app
+        run: ./gradlew :example-app:assembleDebug
 
       - name: Commit version bump
         id: commit
@@ -70,7 +70,7 @@ jobs:
           git add example-app/build.gradle.kts
           git commit -m "New version $FULL_VERSION_NAME"
           git tag $FULL_VERSION_NAME
-          git push origin build --tags
+          git push origin main --tags
           echo "tag=$FULL_VERSION_NAME" >> "$GITHUB_OUTPUT"
 
   mirror:
