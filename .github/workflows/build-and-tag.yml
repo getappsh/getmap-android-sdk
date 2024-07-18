@@ -1,0 +1,101 @@
+name: Build and Tag
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_visibility == 'public' }}
+    outputs:
+      git_tag: ${{ steps.commit.outputs.tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Create secrets.properties file
+        run: |
+          echo "USERNAME=test@user.com" >> ./secrets.properties
+          echo "PASSWORD=test123" >> ./secrets.properties
+          echo "AW_USER_NAME=1" >> ./secrets.properties
+          echo "AW_PASSWORD=1" >> ./secrets.properties
+          echo "AW_API=1" >> ./secrets.properties
+          echo "AIRWATCH_TENANT=1" >> ./secrets.properties
+          echo "BASE_URL=https://getapp.com" >> ./secrets.properties
+          echo "ENCRYPTION_KEY=somekey" >> ./secrets.properties
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Bump version in build.gradle.kts
+        id: bump_version
+        run: |
+          VERSION_CODE=$(grep -oP 'versionCode\s*=\s*\K\d+' example-app/build.gradle.kts)
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+          sed -i "s/versionCode\s*=\s*${VERSION_CODE}/versionCode = ${NEW_VERSION_CODE}/" example-app/build.gradle.kts
+
+          VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' example-app/build.gradle.kts)
+          NEW_VERSION_NAME=$(echo $VERSION_NAME | awk -F. -v OFS=. '{$NF = $NF + 1; print}')
+          sed -i "s/versionName\s*=\s*\"${VERSION_NAME}\"/versionName = \"${NEW_VERSION_NAME}\"/" example-app/build.gradle.kts
+          
+          FULL_VERSION_NAME="v${NEW_VERSION_NAME}-CM"
+          echo "FULL_VERSION_NAME=${FULL_VERSION_NAME}" >> $GITHUB_ENV
+          
+          echo "Old version name: $VERSION_NAME"
+          echo "New version name: $NEW_VERSION_NAME"
+          echo "New full version name: $FULL_VERSION_NAME"
+          echo "New version code: $NEW_VERSION_CODE"
+
+      - name: Build the app
+        run: ./gradlew :example-app:assembleDebug
+
+      - name: Commit version bump
+        id: commit
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add example-app/build.gradle.kts
+          git commit -m "New version $FULL_VERSION_NAME"
+          git tag $FULL_VERSION_NAME
+          git push origin main --tags
+          echo "tag=$FULL_VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+  mirror:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_visibility == 'public' }}
+
+    steps:
+      - run: echo ${{ needs.build.outputs.git_tag }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror to private repo
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MIRROR_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          git_tag=${{ needs.build.outputs.git_tag }}
+          echo "Mirror tag: $git_tag"
+          
+          git remote add mirror git@github.com:getappsh/get-map-android-sdk-private.git
+          git push mirror tag $git_tag --force --prune
+          git remote remove mirror
+
