@@ -54,7 +54,7 @@ jobs:
           
           echo "Old version name: $VERSION_NAME"
           echo "New version name: $NEW_VERSION_NAME"
-          echo "New full version name: $FULL_VERSION_NAME:
+          echo "New full version name: $FULL_VERSION_NAME"
           echo "New version code: $NEW_VERSION_CODE"
 
 #      - name: Build the app
