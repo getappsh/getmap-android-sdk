@@ -57,8 +57,8 @@ jobs:
           echo "New full version name: $FULL_VERSION_NAME"
           echo "New version code: $NEW_VERSION_CODE"
 
-      - name: Build the app
-        run: ./gradlew :example-app:assembleDebug
+#      - name: Build the app
+#        run: ./gradlew :example-app:assembleDebug
 
       - name: Commit version bump
         run: |
@@ -78,7 +78,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: build
+          fetch-depth: 1
 
       - name: Mirror to private repo
         uses: pixta-dev/repository-mirroring-action@v1
