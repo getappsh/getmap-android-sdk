@@ -38,6 +38,7 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
+
       - name: Bump version in build.gradle.kts
         id: bump_version
         run: |
