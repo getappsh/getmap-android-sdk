@@ -184,6 +184,7 @@ class MapActivity : AppCompatActivity() {
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
+                    layer!!.displayName = "gpkg"
                     wwd.layers.addLayer(layer)
                     Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
                 }
@@ -298,16 +299,18 @@ class MapActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.map_option1 -> {
                     // Handle option 1 click
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+                    wwd.requestRedraw()
                     geoPackageName = service.config.ortophotoMapPath.toString()
                     addGeoPkg()
-                    wwd.requestRedraw()
                     true
                 }
                 R.id.map_option2 -> {
                     // Handle option 2 click
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+                    wwd.requestRedraw()
                     geoPackageName = service.config.controlMapPath.toString()
                     addGeoPkg()
-                    wwd.requestRedraw()
                     true
                 }
                 else -> false
