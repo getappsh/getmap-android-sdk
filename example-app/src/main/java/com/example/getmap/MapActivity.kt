@@ -68,7 +68,7 @@ class MapActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
-    private var geoPackageName = "אורתופוטו"
+    private var geoPackageName = ""
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -174,7 +174,10 @@ class MapActivity : AppCompatActivity() {
         val storageList = storageManager.storageVolumes
         val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
         Log.i("gfgffgf", "$volume")
-        val geoPath = "${volume}/com.asio.gis/gis/maps/orthophoto/$geoPackageName.gpkg"
+        if (geoPackageName == "") {
+            geoPackageName = service.config.ortophotoMapPath.toString()
+        }
+        val geoPath = "${volume}/$geoPackageName"
 
         val layerFactory = LayerFactory()
         layerFactory.createFromGeoPackage(
@@ -295,14 +298,14 @@ class MapActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.map_option1 -> {
                     // Handle option 1 click
-                    geoPackageName = "אורתופוטו"
+                    geoPackageName = service.config.ortophotoMapPath.toString()
                     addGeoPkg()
                     wwd.requestRedraw()
                     true
                 }
                 R.id.map_option2 -> {
                     // Handle option 2 click
-                    geoPackageName = "blueMarble"
+                    geoPackageName = service.config.controlMapPath.toString()
                     addGeoPkg()
                     wwd.requestRedraw()
                     true
