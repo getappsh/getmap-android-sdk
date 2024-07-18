@@ -79,7 +79,7 @@ jobs:
     if: ${{ github.repository_visibility == 'public' }}
 
     steps:
-      - run: echo ${{ needs.build.output.git_tag }}
+      - run: echo ${{ needs.build.outputs.git_tag }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
