@@ -21,27 +21,17 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-#      - name: Create secrets.properties file
-#        run: |
-#          echo "USERNAME=${{ secrets.USERNAME }}" >> ./secrets.properties
-#          echo "PASSWORD=${{ secrets.PASSWORD }}" >> ./secrets.properties
-#          echo "AW_USER_NAME=${{ secrets.AW_USER_NAME }}" >> ./secrets.properties
-#          echo "AW_PASSWORD=${{ secrets.AW_PASSWORD }}" >> ./secrets.properties
-#          echo "AW_API=${{ secrets.AW_API }}" >> ./secrets.properties
-#          echo "AIRWATCH_TENANT=${{ secrets.AIRWATCH_TENANT }}" >> ./secrets.properties
-#          echo "BASE_URL=${{ secrets.BASE_URL }}" >> ./secrets.properties
-
-
       - name: Create secrets.properties file
         run: |
-          echo "USERNAME=test@user.com" >> ./secrets.properties
-          echo "PASSWORD=test123" >> ./secrets.properties
+          echo "USERNAME=${{ secrets.USERNAME }}" >> ./secrets.properties
+          echo "PASSWORD=${{ secrets.PASSWORD }}" >> ./secrets.properties
           echo "AW_USER_NAME=1" >> ./secrets.properties
           echo "AW_PASSWORD=1" >> ./secrets.properties
           echo "AW_API=1" >> ./secrets.properties
           echo "AIRWATCH_TENANT=1" >> ./secrets.properties
-          echo "BASE_URL=https://getapp.com" >> ./secrets.properties
-          echo "ENCRYPTION_KEY=somekey" >> ./secrets.properties
+          echo "BASE_URL=${{ secrets.BASE_URL }}" >> ./secrets.properties
+          echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> ./secrets.properties
+
 
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew

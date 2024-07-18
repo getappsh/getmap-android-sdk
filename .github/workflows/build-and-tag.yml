@@ -96,6 +96,6 @@ jobs:
           echo "Mirror tag: $git_tag"
           
           git remote add mirror git@github.com:getappsh/get-map-android-sdk-private.git
-          git push mirror tag $git_tag --force
+          git push mirror tag $git_tag --force --prune
           git remote remove mirror
 
