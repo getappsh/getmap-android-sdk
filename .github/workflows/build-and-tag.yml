@@ -56,11 +56,27 @@ jobs:
           echo $NEW_VERSION_CODE
           echo $FULL_VERSION_NAME
 
+#      - name: Build the app
+#        run: ./gradlew :example-app:assembleDebug
+
       - name: Commit version bump
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add example-app/build.gradle.kts
-          git commit -m "New version $FULL_VERSION_NAME [skip ci]"
+          git commit -m "New version $FULL_VERSION_NAME"
           git tag $FULL_VERSION_NAME
           git push origin mirror --tags
+
+      - name: Echo last commit message
+        run: |
+          last_commit_message=$(git log -1 --pretty=%B)
+          echo "Last commit message: $last_commit_message"
+
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url:
+            git@github.com:getappsh/get-map-android-sdk-private.git
+          ssh_private_key:
+            ${{ secrets.MIRROR_SSH_PRIVATE_KEY }}
+

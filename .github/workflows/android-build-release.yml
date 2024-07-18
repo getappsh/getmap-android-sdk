@@ -2,15 +2,16 @@ name: Build and Release Android App
 
 on:
   push:
+    tags:
+      - v*.*.*-*
+      - v*.*.*
     branches:
-      - build
-  pull_request:
-    branches:
-      - build
+      - mirror
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.repository_visibility == 'private' }}
 
     steps:
       - name: Checkout repository
@@ -48,21 +49,6 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Bump version in build.gradle.kts
-        id: bump_version
-        run: |
-          VERSION_CODE=$(grep -oP 'versionCode\s*=\s*\K\d+' example-app/build.gradle.kts)
-          NEW_VERSION_CODE=$((VERSION_CODE + 1))
-          sed -i "s/versionCode\s*=\s*${VERSION_CODE}/versionCode = ${NEW_VERSION_CODE}/" example-app/build.gradle.kts
-
-          VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' example-app/build.gradle.kts)
-          NEW_VERSION_NAME=$(echo $VERSION_NAME | awk -F. -v OFS=. '{$NF = $NF + 1; print}')
-          sed -i "s/versionName\s*=\s*\"${VERSION_NAME}\"/versionName = \"${NEW_VERSION_NAME}\"/" example-app/build.gradle.kts
-          
-          echo $NEW_VERSION_NAME
-          echo $NEW_VERSION_CODE
-
-
       - name: Build the app
         run: ./gradlew :example-app:assembleDebug
 
@@ -72,15 +58,10 @@ jobs:
           name: app-debug
           path: example-app/build/outputs/apk/debug/*.apk
 
-      - name: Upload modified build.gradle.kts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-gradle-kts
-          path: example-app/build.gradle.kts
-
   release:
     needs: build
     runs-on: ubuntu-latest
+    if: ${{ github.repository_visibility == 'private' }}
 
     steps:
       - name: Checkout repository
@@ -94,27 +75,12 @@ jobs:
           name: app-debug
           path: app-debug
 
-      - name: Download modified build.gradle.kts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-gradle-kts
-          path: example-app/
-
       - name: Extract Version Name
         run: |
           VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' example-app/build.gradle.kts)
           FULL_VERSION_NAME="v${VERSION_NAME}-CM"
           echo "FULL_VERSION_NAME=${FULL_VERSION_NAME}" >> $GITHUB_ENV
           echo FULL_VERSION_NAME
-
-      - name: Commit version bump
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add example-app/build.gradle.kts
-          git commit -m "Bump version to $FULL_VERSION_NAME [skip ci]"
-          git tag $FULL_VERSION_NAME
-          git push origin build --tags
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
