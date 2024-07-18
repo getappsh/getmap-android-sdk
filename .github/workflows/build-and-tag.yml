@@ -69,7 +69,6 @@ jobs:
           git tag $FULL_VERSION_NAME
           git push origin mirror --tags
 
-
   mirror:
     needs: build
     runs-on: ubuntu-latest
