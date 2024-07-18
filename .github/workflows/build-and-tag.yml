@@ -52,6 +52,7 @@ jobs:
           FULL_VERSION_NAME="v${NEW_VERSION_NAME}-CM"
           echo "FULL_VERSION_NAME=${FULL_VERSION_NAME}" >> $GITHUB_ENV
           
+          echo $VERSION_CODE
           echo $NEW_VERSION_NAME
           echo $NEW_VERSION_CODE
           echo $FULL_VERSION_NAME
