@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - mirror
+    tags:
+      - 'v*.*.*'
   delete:
     branches:
       - mirror
-
-
 
 jobs:
   to_private_repo:
