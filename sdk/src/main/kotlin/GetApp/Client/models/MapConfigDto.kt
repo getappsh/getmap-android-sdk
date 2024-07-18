@@ -43,6 +43,8 @@ import com.squareup.moshi.JsonClass
  * @param flashInventoryMaxSizeMB 
  * @param lastCheckingMapUpdatesDate 
  * @param lastConfigUpdateDate 
+ * @param ortophotoMapPath 
+ * @param controlMapPath 
  */
 
 
@@ -109,7 +111,13 @@ data class MapConfigDto (
     val lastCheckingMapUpdatesDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "lastConfigUpdateDate")
-    val lastConfigUpdateDate: java.time.OffsetDateTime? = null
+    val lastConfigUpdateDate: java.time.OffsetDateTime? = null,
+
+    @Json(name = "ortophotoMapPath")
+    val ortophotoMapPath: kotlin.String? = null,
+
+    @Json(name = "controlMapPath")
+    val controlMapPath: kotlin.String? = null
 
 ) {
 

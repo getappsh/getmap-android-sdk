@@ -15,6 +15,7 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.MapProductResDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -22,46 +23,62 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param zoomLevel 
  * @param catalogId 
- * @param productId 
- * @param productName 
- * @param fileName 
+ * @param name 
  * @param createDate 
+ * @param exportEndDate 
  * @param boundingBox 
+ * @param footprint 
+ * @param propertySize 
+ * @param area 
  * @param status 
+ * @param fileName 
  * @param packageUrl 
+ * @param isUpdate 
+ * @param product 
  */
 
 
 data class MapDto (
 
-    @Json(name = "zoomLevel")
-    val zoomLevel: java.math.BigDecimal,
-
     @Json(name = "catalogId")
     val catalogId: kotlin.String? = null,
 
-    @Json(name = "productId")
-    val productId: kotlin.String? = null,
-
-    @Json(name = "productName")
-    val productName: kotlin.String? = null,
-
-    @Json(name = "fileName")
-    val fileName: kotlin.String? = null,
+    @Json(name = "name")
+    val name: kotlin.String? = null,
 
     @Json(name = "createDate")
     val createDate: java.time.OffsetDateTime? = null,
 
+    @Json(name = "exportEndDate")
+    val exportEndDate: java.time.OffsetDateTime? = null,
+
     @Json(name = "boundingBox")
     val boundingBox: kotlin.String? = null,
+
+    @Json(name = "footprint")
+    val footprint: kotlin.String? = null,
+
+    @Json(name = "size")
+    val propertySize: java.math.BigDecimal? = null,
+
+    @Json(name = "area")
+    val area: java.math.BigDecimal? = null,
 
     @Json(name = "status")
     val status: kotlin.String? = null,
 
+    @Json(name = "fileName")
+    val fileName: kotlin.String? = null,
+
     @Json(name = "packageUrl")
-    val packageUrl: kotlin.String? = null
+    val packageUrl: kotlin.String? = null,
+
+    @Json(name = "isUpdate")
+    val isUpdate: kotlin.Boolean? = null,
+
+    @Json(name = "product")
+    val product: MapProductResDto? = null
 
 )
 
