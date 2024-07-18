@@ -3,10 +3,7 @@ name: Build and Release Android App
 on:
   push:
     tags:
-      - v*.*.*-*
       - v*.*.*
-    branches:
-      - mirror
 
 jobs:
   build:

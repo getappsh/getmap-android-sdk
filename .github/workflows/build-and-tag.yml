@@ -68,12 +68,16 @@ jobs:
           git tag $FULL_VERSION_NAME
           git push origin mirror --tags
 
-      - name: Echo last commit message
-        run: |
-          last_commit_message=$(git log -1 --pretty=%B)
-          echo "Last commit message: $last_commit_message"
 
-      - uses: pixta-dev/repository-mirroring-action@v1
+  mirror:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_visibility == 'public' }}
+
+    steps:
+
+      - name: Mirror to private repo
+        uses: pixta-dev/repository-mirroring-action@v1
         with:
           target_repo_url:
             git@github.com:getappsh/get-map-android-sdk-private.git
