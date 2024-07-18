@@ -78,8 +78,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: build
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Mirror to private repo
         uses: pixta-dev/repository-mirroring-action@v1

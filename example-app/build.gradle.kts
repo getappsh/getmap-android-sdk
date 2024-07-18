@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
-import com.android.build.gradle.internal.tasks.getNativeLibsFiles
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -18,8 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 11
-        versionName = "2.0.9"
+        versionCode = 5
+        versionName = "2.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
