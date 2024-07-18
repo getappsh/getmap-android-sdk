@@ -31,7 +31,7 @@ data class ErrorDto (
 
     /* `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again .  */
     @Json(name = "errorCode")
-    val errorCode: ErrorDto.ErrorCode,
+    val errorCode: ErrorDto.ErrorCode? = null,
 
     @Json(name = "message")
     val message: kotlin.String? = null

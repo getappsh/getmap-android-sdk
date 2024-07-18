@@ -73,7 +73,7 @@ sequenceDiagram
 Running:
 
 ```shell
-docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i http://getapp-dev.getapp.sh:3000/docs-yaml -g kotlin --additional-properties=packageName=GetApp.Client,packageVersion=1.0 -o /local/GetApp.Client.Kotlin
+docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link/docs-yaml -g kotlin --additional-properties=packageName=GetApp.Client,packageVersion=1.0 -o /local/GetApp.Client.Kotlin
 ```
 
 OR
