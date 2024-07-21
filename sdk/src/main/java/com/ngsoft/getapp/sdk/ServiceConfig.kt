@@ -181,8 +181,21 @@ internal class ServiceConfig private constructor(private var appContext: Context
             pref.lastServerInventoryJob = value
         }
 
+    override var ortophotoMapPath: String = pref.ortophotoMapPath
+        set(value) {
+            field = value
+            pref.ortophotoMapPath = value
+        }
+
+    override var controlMapPath: String = pref.controlMapPath
+        set(value){
+            field = value
+            pref.ortophotoMapPath = value
+        }
+
+
     override fun toString(): String {
-        return "ServiceConfig(sdStoragePath='$sdStoragePath', flashStoragePath='$flashStoragePath', targetStoragePolicy=$targetStoragePolicy, downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, flashInventoryMaxSizeMB=$flashInventoryMaxSizeMB, sdInventoryMaxSizeMB=$sdInventoryMaxSizeMB, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate, lastServerInventoryJob=$lastServerInventoryJob)"
+        return "ServiceConfig(sdStoragePath='$sdStoragePath', flashStoragePath='$flashStoragePath', targetStoragePolicy=$targetStoragePolicy, downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, flashInventoryMaxSizeMB=$flashInventoryMaxSizeMB, sdInventoryMaxSizeMB=$sdInventoryMaxSizeMB, ortophotoMapPath='$ortophotoMapPath', controlMapPath='$controlMapPath, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate, lastServerInventoryJob=$lastServerInventoryJob')"
     }
 }
 
