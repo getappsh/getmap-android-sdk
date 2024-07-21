@@ -54,10 +54,11 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
                 .build(Matomo.getInstance(context))
 
             siteId = pref.matomoSiteId
-            tracker.dispatchInterval = -1
-            tracker.dispatchTimeout = 1000 * 15
-            tracker.offlineCacheSize = 10 * 1024 * 1024
-            tracker.offlineCacheAge = 86400000 * 3
+            tracker.dispatchInterval = -1 // manually
+            tracker.dispatchTimeout = 1000 * 15 // 15 seconds
+            tracker.offlineCacheSize = 10 * 1024 * 1024 // 10 mb
+            tracker.offlineCacheAge = 86400000 * 3 // 3 days
+//            tracker.setDispatchGzipped(true)
 
             Log.d(TAG, "Matomo dispatchInterval: ${dispatchInterval},timeout: ${tracker.dispatchTimeout}, sessionTimeout: ${tracker.sessionTimeout}")
 

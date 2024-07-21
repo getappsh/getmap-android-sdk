@@ -1,5 +1,6 @@
 package com.example.getmap
 
+import MapDataMetaData
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -211,7 +212,9 @@ class MapActivity : AppCompatActivity() {
             service.getDownloadedMaps().forEach { g ->
                 var endName = "בהורדה"
                 if (g.statusMsg == "הסתיים") {
-                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                    val jsonText = Gson().fromJson(g.getJson().toString(), MapDataMetaData::class.java)
+                    val region = jsonText.region[0]
+                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z" + " " + region
                 }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                     endName = g.statusMsg!!
@@ -287,8 +290,16 @@ class MapActivity : AppCompatActivity() {
         loadedPolys.add(coords)
         polygon.displayName = ""
 
+        val polygonPoints = coords.map { Point(it.longitude, it.latitude) }
+        val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
+        val centroid = GeometryEngine.labelPointOrNull(polygonEsri)
+
+        val labelPosition = centroid?.let {
+            Position.fromDegrees(it.y, it.x, 0.0)
+        } ?: coords.first()
+
         val label = Label(
-            coords.first(),
+            labelPosition,
             endName,
             textAttributes()
         )
@@ -577,7 +588,7 @@ class MapActivity : AppCompatActivity() {
         var area = 0.0
         val n = vertices.size
 
-           for (i in 0 until n) {
+        for (i in 0 until n) {
             val j = (i + 1) % n
             val vi = vertices[i]
             val vj = vertices[j]

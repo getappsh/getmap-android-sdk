@@ -58,6 +58,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
+import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -121,11 +122,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 imeiEven = null
 
             var url = Pref.getInstance(this).baseUrl
-            if (url.isEmpty()) url =
-                "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link"
+            if (url.isEmpty()) url = BuildConfig.BASE_URL
+
             val cfg = Configuration(
                 url,
-//            "http://getapp-test.getapp.sh:3000",
                 BuildConfig.USERNAME,
                 BuildConfig.PASSWORD,
                 16,
@@ -240,10 +240,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Toast.makeText(
-                        applicationContext,
+                    Snackbar.make(findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                        Toast.LENGTH_LONG
+                        Snackbar.LENGTH_LONG
                     ).show()
                 }
             }
@@ -256,7 +255,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             .with(tracker)
         //Phone number
 //        requestPhonePermission()
-        
+
         // Monitor your app installs
         TrackHelper.track().download().with(tracker)
         //Example of an event for matomo, have to put differents per action

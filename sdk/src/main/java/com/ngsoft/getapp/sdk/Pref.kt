@@ -42,7 +42,7 @@ class Pref private constructor(context: Context) {
         set(value) = setString(PASSWORD, value)
 
     var baseUrl: String
-        get() = getString(BASE_URL, "")
+        get() = getString(BASE_URL, BuildConfig.BASE_URL)
         set(value) = setString(BASE_URL, value)
     var matomoUrl: String
         get() = getString(MATOMO_URL, "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php")
