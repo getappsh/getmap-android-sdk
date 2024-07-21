@@ -71,7 +71,8 @@ android {
         val variant = this
         variant.outputs.configureEach {
             val variantOutputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            variantOutputImpl.outputFileName ="cloud-mapping-${variant.versionName}-${variant.name}.apk"
+            val deployEnv = findProperty("deployEnv") ?: "pub"
+            variantOutputImpl.outputFileName ="cloud-mapping-${deployEnv}-${variant.versionName}-${variant.name}.apk"
         }
     }
     dependencies{
