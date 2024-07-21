@@ -21,7 +21,10 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Create secrets.properties file
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Create secrets.properties file for public env
         run: |
           echo "USERNAME=${{ secrets.USERNAME }}" >> ./secrets.properties
           echo "PASSWORD=${{ secrets.PASSWORD }}" >> ./secrets.properties
@@ -32,18 +35,37 @@ jobs:
           echo "BASE_URL=${{ secrets.BASE_URL }}" >> ./secrets.properties
           echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> ./secrets.properties
 
-
-      - name: Grant execute permission for Gradle wrapper
-        run: chmod +x ./gradlew
-
-      - name: Build the app
+      - name: Build the pub app
         run: ./gradlew :example-app:assembleDebug
 
-      - name: Upload APK
+      - name: Upload pub APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: app-debug-pub
           path: example-app/build/outputs/apk/debug/*.apk
+
+      - name: Create secrets.properties file for even env
+        run: |
+          rm ./secrets.properties
+          ls
+          echo "USERNAME=${{ secrets.EVEN_USERNAME }}" >> ./secrets.properties
+          echo "PASSWORD=${{ secrets.EVEN_PASSWORD }}" >> ./secrets.properties
+          echo "AW_USER_NAME=${{ secrets.EVEN_AW_USER_NAME }}" >> ./secrets.properties
+          echo "AW_PASSWORD=${{ secrets.EVEN_AW_PASSWORD }}" >> ./secrets.properties
+          echo "AW_API=${{ secrets.EVEN_AW_API }}" >> ./secrets.properties
+          echo "AIRWATCH_TENANT=${{ secrets.EVEN_AIRWATCH_TENANT }}" >> ./secrets.properties
+          echo "BASE_URL=${{ secrets.EVEN_BASE_URL }}" >> ./secrets.properties
+          echo "ENCRYPTION_KEY=${{ secrets.EVEN_ENCRYPTION_KEY }}" >> ./secrets.properties
+
+      - name: Build the Even app
+        run: ./gradlew :example-app:assembleDebug -PdeployEnv='even'
+
+      - name: Upload even APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-even
+          path: example-app/build/outputs/apk/debug/*.apk
+
 
   release:
     needs: build
@@ -56,11 +78,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download APK
+      - name: Download pub APK
         uses: actions/download-artifact@v4
         with:
-          name: app-debug
-          path: app-debug
+          name: app-debug-pub
+          path: app-debug-pub
+
+      - name: Download even APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug-even
+          path: app-debug-even
 
       - name: Extract Version Name
         run: |
@@ -76,7 +104,6 @@ jobs:
           name: Release ${{ env.FULL_VERSION_NAME }}
           draft: true
           prerelease: false
-          files: app-debug/*.apk
-
-
-
+          files: |
+            app-debug-pub/*.apk
+            app-debug-even/*.apk
