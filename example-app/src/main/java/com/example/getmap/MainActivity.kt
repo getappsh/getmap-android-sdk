@@ -314,7 +314,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
-            dialogBuilder.setMessage("האם למחוק את כל הפתקים שנכשלו בהורדה?")
+            dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
             dialogBuilder.setPositiveButton("כן") { _, _ ->
                 GlobalScope.launch(Dispatchers.IO) {
                     mapServiceManager.service.getDownloadedMaps().forEach { map ->
