@@ -8,10 +8,13 @@ import android.os.storage.StorageManager
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.GestureDetector
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -65,6 +68,7 @@ class MapActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
+    private var geoPackageName = ""
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -156,6 +160,12 @@ class MapActivity : AppCompatActivity() {
             frame.visibility = View.INVISIBLE
             back.visibility = View.VISIBLE
         }
+
+        val mapSwitch = findViewById<View>(R.id.mapSwitch)
+        mapSwitch.setOnClickListener {
+            showPopupMenu(mapSwitch)
+        }
+
         drawPolygons()
     }
 
@@ -164,13 +174,17 @@ class MapActivity : AppCompatActivity() {
         val storageList = storageManager.storageVolumes
         val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
         Log.i("gfgffgf", "$volume")
-        val geoPath = "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
+        if (geoPackageName == "") {
+            geoPackageName = service.config.ortophotoMapPath.toString()
+        }
+        val geoPath = "${volume}/$geoPackageName"
 
         val layerFactory = LayerFactory()
         layerFactory.createFromGeoPackage(
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
+                    layer!!.displayName = "gpkg"
                     wwd.layers.addLayer(layer)
                     Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
                 }
@@ -227,7 +241,7 @@ class MapActivity : AppCompatActivity() {
                     val label = createDownloadedPolygon(g, "green", endName).second
                     renderableLayer.addRenderable(label)
                 } else {
-                    val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     val formattedDownloadStart = g.downloadStop?.format(formatter)
                     endName = "${g.statusMsg} $formattedDownloadStart"
 
@@ -275,6 +289,34 @@ class MapActivity : AppCompatActivity() {
         renderableLayer.displayName = ""
         wwd.layers.addLayer(renderableLayer)
         wwd.requestRedraw()
+    }
+
+    private fun showPopupMenu(view: View) {
+        val popup = PopupMenu(this, view)
+        val inflater: MenuInflater = popup.menuInflater
+        inflater.inflate(R.menu.popup_menu, popup.menu)
+        popup.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.map_option1 -> {
+                    // Handle option 1 click
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+                    wwd.requestRedraw()
+                    geoPackageName = service.config.ortophotoMapPath.toString()
+                    addGeoPkg()
+                    true
+                }
+                R.id.map_option2 -> {
+                    // Handle option 2 click
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+                    wwd.requestRedraw()
+                    geoPackageName = service.config.controlMapPath.toString()
+                    addGeoPkg()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private fun createDownloadedPolygon(map: MapData, colorType: String , endName: String): Pair<Polygon, Label> {

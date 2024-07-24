@@ -33,6 +33,8 @@ internal object ConfigClient {
         config.lastConfigCheck = OffsetDateTime.now()
         config.mapMinInclusionPct = configDto.mapMinInclusionInPercentages?.toInt() ?: config.mapMinInclusionPct
         config.maxMapAreaSqKm = configDto.maxMapAreaSqKm?.toLong() ?: config.maxMapAreaSqKm
+        config.ortophotoMapPath = configDto.ortophotoMapPath ?: config.ortophotoMapPath
+        config.controlMapPath = configDto.controlMapPath ?: config.controlMapPath
 
         if (!config.applyServerConfig)
             return
