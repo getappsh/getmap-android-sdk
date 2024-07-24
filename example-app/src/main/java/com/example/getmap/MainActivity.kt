@@ -1,6 +1,7 @@
 package com.example.getmap
 
 import GetApp.Client.models.MapConfigDto
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import com.example.getmap.matomo.MatomoTracker
 import android.content.DialogInterface
@@ -24,6 +25,8 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -58,6 +61,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
 import com.example.getmap.airwatch.AirWatchSdkManager
+import com.github.barteksc.pdfviewer.PDFView
 import com.google.android.material.snackbar.Snackbar
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -97,6 +101,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val popUp = PopUp()
 
 
+    @SuppressLint("MissingInflatedId")
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -305,6 +310,41 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
         registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        deleteFail.setOnClickListener {
+            val dialogBuilder = android.app.AlertDialog.Builder(this)
+            dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
+            dialogBuilder.setPositiveButton("כן") { _, _ ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                        if (map.statusMsg == "נכשל") {
+                            mapServiceManager.service.deleteMap(map.id!!)
+                        }
+                    }
+                }
+            }
+            dialogBuilder.setNegativeButton("לא", null)
+            val popUpMessage = dialogBuilder.create()
+            popUpMessage.show()
+        }
+
+        val pdfView = findViewById<PDFView>(R.id.pdfView)
+        pdfView.visibility = View.INVISIBLE
+        val pdFile = findViewById<ImageButton>(R.id.pdfFile)
+        pdFile.setOnClickListener {
+            pdfView.visibility = View.VISIBLE
+            pdfView.fromAsset("strategy.pdf").load()
+
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (pdfView.visibility == View.VISIBLE) {
+                    pdfView.visibility = View.INVISIBLE
+                }
+            }
+        })
     }
 
 //    override fun onResume() {
