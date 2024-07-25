@@ -15,6 +15,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.PopupMenu
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -162,9 +163,23 @@ class MapActivity : AppCompatActivity() {
         }
 
         val mapSwitch = findViewById<View>(R.id.mapSwitch)
-        mapSwitch.setOnClickListener {
-            showPopupMenu(mapSwitch)
+        mapSwitch.visibility = View.GONE
+//        mapSwitch.setOnClickListener {
+//            showPopupMenu(mapSwitch)
+//        }
+
+        val controlSwitch = findViewById<Switch>(R.id.control)
+        controlSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                geoPackageName = service.config.controlMapPath.toString()
+                addGeoPkg()
+            } else {
+                // Optionally remove the BlueMarble layer or handle switch off action
+                wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
+                wwd.requestRedraw()
+            }
         }
+
 
         drawPolygons()
     }
@@ -173,8 +188,7 @@ class MapActivity : AppCompatActivity() {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
         val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
-        Log.i("gfgffgf", "$volume")
-        if (geoPackageName == "") {
+        if (geoPackageName.isBlank()) {
             geoPackageName = service.config.ortophotoMapPath.toString()
         }
         val geoPath = "${volume}/$geoPackageName"
@@ -184,7 +198,9 @@ class MapActivity : AppCompatActivity() {
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
-                    layer!!.displayName = "gpkg"
+                    if (geoPackageName == service.config.controlMapPath.toString()) {
+                        layer!!.displayName = "BlueMarble"
+                    }
                     wwd.layers.addLayer(layer)
                     Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
                 }

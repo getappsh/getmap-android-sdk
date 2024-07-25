@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val phoneNumberPermissionCode = 100
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
+
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
     private lateinit var scanQRButton: Button
@@ -120,14 +121,25 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         availableSpace.text = getAvailableSpace()
 
         if (!mapServiceManager.isInit) {
+            Log.d("$TAG - AIRWATCH", "AirwatchInit: Before init")
             sdkAirWatchSdkManager.startRetrying()
-            var imeiEven: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber","imei").toString()
-            Log.i("IEMEI", imeiEven.toString())
+            Log.d("$TAG - AIRWATCH", "AirwatchInit: After init")
+            var imeiEven: String? =
+                getSharedPreferences("wit_player_shared_preferences", 0).getString(
+                    "serialNumber",
+                    "imei"
+                ).toString()
+            Log.i("AIRWATCH IEMEI", imeiEven.toString())
             if (imeiEven == "imei")
                 imeiEven = null
 
             var url = Pref.getInstance(this).baseUrl
-            if (url.isEmpty()) url = BuildConfig.BASE_URL
+            Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
+            if (url.isEmpty()) {
+                url = BuildConfig.BASE_URL
+                Log.d("$TAG - AIRWATCH", "URL is empty, new url is $url")
+            }
+            Log.d("$TAG - AIRWATCH", "Before configuration of the Sdk, the Imei and url from the airwatch are : $imeiEven / $url")
 
             val cfg = Configuration(
                 url,
@@ -214,6 +226,21 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     mapServiceManager.service.synchronizeMapData()
                 }
             }
+            val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+            deleteFail.visibility = View.INVISIBLE
+            GlobalScope.launch(Dispatchers.IO) {
+                var count = 0
+                mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                    if (map.statusMsg == "נכשל") {
+                        count++
+                    }
+                }
+                if (count > 0) {
+                    withContext(Dispatchers.Main) {
+                        deleteFail.visibility = View.VISIBLE
+                    }
+                }
+            }
             swipeRecycler.isRefreshing = false
         }
 
@@ -269,7 +296,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         CoroutineScope(Dispatchers.Default).launch { mapServiceManager.service.synchronizeMapData() }
         syncButton = findViewById(R.id.Sync)
         syncButton.setOnClickListener {
-            TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), "מעדכן בול").screen("/Popup/עדכון כלל הבולים")
+            TrackHelper.track()
+                .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), "מעדכן בול")
+                .screen("/Popup/עדכון כלל הבולים")
                 .with(tracker)
             popUp.recyclerView = recyclerView
             popUp.type = "update"
@@ -300,7 +329,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
 
-
         val settingButton = findViewById<ImageButton>(R.id.SettingsButton)
         settingButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -312,6 +340,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
 
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        deleteFail.visibility = View.INVISIBLE
+        GlobalScope.launch(Dispatchers.IO) {
+            var count = 0
+            mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                if (map.statusMsg == "נכשל") {
+                    count++
+                }
+            }
+            if (count > 0) {
+                withContext(Dispatchers.Main) {
+                    deleteFail.visibility = View.VISIBLE
+                }
+            }
+        }
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
@@ -323,6 +365,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         }
                     }
                 }
+                deleteFail.visibility = View.INVISIBLE
             }
             dialogBuilder.setNegativeButton("לא", null)
             val popUpMessage = dialogBuilder.create()
@@ -399,7 +442,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //    }
 
 
-
     private fun onDiscovery() {
 
         TrackHelper.track().screen("/בחירת תיחום").with(tracker)
@@ -437,7 +479,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
                     Log.i("hghfhffhg", e.message!!)
                 }
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בדיסקוברי").with(tracker)
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בדיסקוברי")
+                    .with(tracker)
             }
 
         }
@@ -611,7 +654,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onResume(id: String) {
-        TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), id).event("מיפוי ענן", "ניהול בקשות").name("אתחל")
+        TrackHelper.track()
+            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), id)
+            .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
             .with(tracker)
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.resumeDownload(id)
@@ -664,12 +709,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
                 runOnUiThread {
                     val name = map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                    TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "שיתוף")
+                    TrackHelper.track()
+                        .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                        .event("מיפוי ענן", "שיתוף")
                         .name("שליחת בול בסריקה").with(tracker)
                     showQRCodeDialog(qrCode)
                 }
             } catch (e: Exception) {
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr").with(tracker)
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
+                    .with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
 
@@ -688,7 +736,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             currMap = mapServiceManager.service.getDownloadedMap(id)!!
             withContext(Dispatchers.Main) {
                 if (currMap?.isUpdated == false) {
-                    TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), "עדכן בול").screen(this@MainActivity)
+                    TrackHelper.track().dimension(
+                        mapServiceManager.service.config.matomoDimensionId.toInt(),
+                        "עדכן בול"
+                    ).screen(this@MainActivity)
                         .with(tracker)
                     GlobalScope.launch(Dispatchers.IO) {
                         val map = mapServiceManager.service.getDownloadedMap(id)
@@ -800,7 +851,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val barcodeLauncher: ActivityResultLauncher<ScanOptions> = registerForActivityResult(
         ScanContract()
     ) { result ->
-        if (result.contents == null) {} else {
+        if (result.contents == null) {
+        } else {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
 
             GlobalScope.launch(Dispatchers.IO) {
@@ -812,7 +864,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .name("קבלת בול בסריקה").with(tracker)
                     }
                 } catch (e: Exception) {
-                    TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בקבלת בול בסריקה").with(tracker)
+                    TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                        .name("תקלה בקבלת בול בסריקה").with(tracker)
                     runOnUiThread { showErrorDialog(e.message.toString()) }
                 }
 
