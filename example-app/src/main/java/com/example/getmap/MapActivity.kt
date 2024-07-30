@@ -175,8 +175,13 @@ class MapActivity : AppCompatActivity() {
                 addGeoPkg()
             } else {
                 // Optionally remove the BlueMarble layer or handle switch off action
-                wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
-                wwd.requestRedraw()
+                val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
+                if (blueMarbleLayer == -1) {
+                    return@setOnCheckedChangeListener
+                } else {
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
+                    wwd.requestRedraw()
+                }
             }
         }
 
@@ -207,6 +212,7 @@ class MapActivity : AppCompatActivity() {
 
                 override fun creationFailed(factory: LayerFactory?, layer: Layer?, ex: Throwable?) {
                     Log.e("gov.nasa.worldwind", "GeoPackage layer creation failed", ex)
+                    Toast.makeText(applicationContext, "בעיה בטעינת המפה", Toast.LENGTH_LONG).show()
                 }
             }
         )
@@ -478,7 +484,11 @@ class MapActivity : AppCompatActivity() {
                     spaceMb = calculateMB(km, polygon.resolution)
                     showKm.text = "שטח משוער :${km} קמ\"ר"
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                    date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                    if (polygon.end == polygon.start) {
+                        date.text = "צולם : ${polygon.end}"
+                    } else {
+                        date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                    }
                     found = true
                     downloadAble = true
                     checkBetweenPolygon = false
@@ -496,7 +506,11 @@ class MapActivity : AppCompatActivity() {
                             spaceMb = calculateMB(km, polygon.resolution)
                             showKm.text = "שטח משוער :${km} קמ\"ר"
                             showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                            date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            if (polygon.end == polygon.start) {
+                                date.text = "צולם : ${polygon.end}"
+                            } else {
+                                date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            }
                             found = true
                             downloadAble = true
                             break
@@ -510,7 +524,11 @@ class MapActivity : AppCompatActivity() {
                 spaceMb = calculateMB(km, firstPolyObject.resolution)
                 showKm.text = "שטח משוער :${km} קמ\"ר"
                 showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
+                if (firstPolyObject.end == firstPolyObject.start) {
+                    date.text = "צולם : ${firstPolyObject.end}"
+                } else {
+                    date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
+                }
                 downloadAble = true
             }
 

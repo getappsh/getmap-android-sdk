@@ -124,14 +124,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Log.d("$TAG - AIRWATCH", "AirwatchInit: Before init")
             sdkAirWatchSdkManager.startRetrying()
             Log.d("$TAG - AIRWATCH", "AirwatchInit: After init")
-            var imeiEven: String? =
-                getSharedPreferences("wit_player_shared_preferences", 0).getString(
-                    "serialNumber",
-                    "imei"
-                ).toString()
-            Log.i("AIRWATCH IEMEI", imeiEven.toString())
-            if (imeiEven == "imei")
-                imeiEven = null
+//            var imeiEven: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "imei").toString()
+//            Log.i("AIRWATCH IEMEI", imeiEven.toString())
+//            if (imeiEven == "imei")
+//                imeiEven = null
+            val imeiEven = ""
 
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
