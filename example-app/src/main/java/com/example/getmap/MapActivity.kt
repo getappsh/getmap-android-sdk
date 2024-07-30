@@ -15,6 +15,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.PopupMenu
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -162,9 +163,25 @@ class MapActivity : AppCompatActivity() {
         }
 
         val mapSwitch = findViewById<View>(R.id.mapSwitch)
-        mapSwitch.setOnClickListener {
-            showPopupMenu(mapSwitch)
+        mapSwitch.visibility = View.GONE
+
+        val controlSwitch = findViewById<Switch>(R.id.control)
+        controlSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                geoPackageName = service.config.controlMapPath.toString()
+                addGeoPkg()
+            } else {
+                // Optionally remove the BlueMarble layer or handle switch off action
+                val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
+                if (blueMarbleLayer == -1) {
+                    return@setOnCheckedChangeListener
+                } else {
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
+                    wwd.requestRedraw()
+                }
+            }
         }
+
 
         drawPolygons()
     }
@@ -173,8 +190,7 @@ class MapActivity : AppCompatActivity() {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
         val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
-        Log.i("gfgffgf", "$volume")
-        if (geoPackageName == "") {
+        if (geoPackageName.isBlank()) {
             geoPackageName = service.config.ortophotoMapPath.toString()
         }
         val geoPath = "${volume}/$geoPackageName"
@@ -184,13 +200,16 @@ class MapActivity : AppCompatActivity() {
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
-                    layer!!.displayName = "gpkg"
+                    if (geoPackageName == service.config.controlMapPath.toString()) {
+                        layer!!.displayName = "BlueMarble"
+                    }
                     wwd.layers.addLayer(layer)
                     Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
                 }
 
                 override fun creationFailed(factory: LayerFactory?, layer: Layer?, ex: Throwable?) {
                     Log.e("gov.nasa.worldwind", "GeoPackage layer creation failed", ex)
+                    Toast.makeText(applicationContext, "בעיה בטעינת המפה", Toast.LENGTH_LONG).show()
                 }
             }
         )
@@ -462,7 +481,11 @@ class MapActivity : AppCompatActivity() {
                     spaceMb = calculateMB(km, polygon.resolution)
                     showKm.text = "שטח משוער :${km} קמ\"ר"
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                    date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                    if (polygon.end == polygon.start) {
+                        date.text = "צולם : ${polygon.end}"
+                    } else {
+                        date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                    }
                     found = true
                     downloadAble = true
                     checkBetweenPolygon = false
@@ -480,7 +503,11 @@ class MapActivity : AppCompatActivity() {
                             spaceMb = calculateMB(km, polygon.resolution)
                             showKm.text = "שטח משוער :${km} קמ\"ר"
                             showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                            date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            if (polygon.end == polygon.start) {
+                                date.text = "צולם : ${polygon.end}"
+                            } else {
+                                date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            }
                             found = true
                             downloadAble = true
                             break
@@ -494,7 +521,11 @@ class MapActivity : AppCompatActivity() {
                 spaceMb = calculateMB(km, firstPolyObject.resolution)
                 showKm.text = "שטח משוער :${km} קמ\"ר"
                 showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
+                if (firstPolyObject.end == firstPolyObject.start) {
+                    date.text = "צולם : ${firstPolyObject.end}"
+                } else {
+                    date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
+                }
                 downloadAble = true
             }
 

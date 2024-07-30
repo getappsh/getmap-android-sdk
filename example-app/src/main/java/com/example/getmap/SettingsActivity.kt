@@ -54,7 +54,7 @@ class SettingsActivity : AppCompatActivity() {
         val tracker: Tracker?
         tracker = MatomoTracker.getTracker(this)
         nebulaParamAdapter = NebulaParamAdapter(params)
-
+        val testButton = findViewById<ImageButton>(R.id.SdkTest)
         recyclerView.adapter = nebulaParamAdapter
         loadConfig(service)
         params = nebulaParamAdapter.getParams()
@@ -76,6 +76,12 @@ class SettingsActivity : AppCompatActivity() {
         applyServerConfig.setOnCheckedChangeListener { _, isChecked ->
             service.config.applyServerConfig = isChecked
         }
+
+        testButton.setOnClickListener {
+            val intent = Intent(this,SystemTestActivity::class.java)
+            startActivity(intent)
+        }
+
         cancelButton.setOnClickListener {
             loadConfig(service)
             hideKeyboard()
@@ -184,6 +190,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun loadConfig(service: GetMapService) {
         val params = arrayOf(
+            //0
             NebulaParam("URL", service.config.baseUrl),
             NebulaParam("DownloadRetry", service.config.downloadRetry.toString()),
             NebulaParam("DeliveryTimeout in mins", service.config.deliveryTimeoutMins.toString()),
@@ -192,6 +199,7 @@ class SettingsActivity : AppCompatActivity() {
                 "MatomoUpdateInterval in mins",
                 service.config.matomoUpdateIntervalMins.toString()
             ),
+            //5
             NebulaParam("Max size for Map in Mb", service.config.maxMapSizeInMB.toString()),
             NebulaParam("Max MapArea in SqKm", service.config.maxMapAreaSqKm.toString()),
             NebulaParam("Max parallel downloads", service.config.maxParallelDownloads.toString()),
@@ -200,6 +208,7 @@ class SettingsActivity : AppCompatActivity() {
                 "Periodic Config interval in",
                 service.config.periodicConfIntervalMins.toString()
             ),
+            //10
             NebulaParam(
                 "Periodic Inventory interval in mins",
                 service.config.periodicInventoryIntervalMins.toString()
@@ -208,6 +217,8 @@ class SettingsActivity : AppCompatActivity() {
             NebulaParam("Matomo dimension id", service.config.matomoDimensionId),
             NebulaParam("Min inclusion needed", service.config.mapMinInclusionPct.toString()),
             NebulaParam("Download Path", service.config.downloadPath),
+            //15
+            NebulaParam("Sd Storage Path", service.config.sdStoragePath),
             NebulaParam("Flash Storage Path", service.config.flashStoragePath),
             NebulaParam("Target Storage Policy", service.config.targetStoragePolicy.value, true),
             NebulaParam("flashInventoryMaxSizeMB",service.config.flashInventoryMaxSizeMB.toString()),
@@ -382,37 +393,36 @@ private fun saveLocalToService(
         params[10].value = service.config.periodicInventoryIntervalMins.toString()
     }
 
-    if (params[16].value != "") {
-        service.config.targetStoragePolicy = targetTypes[params[16].value]!!
+    if (params[17].value != "") {
+        service.config.targetStoragePolicy = targetTypes[params[17].value]!!
     } else {
         NotifyValidity(notifValidation, context)
-        params[16].value = service.config.targetStoragePolicy.toString()
-    }
-
-    if (params[17].value != "")
-        if (!params[17].value.contains(regex = reg))
-            service.config.flashInventoryMaxSizeMB = params[17].value.toLong()
-        else {
-            NotifyValidity(notifValidation, context)
-            params[17].value = service.config.flashInventoryMaxSizeMB.toString()
-        }
-    else {
-        NotifyValidity(notifValidation, context)
-        params[17].value = service.config.flashInventoryMaxSizeMB.toString()
+        params[17].value = service.config.targetStoragePolicy.toString()
     }
 
     if (params[18].value != "")
         if (!params[18].value.contains(regex = reg))
-            service.config.sdInventoryMaxSizeMB = params[18].value.toLong()
+            service.config.flashInventoryMaxSizeMB = params[18].value.toLong()
         else {
             NotifyValidity(notifValidation, context)
-            params[18].value = service.config.sdInventoryMaxSizeMB.toString()
+            params[18].value = service.config.flashInventoryMaxSizeMB.toString()
         }
     else {
         NotifyValidity(notifValidation, context)
-        params[18].value = service.config.sdInventoryMaxSizeMB.toString()
+        params[18].value = service.config.flashInventoryMaxSizeMB.toString()
     }
 
+    if (params[19].value != "")
+        if (!params[19].value.contains(regex = reg))
+            service.config.sdInventoryMaxSizeMB = params[19].value.toLong()
+        else {
+            NotifyValidity(notifValidation, context)
+            params[19].value = service.config.sdInventoryMaxSizeMB.toString()
+        }
+    else {
+        NotifyValidity(notifValidation, context)
+        params[19].value = service.config.sdInventoryMaxSizeMB.toString()
+    }
 
     if (params[11].value != "")
         service.config.matomoSiteId = params[11].value
@@ -463,13 +473,12 @@ private fun hasChanged(
     if (params[12].value != "")
         if (service.config.matomoDimensionId != params[12].value)
             toReturn["matomoDimensionId"] = params[12].value
-    if (params[17].value != "")
-        if (service.config.flashInventoryMaxSizeMB != params[17].value.toLong())
-            toReturn["flashInventoryMaxSizeMB"] = params[17].value
     if (params[18].value != "")
-        if (service.config.sdInventoryMaxSizeMB != params[18].value.toLong())
-            toReturn["sdInventoryMaxSizeMB"] = params[18].value
-
+        if (service.config.flashInventoryMaxSizeMB != params[18].value.toLong())
+            toReturn["flashInventoryMaxSizeMB"] = params[18].value
+    if (params[19].value != "")
+        if (service.config.sdInventoryMaxSizeMB != params[19].value.toLong())
+            toReturn["sdInventoryMaxSizeMB"] = params[19].value
 
     return toReturn
 }

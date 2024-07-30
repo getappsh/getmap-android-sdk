@@ -167,7 +167,11 @@ class DownloadListAdapter(
             var startDateFormatted = formatDate(startDate)
             var endDateFormatted = formatDate(endDate)
             val tsoulam = "צולם: "
-            holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
+            if (endDateFormatted == startDateFormatted) {
+                holder.dates.text = "${tsoulam}${endDateFormatted}"
+            } else {
+                holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
+            }
 
         } else {
             val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")

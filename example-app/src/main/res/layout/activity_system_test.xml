@@ -8,6 +8,18 @@
     tools:context=".SystemTestActivity">
 
     <!-- Test Discovery -->
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
+        android:gravity="center"
+        android:text="Test of the SDK Functions"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,7 +39,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Test Discovery"
+            android:text="בחירת תיחום"
             android:textSize="18sp"
             android:gravity="center_vertical|start"/>
 
@@ -53,7 +65,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Test Config"
+            android:text="קבלת קונפיגורציה"
             android:textSize="18sp"
             android:gravity="center_vertical|start"/>
 
@@ -79,7 +91,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Test Import"
+            android:text="הפקת מפה"
             android:textSize="18sp"
             android:gravity="center_vertical"/>
 
@@ -105,7 +117,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Test Download"
+            android:text="הורדת מפות"
             android:textSize="18sp"
             android:gravity="center_vertical"/>
 
@@ -131,7 +143,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Test File Move"
+            android:text="העברת קבצים"
             android:textSize="18sp"
             android:gravity="center_vertical"/>
 
@@ -157,7 +169,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Test Inventory Updates"
+            android:text="סטטוס עדכניות מפות"
             android:textSize="18sp"
             android:gravity="center_vertical"/>
 
