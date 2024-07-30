@@ -164,9 +164,6 @@ class MapActivity : AppCompatActivity() {
 
         val mapSwitch = findViewById<View>(R.id.mapSwitch)
         mapSwitch.visibility = View.GONE
-//        mapSwitch.setOnClickListener {
-//            showPopupMenu(mapSwitch)
-//        }
 
         val controlSwitch = findViewById<Switch>(R.id.control)
         controlSwitch.setOnCheckedChangeListener { _, isChecked ->

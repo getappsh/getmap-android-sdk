@@ -225,19 +225,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             }
             val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
             deleteFail.visibility = View.INVISIBLE
-            GlobalScope.launch(Dispatchers.IO) {
-                var count = 0
-                mapServiceManager.service.getDownloadedMaps().forEach { map ->
-                    if (map.statusMsg == "נכשל") {
-                        count++
-                    }
-                }
-                if (count > 0) {
-                    withContext(Dispatchers.Main) {
-                        deleteFail.visibility = View.VISIBLE
-                    }
-                }
-            }
+            showDeleteFailedBtn(deleteFail)
+
             swipeRecycler.isRefreshing = false
         }
 
@@ -338,19 +327,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
         deleteFail.visibility = View.INVISIBLE
-        GlobalScope.launch(Dispatchers.IO) {
-            var count = 0
-            mapServiceManager.service.getDownloadedMaps().forEach { map ->
-                if (map.statusMsg == "נכשל") {
-                    count++
-                }
-            }
-            if (count > 0) {
-                withContext(Dispatchers.Main) {
-                    deleteFail.visibility = View.VISIBLE
-                }
-            }
-        }
+        showDeleteFailedBtn(deleteFail)
+
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
@@ -395,6 +373,19 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        mapServiceManager = MapServiceManager.getInstance()
 //        Log.d("a", "sa")
 //    }
+
+    private fun showDeleteFailedBtn(deleteFail: ImageButton) {
+        GlobalScope.launch(Dispatchers.IO) {
+            mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                if (map.statusMsg == "נכשל") {
+                    withContext(Dispatchers.Main) {
+                        deleteFail.visibility = View.VISIBLE
+                    }
+                    return@forEach
+                }
+            }
+        }
+    }
 
     override fun onDestroy() {
         if (!isReplacingActivity) {
