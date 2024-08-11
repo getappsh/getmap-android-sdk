@@ -20,19 +20,25 @@ android {
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        buildConfigField "String", "ENCRYPTION_KEY", "\""+getEncryptionKey()+"\""
+        buildConfigField "long", "VERSION_CODE", "${defaultConfig.versionCode}"
+        buildConfigField "String","VERSION_NAME","\"${defaultConfig.versionName}\""
+        buildConfigField "String", "ENCRYPTION_KEY", "\""+getPropertyFromFile("ENCRYPTION_KEY")+"\""
+        buildConfigField "String", "USERNAME", "\""+getPropertyFromFile("USERNAME")+"\""
+        buildConfigField "String", "PASSWORD", "\""+getPropertyFromFile("PASSWORD")+"\""
+        buildConfigField "String", "BASE_URL", "\""+getPropertyFromFile("BASE_URL")+"\""
+        buildConfigField "boolean", "USE_MAP_CACHE", ""+getPropertyFromFile("USE_MAP_CACHE")+""
 
         ksp {
             arg('room.schemaLocation', "$projectDir/schemas")
         }
 
-        python {
-            version "3.10" //just to keep default to that of Ubuntu 22 in CI build image, so it will compile py sources during build
-            pip {
-                install "pydantic==1.10.9"
-                install "morecantile==4.2.0"
-            }
-        }
+//        python {
+//            version "3.10" //just to keep default to that of Ubuntu 22 in CI build image, so it will compile py sources during build
+//            pip {
+//                install "pydantic==1.10.9"
+//                install "morecantile==4.2.0"
+//            }
+//        }
 
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
@@ -63,12 +69,13 @@ android {
     }
 }
 
-def getEncryptionKey(){
+def getPropertyFromFile(String propertyName) {
     def Properties props = new Properties()
     props.load(new FileInputStream(new File('secrets.properties')))
-    return props['ENCRYPTION_KEY']
+    return props[propertyName]
 }
 dependencies {
+    implementation 'com.github.tonyofrancis.Fetch:xfetch2:3.1.6'
 
     implementation 'com.esri:arcgis-maps-kotlin:200.3.0'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'

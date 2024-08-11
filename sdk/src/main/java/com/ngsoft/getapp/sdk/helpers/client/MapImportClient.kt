@@ -24,6 +24,7 @@ internal object MapImportClient {
         result.statusCode = Status()
 
         result.progress = status.metaData?.progress
+        result.url = status.metaData?.packageUrl
 
         when(status.status) {
             ImportStatusResDto.Status.start -> {
