@@ -33,6 +33,7 @@ jobs:
           echo "AIRWATCH_TENANT=1" >> ./secrets.properties
           echo "BASE_URL=https://getapp.com" >> ./secrets.properties
           echo "ENCRYPTION_KEY=somekey" >> ./secrets.properties
+          echo "USE_MAP_CACHE=false" >> ./secrets.properties
 
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
