@@ -52,8 +52,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the consumer to request to start export of a map stamp and tracking of the packaging process.
+     * Create Import
+     * This service message allows the consumer to request the start of exporting a map stamp and tracking the packaging process.
      * @param createImportDto 
      * @return CreateImportResDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -83,8 +83,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the consumer to request to start export of a map stamp and tracking of the packaging process.
+     * Create Import
+     * This service message allows the consumer to request the start of exporting a map stamp and tracking the packaging process.
      * @param createImportDto 
      * @return ApiResponse<CreateImportResDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -124,8 +124,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows Libot to notify when map is completed or failed.  
+     * Export Notification
+     * This service message allows Libot to notify when a map is completed or has failed.
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -153,8 +153,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows Libot to notify when map is completed or failed.  
+     * Export Notification
+     * This service message allows Libot to notify when a map is completed or has failed.
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -189,8 +189,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the to get all requested map
+     * Get All Maps
+     * This service message allows retrieval of all requested maps.
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -218,8 +218,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the to get all requested map
+     * Get All Maps
+     * This service message allows retrieval of all requested maps.
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -254,8 +254,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the consumer to get status information and tracking of the packaging process.  
+     * Get Import Status
+     * This service message allows the consumer to get status information and tracking of the packaging process.
      * @param importRequestId 
      * @return ImportStatusResDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -285,8 +285,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the consumer to get status information and tracking of the packaging process.  
+     * Get Import Status
+     * This service message allows the consumer to get status information and tracking of the packaging process.
      * @param importRequestId 
      * @return ApiResponse<ImportStatusResDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -325,8 +325,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message get list of map&#39;s request id, and response if there is new data map-product for theme.
+     * Get Inventory Updates
+     * This service message gets a list of map request IDs and responds if there is new data map-product for them.
      * @param inventoryUpdatesReqDto 
      * @return InventoryUpdatesResDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -356,8 +356,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message get list of map&#39;s request id, and response if there is new data map-product for theme.
+     * Get Inventory Updates
+     * This service message gets a list of map request IDs and responds if there is new data map-product for them.
      * @param inventoryUpdatesReqDto 
      * @return ApiResponse<InventoryUpdatesResDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -397,8 +397,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the to get map by catalog id with its all devices
+     * Get Map by Catalog ID
+     * This service message allows retrieval of a map by catalog ID with all its devices.
      * @param catalogId 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -427,8 +427,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the to get map by catalog id with its all devices
+     * Get Map by Catalog ID
+     * This service message allows retrieval of a map by catalog ID with all its devices.
      * @param catalogId 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -465,8 +465,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message return on object of maps config
+     * Get Map Configurations
+     * This service message returns an object of map configurations.
      * @param deviceId 
      * @return MapConfigDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -496,8 +496,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message return on object of maps config
+     * Get Map Configurations
+     * This service message returns an object of map configurations.
      * @param deviceId 
      * @return ApiResponse<MapConfigDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -536,8 +536,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the to get all offerings of maps
+     * Get Map Offerings
+     * This service message allows retrieval of all map offerings.
      * @return kotlin.collections.List<OfferingMapResDto>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -566,8 +566,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allows the to get all offerings of maps
+     * Get Map Offerings
+     * This service message allows retrieval of all map offerings.
      * @return ApiResponse<kotlin.collections.List<OfferingMapResDto>?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -604,8 +604,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message get on object of maps config to set configuration
+     * Set Map Configurations
+     * This service message sets an object of map configurations.
      * @param mapConfigDto 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -634,8 +634,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message get on object of maps config to set configuration
+     * Set Map Configurations
+     * This service message sets an object of map configurations.
      * @param mapConfigDto 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -673,8 +673,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message will get start the &#39;map updates&#39; cron job
+     * Start Map Updates Cron Job
+     * This service message starts the &#39;map updates&#39; cron job.
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -702,8 +702,8 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message will get start the &#39;map updates&#39; cron job
+     * Start Map Updates Cron Job
+     * This service message starts the &#39;map updates&#39; cron job.
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception

@@ -57,14 +57,14 @@ class PopUp : DialogFragment() {
                     val data = service.getDownloadedMap(mapId)
                     if (data != null) {
                         if (data.statusMsg != "הסתיים") {
-                            TrackHelper.track().dimension(1, bullName)
-                                .event("מיפוי ענן", "ניהול בולים")
+                            TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+                                .event("מיפוי ענן", "ניהול בקשות")
                                 .name("מחיקת בקשה").with(tracker)
                             return@launch
 
                         } else {
-                            TrackHelper.track().dimension(1, bullName)
-                                .event("מיפוי ענן", "ניהול בקשות")
+                            TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+                                .event("מיפוי ענן", "ניהול בולים")
                                 .name("מחיקת בול").with(tracker)
                             return@launch
                         }
@@ -82,7 +82,7 @@ class PopUp : DialogFragment() {
 //                    TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
                 }
             } else if (type == "update") {
-                TrackHelper.track().dimension(1, "כלל הבולים שהורדו")
+                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
                     .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
 
                 GlobalScope.launch(Dispatchers.IO) {
@@ -97,14 +97,14 @@ class PopUp : DialogFragment() {
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
             } else if (type == "updateOne") {
-                TrackHelper.track().dimension(1, bullName).event("מיפוי ענן", "ניהול בולים")
+                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
                     service.downloadUpdatedMap(mapId, {})
                     recyclerView.smoothScrollToPosition(0)
                 }
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(1, bullName).event("מיפוי ענן", "ניהול בקשות")
+                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בקשות")
                     .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)

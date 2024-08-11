@@ -26,6 +26,8 @@ import com.squareup.moshi.JsonClass
  * @param maps 
  * @param id 
  * @param lastUpdatedDate 
+ * @param lastConnectionDate 
+ * @param name 
  * @param OS 
  * @param availableStorage 
  * @param power 
@@ -44,6 +46,12 @@ data class DeviceMapDto (
 
     @Json(name = "lastUpdatedDate")
     val lastUpdatedDate: java.time.OffsetDateTime? = null,
+
+    @Json(name = "lastConnectionDate")
+    val lastConnectionDate: java.time.OffsetDateTime? = null,
+
+    @Json(name = "name")
+    val name: kotlin.String? = null,
 
     @Json(name = "OS")
     val OS: kotlin.String? = null,

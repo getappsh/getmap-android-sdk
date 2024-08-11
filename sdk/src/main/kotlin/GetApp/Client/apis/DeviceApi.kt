@@ -49,8 +49,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow receiving the information for the installations carried out on the device using GetApp services. This message is sent by the device during init phase in order to check compatibility between the existing installations on this device.
+     * Get Installed Device Content
+     * This service message allows receiving information about the installations carried out on the device using GetApp services. This message is sent by the device during the initialization phase to check compatibility between the existing installations on this device.
      * @param deviceId 
      * @return DeviceContentResDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -80,8 +80,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow receiving the information for the installations carried out on the device using GetApp services. This message is sent by the device during init phase in order to check compatibility between the existing installations on this device.
+     * Get Installed Device Content
+     * This service message allows receiving information about the installations carried out on the device using GetApp services. This message is sent by the device during the initialization phase to check compatibility between the existing installations on this device.
      * @param deviceId 
      * @return ApiResponse<DeviceContentResDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -120,8 +120,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow received all registered maps on the given devices
+     * Get Device Maps
+     * This service message allows retrieval of all registered maps on the given device.
      * @param deviceId 
      * @return DeviceMapDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -151,8 +151,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow received all registered maps on the given devices
+     * Get Device Maps
+     * This service message allows retrieval of all registered maps on the given device.
      * @param deviceId 
      * @return ApiResponse<DeviceMapDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -191,8 +191,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow received all registered devices
+     * Get Registered Devices
+     * This service message allows retrieval of all registered devices.
      * @return DeviceDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -221,8 +221,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow received all registered devices
+     * Get Registered Devices
+     * This service message allows retrieval of all registered devices.
      * @return ApiResponse<DeviceDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
@@ -259,8 +259,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow to device registration process for GetApp services.
+     * Register Device
+     * This service message allows the device registration process for GetApp services.
      * @param deviceRegisterDto 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -289,8 +289,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * This service message allow to device registration process for GetApp services.
+     * Register Device
+     * This service message allows the device registration process for GetApp services.
      * @param deviceRegisterDto 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured

@@ -1,5 +1,6 @@
 package com.example.getmap
 
+import MapDataMetaData
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +17,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
 import com.google.gson.Gson
@@ -58,7 +60,7 @@ import kotlin.math.sqrt
 @RequiresApi(Build.VERSION_CODES.R)
 class MapActivity : AppCompatActivity() {
     lateinit var wwd: WorldWindow
-    private val loadedPolys: ArrayList<kotlin.collections.ArrayList<Position>> = ArrayList()
+    private val loadedPolys: ArrayList<ArrayList<Position>> = ArrayList()
     private val allPolygon = mutableListOf<PolyObject>()
 
     private val TAG = MainActivity::class.qualifiedName
@@ -96,20 +98,21 @@ class MapActivity : AppCompatActivity() {
             showNorth()
         }
 
-        var overlayView = findViewById<FrameLayout>(R.id.overlayView)
+        val overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
+        val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             val blueBorderDrawableId = R.drawable.blue_border
             if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == true) {
                 checkBboxBeforeSent()
                 if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == false) {
-                    Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
                 } else {
                     this.onDelivery()
                 }
             } else {
-                Toast.makeText(this, "התיחום שנבחר גדול מידי או מחוץ לתחום", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -209,14 +212,19 @@ class MapActivity : AppCompatActivity() {
             service.getDownloadedMaps().forEach { g ->
                 var endName = "בהורדה"
                 if (g.statusMsg == "הסתיים") {
-                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                    val jsonText = Gson().fromJson(g.getJson().toString(), MapDataMetaData::class.java)
+                    val region = jsonText.region[0]
+                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z" + " " + region
                 }
+                if (g.statusMsg == "בהורדה" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
+                    endName = g.statusMsg!!
 
+                }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
-                    val polygon = createDownloadedPolygon(g, "yellow", endName).first
+                    val polygon = createDownloadedPolygon(g, "green", endName).first
                     renderableLayer.addRenderable(polygon)
 
-                    val label = createDownloadedPolygon(g, "yellow", endName).second
+                    val label = createDownloadedPolygon(g, "green", endName).second
                     renderableLayer.addRenderable(label)
                 } else {
                     val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
@@ -282,8 +290,16 @@ class MapActivity : AppCompatActivity() {
         loadedPolys.add(coords)
         polygon.displayName = ""
 
+        val polygonPoints = coords.map { Point(it.longitude, it.latitude) }
+        val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
+        val centroid = GeometryEngine.labelPointOrNull(polygonEsri)
+
+        val labelPosition = centroid?.let {
+            Position.fromDegrees(it.y, it.x, 0.0)
+        } ?: coords.first()
+
         val label = Label(
-            coords.first(),
+            labelPosition,
             endName,
             textAttributes()
         )
@@ -294,7 +310,7 @@ class MapActivity : AppCompatActivity() {
 
     private fun attrsColor(type: String): ShapeAttributes {
         return when (type) {
-            "yellow" -> attributes(type)
+            "green" -> attributes(type)
             "red" -> attributes(type)
             else -> pinkAttributes()
         }
@@ -303,8 +319,8 @@ class MapActivity : AppCompatActivity() {
     private fun attributes(type: String): ShapeAttributes {
         return ShapeAttributes().apply {
             outlineWidth = 5f
-            if (type == "yellow"){
-                outlineColor = Color(1f, 1f, 0f, 1f)
+            if (type == "green"){
+                outlineColor = Color(0f, 1f, 0f, 1f)
             } else if (type == "red") {
                 outlineColor = Color(1f, 0f, 0f, 1f)
             }
@@ -326,9 +342,9 @@ class MapActivity : AppCompatActivity() {
     private fun textAttributes(): TextAttributes {
         val textAttrs = TextAttributes()
         textAttrs.textSize = 35.0F
-        textAttrs.textColor = Color(1f, 1f, 0f, 1f)
+        textAttrs.textColor = Color(0f, 1f, 0f, 1f)
         textAttrs.outlineWidth = 0F
-        textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0)
+        textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, -0.3)
 
         return textAttrs
     }
@@ -394,24 +410,49 @@ class MapActivity : AppCompatActivity() {
                 }
             }
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
+            var checkBetweenPolygon = true
             allPolygon.sortByDescending(PolyObject::date)
             var found = false
             val boxArea = calculatePolygonArea(boxCoordinates)
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
-                    spaceMb = calculateMB(pLeftTop, pRightTop, pLeftBottom, polygon.resolution)
+                    val km = String.format("%.2f", abs(polygon.intersection * 10000))
+                    spaceMb = calculateMB(km, polygon.resolution)
+                    showKm.text = "שטח משוער :${km} קמ\"ר"
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                    date.text = "צולם : ${polygon.start} - ${polygon.end}"
+                    date.text = "צולם : ${polygon.end} - ${polygon.start}"
                     found = true
                     downloadAble = true
+                    checkBetweenPolygon = false
                     break
+                }
+            }
+            if (checkBetweenPolygon && allPolygon.isNotEmpty()) {
+                val unionGeometry = unionIntersections(allPolygon)
+                val allPolygonArea = GeometryEngine.area(unionGeometry)
+
+                if (allPolygon.size > 1) {
+                    for (polygon in allPolygon) {
+                        if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
+                            val km = String.format("%.2f", abs(polygon.intersection * 10000))
+                            spaceMb = calculateMB(km, polygon.resolution)
+                            showKm.text = "שטח משוער :${km} קמ\"ר"
+                            showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                            date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            found = true
+                            downloadAble = true
+                            break
+                        }
+                    }
                 }
             }
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
-                spaceMb = calculateMB(pLeftTop, pRightTop, pLeftBottom, firstPolyObject.resolution)
+                val km = String.format("%.2f", abs(firstPolyObject.intersection * 10000))
+                spaceMb = calculateMB(km, firstPolyObject.resolution)
+                showKm.text = "שטח משוער :${km} קמ\"ר"
                 showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                date.text = "צולם : ${firstPolyObject.start} - ${firstPolyObject.end}"
+                date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
                 downloadAble = true
             }
 
@@ -451,9 +492,15 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun calculateMB(leftTop: Position, rightTop: Position, leftBottom: Position,  resolution: BigDecimal): Int {
-        val area = (calculateDistance(leftTop, rightTop) / 1000) * (calculateDistance(leftTop, leftBottom) / 1000)
-        val formattedNum = String.format("%.2f", area)
+    private fun unionIntersections(polygons: MutableList<PolyObject>): Geometry {
+        var unionPolygon = polygons[0].geometry
+        for (i in 1 until polygons.size) {
+            unionPolygon = GeometryEngine.union(unionPolygon, polygons[i].geometry)
+        }
+        return unionPolygon
+    }
+
+    private fun calculateMB(formattedNum : String,  resolution: BigDecimal): Int {
         var mb = 0
         mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
             (formattedNum.toDouble() * 10).toInt()
@@ -482,7 +529,7 @@ class MapActivity : AppCompatActivity() {
             val secondDate = sdf.format(secondOffsetDateTime)
 
             if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg)
+                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg, intersection)
                 allPolygon.add(polyObject)
             }
         }
@@ -541,14 +588,14 @@ class MapActivity : AppCompatActivity() {
         var area = 0.0
         val n = vertices.size
 
-           for (i in 0 until n) {
+        for (i in 0 until n) {
             val j = (i + 1) % n
             val vi = vertices[i]
             val vj = vertices[j]
             area += (vi.latitude * vj.longitude - vj.latitude * vi.longitude)
         }
 
-        area = Math.abs(area) / 2.0
+        area = abs(area) / 2.0
         return area
     }
 

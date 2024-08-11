@@ -1,4 +1,4 @@
-package com.ngsoft.getapp.sdk
+package com.ngsoft.getapp.sdk.old
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
+import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import timber.log.Timber
 import java.io.File
@@ -37,7 +38,7 @@ internal class PackageDownloader(private val context: Context, private val downl
         override fun onReceive(contxt: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
             if(id != -1L) {
-                Timber.d("Download with ID = $id finished!")
+//                Timber.d("Download with ID = $id finished!")
                 downloadCompletedHandler?.invoke(id!!)
             }
         }

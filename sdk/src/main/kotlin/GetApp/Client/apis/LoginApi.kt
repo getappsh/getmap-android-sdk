@@ -48,8 +48,8 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * 
-     * 
+     * Get Refresh Token
+     * This service message allows a user to get a refresh token.
      * @param refreshTokenDto 
      * @return TokensDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -79,8 +79,8 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * 
-     * 
+     * Get Refresh Token
+     * This service message allows a user to get a refresh token.
      * @param refreshTokenDto 
      * @return ApiResponse<TokensDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -120,8 +120,8 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * 
-     * 
+     * User Login
+     * This service message allows a user to log in and receive a token.
      * @param userLoginDto 
      * @return TokensDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -151,8 +151,8 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
-     * 
-     * 
+     * User Login
+     * This service message allows a user to log in and receive a token.
      * @param userLoginDto 
      * @return ApiResponse<TokensDto?>
      * @throws IllegalStateException If the request is not correctly configured

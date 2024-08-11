@@ -4,6 +4,9 @@
     <string name="delivery_status_req_in_progress">בקשה בהפקה</string>
     <string name="delivery_status_connection_issue_try_again">בעיה בתקשורת - מנסה שוב</string>
     <string name="delivery_status_download">בהורדה</string>
+    <string name="delivery_status_queued">ממתין להורדה</string>
+    <string name="delivery_status_queued_try_again">ממתין להורדה - מנסה שוב</string>
+    <string name="delivery_status_connection_issue_queued">בעיה בתקשורת - ממתין לרשת</string>
     <string name="delivery_status_continue">ממשיך</string>
     <string name="delivery_status_prepare_to_download">מכין להורדה</string>
     <string name="delivery_status_done">הסתיים</string>
@@ -20,6 +23,7 @@
     <string name="delivery_status_error">שגיאה</string>
 
     <string name="delivery_status_description_failed_not_exists_on_server">הבול אינו זמין יותר בענן, הפק מחדש</string>
+    <string name="delivery_status_description_queued_no_internet_connection">ההורדה מושהית עקב שגיאת רשת. מנסה שוב בקרוב. ודא שה-VPN פועל.</string>
 
     <string name="error_access_to_the_server">אירעה שגיאת HTTP. קוד שגיאה: %d</string>
     <string name="error_not_enough_space">אין מספיק מקום אחסון. מחק מפות ישנות ונסה שוב.</string>

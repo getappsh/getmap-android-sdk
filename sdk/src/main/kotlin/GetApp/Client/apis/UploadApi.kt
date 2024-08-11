@@ -48,8 +48,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Get Last Version
+     * This service message allows retrieval of the last version by project ID.
      * @param projectId 
      * @return ComponentDto
      * @throws IllegalStateException If the request is not correctly configured
@@ -79,8 +79,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Get Last Version
+     * This service message allows retrieval of the last version by project ID.
      * @param projectId 
      * @return ApiResponse<ComponentDto?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -119,8 +119,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Update Upload Status
+     * This service message allows updating the upload status.
      * @param updateUploadStatusDto 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -149,8 +149,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Update Upload Status
+     * This service message allows updating the upload status.
      * @param updateUploadStatusDto 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -188,8 +188,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Upload Artifact
+     * This service message allows uploading an artifact.
      * @param uploadArtifactDto 
      * @return void
      * @throws IllegalStateException If the request is not correctly configured
@@ -218,8 +218,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Upload Artifact
+     * This service message allows uploading an artifact.
      * @param uploadArtifactDto 
      * @return ApiResponse<Unit?>
      * @throws IllegalStateException If the request is not correctly configured
@@ -257,8 +257,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Upload Manifest
+     * This service message allows uploading a manifest file and an upload token.
      * @param file 
      * @param uploadToken  (optional)
      * @return void
@@ -288,8 +288,8 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
-     * 
-     * 
+     * Upload Manifest
+     * This service message allows uploading a manifest file and an upload token.
      * @param file 
      * @param uploadToken  (optional)
      * @return ApiResponse<Unit?>

@@ -5,6 +5,13 @@ import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.RotateDrawable
+import android.graphics.drawable.Drawable
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,9 +22,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.ColorRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -50,9 +60,9 @@ class DownloadListAdapter(
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
 
 
+    private var notifValidation: Toast? = null
     var availableUpdate: Boolean = false
-    var tracker: Tracker? = null
-
+    private var tracker: Tracker = MatomoTracker.getTracker(context)
 
     //Create and define the signal listener
     interface SignalListener {
@@ -83,6 +93,7 @@ class DownloadListAdapter(
             listener.onSignalDownload()
         }
     }
+    var region = ""
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textFileName: TextView = itemView.findViewById(R.id.textFileName)
@@ -116,7 +127,6 @@ class DownloadListAdapter(
     private val asyncListDiffer = AsyncListDiffer(this, diffUtil)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        tracker = MatomoTracker.getTracker(this.context)
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.list_item_download, parent, false)
         return ViewHolder(view)
@@ -146,11 +156,12 @@ class DownloadListAdapter(
 
             val endName = downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
             val jsonText = Gson().fromJson(jsonFile.toString(), MapDataMetaData::class.java)
-            val region = jsonText.region[0]
+            region = jsonText.region[0]
             holder.size.text = occupiedSpace(geo)
-            holder.product.text = "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
+            holder.product.text =
+                "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
             deliveryDate(manager, downloadData, holder)
-            holder.textFileName.text = "${region} - ${endName}"
+            holder.textFileName.text = "${region} ${endName}"
             val startDate = jsonText.sourceDateStart.substringBefore('T')
             val endDate = jsonText.sourceDateEnd.substringBefore('T')
             var startDateFormatted = formatDate(startDate)
@@ -158,24 +169,17 @@ class DownloadListAdapter(
             val tsoulam = "צולם: "
             holder.dates.text = "${tsoulam}${endDateFormatted} - ${startDateFormatted}"
 
-        }  else {
-            CoroutineScope(Dispatchers.Default).launch {
-                manager.service.getDownloadedMaps().forEach { i ->
-                    val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                    val stopDate = i.downloadStop
-                    val startDate = i.downloadStart
-                    if (stopDate != null && i.statusMsg == "בוטל") {
-                        val a = sdf.format(stopDate)
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך עצירה: ${a}"
-                        }
-                    } else if (i.statusMsg == "בהורדה") {
-                        val a = sdf.format(startDate)
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך בקשה: ${a}"
-                        }
-                    }
-                }
+        } else {
+            val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+            val stopDate = downloadData.downloadStop
+            val startDate = downloadData.downloadStart
+            if (downloadData.statusMsg == "בהורדה" || downloadData.statusMsg == "בקשה בהפקה" || downloadData.statusMsg == "בקשה נשלחה") {
+                val a = sdf.format(startDate)
+                holder.demandDate.text = "תאריך בקשה: ${a}"
+            }
+            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה") {
+                val a = sdf.format(stopDate)
+                holder.demandDate.text = "תאריך עצירה: ${a}"
             }
         }
 
@@ -190,13 +194,19 @@ class DownloadListAdapter(
         when (downloadData.deliveryState) {
             START -> {
                 val localDateTime: LocalDateTime = LocalDateTime.now()
-                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
-                if (downloadData.downloadStart!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().dimension(1,downloadData.footprint).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
+                val oneSecondBeforeLocalDateTime: LocalDateTime =
+                    localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStart!!.toLocalDateTime()
+                        .isAfter(oneSecondBeforeLocalDateTime)
+                ) {
+                    TrackHelper.track().dimension(
+                        manager.service.config.matomoSiteId.toInt(),
+                        downloadData.footprint
+                    ).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
-                deliveryDate(manager, downloadData, holder)
+//                deliveryDate(manager, downloadData, holder)
                 holder.btnDelete.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
@@ -208,14 +218,20 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.green, R.color.loadEmpty)
             }
 
             DONE -> {
                 val localDateTime: LocalDateTime = LocalDateTime.now()
-                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
-                val name = downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                if (downloadData.downloadDone!!.toLocalDateTime().isAfter(oneSecondBeforeLocalDateTime)) {
-                    TrackHelper.track().dimension(1,name).event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
+                val oneSecondBeforeLocalDateTime: LocalDateTime =
+                    localDateTime.minus(Duration.ofSeconds(1))
+                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                if (downloadData.downloadDone!!.toLocalDateTime()
+                        .isAfter(oneSecondBeforeLocalDateTime)
+                ) {
+                    TrackHelper.track()
+                        .dimension(manager.service.config.matomoDimensionId.toInt(), name)
+                        .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
 
                         .with(tracker)
                 }
@@ -233,9 +249,12 @@ class DownloadListAdapter(
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
                 holder.separator.visibility = View.VISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.loadEmpty, R.color.loadEmpty)
+
             }
 
             ERROR -> {
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -245,12 +264,13 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.red, R.color.light_red)
             }
 
             CANCEL -> {
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text = "בוטל - הורדה מחדש תתחיל מ-0%"
+                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
@@ -261,10 +281,12 @@ class DownloadListAdapter(
                 holder.dates.visibility = View.INVISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.sizeLayout.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.blue, R.color.light_blue)
             }
 
             PAUSE -> {
-                holder.textFileName.text = ""
+                holder.textFileName.text = "ההורדה נעצרה"
+                holder.textStatus.text = "נעצר: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
@@ -272,6 +294,7 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.dates.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.blue, R.color.light_blue)
             }
 
             CONTINUE -> {
@@ -282,6 +305,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
+                updateProgressBarColor(holder.progressBar, R.color.green, R.color.loadEmpty)
             }
 
             DOWNLOAD -> {
@@ -296,6 +320,7 @@ class DownloadListAdapter(
                 holder.size.visibility = View.GONE
                 holder.product.visibility = View.GONE
                 holder.separator.visibility = View.GONE
+                updateProgressBarColor(holder.progressBar, R.color.green, R.color.loadEmpty)
             }
 
             DELETED -> {
@@ -314,7 +339,11 @@ class DownloadListAdapter(
                     )?.constantState
                 ) == true
             ) {
-                onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!, pathAvailable)
+                if (isInternetAvailable(this.context)) {
+                    onButtonClick(RESUME_BUTTON_CLICK, downloadData.id!!, pathAvailable)
+                } else {
+                    NotifyValidity(notifValidation, this.context)
+                }
             } else {
                 onButtonClick(CANCEL_BUTTON_CLICK, downloadData.id!!, pathAvailable)
             }
@@ -342,8 +371,33 @@ class DownloadListAdapter(
         }
     }
 
+    private fun updateProgressBarColor(progressBar: ProgressBar, percentageColor: Int, backgroundColor: Int) {
+        val layerDrawable = progressBar.progressDrawable as LayerDrawable
+        val rotateDrawable = layerDrawable.findDrawableByLayerId(R.id.loading_color_id) as RotateDrawable
+        val shapeDrawable = rotateDrawable.drawable as GradientDrawable
+        val backgroundDrawable = layerDrawable.findDrawableByLayerId(R.id.background) as GradientDrawable
+        backgroundDrawable.setColor(ContextCompat.getColor(context, backgroundColor))
+        shapeDrawable.setColor(ContextCompat.getColor(context, percentageColor))
+        progressBar.progressDrawable = layerDrawable
+    }
+
+    private fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return when {
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            else -> false
+        }
+    }
+
     override fun getItemCount(): Int {
-        val sortList = asyncListDiffer.currentList.sortedByDescending { it.downloadStart ?: OffsetDateTime.MIN  }
+        val sortList = asyncListDiffer.currentList.sortedByDescending {
+            it.downloadStart ?: OffsetDateTime.MIN
+        }
         return sortList.size
     }
 
@@ -382,6 +436,13 @@ class DownloadListAdapter(
         } else {
             String.format("נפח: %.2f mb", megabytesAvailable)
         }
+    }
+
+    private fun NotifyValidity(notification: Toast?, context: Context) {
+        notifValidation = notification
+        notifValidation?.cancel()
+        notifValidation = Toast.makeText(context, "ודא שה-VPN פועל", Toast.LENGTH_LONG)
+        notifValidation?.show()
     }
 
     fun formatDate(inputDate: String): String {

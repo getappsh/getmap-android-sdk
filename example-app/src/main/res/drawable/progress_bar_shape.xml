@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
+    <item android:id="@+id/background">
         <shape
             android:shape="ring"
             android:thicknessRatio="12.5"
@@ -8,7 +8,7 @@
             <solid android:color="#DDD" />
         </shape>
     </item>
-    <item>
+    <item android:id="@+id/loading_color_id">
         <rotate
             android:fromDegrees="270"
             android:toDegrees="270">

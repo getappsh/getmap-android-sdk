@@ -374,5 +374,15 @@ interface GetMapService {
          * Last server inventory job
          */
         var lastServerInventoryJob: OffsetDateTime?
+
+        /**
+         * Ortophoto map path on the device
+         */
+        val ortophotoMapPath: String?
+
+        /**
+         * Control map path on the device
+         */
+        val controlMapPath: String?
     }
 }

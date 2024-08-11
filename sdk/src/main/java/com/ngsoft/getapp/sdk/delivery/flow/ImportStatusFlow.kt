@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk.delivery.flow
 
+import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.delivery.DeliveryContext
 import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
@@ -93,10 +94,19 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
         }while (stat == null || stat.state!! != MapImportState.DONE)
 
         Timber.d("checkImportStatue: MapImportState.Done")
+
+        var flowState = DeliveryFlowState.IMPORT_STATUS;
+        var url: String? = null;
+        if (!BuildConfig.USE_MAP_CACHE){
+            flowState = DeliveryFlowState.IMPORT_DELIVERY;
+            url = stat.url;
+        }
+
         this.mapRepo.update(
             id = id,
             downloadProgress = 100,
-            flowState = DeliveryFlowState.IMPORT_STATUS,
+            flowState = flowState,
+            url = url,
             statusDescr = "")
         return true
     }

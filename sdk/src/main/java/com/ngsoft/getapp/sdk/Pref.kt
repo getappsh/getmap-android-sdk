@@ -42,7 +42,7 @@ class Pref private constructor(context: Context) {
         set(value) = setString(PASSWORD, value)
 
     var baseUrl: String
-        get() = getString(BASE_URL, "")
+        get() = getString(BASE_URL, BuildConfig.BASE_URL)
         set(value) = setString(BASE_URL, value)
     var matomoUrl: String
         get() = getString(MATOMO_URL, "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php")
@@ -145,6 +145,15 @@ class Pref private constructor(context: Context) {
         get() = getLong(SD_MAX_INVENTORY_SIZE_IN_MB, 1000)
         set(value) = setLong(SD_MAX_INVENTORY_SIZE_IN_MB, value)
 
+    var ortophotoMapPath: String
+        get() = getString(ORTHOPHOTO_MAP_PATH, "com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg")
+        set(value) = setString(ORTHOPHOTO_MAP_PATH, value)
+
+
+    var controlMapPath: String
+        get() = getString(CONTROL_MAP_PATH, "com.asio.gis/gis/maps/orthophoto/מפת שליטה.gpkg")
+        set(value) = setString(CONTROL_MAP_PATH, value)
+
     private fun getString(key: String, defValue: String): String{
         return sharedPreferences.getString(key, defValue) ?: defValue
     }
@@ -240,7 +249,8 @@ class Pref private constructor(context: Context) {
         private const val MAP_MIN_INCLUSION= "mapMinInclusionPct"
         private const val FLASH_MAX_INVENTORY_SIZE_IN_MB = "flashMaxInventorySizeInMB"
         private const val SD_MAX_INVENTORY_SIZE_IN_MB = "sdMaxInventorySizeInMB"
-
+        private const val ORTHOPHOTO_MAP_PATH = "orthophotoMapPath"
+        private const val CONTROL_MAP_PATH = "controlMapPath"
 
         private var instance: Pref? = null
         @Synchronized
