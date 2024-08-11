@@ -15,7 +15,7 @@ android {
     defaultConfig {
         minSdk = 26
         versionCode 2
-        versionName "0.8.2-asio"
+        versionName "0.8.3-asio"
 
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
