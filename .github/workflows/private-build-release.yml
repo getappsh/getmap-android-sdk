@@ -34,6 +34,7 @@ jobs:
           echo "AIRWATCH_TENANT=1" >> ./secrets.properties
           echo "BASE_URL=${{ secrets.BASE_URL }}" >> ./secrets.properties
           echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> ./secrets.properties
+          echo "USE_MAP_CACHE=${{ secrets.USE_MAP_CACHE }}" >> ./secrets.properties
 
       - name: Build the pub app
         run: ./gradlew :example-app:assembleDebug
@@ -56,6 +57,7 @@ jobs:
           echo "AIRWATCH_TENANT=${{ secrets.EVEN_AIRWATCH_TENANT }}" >> ./secrets.properties
           echo "BASE_URL=${{ secrets.EVEN_BASE_URL }}" >> ./secrets.properties
           echo "ENCRYPTION_KEY=${{ secrets.EVEN_ENCRYPTION_KEY }}" >> ./secrets.properties
+          echo "USE_MAP_CACHE=${{ secrets.USE_MAP_CACHE }}" >> ./secrets.properties
 
       - name: Build the Even app
         run: ./gradlew :example-app:assembleDebug -PdeployEnv='even'
