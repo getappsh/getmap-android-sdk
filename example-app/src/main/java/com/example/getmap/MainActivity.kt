@@ -115,18 +115,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = getAvailableSpace()
 
+        var imeiEven = ""
         if (!mapServiceManager.isInit) {
             Log.d("$TAG - AIRWATCH", "AirwatchInit: Before init")
             sdkAirWatchSdkManager.startRetrying()
             Log.d("$TAG - AIRWATCH", "AirwatchInit: After init")
-            var imeiEven: String? =
-                getSharedPreferences("wit_player_shared_preferences", 0).getString(
-                    "serialNumber",
-                    "imei"
-                ).toString()
+            imeiEven = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "imei").toString()
             Log.i("AIRWATCH IEMEI", imeiEven.toString())
             if (imeiEven == "imei")
-                imeiEven = null
+                imeiEven = ""
 
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
@@ -161,6 +158,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 .show()
         }
         tracker = MatomoTracker.getTracker(this)
+
+        tracker?.userId = imeiEven
 
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
