@@ -181,18 +181,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             throw Exception(errorMsg)
         }
 
-        if (mapPkg.jsonName == null || mapPkg.url == null){
+        if (mapPkg.jsonName == null){
             val errorMsg = "generateQrCode - Data missing, not found jsonName or download url"
             Timber.e( errorMsg)
             throw Exception(errorMsg)
         }
         val file = File(mapPkg.path, mapPkg.jsonName!!)
         val json = JsonUtils.readJson(file.path)
-
-        Timber.d("generateQrCode - append download url to json")
-        json.put("downloadUrl", mapPkg.url)
-        json.put("requestedBBox", mapPkg.bBox)
-        json.put("reqId", mapPkg.reqId)
 
         return qrManager.generateQrCode(json.toString(), width, height)
     }
