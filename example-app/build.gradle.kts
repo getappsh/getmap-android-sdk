@@ -81,7 +81,7 @@ android {
 }
 
 dependencies {
-    implementation("com.github.barteksc:android-pdf-viewer:2.8.2")
+    implementation("com.github.DImuthuUpe:AndroidPdfViewer:2.8.1")
 //    implementation("com.esri.arcgisruntime:arcgis-android:100.10.0")
     implementation("com.esri:arcgis-maps-kotlin:200.3.0")
     implementation("gov.nasa.worldwind.android:worldwind:0.8.0")
