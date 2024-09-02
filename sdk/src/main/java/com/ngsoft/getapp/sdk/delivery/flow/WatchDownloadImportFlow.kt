@@ -193,6 +193,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 mapRepo.setFootprint(id, it)
                 mapRepo.updateAndReturn(id, jsonDone = true, jsonName = FileUtils.getFileNameFromUri(download.file))
             }
+            addUrlToJson(download)
 
 
             Timber.i("downloadFile - id: $id, Map Done: ${mapPkg?.metadata?.mapDone}, Json Done: ${mapPkg?.metadata?.jsonDone}, state: ${mapPkg?.state} ")
@@ -216,6 +217,16 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         latch.countDown()
     }
 
+    private fun addUrlToJson(download: Download){
+        Timber.d("addUrlToJson - append download url to json")
+        val mapPkg = mapRepo.getById(id) ?: return
+        val json = JsonUtils.readJson(download.file)
+        json.put("downloadUrl", mapPkg.url)
+        json.put("requestedBBox", mapPkg.bBox)
+        json.put("reqId", mapPkg.reqId)
+
+        JsonUtils.writeJson(download.file, json)
+    }
     private fun extractFootprint(download: Download): String?{
         return try {
             val mapPkg = mapRepo.getById(id) ?: return null

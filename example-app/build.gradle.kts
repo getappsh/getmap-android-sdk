@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
-import com.android.build.gradle.internal.tasks.getNativeLibsFiles
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -18,8 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 4
-        versionName = "2.0.5"
+        versionCode = 7
+        versionName = "2.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -65,6 +63,16 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/*"
+        }
+    }
+
+
+    applicationVariants.configureEach{
+        val variant = this
+        variant.outputs.configureEach {
+            val variantOutputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val deployEnv = findProperty("deployEnv") ?: "pub"
+            variantOutputImpl.outputFileName ="cloud-mapping-${deployEnv}-${variant.versionName}-${variant.name}.apk"
         }
     }
     dependencies{
