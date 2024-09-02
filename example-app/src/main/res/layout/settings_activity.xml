@@ -35,7 +35,7 @@
             android:layout_height="60dp"
             android:layout_gravity="right"
             android:layout_marginTop="20dp"
-            android:layout_marginEnd="26dp"
+            android:layout_marginEnd="12dp"
             android:layout_marginBottom="20dp"
             android:background="#00FFFFFF"
             android:src="@drawable/baseline_autorenew_24"
@@ -69,34 +69,55 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/last_refresh"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:text="Last refresh"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+            android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/last_inventory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="Inventory" />
+            <ImageButton
+                android:id="@+id/SdkTest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="300dp"
+                android:layout_marginBottom="23dp"
+                android:background="@drawable/monitoring"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/linearLayout3" />
 
-        <TextView
-            android:id="@+id/last_config"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="Config" />
+            <LinearLayout
+                android:id="@+id/linearLayout3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/last_server_config"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="ServerConfig" />
+                <TextView
+                    android:id="@+id/last_refresh"
+                    android:layout_width="299dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="Last refresh"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+                <TextView
+                    android:id="@+id/last_inventory"
+                    android:layout_width="301dp"
+                    android:layout_height="wrap_content"
+                    android:text="Inventory" />
+
+                <TextView
+                    android:id="@+id/last_config"
+                    android:layout_width="297dp"
+                    android:layout_height="wrap_content"
+                    android:text="Config" />
+
+                <TextView
+                    android:id="@+id/last_server_config"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ServerConfig" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 

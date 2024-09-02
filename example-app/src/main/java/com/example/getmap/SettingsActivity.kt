@@ -54,7 +54,7 @@ class SettingsActivity : AppCompatActivity() {
         val tracker: Tracker?
         tracker = MatomoTracker.getTracker(this)
         nebulaParamAdapter = NebulaParamAdapter(params)
-
+        val testButton = findViewById<ImageButton>(R.id.SdkTest)
         recyclerView.adapter = nebulaParamAdapter
         loadConfig(service)
         params = nebulaParamAdapter.getParams()
@@ -76,6 +76,12 @@ class SettingsActivity : AppCompatActivity() {
         applyServerConfig.setOnCheckedChangeListener { _, isChecked ->
             service.config.applyServerConfig = isChecked
         }
+
+        testButton.setOnClickListener {
+            val intent = Intent(this,SystemTestActivity::class.java)
+            startActivity(intent)
+        }
+
         cancelButton.setOnClickListener {
             loadConfig(service)
             hideKeyboard()
