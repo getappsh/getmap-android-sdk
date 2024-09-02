@@ -9,7 +9,9 @@ import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.SystemTest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 
 class SystemTestActivity : AppCompatActivity() {
 
@@ -36,13 +38,11 @@ class SystemTestActivity : AppCompatActivity() {
         setContentView(R.layout.activity_system_test)
 
         val cfg = Configuration(
-            "https://api-asio-getapp-2.apps.okd4-stage-getapp.getappstage.link",
+            BuildConfig.BASE_URL,
             BuildConfig.USERNAME,
             BuildConfig.PASSWORD,
             16,
-            null
-        )
-
+            null)
 
         val systemTest = SystemTest.getInstance(this, cfg)
 
@@ -63,7 +63,6 @@ class SystemTestActivity : AppCompatActivity() {
 
         testInventoryUpdatesIcon = findViewById(R.id.testInventoryUpdatesIcon)
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
-
         GlobalScope.launch(Dispatchers.IO) {
             systemTest.run { testReport ->
                 runOnUiThread {
@@ -99,6 +98,6 @@ class SystemTestActivity : AppCompatActivity() {
         }
 
         // Update the TextView with the test name
-        testNameTextView.text = testResult?.name ?: "Loading..."
+        testNameTextView.text = testResult?.name ?: "טוען..."
     }
 }

@@ -1,11 +1,11 @@
 package com.example.getmap
 
+//import com.arcgismaps.geometry.Point
 import GetApp.Client.models.MapConfigDto
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
-import com.example.getmap.matomo.MatomoTracker
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.Point
@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.provider.Settings
-import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -24,19 +23,22 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-//import com.arcgismaps.geometry.Point
+import com.example.getmap.airwatch.AirWatchSdkManager
+import com.example.getmap.matomo.MatomoTracker
+import com.github.barteksc.pdfviewer.PDFView
+import com.google.android.material.snackbar.Snackbar
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.BuildConfig
@@ -52,13 +54,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
-import com.example.getmap.airwatch.AirWatchSdkManager
-import com.google.android.material.snackbar.Snackbar
+import java.util.Base64
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -97,7 +100,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private val popUp = PopUp()
 
-
+    @SuppressLint("MissingInflatedId")
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,14 +122,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Log.d("$TAG - AIRWATCH", "AirwatchInit: Before init")
             sdkAirWatchSdkManager.startRetrying()
             Log.d("$TAG - AIRWATCH", "AirwatchInit: After init")
-            var imeiEven: String? =
-                getSharedPreferences("wit_player_shared_preferences", 0).getString(
-                    "serialNumber",
-                    "imei"
-                ).toString()
-            Log.i("AIRWATCH IEMEI", imeiEven.toString())
-            if (imeiEven == "imei")
-                imeiEven = null
+//            var imeiEven: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "imei").toString()
+//            Log.i("AIRWATCH IEMEI", imeiEven.toString())
+//            if (imeiEven == "imei")
+//                imeiEven = null
+            val imeiEven = ""
 
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
@@ -162,6 +162,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
         tracker = MatomoTracker.getTracker(this)
 
+        tracker?.userId = "Wow that works I cant believe it "
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
@@ -221,6 +222,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     mapServiceManager.service.synchronizeMapData()
                 }
             }
+            val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+            deleteFail.visibility = View.INVISIBLE
+            showDeleteFailedBtn(deleteFail)
+
             swipeRecycler.isRefreshing = false
         }
 
@@ -317,10 +322,46 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             finish()
         }
 
-        registerReceiver(
-            SystemTestReceiver,
-            IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
-        )
+        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        deleteFail.visibility = View.INVISIBLE
+        showDeleteFailedBtn(deleteFail)
+
+        deleteFail.setOnClickListener {
+            val dialogBuilder = android.app.AlertDialog.Builder(this)
+            dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
+            dialogBuilder.setPositiveButton("כן") { _, _ ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                        if (map.statusMsg == "נכשל") {
+                            mapServiceManager.service.deleteMap(map.id!!)
+                        }
+                    }
+                }
+                deleteFail.visibility = View.INVISIBLE
+            }
+            dialogBuilder.setNegativeButton("לא", null)
+            val popUpMessage = dialogBuilder.create()
+            popUpMessage.show()
+        }
+
+        val pdfView = findViewById<PDFView>(R.id.pdfView)
+        pdfView.visibility = View.INVISIBLE
+        val pdFile = findViewById<ImageButton>(R.id.pdfFile)
+        pdFile.setOnClickListener {
+            pdfView.visibility = View.VISIBLE
+            pdfView.fromAsset("strategy.pdf").load()
+
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (pdfView.visibility == View.VISIBLE) {
+                    pdfView.visibility = View.INVISIBLE
+                }
+            }
+        })
     }
 
 //    override fun onResume() {
@@ -331,6 +372,19 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        mapServiceManager = MapServiceManager.getInstance()
 //        Log.d("a", "sa")
 //    }
+
+    private fun showDeleteFailedBtn(deleteFail: ImageButton) {
+        GlobalScope.launch(Dispatchers.IO) {
+            mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                if (map.statusMsg == "נכשל") {
+                    withContext(Dispatchers.Main) {
+                        deleteFail.visibility = View.VISIBLE
+                    }
+                    return@forEach
+                }
+            }
+        }
+    }
 
     override fun onDestroy() {
         if (!isReplacingActivity) {

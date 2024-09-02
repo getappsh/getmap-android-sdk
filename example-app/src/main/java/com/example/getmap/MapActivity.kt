@@ -8,10 +8,14 @@ import android.os.storage.StorageManager
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.GestureDetector
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.PopupMenu
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -65,6 +69,7 @@ class MapActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
+    private var geoPackageName = ""
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -156,6 +161,28 @@ class MapActivity : AppCompatActivity() {
             frame.visibility = View.INVISIBLE
             back.visibility = View.VISIBLE
         }
+
+        val mapSwitch = findViewById<View>(R.id.mapSwitch)
+        mapSwitch.visibility = View.GONE
+
+        val controlSwitch = findViewById<Switch>(R.id.control)
+        controlSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                geoPackageName = service.config.controlMapPath.toString()
+                addGeoPkg()
+            } else {
+                // Optionally remove the BlueMarble layer or handle switch off action
+                val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
+                if (blueMarbleLayer == -1) {
+                    return@setOnCheckedChangeListener
+                } else {
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
+                    wwd.requestRedraw()
+                }
+            }
+        }
+
+
         drawPolygons()
     }
 
@@ -163,20 +190,26 @@ class MapActivity : AppCompatActivity() {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
         val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
-        Log.i("gfgffgf", "$volume")
-        val geoPath = "${volume}/com.asio.gis/gis/maps/orthophoto/אורתופוטו.gpkg"
+        if (geoPackageName.isBlank()) {
+            geoPackageName = service.config.ortophotoMapPath.toString()
+        }
+        val geoPath = "${volume}/$geoPackageName"
 
         val layerFactory = LayerFactory()
         layerFactory.createFromGeoPackage(
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
+                    if (geoPackageName == service.config.controlMapPath.toString()) {
+                        layer!!.displayName = "BlueMarble"
+                    }
                     wwd.layers.addLayer(layer)
                     Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
                 }
 
                 override fun creationFailed(factory: LayerFactory?, layer: Layer?, ex: Throwable?) {
                     Log.e("gov.nasa.worldwind", "GeoPackage layer creation failed", ex)
+                    Toast.makeText(applicationContext, "בעיה בטעינת המפה", Toast.LENGTH_LONG).show()
                 }
             }
         )
@@ -227,7 +260,7 @@ class MapActivity : AppCompatActivity() {
                     val label = createDownloadedPolygon(g, "green", endName).second
                     renderableLayer.addRenderable(label)
                 } else {
-                    val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     val formattedDownloadStart = g.downloadStop?.format(formatter)
                     endName = "${g.statusMsg} $formattedDownloadStart"
 
@@ -275,6 +308,34 @@ class MapActivity : AppCompatActivity() {
         renderableLayer.displayName = ""
         wwd.layers.addLayer(renderableLayer)
         wwd.requestRedraw()
+    }
+
+    private fun showPopupMenu(view: View) {
+        val popup = PopupMenu(this, view)
+        val inflater: MenuInflater = popup.menuInflater
+        inflater.inflate(R.menu.popup_menu, popup.menu)
+        popup.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.map_option1 -> {
+                    // Handle option 1 click
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+                    wwd.requestRedraw()
+                    geoPackageName = service.config.ortophotoMapPath.toString()
+                    addGeoPkg()
+                    true
+                }
+                R.id.map_option2 -> {
+                    // Handle option 2 click
+                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+                    wwd.requestRedraw()
+                    geoPackageName = service.config.controlMapPath.toString()
+                    addGeoPkg()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private fun createDownloadedPolygon(map: MapData, colorType: String , endName: String): Pair<Polygon, Label> {
@@ -420,7 +481,11 @@ class MapActivity : AppCompatActivity() {
                     spaceMb = calculateMB(km, polygon.resolution)
                     showKm.text = "שטח משוער :${km} קמ\"ר"
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                    date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                    if (polygon.end == polygon.start) {
+                        date.text = "צולם : ${polygon.end}"
+                    } else {
+                        date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                    }
                     found = true
                     downloadAble = true
                     checkBetweenPolygon = false
@@ -438,7 +503,11 @@ class MapActivity : AppCompatActivity() {
                             spaceMb = calculateMB(km, polygon.resolution)
                             showKm.text = "שטח משוער :${km} קמ\"ר"
                             showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                            date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            if (polygon.end == polygon.start) {
+                                date.text = "צולם : ${polygon.end}"
+                            } else {
+                                date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                            }
                             found = true
                             downloadAble = true
                             break
@@ -452,7 +521,11 @@ class MapActivity : AppCompatActivity() {
                 spaceMb = calculateMB(km, firstPolyObject.resolution)
                 showKm.text = "שטח משוער :${km} קמ\"ר"
                 showBm.text = "נפח משוער :${spaceMb} מ\"ב"
-                date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
+                if (firstPolyObject.end == firstPolyObject.start) {
+                    date.text = "צולם : ${firstPolyObject.end}"
+                } else {
+                    date.text = "צולם : ${firstPolyObject.end} - ${firstPolyObject.start}"
+                }
                 downloadAble = true
             }
 
