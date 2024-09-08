@@ -79,6 +79,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val phoneNumberPermissionCode = 100
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
+    companion object {
+        var count = 0;
+    }
 
     //    private lateinit var selectedProductView: TextView
     private lateinit var deliveryButton: Button
@@ -291,7 +294,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             popUp.type = "update"
             popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
             popUp.tracker = tracker
-            popUp.show(supportFragmentManager, "update")
+            if (count == 0) {
+                count += 1
+                popUp.show(supportFragmentManager, "update")
+            }
 
         }
 
@@ -639,7 +645,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.bullName = ""
             }
         }
-        popUp.show(supportFragmentManager, "delete")
+        if (count == 0) {
+            count += 1
+            popUp.show(supportFragmentManager, "delete")
+        }
     }
 
     private fun onResume(id: String) {
@@ -669,7 +678,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         popUp.type = "cancelled"
         popUp.textM = "האם לעצור את ההורדה ?"
         popUp.tracker = tracker
-        popUp.show(supportFragmentManager, "cancelled")
+        if (count == 0) {
+            count += 1
+            popUp.show(supportFragmentManager, "cancelled")
+        }
 //        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
 //        GlobalScope.launch(Dispatchers.IO) {
 //            mapServiceManager.service.cancelDownload(id)
@@ -747,7 +759,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     popUp.type = "updateOne"
                     popUp.recyclerView = recyclerView
                     popUp.textM = "האם לבצע עדכון מפה ?"
-                    popUp.show(supportFragmentManager, "updateOne")
+                    if (count == 0) {
+                        count += 1
+                        popUp.show(supportFragmentManager, "updateOne")
+                    }
                 }
             }
         }
