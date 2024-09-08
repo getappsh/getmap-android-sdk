@@ -843,11 +843,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val imageViewQRCode: ImageView = dialogView.findViewById(R.id.imageViewQRCode)
         imageViewQRCode.setImageBitmap(qrCodeBitmap)
 
-        builder.setView(dialogView)
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        if (count == 0) {
+            count = 1
+            builder.setView(dialogView)
+                .setPositiveButton("OK") { dialog, _ ->
+                    count = 0
+                    dialog.dismiss()
+                }
+                .show()
+        }
     }
 
 
