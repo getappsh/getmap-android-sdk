@@ -696,10 +696,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             try {
                 val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
-                runOnUiThread {
                     val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                     val region = jsonText.region[0]
                     val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                runOnUiThread {
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "שיתוף")
@@ -707,7 +707,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     showQRCodeDialog(qrCode)
                 }
             } catch (e: Exception) {
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
+                val map = mapServiceManager.service.getDownloadedMap(id)
+                val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val region = jsonText.region[0]
+                val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
                     .with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
@@ -845,7 +849,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         if (result.contents == null) {
         } else {
             Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
-
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
@@ -863,7 +866,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .name("קבלת בול בסריקה").with(tracker)
                     }
                 } catch (e: Exception) {
-                    TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
+                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                    val region = jsonText.region[0]
+                    val name = region + "-" + map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                    TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name).event("מיפוי ענן", "ניהול שגיאות")
                         .name("תקלה בקבלת בול בסריקה").with(tracker)
                     runOnUiThread { showErrorDialog(e.message.toString()) }
                 }

@@ -260,7 +260,8 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
+                val name = region + "-" + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                TrackHelper.track().dimension(manager.service.config.matomoDimensionId.toInt(), name).event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
