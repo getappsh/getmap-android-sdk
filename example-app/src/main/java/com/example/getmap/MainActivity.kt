@@ -2,6 +2,7 @@ package com.example.getmap
 
 //import com.arcgismaps.geometry.Point
 import GetApp.Client.models.MapConfigDto
+import MapDataMetaData
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.DialogInterface
@@ -40,6 +41,7 @@ import com.example.getmap.airwatch.AirWatchSdkManager
 import com.example.getmap.matomo.MatomoTracker
 import com.github.barteksc.pdfviewer.PDFView
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.BuildConfig
@@ -470,7 +472,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
                     Log.i("hghfhffhg", e.message!!)
                 }
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בדיסקוברי")
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בבחירת תיחום")
                     .with(tracker)
             }
 
@@ -634,7 +636,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + "-" +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
             } else {
@@ -699,7 +701,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
                 runOnUiThread {
-                    val name = map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                    val region = jsonText.region[0]
+                    val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "שיתוף")
@@ -849,8 +853,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
+                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
+                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                    val region = jsonText.region[0]
+                    val name = region + "-" + map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                    val coordinates = map.footprint
+                    Log.i("mapName", name + coordinates)
                     withContext(Dispatchers.Main) {
                         TrackHelper.track()
+                            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), coordinates)
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }

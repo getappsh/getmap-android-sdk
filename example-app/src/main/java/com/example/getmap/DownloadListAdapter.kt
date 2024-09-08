@@ -229,12 +229,14 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime =
                     localDateTime.minus(Duration.ofSeconds(1))
-                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val name = region + "-" + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val coordinates = downloadData.footprint
                 if (downloadData.downloadDone!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
                     TrackHelper.track()
                         .dimension(manager.service.config.matomoDimensionId.toInt(), name)
+                        .dimension(manager.service.config.matomoDimensionId.toInt(), coordinates)
                         .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
 
                         .with(tracker)
