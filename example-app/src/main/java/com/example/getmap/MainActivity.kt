@@ -846,6 +846,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         if (count == 0) {
             count = 1
             builder.setView(dialogView)
+                .setCancelable(false)
                 .setPositiveButton("OK") { dialog, _ ->
                     count = 0
                     dialog.dismiss()
