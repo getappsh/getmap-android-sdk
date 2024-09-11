@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
-import com.android.build.gradle.internal.tasks.getNativeLibsFiles
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -18,8 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 3
-        versionName = "2.0.1"
+        versionCode = 8
+        versionName = "2.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -67,16 +65,26 @@ android {
             excludes += "/META-INF/*"
         }
     }
+
+
+    applicationVariants.configureEach{
+        val variant = this
+        variant.outputs.configureEach {
+            val variantOutputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val deployEnv = findProperty("deployEnv") ?: "pub"
+            variantOutputImpl.outputFileName ="cloud-mapping-${deployEnv}-${variant.versionName}-${variant.name}.apk"
+        }
+    }
     dependencies{
         implementation( "com.github.matomo-org:matomo-sdk-android:4.2")
     }
 }
 
 dependencies {
-    implementation("com.github.barteksc:android-pdf-viewer:2.8.2")
+    implementation("com.github.DImuthuUpe:AndroidPdfViewer:2.8.1")
 //    implementation("com.esri.arcgisruntime:arcgis-android:100.10.0")
     implementation("com.esri:arcgis-maps-kotlin:200.3.0")
-    implementation("gov.nasa.worldwind.android:worldwind:0.8.0")
+    implementation("com.github.NASAWorldWind:WorldWindAndroid:v0.8.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(project(mapOf("path" to ":sdk")))

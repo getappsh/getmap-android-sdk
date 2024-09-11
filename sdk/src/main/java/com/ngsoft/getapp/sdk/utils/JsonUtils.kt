@@ -6,6 +6,10 @@ import java.nio.file.Paths
 
 internal object JsonUtils {
 
+
+    fun writeJson(jsonPath: String, jsonObject: JSONObject) {
+        Files.write(Paths.get(jsonPath), jsonObject.toString().toByteArray())
+    }
     fun readJson(jsonPath: String): JSONObject{
         val file = Files.readAllBytes(Paths.get(jsonPath))
         return JSONObject(String(file))
