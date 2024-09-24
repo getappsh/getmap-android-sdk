@@ -236,7 +236,6 @@ class DownloadListAdapter(
                 ) {
                     TrackHelper.track()
                         .dimension(manager.service.config.matomoDimensionId.toInt(), name)
-                        .dimension(manager.service.config.matomoDimensionId.toInt(), coordinates)
                         .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
 
                         .with(tracker)
