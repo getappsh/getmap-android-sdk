@@ -203,10 +203,9 @@ class DownloadListAdapter(
                 if (downloadData.downloadStart!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
-                    TrackHelper.track().dimension(
-                        manager.service.config.matomoSiteId.toInt(),
-                        downloadData.footprint
-                    ).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
+                    TrackHelper.track()
+                        .dimension(manager.service.config.matomoDimensionId.toInt(), downloadData.footprint)
+                        .event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
