@@ -51,6 +51,19 @@ class PopUp : DialogFragment() {
         val buttonCancel = view.findViewById<Button>(R.id.buttonCancel)
         val textView = view.findViewById<TextView>(R.id.textViewMessage)
         textView.text = textM
+
+        buttonCancel.setOnClickListener {
+            if (type == "delete") {
+
+                Log.i("bull name", bullName)
+                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+                    .event("מיפוי ענן", "ניהול בולים")
+                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
+            }
+
+            dismiss()
+        }
+
         buttonDelete.setOnClickListener {
             if (type == "delete") {
                 Log.i("bull name", bullName)
@@ -108,7 +121,7 @@ class PopUp : DialogFragment() {
                 }
                 count = 0
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בקשות")
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות")
                     .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
