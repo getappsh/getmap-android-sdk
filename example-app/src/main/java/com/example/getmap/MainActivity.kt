@@ -648,7 +648,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun onResume(id: String) {
         TrackHelper.track()
-            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), id)
             .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
             .with(tracker)
         GlobalScope.launch(Dispatchers.IO) {

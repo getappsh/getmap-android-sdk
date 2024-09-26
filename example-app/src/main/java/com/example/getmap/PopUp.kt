@@ -117,7 +117,7 @@ class PopUp : DialogFragment() {
                     recyclerView.smoothScrollToPosition(0)
                 }
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בקשות")
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות")
                     .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
