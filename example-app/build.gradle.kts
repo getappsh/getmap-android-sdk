@@ -24,6 +24,10 @@ android {
             useSupportLibrary = true
         }
 
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
+
         buildConfigField("String", "USERNAME", "\"${getPropertyFromFile("USERNAME")}\"")
         buildConfigField("String", "PASSWORD", "\"${getPropertyFromFile("PASSWORD")}\"")
         buildConfigField("String", "AW_USER_NAME", "\"${getPropertyFromFile("AW_USER_NAME")}\"")
