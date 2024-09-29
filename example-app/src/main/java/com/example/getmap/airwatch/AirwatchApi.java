@@ -46,6 +46,7 @@ public class AirwatchApi {
                     .header("Authorization", "Basic " + encodedCredentialDEFAULT)
                     .build();
         } catch (Exception e) {
+            Toast.makeText(context, "Serial Number" + e, Toast.LENGTH_LONG).show();
             return "";
         }
 
@@ -60,6 +61,7 @@ public class AirwatchApi {
             return json.get("LocationGroupName").getAsString();
 
         } catch (Exception e) {
+            Toast.makeText(context, "Serial Number" + e, Toast.LENGTH_LONG).show();
             return "";
         }
     }
