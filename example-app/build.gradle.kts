@@ -16,8 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 8
-        versionName = "2.0.7"
+        versionCode = 14
+        versionName = "2.1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

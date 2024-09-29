@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private val phoneNumberPermissionCode = 100
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
+    private var imeiEven = ""
     companion object {
         var count = 0
     }
@@ -133,7 +134,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
 
             val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
-            var imeiEven = imeiSharedPref.getString("imei_key", "")
+            imeiEven = imeiSharedPref.getString("imei_key", "").toString()
             if (imeiEven == "") {
                 try {
                     imeiEven = sdkAirWatchSdkManager.imei
@@ -146,9 +147,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             } else {
                 Log.d("AIRWATCH", "The Imei from sharedpref is : $imeiEven")
             }
-
-            tracker = MatomoTracker.getTracker(this)
-            tracker?.userId = imeiEven
 
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
@@ -181,7 +179,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT)
                 .show()
         }
-
+        tracker = MatomoTracker.getTracker(this)
+        tracker?.userId = imeiEven
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
