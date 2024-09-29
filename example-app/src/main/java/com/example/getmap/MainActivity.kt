@@ -5,6 +5,7 @@ import GetApp.Client.models.MapConfigDto
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
@@ -123,7 +124,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = getAvailableSpace()
-        var imeiEven = ""
         if (!mapServiceManager.isInit) {
             val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
             StrictMode.setThreadPolicy(policy)
@@ -131,13 +131,24 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             sdkAirWatchSdkManager.startRetrying()
             var serialNumber: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "serialNumber").toString()
             Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
-            try {
-                imeiEven = sdkAirWatchSdkManager.imei
-            } catch (e : Exception) {
-                Log.d("Error", "Error getting Imei")
-                Log.d("Error", e.toString())
+
+            val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
+            var imeiEven = imeiSharedPref.getString("imei_key", "")
+            if (imeiEven == "") {
+                try {
+                    imeiEven = sdkAirWatchSdkManager.imei
+                    imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
+                } catch (e : Exception) {
+                    Log.d("Error", "Error getting Imei")
+                    Log.d("Error", e.toString())
+                }
+                Log.d("AIRWATCH", "The Imei from airwatch is : $imeiEven")
+            } else {
+                Log.d("AIRWATCH", "The Imei from sharedpref is : $imeiEven")
             }
-            Log.d("AIRWATCH", "The Imei is : $imeiEven")
+
+            tracker = MatomoTracker.getTracker(this)
+            tracker?.userId = imeiEven
 
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
@@ -170,8 +181,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT)
                 .show()
         }
-        tracker = MatomoTracker.getTracker(this)
-        tracker?.userId = imeiEven
+
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
