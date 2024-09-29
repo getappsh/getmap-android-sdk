@@ -21,6 +21,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import com.example.getmap.MainActivity.Companion.count
 
 @RequiresApi(Build.VERSION_CODES.R)
 class PopUp : DialogFragment() {
@@ -50,6 +51,19 @@ class PopUp : DialogFragment() {
         val buttonCancel = view.findViewById<Button>(R.id.buttonCancel)
         val textView = view.findViewById<TextView>(R.id.textViewMessage)
         textView.text = textM
+
+        buttonCancel.setOnClickListener {
+            if (type == "delete") {
+
+                Log.i("bull name", bullName)
+                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+                    .event("מיפוי ענן", "ניהול בולים")
+                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
+            }
+
+            dismiss()
+        }
+
         buttonDelete.setOnClickListener {
             if (type == "delete") {
                 Log.i("bull name", bullName)
@@ -81,6 +95,7 @@ class PopUp : DialogFragment() {
                     service.deleteMap(mapId)
 //                    TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
                 }
+                count = 0
             } else if (type == "update") {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
                     .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
@@ -96,6 +111,7 @@ class PopUp : DialogFragment() {
                     recyclerView.smoothScrollToPosition(0)
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
+                count = 0
             } else if (type == "updateOne") {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
@@ -103,17 +119,20 @@ class PopUp : DialogFragment() {
                     service.downloadUpdatedMap(mapId)
                     recyclerView.smoothScrollToPosition(0)
                 }
+                count = 0
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בקשות")
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות")
                     .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
                 }
+                count = 0
             }
             dismiss()
         }
 
         buttonCancel.setOnClickListener {
+            count = 0
             dismiss()
         }
     }
