@@ -90,8 +90,8 @@ public class AirWatchSdkManager {
             editor.putString(SERIAL_NUMBER, serialNumber);
             editor.apply();
             new utils().saveOrganizationGroupInSharedPreferences(context, serialNumber);
-        } catch (AirWatchSDKException ignored) {
-
+        } catch (Exception e) {
+            Toast.makeText(context, "Serial Number" + e, Toast.LENGTH_LONG).show();
         }
     }
 
