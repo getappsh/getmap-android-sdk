@@ -40,10 +40,12 @@ data class InventoryUpdatesReqDto (
     /**
      * 
      *
-     * Values: `import`,delivery,installed,uninstalled
+     * Values: offering,push,`import`,delivery,installed,uninstalled
      */
     @JsonClass(generateAdapter = false)
     enum class Inventory(val value: kotlin.String) {
+        @Json(name = "offering") offering("offering"),
+        @Json(name = "push") push("push"),
         @Json(name = "import") `import`("import"),
         @Json(name = "delivery") delivery("delivery"),
         @Json(name = "installed") installed("installed"),

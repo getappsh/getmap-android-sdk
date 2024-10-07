@@ -22,14 +22,14 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param errorCode `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again . 
+ * @param errorCode `APP.unknown`: General Error code not listed in the enum <br /> `DELIVERY.unknown`: Error code not listed in the enum <br /> `DELIVERY.notFound`: No found the delivery with given catalog id <br /> `DELIVERY.download`: Download of delivery item failed <br /> `DELIVERY.downloadNotAvailable`: Delivery item not yet available for download <br /> `DELIVERY.invalidPackage`: Package of given catalog id is invalid, maybe expired or some else <br /> `DELIVERY.packageTooLarge`:  Package of given catalog id is too large, no space in cache<br /> `DELIVERY.unableClearCache`:  Some issue occurs when trying to clear cache <br /> `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again . 
  * @param message 
  */
 
 
 data class ErrorDto (
 
-    /* `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again .  */
+    /* `APP.unknown`: General Error code not listed in the enum <br /> `DELIVERY.unknown`: Error code not listed in the enum <br /> `DELIVERY.notFound`: No found the delivery with given catalog id <br /> `DELIVERY.download`: Download of delivery item failed <br /> `DELIVERY.downloadNotAvailable`: Delivery item not yet available for download <br /> `DELIVERY.invalidPackage`: Package of given catalog id is invalid, maybe expired or some else <br /> `DELIVERY.packageTooLarge`:  Package of given catalog id is too large, no space in cache<br /> `DELIVERY.unableClearCache`:  Some issue occurs when trying to clear cache <br /> `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again .  */
     @Json(name = "errorCode")
     val errorCode: ErrorDto.ErrorCode? = null,
 
@@ -39,20 +39,29 @@ data class ErrorDto (
 ) {
 
     /**
-     * `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again . 
+     * `APP.unknown`: General Error code not listed in the enum <br /> `DELIVERY.unknown`: Error code not listed in the enum <br /> `DELIVERY.notFound`: No found the delivery with given catalog id <br /> `DELIVERY.download`: Download of delivery item failed <br /> `DELIVERY.downloadNotAvailable`: Delivery item not yet available for download <br /> `DELIVERY.invalidPackage`: Package of given catalog id is invalid, maybe expired or some else <br /> `DELIVERY.packageTooLarge`:  Package of given catalog id is too large, no space in cache<br /> `DELIVERY.unableClearCache`:  Some issue occurs when trying to clear cache <br /> `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again . 
      *
-     * Values: unknown,notFound,bBoxIsInvalid,bBoxNotInAnyPolygon,exportMapFailed,requestInProgress,areaTooLarge,areaTooSmall
+     * Values: APPPeriodUnknown,DELIVERYPeriodUnknown,DELIVERYPeriodNotFound,DELIVERYPeriodDownload,DELIVERYPeriodDownloadNotAvailable,DELIVERYPeriodInvalidPackage,DELIVERYPeriodPackageTooLarge,DELIVERYPeriodUnableClearCache,MAPPeriodUnknown,MAPPeriodNotFound,MAPPeriodBBoxIsInvalid,MAPPeriodBBoxNotInAnyPolygon,MAPPeriodGetRecordsFailed,MAPPeriodExportMapFailed,MAPPeriodRequestInProgress,MAPPeriodAreaTooLarge,MAPPeriodAreaTooSmall
      */
     @JsonClass(generateAdapter = false)
     enum class ErrorCode(val value: kotlin.String) {
-        @Json(name = "MAP.unknown") unknown("MAP.unknown"),
-        @Json(name = "MAP.notFound") notFound("MAP.notFound"),
-        @Json(name = "MAP.bBoxIsInvalid") bBoxIsInvalid("MAP.bBoxIsInvalid"),
-        @Json(name = "MAP.bBoxNotInAnyPolygon") bBoxNotInAnyPolygon("MAP.bBoxNotInAnyPolygon"),
-        @Json(name = "MAP.exportMapFailed") exportMapFailed("MAP.exportMapFailed"),
-        @Json(name = "MAP.requestInProgress") requestInProgress("MAP.requestInProgress"),
-        @Json(name = "MAP.areaTooLarge") areaTooLarge("MAP.areaTooLarge"),
-        @Json(name = "MAP.areaTooSmall") areaTooSmall("MAP.areaTooSmall");
+        @Json(name = "APP.unknown") APPPeriodUnknown("APP.unknown"),
+        @Json(name = "DELIVERY.unknown") DELIVERYPeriodUnknown("DELIVERY.unknown"),
+        @Json(name = "DELIVERY.notFound") DELIVERYPeriodNotFound("DELIVERY.notFound"),
+        @Json(name = "DELIVERY.download") DELIVERYPeriodDownload("DELIVERY.download"),
+        @Json(name = "DELIVERY.downloadNotAvailable") DELIVERYPeriodDownloadNotAvailable("DELIVERY.downloadNotAvailable"),
+        @Json(name = "DELIVERY.invalidPackage") DELIVERYPeriodInvalidPackage("DELIVERY.invalidPackage"),
+        @Json(name = "DELIVERY.packageTooLarge") DELIVERYPeriodPackageTooLarge("DELIVERY.packageTooLarge"),
+        @Json(name = "DELIVERY.unableClearCache") DELIVERYPeriodUnableClearCache("DELIVERY.unableClearCache"),
+        @Json(name = "MAP.unknown") MAPPeriodUnknown("MAP.unknown"),
+        @Json(name = "MAP.notFound") MAPPeriodNotFound("MAP.notFound"),
+        @Json(name = "MAP.bBoxIsInvalid") MAPPeriodBBoxIsInvalid("MAP.bBoxIsInvalid"),
+        @Json(name = "MAP.bBoxNotInAnyPolygon") MAPPeriodBBoxNotInAnyPolygon("MAP.bBoxNotInAnyPolygon"),
+        @Json(name = "MAP.getRecordsFailed") MAPPeriodGetRecordsFailed("MAP.getRecordsFailed"),
+        @Json(name = "MAP.exportMapFailed") MAPPeriodExportMapFailed("MAP.exportMapFailed"),
+        @Json(name = "MAP.requestInProgress") MAPPeriodRequestInProgress("MAP.requestInProgress"),
+        @Json(name = "MAP.areaTooLarge") MAPPeriodAreaTooLarge("MAP.areaTooLarge"),
+        @Json(name = "MAP.areaTooSmall") MAPPeriodAreaTooSmall("MAP.areaTooSmall");
     }
 }
 

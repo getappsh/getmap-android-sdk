@@ -19,9 +19,12 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
+import GetApp.Client.models.DeviceComponentsOfferingDto
 import GetApp.Client.models.DeviceDiscoverResDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoveryResDto
+import GetApp.Client.models.MTlsStatusDto
+import GetApp.Client.models.OfferingMapResDto
 
 import com.squareup.moshi.Json
 
@@ -45,6 +48,219 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
         val defaultBasePath: String by lazy {
             System.getProperties().getProperty(ApiClient.baseUrlKey, "http://localhost")
         }
+    }
+
+    /**
+     * Discover Device Component
+     * This service message allows a device to post the discovery context for getting device software offers.
+     * @param discoveryMessageDto 
+     * @return DeviceComponentsOfferingDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun discoveryControllerDeviceComponentDiscovery(discoveryMessageDto: DiscoveryMessageDto) : DeviceComponentsOfferingDto {
+        val localVarResponse = discoveryControllerDeviceComponentDiscoveryWithHttpInfo(discoveryMessageDto = discoveryMessageDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceComponentsOfferingDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Discover Device Component
+     * This service message allows a device to post the discovery context for getting device software offers.
+     * @param discoveryMessageDto 
+     * @return ApiResponse<DeviceComponentsOfferingDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun discoveryControllerDeviceComponentDiscoveryWithHttpInfo(discoveryMessageDto: DiscoveryMessageDto) : ApiResponse<DeviceComponentsOfferingDto?> {
+        val localVariableConfig = discoveryControllerDeviceComponentDiscoveryRequestConfig(discoveryMessageDto = discoveryMessageDto)
+
+        return request<DiscoveryMessageDto, DeviceComponentsOfferingDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation discoveryControllerDeviceComponentDiscovery
+     *
+     * @param discoveryMessageDto 
+     * @return RequestConfig
+     */
+    fun discoveryControllerDeviceComponentDiscoveryRequestConfig(discoveryMessageDto: DiscoveryMessageDto) : RequestConfig<DiscoveryMessageDto> {
+        val localVariableBody = discoveryMessageDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/device/discover/component",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Discover Device Context
+     * This service message allows a device to post the discovery context.
+     * @param discoveryMessageDto 
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun discoveryControllerDeviceContext(discoveryMessageDto: DiscoveryMessageDto) : Unit {
+        val localVarResponse = discoveryControllerDeviceContextWithHttpInfo(discoveryMessageDto = discoveryMessageDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Discover Device Context
+     * This service message allows a device to post the discovery context.
+     * @param discoveryMessageDto 
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun discoveryControllerDeviceContextWithHttpInfo(discoveryMessageDto: DiscoveryMessageDto) : ApiResponse<Unit?> {
+        val localVariableConfig = discoveryControllerDeviceContextRequestConfig(discoveryMessageDto = discoveryMessageDto)
+
+        return request<DiscoveryMessageDto, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation discoveryControllerDeviceContext
+     *
+     * @param discoveryMessageDto 
+     * @return RequestConfig
+     */
+    fun discoveryControllerDeviceContextRequestConfig(discoveryMessageDto: DiscoveryMessageDto) : RequestConfig<DiscoveryMessageDto> {
+        val localVariableBody = discoveryMessageDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/device/discover/deviceContext",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Discover Device map
+     * This service message allows a device to post the discovery context for getting device maps offers.
+     * @param discoveryMessageDto 
+     * @return OfferingMapResDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun discoveryControllerDeviceMapDiscovery(discoveryMessageDto: DiscoveryMessageDto) : OfferingMapResDto {
+        val localVarResponse = discoveryControllerDeviceMapDiscoveryWithHttpInfo(discoveryMessageDto = discoveryMessageDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as OfferingMapResDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Discover Device map
+     * This service message allows a device to post the discovery context for getting device maps offers.
+     * @param discoveryMessageDto 
+     * @return ApiResponse<OfferingMapResDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun discoveryControllerDeviceMapDiscoveryWithHttpInfo(discoveryMessageDto: DiscoveryMessageDto) : ApiResponse<OfferingMapResDto?> {
+        val localVariableConfig = discoveryControllerDeviceMapDiscoveryRequestConfig(discoveryMessageDto = discoveryMessageDto)
+
+        return request<DiscoveryMessageDto, OfferingMapResDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation discoveryControllerDeviceMapDiscovery
+     *
+     * @param discoveryMessageDto 
+     * @return RequestConfig
+     */
+    fun discoveryControllerDeviceMapDiscoveryRequestConfig(discoveryMessageDto: DiscoveryMessageDto) : RequestConfig<DiscoveryMessageDto> {
+        val localVariableBody = discoveryMessageDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/device/discover/map",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
     }
 
     /**
@@ -111,7 +327,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/device/discover",
+            path = "/api/v1/device/discover",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -183,7 +399,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/device/im/pull/discovery",
+            path = "/api/v1/device/im/pull/discovery",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -252,7 +468,76 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/device/im/push/discovery",
+            path = "/api/v1/device/im/push/discovery",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * 
+     * 
+     * @param mtlsStatusDto 
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun discoveryControllerUpdateMTlsStatus(mtlsStatusDto: MTlsStatusDto) : Unit {
+        val localVarResponse = discoveryControllerUpdateMTlsStatusWithHttpInfo(mtlsStatusDto = mtlsStatusDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * 
+     * 
+     * @param mtlsStatusDto 
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun discoveryControllerUpdateMTlsStatusWithHttpInfo(mtlsStatusDto: MTlsStatusDto) : ApiResponse<Unit?> {
+        val localVariableConfig = discoveryControllerUpdateMTlsStatusRequestConfig(mtlsStatusDto = mtlsStatusDto)
+
+        return request<MTlsStatusDto, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation discoveryControllerUpdateMTlsStatus
+     *
+     * @param mtlsStatusDto 
+     * @return RequestConfig
+     */
+    fun discoveryControllerUpdateMTlsStatusRequestConfig(mtlsStatusDto: MTlsStatusDto) : RequestConfig<MTlsStatusDto> {
+        val localVariableBody = mtlsStatusDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/device/mTlsStatus",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

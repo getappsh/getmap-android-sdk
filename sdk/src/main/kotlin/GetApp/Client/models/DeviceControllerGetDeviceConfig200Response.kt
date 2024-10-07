@@ -15,6 +15,8 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.AndroidConfigDto
+import GetApp.Client.models.WindowsConfigDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -22,6 +24,8 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
+ * @param group 
+ * @param lastConfigUpdateDate 
  * @param deliveryTimeoutMins 
  * @param maxMapAreaSqKm 
  * @param maxMapSizeInMB 
@@ -42,13 +46,18 @@ import com.squareup.moshi.JsonClass
  * @param sdInventoryMaxSizeMB 
  * @param flashInventoryMaxSizeMB 
  * @param lastCheckingMapUpdatesDate 
- * @param lastConfigUpdateDate 
  * @param ortophotoMapPath 
  * @param controlMapPath 
  */
 
 
-data class MapConfigDto (
+data class DeviceControllerGetDeviceConfig200Response (
+
+    @Json(name = "group")
+    val group: kotlin.String,
+
+    @Json(name = "lastConfigUpdateDate")
+    val lastConfigUpdateDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "deliveryTimeoutMins")
     val deliveryTimeoutMins: java.math.BigDecimal? = null,
@@ -99,7 +108,7 @@ data class MapConfigDto (
     val flashStoragePath: kotlin.String? = null,
 
     @Json(name = "targetStoragePolicy")
-    val targetStoragePolicy: MapConfigDto.TargetStoragePolicy? = TargetStoragePolicy.SDOnly,
+    val targetStoragePolicy: DeviceControllerGetDeviceConfig200Response.TargetStoragePolicy? = TargetStoragePolicy.SDOnly,
 
     @Json(name = "sdInventoryMaxSizeMB")
     val sdInventoryMaxSizeMB: java.math.BigDecimal? = null,
@@ -109,9 +118,6 @@ data class MapConfigDto (
 
     @Json(name = "lastCheckingMapUpdatesDate")
     val lastCheckingMapUpdatesDate: java.time.OffsetDateTime? = null,
-
-    @Json(name = "lastConfigUpdateDate")
-    val lastConfigUpdateDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "ortophotoMapPath")
     val ortophotoMapPath: kotlin.String? = null,

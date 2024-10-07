@@ -15,8 +15,6 @@
 
 package GetApp.Client.models
 
-import GetApp.Client.models.OfferingMapProductsResDto
-import GetApp.Client.models.OfferingResponseDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -24,18 +22,22 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param software 
- * @param map 
+ * @param propertySize 
+ * @param date 
+ * @param catalogId 
  */
 
 
-data class DiscoveryResDto (
+data class DeleteFromCacheDto (
 
-    @Json(name = "software")
-    val software: OfferingResponseDto? = null,
+    @Json(name = "size")
+    val propertySize: java.math.BigDecimal? = null,
 
-    @Json(name = "map")
-    val map: OfferingMapProductsResDto? = null
+    @Json(name = "date")
+    val date: kotlin.String? = null,
+
+    @Json(name = "catalogId")
+    val catalogId: kotlin.Any? = null
 
 )
 

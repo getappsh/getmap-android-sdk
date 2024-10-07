@@ -84,22 +84,22 @@ class MapFileManager(private val appCtx: Context) {
         val sdSpace = sdRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0
 
         return when(config.targetStoragePolicy){
-            MapConfigDto.TargetStoragePolicy.sDOnly -> sdSpace
-            MapConfigDto.TargetStoragePolicy.flashThenSD -> flashSpace + sdSpace
-            MapConfigDto.TargetStoragePolicy.sDThenFlash -> flashSpace + sdSpace
-            MapConfigDto.TargetStoragePolicy.flashOnly -> flashSpace
+            MapConfigDto.TargetStoragePolicy.SDOnly -> sdSpace
+            MapConfigDto.TargetStoragePolicy.FlashThenSD -> flashSpace + sdSpace
+            MapConfigDto.TargetStoragePolicy.SDThenFlash -> flashSpace + sdSpace
+            MapConfigDto.TargetStoragePolicy.FlashOnly -> flashSpace
         }
     }
 
     fun isInventorySizeExceedingPolicy(): Boolean {
         return when(config.targetStoragePolicy){
-            MapConfigDto.TargetStoragePolicy.sDOnly ->
+            MapConfigDto.TargetStoragePolicy.SDOnly ->
                 isInventorySizeExceeded(false)
-            MapConfigDto.TargetStoragePolicy.flashThenSD ->
+            MapConfigDto.TargetStoragePolicy.FlashThenSD ->
                 isInventorySizeExceeded(true) || isInventorySizeExceeded(false)
-            MapConfigDto.TargetStoragePolicy.sDThenFlash ->
+            MapConfigDto.TargetStoragePolicy.SDThenFlash ->
                 isInventorySizeExceeded(false) || isInventorySizeExceeded(true)
-            MapConfigDto.TargetStoragePolicy.flashOnly ->
+            MapConfigDto.TargetStoragePolicy.FlashOnly ->
                 isInventorySizeExceeded(true)
         }
     }
@@ -127,17 +127,17 @@ class MapFileManager(private val appCtx: Context) {
         sdDir.mkdirs()
 
         return when(config.targetStoragePolicy){
-            MapConfigDto.TargetStoragePolicy.sDOnly -> {
+            MapConfigDto.TargetStoragePolicy.SDOnly -> {
                 validateSpace(sdDir, neededSpace)
                 validateInventorySize(true)
                 sdDir
             }
-            MapConfigDto.TargetStoragePolicy.flashOnly -> {
+            MapConfigDto.TargetStoragePolicy.FlashOnly -> {
                 validateSpace(flashDir, neededSpace)
                 validateInventorySize(false)
                 flashDir
             }
-            MapConfigDto.TargetStoragePolicy.flashThenSD -> {
+            MapConfigDto.TargetStoragePolicy.FlashThenSD -> {
              if(FileUtils.getAvailableSpace(flashDir.path) > max(config.minAvailableSpaceMB * 1024 * 1024, neededSpace) &&
                  getInventorySize(true) <= (config.flashInventoryMaxSizeMB * 1024 * 1024)) {
                  flashDir
@@ -148,7 +148,7 @@ class MapFileManager(private val appCtx: Context) {
                  sdDir
              }
             }
-            MapConfigDto.TargetStoragePolicy.sDThenFlash -> {
+            MapConfigDto.TargetStoragePolicy.SDThenFlash -> {
                 if(FileUtils.getAvailableSpace(sdDir.path) > neededSpace &&
                     getInventorySize(false)  <= (config.sdInventoryMaxSizeMB * 1024 * 1024)) {
                     sdDir

@@ -22,10 +22,12 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param deliveryStatus 
- * @param type 
  * @param deviceId 
  * @param catalogId 
+ * @param itemKey 
+ * @param currentTime 
+ * @param deliveryStatus 
+ * @param type 
  * @param downloadStop 
  * @param downloadStart 
  * @param downloadDone 
@@ -33,23 +35,28 @@ import com.squareup.moshi.JsonClass
  * @param downloadSpeed 
  * @param downloadData 
  * @param downloadEstimateTime 
- * @param currentTime 
  */
 
 
 data class DeliveryStatusDto (
+
+    @Json(name = "deviceId")
+    val deviceId: kotlin.String,
+
+    @Json(name = "catalogId")
+    val catalogId: kotlin.String,
+
+    @Json(name = "itemKey")
+    val itemKey: kotlin.String,
+
+    @Json(name = "currentTime")
+    val currentTime: java.time.OffsetDateTime,
 
     @Json(name = "deliveryStatus")
     val deliveryStatus: DeliveryStatusDto.DeliveryStatus,
 
     @Json(name = "type")
     val type: DeliveryStatusDto.Type,
-
-    @Json(name = "deviceId")
-    val deviceId: kotlin.String? = null,
-
-    @Json(name = "catalogId")
-    val catalogId: kotlin.String? = null,
 
     @Json(name = "downloadStop")
     val downloadStop: java.time.OffsetDateTime? = null,
@@ -70,28 +77,25 @@ data class DeliveryStatusDto (
     val downloadData: java.math.BigDecimal? = null,
 
     @Json(name = "downloadEstimateTime")
-    val downloadEstimateTime: java.math.BigDecimal? = null,
-
-    @Json(name = "currentTime")
-    val currentTime: java.time.OffsetDateTime? = null
+    val downloadEstimateTime: kotlin.Long? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: start,done,error,cancelled,pause,`continue`,download,deleted
+     * Values: Start,Done,Error,Cancelled,Pause,Continue,Download,Deleted
      */
     @JsonClass(generateAdapter = false)
     enum class DeliveryStatus(val value: kotlin.String) {
-        @Json(name = "Start") start("Start"),
-        @Json(name = "Done") done("Done"),
-        @Json(name = "Error") error("Error"),
-        @Json(name = "Cancelled") cancelled("Cancelled"),
-        @Json(name = "Pause") pause("Pause"),
-        @Json(name = "Continue") `continue`("Continue"),
-        @Json(name = "Download") download("Download"),
-        @Json(name = "Deleted") deleted("Deleted");
+        @Json(name = "Start") Start("Start"),
+        @Json(name = "Done") Done("Done"),
+        @Json(name = "Error") Error("Error"),
+        @Json(name = "Cancelled") Cancelled("Cancelled"),
+        @Json(name = "Pause") Pause("Pause"),
+        @Json(name = "Continue") Continue("Continue"),
+        @Json(name = "Download") Download("Download"),
+        @Json(name = "Deleted") Deleted("Deleted");
     }
     /**
      * 

@@ -22,10 +22,10 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param OS 
+ * @param ID 
  * @param MAC 
  * @param IP 
- * @param ID 
+ * @param OS 
  * @param serialNumber 
  * @param possibleBandwidth 
  * @param availableStorage 
@@ -34,8 +34,8 @@ import com.squareup.moshi.JsonClass
 
 data class PhysicalDiscoveryDto (
 
-    @Json(name = "OS")
-    val OS: PhysicalDiscoveryDto.OSEnum,
+    @Json(name = "ID")
+    val ID: kotlin.String,
 
     @Json(name = "MAC")
     val MAC: kotlin.String? = null,
@@ -43,8 +43,8 @@ data class PhysicalDiscoveryDto (
     @Json(name = "IP")
     val IP: kotlin.String? = null,
 
-    @Json(name = "ID")
-    val ID: kotlin.String? = null,
+    @Json(name = "OS")
+    val OS: PhysicalDiscoveryDto.OSEnum? = null,
 
     @Json(name = "serialNumber")
     val serialNumber: kotlin.String? = null,
@@ -53,6 +53,7 @@ data class PhysicalDiscoveryDto (
     val possibleBandwidth: kotlin.String? = null,
 
     @Json(name = "availableStorage")
+    @Deprecated(message = "This property is deprecated.")
     val availableStorage: kotlin.String? = null
 
 ) {

@@ -87,14 +87,14 @@ internal object MapDeliveryClient {
 
     private fun pushDeliveryStatus(client: GetAppClient, deliveryStatus: DeliveryStatus, deviceId: String){
         val status = when(deliveryStatus.state){
-            MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.start
-            MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.done
-            MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.error
-            MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.cancelled
-            MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.pause
-            MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.`continue`
-            MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.download
-            MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.deleted
+            MapDeliveryState.START -> DeliveryStatusDto.DeliveryStatus.Start
+            MapDeliveryState.DONE -> DeliveryStatusDto.DeliveryStatus.Done
+            MapDeliveryState.ERROR -> DeliveryStatusDto.DeliveryStatus.Error
+            MapDeliveryState.CANCEL -> DeliveryStatusDto.DeliveryStatus.Cancelled
+            MapDeliveryState.PAUSE -> DeliveryStatusDto.DeliveryStatus.Pause
+            MapDeliveryState.CONTINUE -> DeliveryStatusDto.DeliveryStatus.Continue
+            MapDeliveryState.DOWNLOAD -> DeliveryStatusDto.DeliveryStatus.Download
+            MapDeliveryState.DELETED -> DeliveryStatusDto.DeliveryStatus.Deleted
         }
 
         val dlv = DeliveryStatusDto(
@@ -109,8 +109,8 @@ internal object MapDeliveryClient {
             currentTime = OffsetDateTime.now(),
             bitNumber = deliveryStatus.downloaded?.toBigDecimal(),
             downloadSpeed = deliveryStatus.downloadedBytesPerSecond?.toBigDecimal(),
-            downloadEstimateTime = deliveryStatus.etaInMilliSeconds?.toBigDecimal()
-
+            downloadEstimateTime = deliveryStatus.etaInMilliSeconds,
+            itemKey = "gpkg"
         )
         Thread {
             try {

@@ -19,10 +19,10 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
+import GetApp.Client.models.ChildGroupDto
 import GetApp.Client.models.CreateDevicesGroupDto
-import GetApp.Client.models.DevicesGroupDto
 import GetApp.Client.models.EditDevicesGroupDto
-import GetApp.Client.models.SetDevicesInGroupDto
+import GetApp.Client.models.SetChildInGroupDto
 
 import com.squareup.moshi.Json
 
@@ -52,7 +52,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      * Create Devices Group
      * 
      * @param createDevicesGroupDto 
-     * @return DevicesGroupDto
+     * @return ChildGroupDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -61,11 +61,11 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun groupControllerCreateGroup(createDevicesGroupDto: CreateDevicesGroupDto) : DevicesGroupDto {
+    fun groupControllerCreateGroup(createDevicesGroupDto: CreateDevicesGroupDto) : ChildGroupDto {
         val localVarResponse = groupControllerCreateGroupWithHttpInfo(createDevicesGroupDto = createDevicesGroupDto)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ChildGroupDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -83,16 +83,16 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      * Create Devices Group
      * 
      * @param createDevicesGroupDto 
-     * @return ApiResponse<DevicesGroupDto?>
+     * @return ApiResponse<ChildGroupDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun groupControllerCreateGroupWithHttpInfo(createDevicesGroupDto: CreateDevicesGroupDto) : ApiResponse<DevicesGroupDto?> {
+    fun groupControllerCreateGroupWithHttpInfo(createDevicesGroupDto: CreateDevicesGroupDto) : ApiResponse<ChildGroupDto?> {
         val localVariableConfig = groupControllerCreateGroupRequestConfig(createDevicesGroupDto = createDevicesGroupDto)
 
-        return request<CreateDevicesGroupDto, DevicesGroupDto>(
+        return request<CreateDevicesGroupDto, ChildGroupDto>(
             localVariableConfig
         )
     }
@@ -112,7 +112,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/group",
+            path = "/api/v1/group",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -124,7 +124,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      * Edit Devices Group
      * 
      * @param editDevicesGroupDto 
-     * @return DevicesGroupDto
+     * @return ChildGroupDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -133,11 +133,11 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun groupControllerEditGroup(editDevicesGroupDto: EditDevicesGroupDto) : DevicesGroupDto {
+    fun groupControllerEditGroup(editDevicesGroupDto: EditDevicesGroupDto) : ChildGroupDto {
         val localVarResponse = groupControllerEditGroupWithHttpInfo(editDevicesGroupDto = editDevicesGroupDto)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ChildGroupDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -155,16 +155,16 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      * Edit Devices Group
      * 
      * @param editDevicesGroupDto 
-     * @return ApiResponse<DevicesGroupDto?>
+     * @return ApiResponse<ChildGroupDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun groupControllerEditGroupWithHttpInfo(editDevicesGroupDto: EditDevicesGroupDto) : ApiResponse<DevicesGroupDto?> {
+    fun groupControllerEditGroupWithHttpInfo(editDevicesGroupDto: EditDevicesGroupDto) : ApiResponse<ChildGroupDto?> {
         val localVariableConfig = groupControllerEditGroupRequestConfig(editDevicesGroupDto = editDevicesGroupDto)
 
-        return request<EditDevicesGroupDto, DevicesGroupDto>(
+        return request<EditDevicesGroupDto, ChildGroupDto>(
             localVariableConfig
         )
     }
@@ -184,7 +184,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
 
         return RequestConfig(
             method = RequestMethod.PUT,
-            path = "/api/group",
+            path = "/api/v1/group",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -193,10 +193,10 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
-     * Get Devices in a group
+     * Get groups of the given id and its children groups and devices
      * 
      * @param groupId 
-     * @return DevicesGroupDto
+     * @return ChildGroupDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -205,11 +205,11 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun groupControllerGetGroupDevices(groupId: kotlin.String) : DevicesGroupDto {
-        val localVarResponse = groupControllerGetGroupDevicesWithHttpInfo(groupId = groupId)
+    fun groupControllerGetGroupById(groupId: kotlin.String) : ChildGroupDto {
+        val localVarResponse = groupControllerGetGroupByIdWithHttpInfo(groupId = groupId)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ChildGroupDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -224,30 +224,30 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
-     * Get Devices in a group
+     * Get groups of the given id and its children groups and devices
      * 
      * @param groupId 
-     * @return ApiResponse<DevicesGroupDto?>
+     * @return ApiResponse<ChildGroupDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun groupControllerGetGroupDevicesWithHttpInfo(groupId: kotlin.String) : ApiResponse<DevicesGroupDto?> {
-        val localVariableConfig = groupControllerGetGroupDevicesRequestConfig(groupId = groupId)
+    fun groupControllerGetGroupByIdWithHttpInfo(groupId: kotlin.String) : ApiResponse<ChildGroupDto?> {
+        val localVariableConfig = groupControllerGetGroupByIdRequestConfig(groupId = groupId)
 
-        return request<Unit, DevicesGroupDto>(
+        return request<Unit, ChildGroupDto>(
             localVariableConfig
         )
     }
 
     /**
-     * To obtain the request config of the operation groupControllerGetGroupDevices
+     * To obtain the request config of the operation groupControllerGetGroupById
      *
      * @param groupId 
      * @return RequestConfig
      */
-    fun groupControllerGetGroupDevicesRequestConfig(groupId: kotlin.String) : RequestConfig<Unit> {
+    fun groupControllerGetGroupByIdRequestConfig(groupId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
@@ -255,7 +255,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/group/{groupId}/devices".replace("{"+"groupId"+"}", encodeURIComponent(groupId.toString())),
+            path = "/api/v1/group/{groupId}".replace("{"+"groupId"+"}", encodeURIComponent(groupId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -264,9 +264,9 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
-     * Get Devices Groups and children groups
+     * Get root groups and its children groups and devices
      * 
-     * @return kotlin.collections.List<DevicesGroupDto>
+     * @return ChildGroupDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -275,11 +275,11 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun groupControllerGetGroups() : kotlin.collections.List<DevicesGroupDto> {
+    fun groupControllerGetGroups() : ChildGroupDto {
         val localVarResponse = groupControllerGetGroupsWithHttpInfo()
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as kotlin.collections.List<DevicesGroupDto>
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ChildGroupDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -294,18 +294,18 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
-     * Get Devices Groups and children groups
+     * Get root groups and its children groups and devices
      * 
-     * @return ApiResponse<kotlin.collections.List<DevicesGroupDto>?>
+     * @return ApiResponse<ChildGroupDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun groupControllerGetGroupsWithHttpInfo() : ApiResponse<kotlin.collections.List<DevicesGroupDto>?> {
+    fun groupControllerGetGroupsWithHttpInfo() : ApiResponse<ChildGroupDto?> {
         val localVariableConfig = groupControllerGetGroupsRequestConfig()
 
-        return request<Unit, kotlin.collections.List<DevicesGroupDto>>(
+        return request<Unit, ChildGroupDto>(
             localVariableConfig
         )
     }
@@ -323,7 +323,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/group",
+            path = "/api/v1/group",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -334,8 +334,8 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     /**
      * Set Devices in a Group
      * 
-     * @param setDevicesInGroupDto 
-     * @return DevicesGroupDto
+     * @param setChildInGroupDto 
+     * @return ChildGroupDto
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -344,11 +344,11 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun groupControllerSetDevicesInGroup(setDevicesInGroupDto: SetDevicesInGroupDto) : DevicesGroupDto {
-        val localVarResponse = groupControllerSetDevicesInGroupWithHttpInfo(setDevicesInGroupDto = setDevicesInGroupDto)
+    fun groupControllerSetDevicesInGroup(setChildInGroupDto: SetChildInGroupDto) : ChildGroupDto {
+        val localVarResponse = groupControllerSetDevicesInGroupWithHttpInfo(setChildInGroupDto = setChildInGroupDto)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesGroupDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ChildGroupDto
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -365,17 +365,17 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     /**
      * Set Devices in a Group
      * 
-     * @param setDevicesInGroupDto 
-     * @return ApiResponse<DevicesGroupDto?>
+     * @param setChildInGroupDto 
+     * @return ApiResponse<ChildGroupDto?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun groupControllerSetDevicesInGroupWithHttpInfo(setDevicesInGroupDto: SetDevicesInGroupDto) : ApiResponse<DevicesGroupDto?> {
-        val localVariableConfig = groupControllerSetDevicesInGroupRequestConfig(setDevicesInGroupDto = setDevicesInGroupDto)
+    fun groupControllerSetDevicesInGroupWithHttpInfo(setChildInGroupDto: SetChildInGroupDto) : ApiResponse<ChildGroupDto?> {
+        val localVariableConfig = groupControllerSetDevicesInGroupRequestConfig(setChildInGroupDto = setChildInGroupDto)
 
-        return request<SetDevicesInGroupDto, DevicesGroupDto>(
+        return request<SetChildInGroupDto, ChildGroupDto>(
             localVariableConfig
         )
     }
@@ -383,11 +383,11 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     /**
      * To obtain the request config of the operation groupControllerSetDevicesInGroup
      *
-     * @param setDevicesInGroupDto 
+     * @param setChildInGroupDto 
      * @return RequestConfig
      */
-    fun groupControllerSetDevicesInGroupRequestConfig(setDevicesInGroupDto: SetDevicesInGroupDto) : RequestConfig<SetDevicesInGroupDto> {
-        val localVariableBody = setDevicesInGroupDto
+    fun groupControllerSetDevicesInGroupRequestConfig(setChildInGroupDto: SetChildInGroupDto) : RequestConfig<SetChildInGroupDto> {
+        val localVariableBody = setChildInGroupDto
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Content-Type"] = "application/json"
@@ -395,7 +395,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/group/devices",
+            path = "/api/v1/group/devices",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

@@ -20,9 +20,13 @@ import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeviceContentResDto
+import GetApp.Client.models.DeviceControllerGetDeviceConfig200Response
 import GetApp.Client.models.DeviceDto
 import GetApp.Client.models.DeviceMapDto
+import GetApp.Client.models.DevicePutDto
 import GetApp.Client.models.DeviceRegisterDto
+import GetApp.Client.models.DeviceSoftwareDto
+import GetApp.Client.models.DevicesStatisticInfo
 
 import com.squareup.moshi.Json
 
@@ -46,6 +50,83 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         val defaultBasePath: String by lazy {
             System.getProperties().getProperty(ApiClient.baseUrlKey, "http://localhost")
         }
+    }
+
+    /**
+     * Get Device Configurations
+     * This service message returns an object of device configurations.
+     * @param deviceId 
+     * @param group 
+     * @return DeviceControllerGetDeviceConfig200Response
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerGetDeviceConfig(deviceId: kotlin.String, group: kotlin.String) : DeviceControllerGetDeviceConfig200Response {
+        val localVarResponse = deviceControllerGetDeviceConfigWithHttpInfo(deviceId = deviceId, group = group)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceControllerGetDeviceConfig200Response
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get Device Configurations
+     * This service message returns an object of device configurations.
+     * @param deviceId 
+     * @param group 
+     * @return ApiResponse<DeviceControllerGetDeviceConfig200Response?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerGetDeviceConfigWithHttpInfo(deviceId: kotlin.String, group: kotlin.String) : ApiResponse<DeviceControllerGetDeviceConfig200Response?> {
+        val localVariableConfig = deviceControllerGetDeviceConfigRequestConfig(deviceId = deviceId, group = group)
+
+        return request<Unit, DeviceControllerGetDeviceConfig200Response>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerGetDeviceConfig
+     *
+     * @param deviceId 
+     * @param group 
+     * @return RequestConfig
+     */
+    fun deviceControllerGetDeviceConfigRequestConfig(deviceId: kotlin.String, group: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                put("group", listOf(group.toString()))
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/device/config/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
     }
 
     /**
@@ -111,7 +192,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/device/info/installed/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            path = "/api/v1/device/info/installed/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -182,7 +263,154 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/device/{deviceId}/maps".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            path = "/api/v1/device/{deviceId}/maps".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Get Device softwares
+     * This service message allows retrieval of all software on a process in a given device.
+     * @param deviceId 
+     * @return DeviceSoftwareDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerGetDeviceSoftwares(deviceId: kotlin.String) : DeviceSoftwareDto {
+        val localVarResponse = deviceControllerGetDeviceSoftwaresWithHttpInfo(deviceId = deviceId)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceSoftwareDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get Device softwares
+     * This service message allows retrieval of all software on a process in a given device.
+     * @param deviceId 
+     * @return ApiResponse<DeviceSoftwareDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerGetDeviceSoftwaresWithHttpInfo(deviceId: kotlin.String) : ApiResponse<DeviceSoftwareDto?> {
+        val localVariableConfig = deviceControllerGetDeviceSoftwaresRequestConfig(deviceId = deviceId)
+
+        return request<Unit, DeviceSoftwareDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerGetDeviceSoftwares
+     *
+     * @param deviceId 
+     * @return RequestConfig
+     */
+    fun deviceControllerGetDeviceSoftwaresRequestConfig(deviceId: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/device/{deviceId}/softwares".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Get statistic info about Devices
+     * This service message allows retrieval of statistic info about devices.
+     * @param groups Array of groups IDs or a single group ID (optional)
+     * @return DevicesStatisticInfo
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerGetDevicesStatisticInfo(groups: kotlin.collections.List<kotlin.String>? = null) : DevicesStatisticInfo {
+        val localVarResponse = deviceControllerGetDevicesStatisticInfoWithHttpInfo(groups = groups)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicesStatisticInfo
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get statistic info about Devices
+     * This service message allows retrieval of statistic info about devices.
+     * @param groups Array of groups IDs or a single group ID (optional)
+     * @return ApiResponse<DevicesStatisticInfo?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerGetDevicesStatisticInfoWithHttpInfo(groups: kotlin.collections.List<kotlin.String>?) : ApiResponse<DevicesStatisticInfo?> {
+        val localVariableConfig = deviceControllerGetDevicesStatisticInfoRequestConfig(groups = groups)
+
+        return request<Unit, DevicesStatisticInfo>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerGetDevicesStatisticInfo
+     *
+     * @param groups Array of groups IDs or a single group ID (optional)
+     * @return RequestConfig
+     */
+    fun deviceControllerGetDevicesStatisticInfoRequestConfig(groups: kotlin.collections.List<kotlin.String>?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (groups != null) {
+                    put("groups", toMultiValue(groups.toList(), "multi"))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/device/devices/info",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -193,7 +421,8 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     /**
      * Get Registered Devices
      * This service message allows retrieval of all registered devices.
-     * @return DeviceDto
+     * @param groups Array of groups IDs or a single group ID (optional)
+     * @return kotlin.collections.List<DeviceDto>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      * @throws UnsupportedOperationException If the API returns an informational or redirection response
@@ -202,11 +431,11 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun deviceControllerGetRegisteredDevices() : DeviceDto {
-        val localVarResponse = deviceControllerGetRegisteredDevicesWithHttpInfo()
+    fun deviceControllerGetRegisteredDevices(groups: kotlin.collections.List<kotlin.String>? = null) : kotlin.collections.List<DeviceDto> {
+        val localVarResponse = deviceControllerGetRegisteredDevicesWithHttpInfo(groups = groups)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceDto
+            ResponseType.Success -> (localVarResponse as Success<*>).data as kotlin.collections.List<DeviceDto>
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -223,16 +452,17 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     /**
      * Get Registered Devices
      * This service message allows retrieval of all registered devices.
-     * @return ApiResponse<DeviceDto?>
+     * @param groups Array of groups IDs or a single group ID (optional)
+     * @return ApiResponse<kotlin.collections.List<DeviceDto>?>
      * @throws IllegalStateException If the request is not correctly configured
      * @throws IOException Rethrows the OkHttp execute method exception
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun deviceControllerGetRegisteredDevicesWithHttpInfo() : ApiResponse<DeviceDto?> {
-        val localVariableConfig = deviceControllerGetRegisteredDevicesRequestConfig()
+    fun deviceControllerGetRegisteredDevicesWithHttpInfo(groups: kotlin.collections.List<kotlin.String>?) : ApiResponse<kotlin.collections.List<DeviceDto>?> {
+        val localVariableConfig = deviceControllerGetRegisteredDevicesRequestConfig(groups = groups)
 
-        return request<Unit, DeviceDto>(
+        return request<Unit, kotlin.collections.List<DeviceDto>>(
             localVariableConfig
         )
     }
@@ -240,17 +470,98 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     /**
      * To obtain the request config of the operation deviceControllerGetRegisteredDevices
      *
+     * @param groups Array of groups IDs or a single group ID (optional)
      * @return RequestConfig
      */
-    fun deviceControllerGetRegisteredDevicesRequestConfig() : RequestConfig<Unit> {
+    fun deviceControllerGetRegisteredDevicesRequestConfig(groups: kotlin.collections.List<kotlin.String>?) : RequestConfig<Unit> {
         val localVariableBody = null
-        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (groups != null) {
+                    put("groups", toMultiValue(groups.toList(), "multi"))
+                }
+            }
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Accept"] = "application/json"
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/device/devices",
+            path = "/api/v1/device/devices",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Set Device Name
+     * This service message allow to update props of device
+     * @param deviceId 
+     * @param devicePutDto 
+     * @return DevicePutDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerPutDeviceName(deviceId: kotlin.String, devicePutDto: DevicePutDto) : DevicePutDto {
+        val localVarResponse = deviceControllerPutDeviceNameWithHttpInfo(deviceId = deviceId, devicePutDto = devicePutDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DevicePutDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Set Device Name
+     * This service message allow to update props of device
+     * @param deviceId 
+     * @param devicePutDto 
+     * @return ApiResponse<DevicePutDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerPutDeviceNameWithHttpInfo(deviceId: kotlin.String, devicePutDto: DevicePutDto) : ApiResponse<DevicePutDto?> {
+        val localVariableConfig = deviceControllerPutDeviceNameRequestConfig(deviceId = deviceId, devicePutDto = devicePutDto)
+
+        return request<DevicePutDto, DevicePutDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerPutDeviceName
+     *
+     * @param deviceId 
+     * @param devicePutDto 
+     * @return RequestConfig
+     */
+    fun deviceControllerPutDeviceNameRequestConfig(deviceId: kotlin.String, devicePutDto: DevicePutDto) : RequestConfig<DevicePutDto> {
+        val localVariableBody = devicePutDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/v1/device/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -319,7 +630,79 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/device/register",
+            path = "/api/v1/device/register",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Set Device Configurations
+     * This service message returns an object of device configurations.
+     * @param deviceControllerGetDeviceConfig200Response 
+     * @return DeviceControllerGetDeviceConfig200Response
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerSetDeviceConfig(deviceControllerGetDeviceConfig200Response: DeviceControllerGetDeviceConfig200Response) : DeviceControllerGetDeviceConfig200Response {
+        val localVarResponse = deviceControllerSetDeviceConfigWithHttpInfo(deviceControllerGetDeviceConfig200Response = deviceControllerGetDeviceConfig200Response)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceControllerGetDeviceConfig200Response
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Set Device Configurations
+     * This service message returns an object of device configurations.
+     * @param deviceControllerGetDeviceConfig200Response 
+     * @return ApiResponse<DeviceControllerGetDeviceConfig200Response?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerSetDeviceConfigWithHttpInfo(deviceControllerGetDeviceConfig200Response: DeviceControllerGetDeviceConfig200Response) : ApiResponse<DeviceControllerGetDeviceConfig200Response?> {
+        val localVariableConfig = deviceControllerSetDeviceConfigRequestConfig(deviceControllerGetDeviceConfig200Response = deviceControllerGetDeviceConfig200Response)
+
+        return request<DeviceControllerGetDeviceConfig200Response, DeviceControllerGetDeviceConfig200Response>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerSetDeviceConfig
+     *
+     * @param deviceControllerGetDeviceConfig200Response 
+     * @return RequestConfig
+     */
+    fun deviceControllerSetDeviceConfigRequestConfig(deviceControllerGetDeviceConfig200Response: DeviceControllerGetDeviceConfig200Response) : RequestConfig<DeviceControllerGetDeviceConfig200Response> {
+        val localVariableBody = deviceControllerGetDeviceConfig200Response
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/v1/device/config",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

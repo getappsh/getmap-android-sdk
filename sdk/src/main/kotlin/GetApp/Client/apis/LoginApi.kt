@@ -111,7 +111,7 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/login/refresh",
+            path = "/api/v1/login/refresh",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,
@@ -183,7 +183,7 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/login",
+            path = "/api/v1/login",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,

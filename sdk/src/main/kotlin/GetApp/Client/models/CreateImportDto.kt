@@ -31,10 +31,10 @@ import com.squareup.moshi.JsonClass
 data class CreateImportDto (
 
     @Json(name = "deviceId")
-    val deviceId: kotlin.String? = null,
+    val deviceId: kotlin.String,
 
     @Json(name = "mapProperties")
-    val mapProperties: MapProperties? = null
+    val mapProperties: MapProperties
 
 )
 

@@ -19,6 +19,8 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
+import GetApp.Client.models.CacheConfigDto
+import GetApp.Client.models.DeleteFromCacheDto
 import GetApp.Client.models.DeliveryStatusDto
 import GetApp.Client.models.PrepareDeliveryReqDto
 import GetApp.Client.models.PrepareDeliveryResDto
@@ -45,6 +47,143 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
         val defaultBasePath: String by lazy {
             System.getProperties().getProperty(ApiClient.baseUrlKey, "http://localhost")
         }
+    }
+
+    /**
+     * Enable to delete artifacts from cache by size or date or a given id or ids
+     * It is possible to pass only one type to delete - size or date or id.  &lt;br /&gt; Size - delete all order by createDate DESC until arriving free space of the given size.  &lt;br /&gt; Date - must be a string it &#x60;MM/DD/YY&#x60; or with backslash or &#x60;MM.DD.YY&#x60;, end it delete all until the given date in DESC order.  &lt;br /&gt; Id - delete the given catalog id
+     * @param deleteFromCacheDto 
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deliveryControllerDeleteFromCache(deleteFromCacheDto: DeleteFromCacheDto) : Unit {
+        val localVarResponse = deliveryControllerDeleteFromCacheWithHttpInfo(deleteFromCacheDto = deleteFromCacheDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Enable to delete artifacts from cache by size or date or a given id or ids
+     * It is possible to pass only one type to delete - size or date or id.  &lt;br /&gt; Size - delete all order by createDate DESC until arriving free space of the given size.  &lt;br /&gt; Date - must be a string it &#x60;MM/DD/YY&#x60; or with backslash or &#x60;MM.DD.YY&#x60;, end it delete all until the given date in DESC order.  &lt;br /&gt; Id - delete the given catalog id
+     * @param deleteFromCacheDto 
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deliveryControllerDeleteFromCacheWithHttpInfo(deleteFromCacheDto: DeleteFromCacheDto) : ApiResponse<Unit?> {
+        val localVariableConfig = deliveryControllerDeleteFromCacheRequestConfig(deleteFromCacheDto = deleteFromCacheDto)
+
+        return request<DeleteFromCacheDto, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deliveryControllerDeleteFromCache
+     *
+     * @param deleteFromCacheDto 
+     * @return RequestConfig
+     */
+    fun deliveryControllerDeleteFromCacheRequestConfig(deleteFromCacheDto: DeleteFromCacheDto) : RequestConfig<DeleteFromCacheDto> {
+        val localVariableBody = deleteFromCacheDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        
+        return RequestConfig(
+            method = RequestMethod.DELETE,
+            path = "/api/v1/delivery/cache/delete",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Get Delivery Cache Configurations
+     * This service message returns an object of delivery cache configurations.
+     * @return CacheConfigDto
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deliveryControllerGetMapConfig() : CacheConfigDto {
+        val localVarResponse = deliveryControllerGetMapConfigWithHttpInfo()
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as CacheConfigDto
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get Delivery Cache Configurations
+     * This service message returns an object of delivery cache configurations.
+     * @return ApiResponse<CacheConfigDto?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deliveryControllerGetMapConfigWithHttpInfo() : ApiResponse<CacheConfigDto?> {
+        val localVariableConfig = deliveryControllerGetMapConfigRequestConfig()
+
+        return request<Unit, CacheConfigDto>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deliveryControllerGetMapConfig
+     *
+     * @return RequestConfig
+     */
+    fun deliveryControllerGetMapConfigRequestConfig() : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/delivery/cache/config",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
     }
 
     /**
@@ -110,7 +249,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/delivery/preparedDelivery/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
+            path = "/api/v1/delivery/preparedDelivery/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -182,7 +321,76 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/delivery/prepareDelivery",
+            path = "/api/v1/delivery/prepareDelivery",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Set Delivery Cache Configurations
+     * This service message sets an object of delivery cache configurations.
+     * @param cacheConfigDto 
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deliveryControllerSetMapConfig(cacheConfigDto: CacheConfigDto) : Unit {
+        val localVarResponse = deliveryControllerSetMapConfigWithHttpInfo(cacheConfigDto = cacheConfigDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Set Delivery Cache Configurations
+     * This service message sets an object of delivery cache configurations.
+     * @param cacheConfigDto 
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deliveryControllerSetMapConfigWithHttpInfo(cacheConfigDto: CacheConfigDto) : ApiResponse<Unit?> {
+        val localVariableConfig = deliveryControllerSetMapConfigRequestConfig(cacheConfigDto = cacheConfigDto)
+
+        return request<CacheConfigDto, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deliveryControllerSetMapConfig
+     *
+     * @param cacheConfigDto 
+     * @return RequestConfig
+     */
+    fun deliveryControllerSetMapConfigRequestConfig(cacheConfigDto: CacheConfigDto) : RequestConfig<CacheConfigDto> {
+        val localVariableBody = cacheConfigDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/v1/delivery/cache/config",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -251,7 +459,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/delivery/updateDownloadStatus",
+            path = "/api/v1/delivery/updateDownloadStatus",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

@@ -110,7 +110,7 @@ class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHt
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/bug-report/{bugId}".replace("{"+"bugId"+"}", encodeURIComponent(bugId.toString())),
+            path = "/api/v1/bug-report/{bugId}".replace("{"+"bugId"+"}", encodeURIComponent(bugId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -182,7 +182,7 @@ class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHt
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/bug-report",
+            path = "/api/v1/bug-report",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

@@ -15,8 +15,6 @@
 
 package GetApp.Client.models
 
-import GetApp.Client.models.OfferingMapProductsResDto
-import GetApp.Client.models.OfferingResponseDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -24,18 +22,18 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param software 
- * @param map 
+ * @param maxCapacityInGB 
+ * @param mes 
  */
 
 
-data class DiscoveryResDto (
+data class CacheConfigDto (
 
-    @Json(name = "software")
-    val software: OfferingResponseDto? = null,
+    @Json(name = "maxCapacityInGB")
+    val maxCapacityInGB: java.math.BigDecimal,
 
-    @Json(name = "map")
-    val map: OfferingMapProductsResDto? = null
+    @Json(name = "mes")
+    val mes: kotlin.String
 
 )
 

@@ -20,6 +20,7 @@ import okhttp3.OkHttpClient
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.ComponentDto
+import GetApp.Client.models.PushOfferingDto
 
 import com.squareup.moshi.Json
 
@@ -108,7 +109,76 @@ class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/offering/component/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
+            path = "/api/v1/offering/component/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Push offering of component or map
+     * This service message allows to push component or map by &#x60;catalog ID&#x60;, to devices or groups of devices
+     * @param pushOfferingDto 
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun offeringControllerPushOffering(pushOfferingDto: PushOfferingDto) : Unit {
+        val localVarResponse = offeringControllerPushOfferingWithHttpInfo(pushOfferingDto = pushOfferingDto)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Push offering of component or map
+     * This service message allows to push component or map by &#x60;catalog ID&#x60;, to devices or groups of devices
+     * @param pushOfferingDto 
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    fun offeringControllerPushOfferingWithHttpInfo(pushOfferingDto: PushOfferingDto) : ApiResponse<Unit?> {
+        val localVariableConfig = offeringControllerPushOfferingRequestConfig(pushOfferingDto = pushOfferingDto)
+
+        return request<PushOfferingDto, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation offeringControllerPushOffering
+     *
+     * @param pushOfferingDto 
+     * @return RequestConfig
+     */
+    fun offeringControllerPushOfferingRequestConfig(pushOfferingDto: PushOfferingDto) : RequestConfig<PushOfferingDto> {
+        val localVariableBody = pushOfferingDto
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/offering/push",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

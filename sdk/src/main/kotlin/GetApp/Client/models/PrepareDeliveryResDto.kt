@@ -15,6 +15,8 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.DeliveryItemDto
+import GetApp.Client.models.ErrorDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -24,7 +26,11 @@ import com.squareup.moshi.JsonClass
  *
  * @param catalogId 
  * @param status 
+ * @param progress 
+ * @param propertySize 
  * @param url 
+ * @param artifacts 
+ * @param error 
  */
 
 
@@ -36,8 +42,21 @@ data class PrepareDeliveryResDto (
     @Json(name = "status")
     val status: PrepareDeliveryResDto.Status,
 
+    @Json(name = "progress")
+    val progress: java.math.BigDecimal? = null,
+
+    @Json(name = "size")
+    val propertySize: java.math.BigDecimal? = null,
+
     @Json(name = "url")
-    val url: kotlin.String? = null
+    @Deprecated(message = "This property is deprecated.")
+    val url: kotlin.String? = null,
+
+    @Json(name = "artifacts")
+    val artifacts: kotlin.collections.List<DeliveryItemDto>? = null,
+
+    @Json(name = "error")
+    val error: ErrorDto? = null
 
 ) {
 
