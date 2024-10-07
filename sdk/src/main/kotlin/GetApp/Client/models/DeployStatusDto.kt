@@ -22,31 +22,34 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param deployStatus 
- * @param type 
  * @param deviceId 
  * @param catalogId 
+ * @param currentTime 
+ * @param deployStatus 
+ * @param type 
  * @param deployStop 
  * @param deployStart 
  * @param deployDone 
  * @param deployEstimateTime 
- * @param currentTime 
  */
 
 
 data class DeployStatusDto (
+
+    @Json(name = "deviceId")
+    val deviceId: kotlin.String,
+
+    @Json(name = "catalogId")
+    val catalogId: kotlin.String,
+
+    @Json(name = "currentTime")
+    val currentTime: java.time.OffsetDateTime,
 
     @Json(name = "deployStatus")
     val deployStatus: DeployStatusDto.DeployStatus,
 
     @Json(name = "type")
     val type: DeployStatusDto.Type,
-
-    @Json(name = "deviceId")
-    val deviceId: kotlin.String? = null,
-
-    @Json(name = "catalogId")
-    val catalogId: kotlin.String? = null,
 
     @Json(name = "deployStop")
     val deployStop: java.time.OffsetDateTime? = null,
@@ -58,28 +61,25 @@ data class DeployStatusDto (
     val deployDone: java.time.OffsetDateTime? = null,
 
     @Json(name = "deployEstimateTime")
-    val deployEstimateTime: java.math.BigDecimal? = null,
-
-    @Json(name = "currentTime")
-    val currentTime: java.time.OffsetDateTime? = null
+    val deployEstimateTime: java.math.BigDecimal? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: start,done,installing,`continue`,pause,cancelled,error,uninstall
+     * Values: Start,Done,Installing,Continue,Pause,Cancelled,Error,Uninstall
      */
     @JsonClass(generateAdapter = false)
     enum class DeployStatus(val value: kotlin.String) {
-        @Json(name = "Start") start("Start"),
-        @Json(name = "Done") done("Done"),
-        @Json(name = "Installing") installing("Installing"),
-        @Json(name = "Continue") `continue`("Continue"),
-        @Json(name = "Pause") pause("Pause"),
-        @Json(name = "Cancelled") cancelled("Cancelled"),
-        @Json(name = "Error") error("Error"),
-        @Json(name = "Uninstall") uninstall("Uninstall");
+        @Json(name = "Start") Start("Start"),
+        @Json(name = "Done") Done("Done"),
+        @Json(name = "Installing") Installing("Installing"),
+        @Json(name = "Continue") Continue("Continue"),
+        @Json(name = "Pause") Pause("Pause"),
+        @Json(name = "Cancelled") Cancelled("Cancelled"),
+        @Json(name = "Error") Error("Error"),
+        @Json(name = "Uninstall") Uninstall("Uninstall");
     }
     /**
      * 

@@ -4,8 +4,7 @@ import GetApp.Client.models.DiscoveryMapDto
 import GetApp.Client.models.DiscoveryMessageDto
 import GetApp.Client.models.DiscoverySoftwareDto
 import GetApp.Client.models.GeneralDiscoveryDto
-import GetApp.Client.models.GeoLocationDto
-import GetApp.Client.models.OfferingMapResDto
+import GetApp.Client.models.OfferingMapProductsResDto
 import GetApp.Client.models.PersonalDiscoveryDto
 import GetApp.Client.models.PhysicalDiscoveryDto
 import GetApp.Client.models.PlatformDto
@@ -171,15 +170,19 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusMap,
             GeneralDiscoveryDto(
                 PersonalDiscoveryDto("user-1","idNumber-123","personalNumber-123"),
-                SituationalDiscoveryDto( BigDecimal("23"), bandwidth=NetworkUtil.getBandwidthQuality(appCtx)?.let { BigDecimal(it) },
-                    OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), true,
-                    batteryPower.toBigDecimal(),
-                    GeoLocationDto("33.4","23.3", "344")
+                SituationalDiscoveryDto(
+                    bandwidth=NetworkUtil.getBandwidthQuality(appCtx)?.let { BigDecimal(it) },
+                    time = OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC),
+                    operativeState = true,
+                    power = batteryPower.toBigDecimal(),
+                    availableStorage = mapFileManager.getAvailableSpaceByPolicy().toString()
                 ),
-                PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
-                    "00-B0-D0-63-C2-26","129.2.3.4",
-                    pref.deviceId, pref.serialNumber, "Yes",
-                    mapFileManager.getAvailableSpaceByPolicy().toString())
+                PhysicalDiscoveryDto(
+                    ID = pref.deviceId,
+                    OS = PhysicalDiscoveryDto.OSEnum.android,
+                    serialNumber = pref.serialNumber,
+                    possibleBandwidth = "Yes"
+                )
             ),
 
             DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),
@@ -199,7 +202,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Timber.d("getDiscoveryCatalog -  offering results: $discoveries ")
 
         val result = mutableListOf<DiscoveryItem>()
-        if (discoveries.map?.status == OfferingMapResDto.Status.error){
+        if (discoveries.map?.status == OfferingMapProductsResDto.Status.Error){
             Timber.e("getDiscoveryCatalog: get-map offering error ${discoveries.map.error?.message}")
             throw Exception("get-map offering error ${discoveries.map.error?.message}")
         }

@@ -22,22 +22,19 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param id 
- * @param devices 
- * @param groups 
+ * @param name 
+ * @param orgUID Set the unique given id or null to remove the exists uid.
  */
 
 
-data class SetDevicesInGroupDto (
+data class DevicePutDto (
 
-    @Json(name = "id")
-    val id: java.math.BigDecimal,
+    @Json(name = "name")
+    val name: kotlin.String? = null,
 
-    @Json(name = "devices")
-    val devices: kotlin.collections.List<kotlin.String>? = null,
-
-    @Json(name = "groups")
-    val groups: kotlin.collections.List<kotlin.String>? = null
+    /* Set the unique given id or null to remove the exists uid. */
+    @Json(name = "orgUID")
+    val orgUID: java.math.BigDecimal? = null
 
 )
 

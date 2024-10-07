@@ -27,55 +27,55 @@ internal object MapImportClient {
         result.url = status.metaData?.packageUrl
 
         when(status.status) {
-            ImportStatusResDto.Status.start -> {
+            ImportStatusResDto.Status.Start -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.START
             }
-            ImportStatusResDto.Status.done -> {
+            ImportStatusResDto.Status.Done -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.DONE
             }
-            ImportStatusResDto.Status.inProgress -> {
+            ImportStatusResDto.Status.InProgress -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = status.error?.message
                 result.state = MapImportState.IN_PROGRESS
             }
-            ImportStatusResDto.Status.pending -> {
+            ImportStatusResDto.Status.Pending -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.IN_PROGRESS
             }
-            ImportStatusResDto.Status.cancel -> {
+            ImportStatusResDto.Status.Cancel -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = status.error?.message
                 result.state = MapImportState.CANCEL
             }
-            ImportStatusResDto.Status.error -> {
+            ImportStatusResDto.Status.Error -> {
                 result.statusCode!!.statusCode = StatusCode.NOT_FOUND
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
 
-                if(status.error?.errorCode == ErrorDto.ErrorCode.notFound)
+                if(status.error?.errorCode == ErrorDto.ErrorCode.MAPPeriodNotFound)
                     result.statusCode!!.statusCode = StatusCode.REQUEST_ID_NOT_FOUND
 
                 result.state = MapImportState.ERROR
             }
-            ImportStatusResDto.Status.pause -> {
+            ImportStatusResDto.Status.Pause -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
-            ImportStatusResDto.Status.expired -> {
+            ImportStatusResDto.Status.Expired -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
-            ImportStatusResDto.Status.archived -> {
+            ImportStatusResDto.Status.Archived -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
             else -> {
                 result.state = MapImportState.ERROR
-                if(status.error?.errorCode == ErrorDto.ErrorCode.notFound)
+                if(status.error?.errorCode == ErrorDto.ErrorCode.MAPPeriodNotFound)
                     result.statusCode!!.statusCode = StatusCode.REQUEST_ID_NOT_FOUND
                 else
                     result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
@@ -101,42 +101,42 @@ internal object MapImportClient {
         result.statusCode = Status()
 
         when(status.status) {
-            CreateImportResDto.Status.start -> {
+            CreateImportResDto.Status.Start -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.START
             }
-            CreateImportResDto.Status.done -> {
+            CreateImportResDto.Status.Done -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.DONE
             }
-            CreateImportResDto.Status.inProgress -> {
+            CreateImportResDto.Status.InProgress -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.IN_PROGRESS
             }
-            CreateImportResDto.Status.pending -> {
+            CreateImportResDto.Status.Pending -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.IN_PROGRESS
             }
-            CreateImportResDto.Status.cancel -> {
+            CreateImportResDto.Status.Cancel -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.state = MapImportState.CANCEL
             }
-            CreateImportResDto.Status.error -> {
+            CreateImportResDto.Status.Error -> {
                 result.statusCode!!.statusCode = StatusCode.INTERNAL_SERVER_ERROR
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
-            CreateImportResDto.Status.pause -> {
+            CreateImportResDto.Status.Pause -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
-            CreateImportResDto.Status.expired -> {
+            CreateImportResDto.Status.Expired -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR
             }
-            CreateImportResDto.Status.archived -> {
+            CreateImportResDto.Status.Archived -> {
                 result.statusCode!!.statusCode = StatusCode.SUCCESS
                 result.statusCode!!.messageLog = (status.error?.message ?: status.importRequestId)
                 result.state = MapImportState.ERROR

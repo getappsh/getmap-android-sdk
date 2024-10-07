@@ -23,11 +23,12 @@ import com.squareup.moshi.JsonClass
  * 
  *
  * @param jobId 
- * @param mapId 
  * @param exportStart 
  * @param exportEnd 
  * @param progress 
  * @param propertySize 
+ * @param area 
+ * @param footprint 
  * @param zoomLevel 
  * @param packageUrl 
  * @param fileName 
@@ -38,9 +39,6 @@ data class MapMetadatatDto (
 
     @Json(name = "jobId")
     val jobId: java.math.BigDecimal? = null,
-
-    @Json(name = "mapId")
-    val mapId: kotlin.String? = null,
 
     @Json(name = "exportStart")
     val exportStart: java.time.OffsetDateTime? = null,
@@ -53,6 +51,12 @@ data class MapMetadatatDto (
 
     @Json(name = "size")
     val propertySize: kotlin.Int? = 0,
+
+    @Json(name = "area")
+    val area: kotlin.Int? = 0,
+
+    @Json(name = "footprint")
+    val footprint: kotlin.String? = null,
 
     @Json(name = "zoomLevel")
     val zoomLevel: kotlin.Int? = 1,

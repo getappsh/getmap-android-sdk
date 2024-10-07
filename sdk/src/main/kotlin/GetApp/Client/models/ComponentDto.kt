@@ -30,6 +30,8 @@ import com.squareup.moshi.JsonClass
  * @param category 
  * @param baseVersion 
  * @param prevVersion 
+ * @param latest 
+ * @param uploadDate 
  * @param subComponents 
  */
 
@@ -59,6 +61,12 @@ data class ComponentDto (
 
     @Json(name = "prevVersion")
     val prevVersion: kotlin.String? = null,
+
+    @Json(name = "latest")
+    val latest: kotlin.Boolean? = null,
+
+    @Json(name = "uploadDate")
+    val uploadDate: java.time.OffsetDateTime? = null,
 
     @Json(name = "subComponents")
     val subComponents: kotlin.collections.List<ComponentDto>? = null

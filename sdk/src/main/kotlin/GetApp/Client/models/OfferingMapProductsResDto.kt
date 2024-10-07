@@ -16,7 +16,6 @@
 package GetApp.Client.models
 
 import GetApp.Client.models.ErrorDto
-import GetApp.Client.models.MapDto
 import GetApp.Client.models.MapProductResDto
 
 import com.squareup.moshi.Json
@@ -26,19 +25,15 @@ import com.squareup.moshi.JsonClass
  * 
  *
  * @param status 
- * @param push 
  * @param products 
  * @param error 
  */
 
 
-data class OfferingMapResDto (
+data class OfferingMapProductsResDto (
 
     @Json(name = "status")
-    val status: OfferingMapResDto.Status,
-
-    @Json(name = "push")
-    val push: kotlin.collections.List<MapDto>? = null,
+    val status: OfferingMapProductsResDto.Status,
 
     @Json(name = "products")
     val products: kotlin.collections.List<MapProductResDto>? = null,

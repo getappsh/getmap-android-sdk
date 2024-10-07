@@ -15,7 +15,6 @@
 
 package GetApp.Client.models
 
-import GetApp.Client.models.DeviceMapDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -24,29 +23,21 @@ import com.squareup.moshi.JsonClass
  * 
  *
  * @param id 
- * @param name 
- * @param description 
  * @param devices 
  * @param groups 
  */
 
 
-data class DevicesGroupDto (
+data class SetChildInGroupDto (
 
     @Json(name = "id")
     val id: java.math.BigDecimal,
 
-    @Json(name = "name")
-    val name: kotlin.String? = null,
-
-    @Json(name = "description")
-    val description: kotlin.String? = null,
-
     @Json(name = "devices")
-    val devices: kotlin.collections.List<DeviceMapDto>? = null,
+    val devices: kotlin.collections.List<kotlin.String>? = null,
 
     @Json(name = "groups")
-    val groups: kotlin.collections.List<DevicesGroupDto>? = null
+    val groups: kotlin.collections.List<kotlin.String>? = null
 
 )
 

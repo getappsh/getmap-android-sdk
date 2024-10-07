@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
         val tp = mapServiceManager.service.config.targetStoragePolicy
-        if ((tp == MapConfigDto.TargetStoragePolicy.sDOnly || tp == MapConfigDto.TargetStoragePolicy.sDThenFlash) && storageList.getOrNull(
+        if ((tp == MapConfigDto.TargetStoragePolicy.SDOnly || tp == MapConfigDto.TargetStoragePolicy.SDThenFlash) && storageList.getOrNull(
                 1
             )?.directory?.absoluteFile == null
         ) {

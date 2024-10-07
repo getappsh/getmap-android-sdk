@@ -15,8 +15,6 @@
 
 package GetApp.Client.models
 
-import GetApp.Client.models.OfferingMapProductsResDto
-import GetApp.Client.models.OfferingResponseDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -24,18 +22,14 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
- * @param software 
- * @param map 
+ * @param name 
  */
 
 
-data class DiscoveryResDto (
+data class MapPutDto (
 
-    @Json(name = "software")
-    val software: OfferingResponseDto? = null,
-
-    @Json(name = "map")
-    val map: OfferingMapProductsResDto? = null
+    @Json(name = "name")
+    val name: kotlin.String? = null
 
 )
 

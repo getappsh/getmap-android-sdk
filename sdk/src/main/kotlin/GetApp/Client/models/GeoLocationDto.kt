@@ -31,10 +31,10 @@ import com.squareup.moshi.JsonClass
 data class GeoLocationDto (
 
     @Json(name = "lat")
-    val lat: kotlin.String? = null,
+    val lat: kotlin.String,
 
     @Json(name = "long")
-    val long: kotlin.String? = null,
+    val long: kotlin.String,
 
     @Json(name = "alt")
     val alt: kotlin.String? = null

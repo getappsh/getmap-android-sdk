@@ -28,6 +28,7 @@ import com.squareup.moshi.JsonClass
  * @param time 
  * @param operativeState 
  * @param power 
+ * @param availableStorage 
  * @param location 
  */
 
@@ -48,6 +49,9 @@ data class SituationalDiscoveryDto (
 
     @Json(name = "power")
     val power: java.math.BigDecimal? = null,
+
+    @Json(name = "availableStorage")
+    val availableStorage: kotlin.String? = null,
 
     @Json(name = "location")
     val location: GeoLocationDto? = null

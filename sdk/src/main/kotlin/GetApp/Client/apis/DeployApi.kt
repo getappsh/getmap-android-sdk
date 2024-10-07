@@ -106,7 +106,7 @@ class DeployApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/deploy/updateDeployStatus",
+            path = "/api/v1/deploy/updateDeployStatus",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

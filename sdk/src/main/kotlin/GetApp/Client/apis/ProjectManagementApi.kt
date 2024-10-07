@@ -123,7 +123,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/projectManagement/project/{projectId}/member".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/projectManagement/project/{projectId}/member".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -195,7 +195,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/projectManagement/project",
+            path = "/api/v1/projectManagement/project",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -266,7 +266,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/projectManagement/project/{projectId}/createToken".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/projectManagement/project/{projectId}/createToken".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -344,7 +344,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.PUT,
-            path = "/api/projectManagement/project/{projectId}/member/{memberId}".replace("{"+"memberId"+"}", encodeURIComponent(memberId.toString())).replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/projectManagement/project/{projectId}/member/{memberId}".replace("{"+"memberId"+"}", encodeURIComponent(memberId.toString())).replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -415,7 +415,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/projectManagement/devices/platform/{platform}".replace("{"+"platform"+"}", encodeURIComponent(platform.toString())),
+            path = "/api/v1/projectManagement/devices/platform/{platform}".replace("{"+"platform"+"}", encodeURIComponent(platform.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -486,7 +486,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/projectManagement/devices/catalogId/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
+            path = "/api/v1/projectManagement/devices/catalogId/{catalogId}".replace("{"+"catalogId"+"}", encodeURIComponent(catalogId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -557,7 +557,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/projectManagement/devices/project/{projectId}".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/projectManagement/devices/project/{projectId}".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -625,7 +625,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/projectManagement/projectConfigOption",
+            path = "/api/v1/projectManagement/projectConfigOption",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -696,7 +696,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/projectManagement/project/{projectId}/projectReleases".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/projectManagement/project/{projectId}/projectReleases".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -764,7 +764,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/projectManagement/project",
+            path = "/api/v1/projectManagement/project",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -835,7 +835,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
         
         return RequestConfig(
             method = RequestMethod.DELETE,
-            path = "/api/projectManagement/project/{projectId}/member/{memberId}".replace("{"+"memberId"+"}", encodeURIComponent(memberId.toString())).replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/projectManagement/project/{projectId}/member/{memberId}".replace("{"+"memberId"+"}", encodeURIComponent(memberId.toString())).replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -907,7 +907,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
 
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/projectManagement/projectConfigOption",
+            path = "/api/v1/projectManagement/projectConfigOption",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

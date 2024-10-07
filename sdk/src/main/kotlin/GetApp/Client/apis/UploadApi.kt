@@ -110,7 +110,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
 
         return RequestConfig(
             method = RequestMethod.GET,
-            path = "/api/upload/lastVersion/{projectId}".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
+            path = "/api/v1/upload/lastVersion/{projectId}".replace("{"+"projectId"+"}", encodeURIComponent(projectId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -179,7 +179,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/upload/updateUploadStatus",
+            path = "/api/v1/upload/updateUploadStatus",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,
@@ -248,7 +248,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/upload/artifact",
+            path = "/api/v1/upload/artifact",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,
@@ -321,7 +321,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         
         return RequestConfig(
             method = RequestMethod.POST,
-            path = "/api/upload/manifest",
+            path = "/api/v1/upload/manifest",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,

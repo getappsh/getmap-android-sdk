@@ -33,6 +33,9 @@ import com.squareup.moshi.JsonClass
  * @param power 
  * @param bandwidth 
  * @param operativeState 
+ * @param groupName 
+ * @param groupId 
+ * @param uid 
  */
 
 
@@ -66,7 +69,16 @@ data class DeviceMapDto (
     val bandwidth: java.math.BigDecimal? = null,
 
     @Json(name = "operativeState")
-    val operativeState: kotlin.Boolean? = null
+    val operativeState: kotlin.Boolean? = null,
+
+    @Json(name = "groupName")
+    val groupName: kotlin.String? = null,
+
+    @Json(name = "groupId")
+    val groupId: java.math.BigDecimal? = null,
+
+    @Json(name = "uid")
+    val uid: java.math.BigDecimal? = null
 
 )
 

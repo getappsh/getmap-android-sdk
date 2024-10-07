@@ -15,6 +15,7 @@
 
 package GetApp.Client.models
 
+import GetApp.Client.models.SoftwareStateDto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -22,6 +23,7 @@ import com.squareup.moshi.JsonClass
 /**
  * 
  *
+ * @param softwares 
  * @param id 
  * @param lastUpdatedDate 
  * @param lastConnectionDate 
@@ -37,7 +39,10 @@ import com.squareup.moshi.JsonClass
  */
 
 
-data class DeviceDto (
+data class DeviceSoftwareDto (
+
+    @Json(name = "softwares")
+    val softwares: kotlin.collections.List<SoftwareStateDto>,
 
     @Json(name = "id")
     val id: kotlin.String? = null,
