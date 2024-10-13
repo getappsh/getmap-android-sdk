@@ -219,6 +219,10 @@ internal class MapRepo(ctx: Context) {
         }
     }
 
+    fun getByReqId(reqId: String): MapPkg?{
+        return dao.getByReqId(reqId)
+    }
+
     fun doesMapFileExist(name: String): Boolean{
         return dao.doesMapFileExist(name)
     }

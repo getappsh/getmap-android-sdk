@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.OfferingMapResDto
 import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
@@ -7,6 +8,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.annotations.RequiresIMEI
 import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
+import com.ngsoft.getapp.sdk.helpers.client.DiscoveryClient
 import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
@@ -28,6 +30,8 @@ import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 
@@ -254,6 +258,67 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         return id
+    }
+
+    override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
+        Timber.i("getDiscoveryCatalog")
+
+        val offering = DiscoveryClient.getDeviceMapDiscovery(this.client, this.deviceInfo);
+
+        Thread{
+            for (pmap in offering.push ?: emptyList()){
+                val catalogId = pmap.catalogId ?: continue
+                val footprint = pmap.footprint ?: pmap.boundingBox ?: continue
+                if (mapRepo.getByReqId(catalogId) == null){
+                    Timber.d("getDiscoveryCatalog - new push map found: $catalogId")
+                    val newMap = MapPkg(
+                        pId = pmap.product?.productId ?: "dummy product",
+                        bBox = footprint,
+                        footprint = footprint,
+                        flowState = DeliveryFlowState.IMPORT_CREATE,
+                        reqId = catalogId,
+                        state = MapDeliveryState.START,
+                        statusMsg = appCtx.getString(R.string.delivery_status_paused),
+                        fileName = pmap.fileName,
+                        url = pmap.packageUrl,
+                        downloadStart = LocalDateTime.now(ZoneOffset.UTC)
+                    )
+                    val id = this.mapRepo.save(newMap)
+                    if (isEnoughSpace(id)){
+                        DeliveryForegroundService.startForId(appCtx, id)
+                    }
+                }
+            }
+        }.start()
+
+        val result = mutableListOf<DiscoveryItem>()
+        if (offering.status == OfferingMapResDto.Status.Error){
+            Timber.e("getDiscoveryCatalog: get-map offering error ${offering.error?.message}")
+            throw Exception("get-map offering error ${offering.error?.message}")
+        }
+
+        offering.products?.forEach {
+            result.add(
+                DiscoveryItem(
+                it.id,
+                it.productId,
+                it.productName.toString(),
+                it.productVersion.toString(),
+                it.productType,
+                it.productSubType,
+                it.description,
+                it.imagingTimeBeginUTC,
+                it.imagingTimeEndUTC,
+                it.maxResolutionDeg!!,
+                it.footprint,
+                it.transparency.toString(),
+                it.region,
+                it.ingestionDate)
+            )
+        }
+
+        Timber.d("getDiscoveryCatalog - results $result")
+        return result
     }
     
     override fun fetchInventoryUpdates(): List<String> {

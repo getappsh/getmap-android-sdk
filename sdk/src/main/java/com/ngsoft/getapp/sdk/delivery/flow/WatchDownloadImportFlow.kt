@@ -3,11 +3,11 @@ package com.ngsoft.getapp.sdk.delivery.flow
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.delivery.DeliveryContext
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.message
+import com.ngsoft.getapp.sdk.helpers.DeviceInfoHelper
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
-import com.ngsoft.getapp.sdk.utils.NetworkUtil
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.tonyodev.fetch2.Download
 import com.tonyodev.fetch2.Status
@@ -148,7 +148,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                     mapRepo.update(id, state = MapDeliveryState.DOWNLOAD, statusMsg = app.getString(R.string.delivery_status_queued))
                 }
 
-                if (!NetworkUtil.isInternetAvailable(app)){
+                if (!DeviceInfoHelper.getInstance(app).isInternetAvailable()){
                     mapRepo.update(id, statusMsg = app.getString(R.string.delivery_status_connection_issue_queued), statusDescr = app.getString(R.string.delivery_status_description_queued_no_internet_connection))
                 }
             }

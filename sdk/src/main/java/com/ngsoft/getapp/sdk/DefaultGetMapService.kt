@@ -1,19 +1,9 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.DiscoveryMapDto
-import GetApp.Client.models.DiscoveryMessageDto
-import GetApp.Client.models.DiscoverySoftwareDto
-import GetApp.Client.models.GeneralDiscoveryDto
-import GetApp.Client.models.OfferingMapProductsResDto
-import GetApp.Client.models.PersonalDiscoveryDto
-import GetApp.Client.models.PhysicalDiscoveryDto
-import GetApp.Client.models.PlatformDto
+import GetApp.Client.models.OfferingMapResDto
 import GetApp.Client.models.PrepareDeliveryResDto
-import GetApp.Client.models.SituationalDiscoveryDto
 import android.content.Context
-import android.content.Context.BATTERY_SERVICE
 import android.graphics.Bitmap
-import android.os.BatteryManager
 import android.os.Environment
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader
@@ -34,16 +24,12 @@ import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.models.Status
 import com.ngsoft.getapp.sdk.models.StatusCode
 import com.ngsoft.getapp.sdk.old.DownloadProgress
-import com.ngsoft.getapp.sdk.utils.NetworkUtil
 import com.ngsoft.getappclient.ConnectionConfig
 import com.ngsoft.getappclient.GetAppClient
 import com.ngsoft.tilescache.TilesCache
 import com.tonyodev.fetch2.Fetch
 import timber.log.Timber
-import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -53,9 +39,9 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
     protected lateinit var client: GetAppClient
     protected lateinit var pref: Pref
-    private lateinit var batteryManager: BatteryManager
     protected lateinit var mapFileManager: MapFileManager
     protected lateinit var cache: TilesCache
+    protected lateinit var deviceInfo: DeviceInfoHelper
 
     override val config = ServiceConfig.getInstance(appCtx)
 
@@ -71,8 +57,6 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         pref = Pref.getInstance(appCtx)
         FetchDownloader.init(appCtx)
 
-        batteryManager = appCtx.getSystemService(BATTERY_SERVICE) as BatteryManager
-
         mapFileManager = MapFileManager(appCtx)
 
         cache = TilesCache(appCtx)
@@ -84,6 +68,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         pref.username = configuration.user
         pref.password = configuration.password
         pref.baseUrl = configuration.baseUrl
+
+        deviceInfo = DeviceInfoHelper.getInstance(appCtx);
 
         Timber.d("init - Device ID: ${pref.deviceId}")
         return true
@@ -164,53 +150,17 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
         Timber.i("getDiscoveryCatalog")
 
-        val batteryPower = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-
-        //fill that vast GetApp param...
-        val query = DiscoveryMessageDto(DiscoveryMessageDto.DiscoveryType.getMinusMap,
-            GeneralDiscoveryDto(
-                PersonalDiscoveryDto("user-1","idNumber-123","personalNumber-123"),
-                SituationalDiscoveryDto(
-                    bandwidth=NetworkUtil.getBandwidthQuality(appCtx)?.let { BigDecimal(it) },
-                    time = OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC),
-                    operativeState = true,
-                    power = batteryPower.toBigDecimal(),
-                    availableStorage = mapFileManager.getAvailableSpaceByPolicy().toString()
-                ),
-                PhysicalDiscoveryDto(
-                    ID = pref.deviceId,
-                    OS = PhysicalDiscoveryDto.OSEnum.android,
-                    serialNumber = pref.serialNumber,
-                    possibleBandwidth = "Yes"
-                )
-            ),
-
-            DiscoverySoftwareDto("yatush", PlatformDto("Olar","1", BigDecimal("0"),
-                emptyList()
-            )),
-
-            DiscoveryMapDto(inputProperties.productId,"no-name","3","osm","bla-bla",
-                inputProperties.boundingBox,
-                "WGS84", LocalDateTime.now().toString(), LocalDateTime.now().toString(), LocalDateTime.now().toString(),
-                "DJI Mavic","raster","N/A","ME","CCD","3.14","0.12"
-            )
-        )
-
-        Timber.v("getDiscoveryCatalog - discovery object built")
-
-        val discoveries = client.deviceApi.discoveryControllerDiscoveryCatalog(query)
-        Timber.d("getDiscoveryCatalog -  offering results: $discoveries ")
-
+        val offering = DiscoveryClient.getDeviceMapDiscovery(this.client, this.deviceInfo);
         val result = mutableListOf<DiscoveryItem>()
-        if (discoveries.map?.status == OfferingMapProductsResDto.Status.Error){
-            Timber.e("getDiscoveryCatalog: get-map offering error ${discoveries.map.error?.message}")
-            throw Exception("get-map offering error ${discoveries.map.error?.message}")
+        if (offering.status == OfferingMapResDto.Status.Error){
+            Timber.e("getDiscoveryCatalog: get-map offering error ${offering.error?.message}")
+            throw Exception("get-map offering error ${offering.error?.message}")
         }
 
-        discoveries.map?.products?.forEach {
+        offering.products?.forEach {
             result.add(DiscoveryItem(
-                it.id.toString(),
-                it.productId.toString(),
+                it.id,
+                it.productId,
                 it.productName.toString(),
                 it.productVersion.toString(),
                 it.productType,
@@ -219,7 +169,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 it.imagingTimeBeginUTC,
                 it.imagingTimeEndUTC,
                 it.maxResolutionDeg!!,
-                it.footprint.toString(),
+                it.footprint,
                 it.transparency.toString(),
                 it.region,
                 it.ingestionDate,
