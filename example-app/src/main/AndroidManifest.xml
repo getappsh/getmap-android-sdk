@@ -87,6 +87,10 @@
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
+            android:name="com.ngsoft.getapp.sdk.jobs.DiscoveryService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
             android:name="com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />

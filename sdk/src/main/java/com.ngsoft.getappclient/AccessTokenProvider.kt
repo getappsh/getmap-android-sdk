@@ -8,10 +8,12 @@ import java.time.OffsetDateTime
 
 class AccessTokenProvider constructor(private val config: ConnectionConfig) {
 
-    private val TAG = "AccessTokenProvider"
+    companion object{
+        private var currentToken: String = ""
+        private var expiredAt: OffsetDateTime? = null
+    }
 
-    private var currentToken: String = ""
-    private var expiredAt: OffsetDateTime? = null
+    private val TAG = "AccessTokenProvider"
 
     fun token(): String {
         synchronized(this){

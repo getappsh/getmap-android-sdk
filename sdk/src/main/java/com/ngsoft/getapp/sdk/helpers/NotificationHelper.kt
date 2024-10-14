@@ -18,6 +18,8 @@ internal class NotificationHelper(private val appCtx: Context) {
         const val INVENTORY_JOB_FAILED_NTF_ID = 2
         const val CONFIG_JOB_FAILED_NTF_ID = 3
         const val DELIVERY_SERVICE_NFT_ID = 4
+        const val DISCOVERY_JOB_NEW_OFFERING_NTF_ID = 5
+        const val DISCOVERY_JOB_FAILED_NTF_ID = 6
 
     }
 

@@ -20,8 +20,8 @@ import java.time.ZoneOffset
 internal object DiscoveryClient {
 
 
-    fun getDeviceMapDiscovery(client: GetAppClient, deviceInfo: DeviceInfoHelper): OfferingMapResDto{
-        Timber.i("getDeviceMapDiscovery")
+    fun deviceMapDiscovery(client: GetAppClient, deviceInfo: DeviceInfoHelper): OfferingMapResDto{
+        Timber.i("deviceMapDiscovery")
         val query = DiscoveryMessageDto(
             DiscoveryMessageDto.DiscoveryType.getMinusMap,
             GeneralDiscoveryDto(
@@ -50,10 +50,10 @@ internal object DiscoveryClient {
             )
         )
 
-        Timber.v("getDeviceMapDiscovery - discovery object built")
+        Timber.v("deviceMapDiscovery - discovery object built")
 
         val offering = client.deviceApi.discoveryControllerDeviceMapDiscovery(query)
-        Timber.d("getDeviceMapDiscovery -  offering results: $offering ")
+        Timber.d("deviceMapDiscovery -  offering results: $offering ")
 
         return offering
     }

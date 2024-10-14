@@ -9,6 +9,8 @@ import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.downloadFile
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadDone
+import com.ngsoft.getapp.sdk.helpers.DeviceInfoHelper
+import com.ngsoft.getapp.sdk.helpers.DiscoveryManager
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
@@ -149,32 +151,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
         Timber.i("getDiscoveryCatalog")
-
-        val offering = DiscoveryClient.getDeviceMapDiscovery(this.client, this.deviceInfo);
-        val result = mutableListOf<DiscoveryItem>()
-        if (offering.status == OfferingMapResDto.Status.Error){
-            Timber.e("getDiscoveryCatalog: get-map offering error ${offering.error?.message}")
-            throw Exception("get-map offering error ${offering.error?.message}")
-        }
-
-        offering.products?.forEach {
-            result.add(DiscoveryItem(
-                it.id,
-                it.productId,
-                it.productName.toString(),
-                it.productVersion.toString(),
-                it.productType,
-                it.productSubType,
-                it.description,
-                it.imagingTimeBeginUTC,
-                it.imagingTimeEndUTC,
-                it.maxResolutionDeg!!,
-                it.footprint,
-                it.transparency.toString(),
-                it.region,
-                it.ingestionDate,
-            ))
-        }
+        val result = DiscoveryManager(appCtx).startDiscovery(true);
 
         Timber.d("getDiscoveryCatalog - results $result")
         return result
