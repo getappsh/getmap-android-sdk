@@ -36,7 +36,7 @@
     <string name="notification_update_map_description">יש גרסה חדשה ל- %d בולים שהורדת\n(על מנת לעדכן יש להכנס למסך מיפוי ענן בעמוד)</string>
     <string name="notification_error_title">שגיאת מיפוי ענן</string>
     <string name="notification_new_map_title">מפות חדשות</string>
-    <string name="notification_new_map_description">הוקצו לך מפות חדשות, בכדי שהורדה האוטומטית תתחיל אנא הכנס לאפליקציית מיפוי ענן</string>
+    <string name="notification_new_map_description">הוקצו לך מפות חדשות, בכדי שהורדה האוטומטית תתחיל אנא היכנס לאפליקציית מיפוי ענן</string>
     <string name="notification_config_job_failed">ארעה שגיאה בבדיקת עדכניות הגדרות מול הענן, אם הודעה זו חוזרת שוב צור קשר עם הקשר״ג</string>
     <string name="notification_inventory_job_failed">ארעה שגיאה בבדיקת עדכניות מפות מול הענן, אם הודעה זו חוזרת שוב צור קשר עם הקשר״ג</string>
     <string name="notification_discovery_job_failed">ארעה שגיאה בבדיקת הצעות חדשות מול הענן, אם הודעה זו חוזרת שוב צור קשר עם הקשר״ג</string>

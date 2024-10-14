@@ -45,7 +45,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val isDeliveryServiceRunning = appCtx.isServiceRunning(DeliveryForegroundService::class.java)
         Timber.d("init - delivery service running: $isDeliveryServiceRunning")
         if (!isDeliveryServiceRunning){
-            Thread{updateMapsStatusOnStart()}.start()
+            deliverOfferingQueue()
+            Thread{ updateMapsStatusOnStart() }.start()
         }
         JobScheduler().scheduleInventoryOfferingJob(appCtx, config.periodicInventoryIntervalMins)
         JobScheduler().scheduleRemoteConfigJob(appCtx, config.periodicConfIntervalMins)
@@ -279,6 +280,15 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             .any { it -> it.service.className == service.name }
     }
 
+    private fun deliverOfferingQueue(){
+        Timber.i("deliverOfferingQueue")
+        val reqIds = pref.mapOffering;
+        Timber.d("deliverOfferingQueue - found: ${reqIds.size} maps offering to deliver")
+        for (reqId in reqIds){
+            DeliveryForegroundService.startForId(appCtx, reqId);
+        }
+        pref.mapOffering = mutableSetOf()
+    }
     private fun updateMapsStatusOnStart(){
         Timber.d("updateMapsStatusOnStart")
         val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.START || it.state == MapDeliveryState.CONTINUE || it.state == MapDeliveryState.DOWNLOAD }

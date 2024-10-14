@@ -160,6 +160,11 @@ class Pref private constructor(context: Context) {
         get() = getString(CONTROL_MAP_PATH, "com.asio.gis/gis/maps/orthophoto/מפת שליטה.gpkg")
         set(value) = setString(CONTROL_MAP_PATH, value)
 
+    var mapOffering: MutableSet<String>
+        get() =  sharedPreferences.getStringSet(MAP_OFFERING_QUEUE, mutableSetOf()) ?: mutableSetOf()
+        set(offerings) = sharedPreferences.edit().putStringSet(MAP_OFFERING_QUEUE, offerings).apply()
+
+
     private fun getString(key: String, defValue: String): String{
         return sharedPreferences.getString(key, defValue) ?: defValue
     }
@@ -270,6 +275,8 @@ class Pref private constructor(context: Context) {
         private const val SD_MAX_INVENTORY_SIZE_IN_MB = "sdMaxInventorySizeInMB"
         private const val ORTHOPHOTO_MAP_PATH = "orthophotoMapPath"
         private const val CONTROL_MAP_PATH = "controlMapPath"
+
+        private const val MAP_OFFERING_QUEUE = "mapOfferingQueue"
 
         private var instance: Pref? = null
         @Synchronized
