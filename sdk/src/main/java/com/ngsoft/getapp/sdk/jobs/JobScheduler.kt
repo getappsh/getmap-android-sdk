@@ -14,6 +14,7 @@ internal class JobScheduler {
 
         private const val INVENTORY_OFFERING_JOB_ID = 1
         private const val REMOTE_CONFIG_JOB_ID = 2
+        private const val MAP_DISCOVERY_JOB_ID = 3
     }
     fun scheduleInventoryOfferingJob(context: Context, intervalMins: Int) {
         Timber.i("scheduleInventoryOfferingJob")
@@ -44,6 +45,28 @@ internal class JobScheduler {
         }
     }
 
+
+    fun scheduleDiscoveryJob(context: Context, intervalMins: Int){
+        Timber.i("scheduleDiscoveryJob")
+        if(isJobScheduled(context, MAP_DISCOVERY_JOB_ID)){
+            return
+        }
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+
+        val jobInfo = JobInfo.Builder(MAP_DISCOVERY_JOB_ID, ComponentName(context, DiscoveryService::class.java))
+            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setRequiresCharging(false)
+            .setPeriodic(minutes2millis(intervalMins))
+            .setBackoffCriteria(5 * 60 * 1000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
+            .setPersisted(true)
+            .build()
+
+        try{
+            jobScheduler.schedule(jobInfo)
+        }catch (e: IllegalArgumentException){
+            Timber.e("scheduleDiscoveryJob - failed to schedule the service, error: ${e.message.toString()}")
+        }
+    }
 
     fun scheduleRemoteConfigJob(context: Context, intervalMins: Int){
         Timber.i("scheduleRemoteConfigJob")
@@ -84,6 +107,17 @@ internal class JobScheduler {
             Timber.i("updateRemoteConfigJob - Update job interval to: $intervalMins minutes")
             jobScheduler.cancel(REMOTE_CONFIG_JOB_ID)
             scheduleRemoteConfigJob(context, intervalMins)
+        }
+    }
+
+    fun updateDiscoveryJob(context: Context, intervalMins: Int){
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val jobInfo = jobScheduler.getPendingJob(MAP_DISCOVERY_JOB_ID) ?: return
+
+        if (jobInfo.intervalMillis != minutes2millis(intervalMins)){
+            Timber.i("updateDiscoveryJob - Update job interval to: $intervalMins minutes")
+            jobScheduler.cancel(MAP_DISCOVERY_JOB_ID)
+            scheduleDiscoveryJob(context, intervalMins)
         }
     }
     private fun isJobScheduled(context: Context, jobId: Int): Boolean {
