@@ -8,6 +8,7 @@ import android.os.Build
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.R
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader
 import com.ngsoft.getapp.sdk.helpers.client.DiscoveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -98,6 +99,9 @@ internal class DiscoveryManager(private val context: Context) {
     private fun handleMapPush(offering: List<MapDto>?, userInitiated: Boolean){
         Timber.i("handleMapPush - offering size: ${offering?.size}")
         offering ?: return
+
+        val failedSet = mutableSetOf<String>()
+
         for (map in offering){
             val catalogId = map.catalogId ?: continue
             if (mapRepo.getByReqId(catalogId) == null){
@@ -109,6 +113,9 @@ internal class DiscoveryManager(private val context: Context) {
                 if (!isEnoughSpace(id)){
                     return
                 }
+                if (!userInitiated){
+                    FetchDownloader.init(context)
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     try {
                         DeliveryForegroundService.startForId(context, id)
@@ -116,12 +123,18 @@ internal class DiscoveryManager(private val context: Context) {
                         Timber.e("handleMapPush - error starting service, probably app is closed: ${err.message}")
                         if (!userInitiated){
                             showOpenAppNotification()
+                            failedSet.add(id)
                         }
                     }
                 }else {
                     DeliveryForegroundService.startForId(context, id)
                 }
             }
+        }
+
+        if (failedSet.isNotEmpty()){
+            Timber.e("handleMapPush - write to delivery queue ${failedSet.size} maps")
+            this.pref.mapOffering = failedSet;
         }
     }
 
@@ -136,7 +149,7 @@ internal class DiscoveryManager(private val context: Context) {
     private fun showDiscoveryFailedNotification(){
         NotificationHelper(context).sendNotification(
             context.getString(R.string.notification_error_title),
-            context.getString(R.string.notification_inventory_job_failed),
+            context.getString(R.string.notification_discovery_job_failed),
             NotificationHelper.DISCOVERY_JOB_FAILED_NTF_ID)
     }
 
