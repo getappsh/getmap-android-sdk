@@ -464,11 +464,11 @@ class MapFileManager(private val appCtx: Context) {
             if (!this.mapRepo.doesJsonFileExist(file.name)) {
                 Timber.d("syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
 
-                val pId: String; val bBox: String; val url: String?;
+                val pId: String; val footprint: String; val url: String?;
                 try{
                     val json = JsonUtils.readJson(file.path)
                     pId = json.getString("id")
-                    bBox = json.getString("productBoundingBox")
+                    footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
                     url =  if (json.has("downloadUrl")) json.getString("downloadUrl") else null
                 }catch (e: JSONException){
                     Timber.e("syncStorage - not valid json object: ${e.message.toString()}")
@@ -480,13 +480,14 @@ class MapFileManager(private val appCtx: Context) {
 
                 val mapPkg = this.refreshMapState(MapPkg(
                     pId = pId,
-                    bBox = bBox,
+                    bBox = footprint,
                     state = MapDeliveryState.ERROR,
                     flowState = DeliveryFlowState.MOVE_FILES,
                     url = url,
                     path = file.path,
                     fileName = FileUtils.changeFileExtensionToMap(file.name),
                     jsonName = file.name,
+                    footprint = footprint,
                     statusMsg = appCtx.getString(R.string.delivery_status_in_verification)
                 ))
 
