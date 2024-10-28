@@ -16,12 +16,16 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 9
-        versionName = "2.0.8"
+        versionCode = 14
+        versionName = "2.1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
         }
 
         buildConfigField("String", "USERNAME", "\"${getPropertyFromFile("USERNAME")}\"")

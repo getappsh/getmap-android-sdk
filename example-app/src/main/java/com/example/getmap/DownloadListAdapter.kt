@@ -203,10 +203,9 @@ class DownloadListAdapter(
                 if (downloadData.downloadStart!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
-                    TrackHelper.track().dimension(
-                        manager.service.config.matomoSiteId.toInt(),
-                        downloadData.footprint
-                    ).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
+                    TrackHelper.track()
+                        .dimension(manager.service.config.matomoDimensionId.toInt(), downloadData.footprint)
+                        .event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
@@ -229,7 +228,8 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime =
                     localDateTime.minus(Duration.ofSeconds(1))
-                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val name = region + "-" + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val coordinates = downloadData.footprint
                 if (downloadData.downloadDone!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {

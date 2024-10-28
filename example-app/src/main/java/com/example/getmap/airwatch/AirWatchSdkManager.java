@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.airwatch.sdk.AirWatchSDKException;
 import com.airwatch.sdk.SDKManager;
@@ -89,8 +90,8 @@ public class AirWatchSdkManager {
             editor.putString(SERIAL_NUMBER, serialNumber);
             editor.apply();
             new utils().saveOrganizationGroupInSharedPreferences(context, serialNumber);
-        } catch (AirWatchSDKException ignored) {
-
+        } catch (Exception e) {
+            Toast.makeText(context, "Serial Number" + e, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -125,6 +126,7 @@ public class AirWatchSdkManager {
                 Log.d("Error", "imei failed");
             }
         } catch (Exception e) {
+            Toast.makeText(context, "Imei" + e, Toast.LENGTH_LONG).show();
             Log.d("Error", "crushed");
             Log.d("Error", e.toString());
             e.printStackTrace();

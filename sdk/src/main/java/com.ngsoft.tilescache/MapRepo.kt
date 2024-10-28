@@ -52,7 +52,7 @@ internal class MapRepo(ctx: Context) {
     fun getAll(): List<MapPkg>{
         return dao
             .getAll()
-            .sortedBy { map-> map.downloadStart }
+            .sortedByDescending { map-> map.downloadStart }
     }
 
     fun getAllMaps(): List<MapData>{
@@ -320,12 +320,20 @@ internal class MapRepo(ctx: Context) {
     companion object {
         var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
 
-        private val customOrder = listOf(MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE)
+//        private val customOrder = listOf(MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE)
+//
+//        private val comparator = compareBy<MapData> {
+//            // Get the index of the state in the custom order; default to Int.MAX_VALUE if not found
+//            customOrder.indexOf(it.deliveryState).let { index -> if (index == -1) Int.MAX_VALUE else index }
+//        }.thenByDescending{ it.id }
 
-        private val comparator = compareBy<MapData> {
-            // Get the index of the state in the custom order; default to Int.MAX_VALUE if not found
-            customOrder.indexOf(it.deliveryState).let { index -> if (index == -1) Int.MAX_VALUE else index }
-        }.thenByDescending{ it.id }
+
+        private val comparator = Comparator<MapData> { o1, o2 ->
+            val localZone = ZoneId.systemDefault()
+            val d1 = o1.downloadStart ?: OffsetDateTime.now(localZone)
+            val d2 = o2.downloadStart ?: OffsetDateTime.now(localZone)
+            d2.compareTo(d1)
+        }
 
         private val mapMutableLiveHase = MutableLiveData(ConcurrentHashMap<String, MapData>())
         private val mapLiveList: LiveData<List<MapData>> = Transformations.map(mapMutableLiveHase){
