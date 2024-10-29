@@ -176,7 +176,7 @@ class DownloadListAdapter(
         } else {
             val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
             val stopDate = downloadData.downloadStop
-            val startDate = downloadData.downloadStart
+            val startDate = downloadData.reqDate
             if (downloadData.statusMsg == "בהורדה" || downloadData.statusMsg == "בקשה בהפקה" || downloadData.statusMsg == "בקשה נשלחה") {
                 val a = sdf.format(startDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
@@ -400,7 +400,7 @@ class DownloadListAdapter(
 
     override fun getItemCount(): Int {
         val sortList = asyncListDiffer.currentList.sortedByDescending {
-            it.downloadStart ?: OffsetDateTime.MIN
+            it.reqDate
         }
         return sortList.size
     }
@@ -415,7 +415,7 @@ class DownloadListAdapter(
             manager.service.getDownloadedMaps().forEach { i ->
                 val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                 if (i.id == downloadData.id) {
-                    val firstOffsetDateTime = downloadData.downloadStart
+                    val firstOffsetDateTime = downloadData.reqDate
                     if (firstOffsetDateTime != null) {
                         val a = sdf.format(firstOffsetDateTime)
                         withContext(Dispatchers.Main) {
