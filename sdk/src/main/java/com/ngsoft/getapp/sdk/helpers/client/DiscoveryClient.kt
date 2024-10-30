@@ -36,7 +36,7 @@ internal object DiscoveryClient {
                 PhysicalDiscoveryDto(
                     ID = deviceInfo.deviceId(),
                     OS = PhysicalDiscoveryDto.OSEnum.android,
-                    serialNumber = deviceInfo.generatedDeviceId(),
+                    serialNumber = deviceInfo.serialNumber(),
                     possibleBandwidth = "Yes"
                 )
             ),

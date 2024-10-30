@@ -1,6 +1,5 @@
 package com.ngsoft.getapp.sdk
 
-import GetApp.Client.models.OfferingMapResDto
 import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
@@ -12,6 +11,7 @@ import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties

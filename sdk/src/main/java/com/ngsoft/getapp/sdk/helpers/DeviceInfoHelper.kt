@@ -26,6 +26,14 @@ internal class DeviceInfoHelper private constructor(context: Context) {
         return pref.generateDeviceId()
     }
 
+    fun serialNumber(): String{
+        var serialNumber = pref.serialNumber
+        if (serialNumber.isEmpty()) {
+            serialNumber = generatedDeviceId()
+        }
+        return serialNumber
+    }
+
 // TODO move logic to here? and remove mapFileManager reference
     fun getAvailableSpaceByPolicy(): Long{
         return mapFileManager.getAvailableSpaceByPolicy()
