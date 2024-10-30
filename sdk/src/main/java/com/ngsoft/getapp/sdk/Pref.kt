@@ -8,7 +8,9 @@ import android.content.SharedPreferences
 import android.os.Environment
 
 import android.provider.Settings.Secure;
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.utils.DateHelper
+import timber.log.Timber
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -220,6 +222,19 @@ class Pref private constructor(context: Context) {
         return newDeviceId
     }
 
+    @Throws(MissingIMEIException::class)
+    fun checkDeviceIdAvailability() {
+        Timber.d("checkDeviceIdAvailability")
+        val pubEnv = BuildConfig.DEPLOY_ENV == "pub"
+
+        if (serialNumber.isEmpty()) {
+            if (!pubEnv) {
+                Timber.w("Missing DeviceID (IMEI)")
+                throw MissingIMEIException()
+            }
+        }
+        Timber.d("DeviceID: $deviceId")
+    }
 
     companion object {
         private const val DEVICE_ID = "device_id"

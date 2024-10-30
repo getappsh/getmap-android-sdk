@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.annotations.RequiresIMEI
 import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
 import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
@@ -67,7 +68,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
     override fun purgeCache(){
         mapRepo.purge()
     }
-    override fun downloadMap(mp: MapProperties): String?{
+
+    private inline fun <T> requireIMEI(action: () -> T): T {
+        pref.checkDeviceIdAvailability()
+        return action()
+    }
+
+    @RequiresIMEI
+    override fun downloadMap(mp: MapProperties): String? = requireIMEI{
         Timber.i("downloadMap")
 
         this.mapRepo.getByBBox(mp.boundingBox).forEach{
@@ -91,8 +99,9 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         return id
     }
-    
-    override fun downloadUpdatedMap(id: String): String?{
+
+    @RequiresIMEI
+    override fun downloadUpdatedMap(id: String): String? = requireIMEI{
         Timber.i("downloadUpdatedMap")
         val mapPkg  = this.mapRepo.getById(id)
         if (mapPkg == null){
@@ -192,7 +201,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return qrManager.generateQrCode(json.toString(), width, height)
     }
 
-    override fun processQrCodeData(data: String): String{
+    @RequiresIMEI
+    override fun processQrCodeData(data: String): String = requireIMEI{
         Timber.i("processQrCodeData")
 
         val jsonString = qrManager.processQrCodeData(data)
