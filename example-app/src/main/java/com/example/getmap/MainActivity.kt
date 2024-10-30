@@ -162,7 +162,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
         tracker = MatomoTracker.getTracker(this)
 
-        tracker?.userId = "Wow that works I cant believe it "
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
