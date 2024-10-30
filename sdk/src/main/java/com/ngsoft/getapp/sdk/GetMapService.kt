@@ -164,6 +164,7 @@ interface GetMapService {
      * @param inputProperties query params (for future use, currently gets all items available)
      * @return collection of catalog items
      */
+    @RequiresIMEI
     fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem>
 
 

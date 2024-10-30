@@ -11,6 +11,7 @@ import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
+import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -51,7 +52,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return true
     }
 
-    override fun getDownloadedMap(id: String): MapData? {
+
+    @RequiresIMEI
+    override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> = requireIMEI{
+        return super.getDiscoveryCatalog(inputProperties)
+    }
+
+        override fun getDownloadedMap(id: String): MapData? {
         Timber.i("getDownloadedMap - map id: $id")
         return this.mapRepo.getDownloadData(id)
     }
