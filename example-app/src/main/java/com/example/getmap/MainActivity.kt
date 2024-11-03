@@ -325,10 +325,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     barcodeLauncher.launch(ScanOptions())
                     TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
                 } else {
-                    Toast.makeText(
-                        applicationContext,
+                    Snackbar.make(findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                        Toast.LENGTH_LONG
+                        Snackbar.LENGTH_LONG
                     ).show()
                 }
             }
