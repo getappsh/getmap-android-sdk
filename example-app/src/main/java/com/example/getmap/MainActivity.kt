@@ -295,10 +295,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         scanQRButton = findViewById(R.id.scanQR)
         scanQRButton.setOnClickListener {
+            Log.i(TAG, "scanQRButton Clicked")
+            try {
+                Pref.getInstance(this).checkDeviceIdAvailability()
+            }catch (e: MissingIMEIException){
+//                TODO show missing imei dialog
+            }
             CoroutineScope(Dispatchers.Main).launch {
                 val sizeExceeded = withContext(Dispatchers.IO) {
                     MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
                 }
+
 
                 if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
                     barcodeLauncher.launch(ScanOptions())
