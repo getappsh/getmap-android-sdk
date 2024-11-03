@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.RecyclerView
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -87,12 +88,17 @@ class PopUp : DialogFragment() {
 
                 GlobalScope.launch(Dispatchers.IO) {
 
-                    service.getDownloadedMaps().forEach { mapData ->
-                        if (!mapData.isUpdated) {
-                            service.downloadUpdatedMap(
-                                mapData.id!!)
+                    try {
+                        service.getDownloadedMaps().forEach { mapData ->
+                            if (!mapData.isUpdated) {
+                                service.downloadUpdatedMap(mapData.id!!)
+                            }
                         }
+                    }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+
                     }
+
                     recyclerView.smoothScrollToPosition(0)
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
@@ -100,8 +106,12 @@ class PopUp : DialogFragment() {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
-                    service.downloadUpdatedMap(mapId)
-                    recyclerView.smoothScrollToPosition(0)
+                    try {
+                        service.downloadUpdatedMap(mapId)
+                        recyclerView.smoothScrollToPosition(0)
+                    }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+                    }
                 }
             } else if (type == "cancelled") {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בקשות")

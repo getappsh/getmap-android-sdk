@@ -3,6 +3,7 @@ package com.ngsoft.getapp.sdk
 import GetApp.Client.models.MapConfigDto
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
+import com.ngsoft.getapp.sdk.annotations.RequiresIMEI
 import com.ngsoft.getapp.sdk.models.CreateMapImportStatus
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
@@ -75,6 +76,7 @@ interface GetMapService {
      * @receiver see [MapData]
      * @return map download id
      */
+    @RequiresIMEI
     fun downloadMap(mp: MapProperties): String?
 
     /**
@@ -84,6 +86,7 @@ interface GetMapService {
      * @receiver see [MapData]
      * @return map download id
      */
+    @RequiresIMEI
     fun downloadUpdatedMap(id: String): String?
 
     /**
@@ -131,6 +134,7 @@ interface GetMapService {
      * @receiver see [MapData]
      * @return map download id
      */
+    @RequiresIMEI
     fun processQrCodeData(data: String): String
 
     /**
@@ -160,6 +164,7 @@ interface GetMapService {
      * @param inputProperties query params (for future use, currently gets all items available)
      * @return collection of catalog items
      */
+    @RequiresIMEI
     fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem>
 
 
