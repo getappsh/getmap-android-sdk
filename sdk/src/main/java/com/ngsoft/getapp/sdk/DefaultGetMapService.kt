@@ -20,6 +20,8 @@ import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.downloadFile
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadDone
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
+import com.ngsoft.getapp.sdk.helpers.client.IMEIClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapImportClient
 import com.ngsoft.getapp.sdk.helpers.logger.GlobalExceptionHandler
@@ -79,9 +81,17 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         cache = TilesCache(appCtx)
 
 
-        if(configuration.serialNumber != null){
+        if (configuration.serialNumber != null && configuration.serialNumber != pref.serialNumber) {
             pref.serialNumber = configuration.serialNumber
+            Thread{refreshDeviceIMEI()}.start()
+        }else{
+            try {
+                pref.checkDeviceIdAvailability()
+            }catch (e: MissingIMEIException){
+                Thread{refreshDeviceIMEI()}.start()
+            }
         }
+
         pref.username = configuration.user
         pref.password = configuration.password
         pref.baseUrl = configuration.baseUrl
@@ -161,6 +171,12 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 //==================================================================================================
 
 
+    override fun refreshDeviceIMEI(){
+        Timber.e("Refresh Device IMEI")
+        val IMEI = IMEIClient.getDeviceIMEI(pref.serialNumber, client)
+        IMEI?.let { pref.IMEI = it }
+    }
+
 
     override fun getDiscoveryCatalog(inputProperties: MapProperties): List<DiscoveryItem> {
         Timber.i("getDiscoveryCatalog")
@@ -195,7 +211,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         Timber.v("getDiscoveryCatalog - discovery object built")
 
-        val discoveries = client.deviceApi.discoveryControllerDiscoveryCatalog(query)
+        val discoveries = client.deviceDiscoverApi.discoveryControllerDiscoveryCatalog(query)
         Timber.d("getDiscoveryCatalog -  offering results: $discoveries ")
 
         val result = mutableListOf<DiscoveryItem>()

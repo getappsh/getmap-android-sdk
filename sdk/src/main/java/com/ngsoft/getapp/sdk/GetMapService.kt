@@ -228,6 +228,10 @@ interface GetMapService {
      */
     fun setMapImportDeploy(inputImportRequestId: String?,inputState: MapDeployState?): MapDeployState?
 
+    /**
+     * Refreshes device IMEI.
+     */
+    fun refreshDeviceIMEI()
 
     interface GeneralConfig {
 

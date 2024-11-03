@@ -27,13 +27,17 @@ class Pref private constructor(context: Context) {
     val deviceId: String
         get(){
 //            var currentDeviceId = getString(DEVICE_ID, "")
-            var currentDeviceId = serialNumber;
-            if (currentDeviceId.isEmpty()){
-                currentDeviceId = generateDeviceId()
+            return IMEI.ifEmpty {
+                serialNumber.ifEmpty {
+                    generateDeviceId()
+                }
             }
-            return currentDeviceId
         }
 //        set(value) = setString(DEVICE_ID, value)
+
+    var IMEI: String
+        get() = getString(DEVICE_IMEI, "")
+        set(value) = setString(DEVICE_IMEI, value)
 
     var serialNumber: String
         get() = getString(SERIAL_NUMBER, "")
@@ -227,7 +231,7 @@ class Pref private constructor(context: Context) {
         Timber.d("checkDeviceIdAvailability")
         val pubEnv = BuildConfig.DEPLOY_ENV == "pub"
 
-        if (serialNumber.isEmpty()) {
+        if (IMEI.isEmpty()) {
             if (!pubEnv) {
                 Timber.w("Missing DeviceID (IMEI)")
                 throw MissingIMEIException()
@@ -238,6 +242,7 @@ class Pref private constructor(context: Context) {
 
     companion object {
         private const val DEVICE_ID = "device_id"
+        private const val DEVICE_IMEI = "device_imei"
         private const val SERIAL_NUMBER = "serial_number"
         private const val BASE_URL = "base_url"
         private const val USERNAME = "username"

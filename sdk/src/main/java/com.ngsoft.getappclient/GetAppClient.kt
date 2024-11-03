@@ -1,6 +1,7 @@
 package com.ngsoft.getappclient
 
 import GetApp.Client.apis.DeliveryApi
+import GetApp.Client.apis.DeviceApi
 import GetApp.Client.apis.DeviceBugReportApi
 import GetApp.Client.apis.DeviceDiscoveryApi
 import GetApp.Client.apis.GetMapApi
@@ -23,10 +24,11 @@ internal class GetAppClient(config: ConnectionConfig) {
 
     private val TAG = "GetAppClient"
 
-    val deviceApi: DeviceDiscoveryApi
+    val deviceDiscoverApi: DeviceDiscoveryApi
     val getMapApi: GetMapApi
     val deliveryApi: DeliveryApi
     val bugReportApi: DeviceBugReportApi
+    val deviceApi: DeviceApi
 
     init {
         if (config.baseUrl.isEmpty())
@@ -52,10 +54,11 @@ internal class GetAppClient(config: ConnectionConfig) {
             .addInterceptor(VpnExceptionInterceptor())
             .build()
 
-        deviceApi = DeviceDiscoveryApi(config.baseUrl, client)
+        deviceDiscoverApi = DeviceDiscoveryApi(config.baseUrl, client)
         getMapApi = GetMapApi(config.baseUrl, client)
         deliveryApi = DeliveryApi(config.baseUrl, client)
         bugReportApi = DeviceBugReportApi(config.baseUrl, client)
+        deviceApi = DeviceApi(config.baseUrl, client);
 
     }
 
