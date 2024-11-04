@@ -70,6 +70,7 @@ class MapActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
     private var geoPackageName = ""
+    private var dMode = false
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,16 +109,20 @@ class MapActivity : AppCompatActivity() {
         val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
-            val blueBorderDrawableId = R.drawable.blue_border
-            if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == true) {
-                checkBboxBeforeSent()
-                if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == false) {
-                    Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
+            if (!dMode) {
+                val blueBorderDrawableId = R.drawable.blue_border
+                if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == true) {
+                    checkBboxBeforeSent()
+                    if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == false) {
+                        Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
+                    } else {
+                        this.onDelivery()
+                    }
                 } else {
-                    this.onDelivery()
+                    Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
                 }
             } else {
-                Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "יש ליישר את המפה בחזרה", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -412,6 +417,7 @@ class MapActivity : AppCompatActivity() {
 
     private fun checkBboxBeforeSent() {
         try {
+            dMode = false
             val pLeftTop =  getFourScreenPoints(wwd).leftTop
             val pRightBottom = getFourScreenPoints(wwd).rightBottom
             val pRightTop = getFourScreenPoints(wwd).rightTop
@@ -561,7 +567,7 @@ class MapActivity : AppCompatActivity() {
                 }
             }
         } catch (e: Exception) {
-            Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
+            dMode = true
         }
     }
 
@@ -576,11 +582,13 @@ class MapActivity : AppCompatActivity() {
     private fun calculateMB(formattedNum : String,  resolution: BigDecimal): Int {
         var mb = 0
         mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
-            (formattedNum.toDouble() * 10).toInt()
-        } else if (resolution.toDouble() == 2.68220901489258E-6) {
-            (formattedNum.toDouble() * 5).toInt()
-        } else {
+            (formattedNum.toDouble() * 9.5).toInt()
+        } else if (resolution.toDouble() == 2.6822E-6) {
+            (formattedNum.toDouble() * 4.5).toInt()
+        } else if (resolution.toDouble() == 5.36441E-6) {
             (formattedNum.toDouble() * 2.5).toInt()
+        } else {
+            (formattedNum.toDouble() * 65.9 - 54.4).toInt()
         }
 
         return mb

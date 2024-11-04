@@ -641,12 +641,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        dialog.show()
 //    }
 
+    @SuppressLint("LongLogTag")
     private fun onDelete(id: String) {
         Log.i("onCreate Tracker Refreshea", "${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        popUp.deleteFailImage = deleteFail
+        popUp.deleteFailFun = { showDeleteFailedBtn(deleteFail) }
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
