@@ -4,14 +4,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.SystemTest
+import com.ngsoft.getapp.sdk.exceptions.VpnClosedException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 class SystemTestActivity : AppCompatActivity() {
 
@@ -64,11 +64,19 @@ class SystemTestActivity : AppCompatActivity() {
         testInventoryUpdatesIcon = findViewById(R.id.testInventoryUpdatesIcon)
         testInventoryUpdatesName = findViewById(R.id.testInventoryUpdatesName)
         GlobalScope.launch(Dispatchers.IO) {
-            systemTest.run { testReport ->
+            try {
+                systemTest.run { testReport ->
+                    runOnUiThread {
+                        updateTestResults(testReport)
+                    }
+                }
+            }catch (e: VpnClosedException){
+
                 runOnUiThread {
-                    updateTestResults(testReport)
+                    showVpnErrorAndCloseActivity()
                 }
             }
+
         }
 
     }
@@ -99,5 +107,20 @@ class SystemTestActivity : AppCompatActivity() {
 
         // Update the TextView with the test name
         testNameTextView.text = testResult?.name ?: "טוען..."
+    }
+
+    private fun showVpnErrorAndCloseActivity() {
+        // Create an AlertDialog builder
+        val builder = AlertDialog.Builder(this)
+        builder.setMessage("אין תקשורת, אנא וודא חיבור VPN תקין")
+            .setCancelable(false) // Prevent dialog from being dismissed by back button
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss() // Dismiss the dialog
+                finish() // Close the activity
+            }
+
+        val dialog = builder.create()
+        dialog.show()
+
     }
 }
