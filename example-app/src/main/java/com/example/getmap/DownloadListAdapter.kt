@@ -446,11 +446,9 @@ class DownloadListAdapter(
         notifValidation?.show()
     }
 
-    fun formatDate(inputDate: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val date: Date = inputFormat.parse(inputDate)
-        return outputFormat.format(date)
+    private fun formatDate(inputDate: String): String {
+        val (year, month, days) = inputDate.split("-")
+        return "$days/$month/$year"
     }
 
     companion object {
