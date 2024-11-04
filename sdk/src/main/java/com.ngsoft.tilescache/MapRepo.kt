@@ -52,7 +52,7 @@ internal class MapRepo(ctx: Context) {
     fun getAll(): List<MapPkg>{
         return dao
             .getAll()
-            .sortedByDescending { map-> map.downloadStart }
+            .sortedByDescending { map-> map.reqDate }
     }
 
     fun getAllMaps(): List<MapData>{
@@ -308,7 +308,8 @@ internal class MapRepo(ctx: Context) {
             isUpdated = map.isUpdated,
             downloadStart = map.downloadStart?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadStop = map.downloadStop?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
-            downloadDone = map.downloadDone?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)}
+            downloadDone = map.downloadDone?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
+            reqDate = OffsetDateTime.ofInstant(map.reqDate.toInstant(ZoneOffset.UTC), localZone)
         )
     }
 
@@ -329,10 +330,7 @@ internal class MapRepo(ctx: Context) {
 
 
         private val comparator = Comparator<MapData> { o1, o2 ->
-            val localZone = ZoneId.systemDefault()
-            val d1 = o1.downloadStart ?: OffsetDateTime.now(localZone)
-            val d2 = o2.downloadStart ?: OffsetDateTime.now(localZone)
-            d2.compareTo(d1)
+            o2.reqDate.compareTo(o1.reqDate)
         }
 
         private val mapMutableLiveHase = MutableLiveData(ConcurrentHashMap<String, MapData>())

@@ -2,7 +2,6 @@ package com.ngsoft.getapp.sdk.models
 
 import com.ngsoft.getapp.sdk.utils.JsonUtils
 import org.json.JSONObject
-import timber.log.Timber
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 
@@ -21,7 +20,8 @@ class MapData(
     var downloadStart: OffsetDateTime?,
     var downloadStop: OffsetDateTime?,
     var downloadDone: OffsetDateTime?,
-){
+    val reqDate: OffsetDateTime,
+    ){
     fun getJson(): JSONObject?{
         return try {
             JsonUtils.readJson(Paths.get(path, jsonName).toString())

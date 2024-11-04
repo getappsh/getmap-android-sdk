@@ -49,6 +49,7 @@ import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
@@ -180,7 +181,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 .show()
         }
         tracker = MatomoTracker.getTracker(this)
-        tracker?.userId = imeiEven
+
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
@@ -316,10 +317,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         scanQRButton = findViewById(R.id.scanQR)
         scanQRButton.setOnClickListener {
+            Log.i(TAG, "scanQRButton Clicked")
+            try {
+                Pref.getInstance(this).checkDeviceIdAvailability()
+            }catch (e: MissingIMEIException){
+//                TODO show missing imei dialog
+            }
             CoroutineScope(Dispatchers.Main).launch {
                 val sizeExceeded = withContext(Dispatchers.IO) {
                     MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
                 }
+
 
                 if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
                     barcodeLauncher.launch(ScanOptions())
@@ -479,6 +487,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    discoveryDialogPicker(products)
 
                 }
+            }catch (e: MissingIMEIException){
+//            TODO show missing imei dialog
             } catch (e: Exception) {
                 // Handle any exceptions here
                 Log.e(TAG, "error: " + e);
@@ -494,42 +504,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
     }
-
-    private fun onDelivery(first: Point, second: Point) {
-        Log.d(TAG, "onDelivery: ");
-        GlobalScope.launch(Dispatchers.IO) {
-
-//            service.purgeCache()
-
-            val props = MapProperties(
-                "selectedProduct.id",
-//                "34.46641783,31.55079535, 34.47001187,31.55095355, 34.4700189, 31.553150863,34.46641783, 31.55318508, 34.46641783, 31.55079535",
-//                    "34.50724201341369,31.602641553384572,34.5180453565571,31.59509118055151,34.50855899068993,31.5815177494226,34.497755647546515,31.589068122255644,34.50724201341369,31.602641553384572",
-//                "34.47956403,31.52202192,34.51125354,31.54650531",
-//                "34.33390512,31.39424661,34.33937683,31.39776391",// json dose not exist on s3 for this bBox
-                "${first.y},${first.x},${second.y},${second.x}",
-
-                false
-            )
-            val id = mapServiceManager.service.downloadMap(props);
-            if (id == null) {
-                this@MainActivity.runOnUiThread {
-                    // This is where your UI code goes.
-                    Toast.makeText(
-                        applicationContext,
-                        "The map already exists, please choose another Bbox",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-//            val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-//            availableSpace.text = GetAvailableSpaceInSdCard()
-
-            Log.d(TAG, "onDelivery: after download map have been called, id: $id")
-        }
-
-    }
-
     private fun formatBytes(bytes: Long): String {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         var size = bytes.toDouble()
@@ -745,7 +719,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun updateMap(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.downloadUpdatedMap(id)
+
+            try {
+                mapServiceManager.service.downloadUpdatedMap(id)
+            }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+            }
         }
     }
 
@@ -897,6 +876,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
+                }catch(e: MissingIMEIException){
+//                    TODO show missing imei dialog
                 } catch (e: Exception) {
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
 //                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)

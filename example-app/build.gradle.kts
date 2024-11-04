@@ -35,6 +35,8 @@ android {
         buildConfigField("String", "AW_API", "\"${getPropertyFromFile("AW_API")}\"")
         buildConfigField("String", "AIRWATCH_TENANT", "\"${getPropertyFromFile("AIRWATCH_TENANT")}\"")
         buildConfigField("String", "BASE_URL", "\"${getPropertyFromFile("BASE_URL")}\"")
+        buildConfigField("String", "DEPLOY_ENV", "\"${findProperty("deployEnv") ?: "pub"}\"")
+
     }
 
     buildTypes {

@@ -2,6 +2,7 @@ package com.ngsoft.getapp.sdk
 
 import GetApp.Client.models.NewBugReportDto
 import android.content.Context
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -205,8 +206,13 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
         mapRepo.getByBBox(props.boundingBox).forEach {
             service.deleteMap(it.id.toString())
         }
-
-        val id = service.downloadMap(props);
+        var id: String? = null;
+        try {
+            id = service.downloadMap(props);
+        }catch (e: MissingIMEIException){
+            Timber.e(e)
+            testReport[TEST_IMPORT]?.message = e.message.toString()
+        }
         if (id == null){
             testReport[TEST_IMPORT]?.success = false
             testReport[TEST_DOWNLOAD] = TestResults("הורדת מפות", TEST_DOWNLOAD, false)
