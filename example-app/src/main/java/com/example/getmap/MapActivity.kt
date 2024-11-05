@@ -91,13 +91,17 @@ class MapActivity : AppCompatActivity() {
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
+
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
-        if (lastNavigator != null) {
+        val lastLookAt = sharedPreferences?.getString("LookAt", "no data")
+        if ((lastNavigator != null && lastNavigator != "no data") && (lastLookAt != null && lastLookAt != "no data")) {
             val gson = Gson()
             val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
+            val lastLookAtObj = gson.fromJson(lastLookAt, LookAt::class.java)
+            newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
             wwd.postDelayed({
-                simulateTouch(wwd.x, wwd.y) // Coordonnées x et y pour le toucher simulé
+                simulateTouch(wwd.x, wwd.y)
             }, 50)
         } else {
 
@@ -106,7 +110,7 @@ class MapActivity : AppCompatActivity() {
                 35.10,
                 0.0,
                 WorldWind.ABSOLUTE,
-                630000.0,
+                530000.0,
                 0.0,
                 0.0,
                 0.0
@@ -127,7 +131,7 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
-                saveLastPosition()
+                saveLastPosition(true)
                 val blueBorderDrawableId = R.drawable.blue_border
                 if (overlayView.background.constantState?.equals(
                         ContextCompat.getDrawable(
@@ -157,29 +161,29 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
-
-//        val close = findViewById<Button>(R.id.close)
-//        close.visibility = View.INVISIBLE
+        val close = findViewById<Button>(R.id.close)
+        close.visibility = View.INVISIBLE
         delivery.visibility = View.VISIBLE
-//        close.visibility = View.VISIBLE
-//        val backFrame = findViewById<View>(R.id.backFrame)
-//        backFrame.visibility = View.VISIBLE
-//        val blackBack = findViewById<View>(R.id.blackBack)
-//        blackBack.visibility = View.VISIBLE
-//        val backFrame2 = findViewById<View>(R.id.blackLabel)
-//        backFrame2.visibility = View.VISIBLE
-//        val backFrame3 = findViewById<View>(R.id.backFrame3)
-//        backFrame3.visibility = View.VISIBLE
-//        val backFrame4 = findViewById<View>(R.id.backFrame4)
-//        backFrame4.visibility = View.VISIBLE
+        close.visibility = View.VISIBLE
+        val backFrame = findViewById<View>(R.id.backFrame)
+        backFrame.visibility = View.VISIBLE
+        val blackBack = findViewById<View>(R.id.blackBack)
+        blackBack.visibility = View.VISIBLE
+        val backFrame2 = findViewById<View>(R.id.blackLabel)
+        backFrame2.visibility = View.VISIBLE
+        val backFrame3 = findViewById<View>(R.id.backFrame3)
+        backFrame3.visibility = View.VISIBLE
+        val backFrame4 = findViewById<View>(R.id.backFrame4)
+        backFrame4.visibility = View.VISIBLE
         val frame = findViewById<FrameLayout>(R.id.overlayView)
         frame.visibility = View.VISIBLE
-//
-//        close.setOnClickListener {
-//            val intent = Intent(this@MapActivity, MainActivity::class.java)
-//            startActivity(intent)
-//            finish()
-//        }
+
+        close.setOnClickListener {
+            saveLastPosition(false)
+            val intent = Intent(this@MapActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         val mapSwitch = findViewById<View>(R.id.mapSwitch)
         mapSwitch.visibility = View.GONE
@@ -770,15 +774,25 @@ class MapActivity : AppCompatActivity() {
         upEvent.recycle()
     }
 
-    private fun saveLastPosition() {
+    private fun saveLastPosition(isFromDownload: Boolean) {
         val gson = Gson()
+
+        val lookAt = LookAt()
+        wwd.navigator.getAsLookAt(wwd.globe, lookAt)
+        var jsonStringLookat = ""
+        if (isFromDownload) {
+            lookAt.range += 1000
+        }
+        jsonStringLookat =  gson.toJson(lookAt)
+        sharedPreferencesEditor?.putString("LookAt", jsonStringLookat)?.apply()
+
         val jsonString = gson.toJson(wwd.navigator)
         sharedPreferencesEditor?.putString("last_navigator", jsonString)?.apply()
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        saveLastPosition()
+        saveLastPosition(false)
         Log.e(TAG, "onBackPressed: ${sharedPreferences?.getString("last_navigator", "No data")}")
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
