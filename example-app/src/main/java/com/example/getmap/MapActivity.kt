@@ -1,7 +1,9 @@
 package com.example.getmap
 
 import MapDataMetaData
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.os.storage.StorageManager
@@ -30,6 +32,7 @@ import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
 import gov.nasa.worldwind.BasicWorldWindowController
+import gov.nasa.worldwind.Navigator
 import gov.nasa.worldwind.WorldWind
 import gov.nasa.worldwind.WorldWindow
 import gov.nasa.worldwind.geom.LookAt
@@ -66,17 +69,21 @@ class MapActivity : AppCompatActivity() {
     lateinit var wwd: WorldWindow
     private val loadedPolys: ArrayList<ArrayList<Position>> = ArrayList()
     private val allPolygon = mutableListOf<PolyObject>()
-
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
     private var geoPackageName = ""
     private var dMode = false
+    private var sharedPreferences: SharedPreferences? = null
+    private var sharedPreferencesEditor: SharedPreferences.Editor? = null
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
+
+        sharedPreferences = baseContext.getSharedPreferences("navigator", Context.MODE_PRIVATE)
+        sharedPreferencesEditor = sharedPreferences?.edit()
         val instance = MapServiceManager.getInstance()
         service = instance.service
         addGeoPkg()
@@ -84,6 +91,12 @@ class MapActivity : AppCompatActivity() {
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
+        val lastNavigator = sharedPreferences?.getString("last_navigator","no data")
+        if (lastNavigator != null){
+            val gson = Gson()
+            val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
+            wwd.navigator = newNavigator
+        }else{
 
         val lookAt = LookAt().set(
             31.31,
@@ -95,7 +108,8 @@ class MapActivity : AppCompatActivity() {
             0.0,
             0.0
         )
-        wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+            wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+        }
         val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
         globeLayout.addView(wwd)
 
@@ -110,10 +124,23 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
+                saveLastPosition()
                 val blueBorderDrawableId = R.drawable.blue_border
-                if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == true) {
+                if (overlayView.background.constantState?.equals(
+                        ContextCompat.getDrawable(
+                            this,
+                            blueBorderDrawableId
+                        )?.constantState
+                    ) == true
+                ) {
                     checkBboxBeforeSent()
-                    if (overlayView.background.constantState?.equals(ContextCompat.getDrawable(this, blueBorderDrawableId)?.constantState) == false) {
+                    if (overlayView.background.constantState?.equals(
+                            ContextCompat.getDrawable(
+                                this,
+                                blueBorderDrawableId
+                            )?.constantState
+                        ) == false
+                    ) {
                         Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
                     } else {
                         this.onDelivery()
@@ -122,50 +149,34 @@ class MapActivity : AppCompatActivity() {
                     Toast.makeText(this, date.text, Toast.LENGTH_SHORT).show()
                 }
             } else {
-                Toast.makeText(applicationContext, "יש ליישר את המפה בחזרה", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "יש ליישר את המפה בחזרה", Toast.LENGTH_LONG)
+                    .show()
             }
         }
 
 
-        val close = findViewById<Button>(R.id.close)
-        close.visibility = View.INVISIBLE
-
-        val back = findViewById<Button>(R.id.back)
-        back.setOnClickListener {
-            delivery.visibility = View.VISIBLE
-            close.visibility = View.VISIBLE
-            val backFrame = findViewById<View>(R.id.backFrame)
-            backFrame.visibility = View.VISIBLE
-            val blackBack = findViewById<View>(R.id.blackBack)
-            blackBack.visibility = View.VISIBLE
-            val backFrame2 = findViewById<View>(R.id.blackLabel)
-            backFrame2.visibility = View.VISIBLE
-            val backFrame3 = findViewById<View>(R.id.backFrame3)
-            backFrame3.visibility = View.VISIBLE
-            val backFrame4 = findViewById<View>(R.id.backFrame4)
-            backFrame4.visibility = View.VISIBLE
-            val frame = findViewById<FrameLayout>(R.id.overlayView)
-            frame.visibility = View.VISIBLE
-            back.visibility = View.INVISIBLE
-        }
-
-        close.setOnClickListener {
-            delivery.visibility = View.INVISIBLE
-            close.visibility = View.INVISIBLE
-            val backFrame = findViewById<View>(R.id.backFrame)
-            backFrame.visibility = View.INVISIBLE
-            val blackBack = findViewById<View>(R.id.blackBack)
-            blackBack.visibility = View.INVISIBLE
-            val backFrame2 = findViewById<View>(R.id.blackLabel)
-            backFrame2.visibility = View.INVISIBLE
-            val backFrame3 = findViewById<View>(R.id.backFrame3)
-            backFrame3.visibility = View.INVISIBLE
-            val backFrame4 = findViewById<View>(R.id.backFrame4)
-            backFrame4.visibility = View.INVISIBLE
-            val frame = findViewById<FrameLayout>(R.id.overlayView)
-            frame.visibility = View.INVISIBLE
-            back.visibility = View.VISIBLE
-        }
+//        val close = findViewById<Button>(R.id.close)
+//        close.visibility = View.INVISIBLE
+        delivery.visibility = View.VISIBLE
+//        close.visibility = View.VISIBLE
+//        val backFrame = findViewById<View>(R.id.backFrame)
+//        backFrame.visibility = View.VISIBLE
+//        val blackBack = findViewById<View>(R.id.blackBack)
+//        blackBack.visibility = View.VISIBLE
+//        val backFrame2 = findViewById<View>(R.id.blackLabel)
+//        backFrame2.visibility = View.VISIBLE
+//        val backFrame3 = findViewById<View>(R.id.backFrame3)
+//        backFrame3.visibility = View.VISIBLE
+//        val backFrame4 = findViewById<View>(R.id.backFrame4)
+//        backFrame4.visibility = View.VISIBLE
+        val frame = findViewById<FrameLayout>(R.id.overlayView)
+        frame.visibility = View.VISIBLE
+//
+//        close.setOnClickListener {
+//            val intent = Intent(this@MapActivity, MainActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//        }
 
         val mapSwitch = findViewById<View>(R.id.mapSwitch)
         mapSwitch.visibility = View.GONE
@@ -223,7 +234,7 @@ class MapActivity : AppCompatActivity() {
     private fun onDelivery() {
         Log.d(TAG, "onDelivery: ")
 
-        val pLeftTop =  getFourScreenPoints(wwd).leftTop
+        val pLeftTop = getFourScreenPoints(wwd).leftTop
         val pRightBottom = getFourScreenPoints(wwd).rightBottom
         val pRightTop = getFourScreenPoints(wwd).rightTop
         val pLeftBottom = getFourScreenPoints(wwd).leftBottom
@@ -250,9 +261,11 @@ class MapActivity : AppCompatActivity() {
             service.getDownloadedMaps().forEach { g ->
                 var endName = "בהורדה"
                 if (g.statusMsg == "הסתיים") {
-                    val jsonText = Gson().fromJson(g.getJson().toString(), MapDataMetaData::class.java)
+                    val jsonText =
+                        Gson().fromJson(g.getJson().toString(), MapDataMetaData::class.java)
                     val region = jsonText.region[0]
-                    endName = g.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z" + " " + region
+                    endName = g.fileName!!.substringAfterLast('_')
+                        .substringBefore('Z') + "Z" + " " + region
                 }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                     endName = g.statusMsg!!
@@ -329,6 +342,7 @@ class MapActivity : AppCompatActivity() {
                     addGeoPkg()
                     true
                 }
+
                 R.id.map_option2 -> {
                     // Handle option 2 click
                     wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
@@ -337,13 +351,18 @@ class MapActivity : AppCompatActivity() {
                     addGeoPkg()
                     true
                 }
+
                 else -> false
             }
         }
         popup.show()
     }
 
-    private fun createDownloadedPolygon(map: MapData, colorType: String , endName: String): Pair<Polygon, Label> {
+    private fun createDownloadedPolygon(
+        map: MapData,
+        colorType: String,
+        endName: String,
+    ): Pair<Polygon, Label> {
         val nums = map.footprint?.split(",") ?: ArrayList()
         val coords = ArrayList<Position>()
         for (i in 0 until nums.size - 1 step 2) {
@@ -385,7 +404,7 @@ class MapActivity : AppCompatActivity() {
     private fun attributes(type: String): ShapeAttributes {
         return ShapeAttributes().apply {
             outlineWidth = 5f
-            if (type == "green"){
+            if (type == "green") {
                 outlineColor = Color(0f, 1f, 0f, 1f)
             } else if (type == "red") {
                 outlineColor = Color(1f, 0f, 0f, 1f)
@@ -410,7 +429,8 @@ class MapActivity : AppCompatActivity() {
         textAttrs.textSize = 35.0F
         textAttrs.textColor = Color(0f, 1f, 0f, 1f)
         textAttrs.outlineWidth = 0F
-        textAttrs.textOffset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, -0.3)
+        textAttrs.textOffset =
+            Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, -0.3)
 
         return textAttrs
     }
@@ -418,7 +438,7 @@ class MapActivity : AppCompatActivity() {
     private fun checkBboxBeforeSent() {
         try {
             dMode = false
-            val pLeftTop =  getFourScreenPoints(wwd).leftTop
+            val pLeftTop = getFourScreenPoints(wwd).leftTop
             val pRightBottom = getFourScreenPoints(wwd).rightBottom
             val pRightTop = getFourScreenPoints(wwd).rightTop
             val pLeftBottom = getFourScreenPoints(wwd).leftBottom
@@ -443,7 +463,10 @@ class MapActivity : AppCompatActivity() {
             val date = findViewById<TextView>(R.id.dateText)
             val maxMb = service.config.maxMapSizeInMB.toInt()
             var downloadAble = false
-            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
+            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(
+                pLeftTop,
+                pLeftBottom
+            ) / 1000)
             val formattedNum = String.format("%.2f", area)
             showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
 
@@ -464,7 +487,8 @@ class MapActivity : AppCompatActivity() {
                             detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
                         }
                     } else if (type == "MultiPolygon") {
-                        val productMultiPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
+                        val productMultiPolyDTO =
+                            gson.fromJson(p.footprint, MultiPolygonDto::class.java)
                         productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
                             polyCoordinates.forEach { coordinates ->
                                 val points: List<Position> = coordinates.map {
@@ -542,7 +566,7 @@ class MapActivity : AppCompatActivity() {
                 val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
                 val intersection = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
                 if (intersection != null) {
-                    val intersectionArea =  GeometryEngine.area(intersection)
+                    val intersectionArea = GeometryEngine.area(intersection)
                     val boxArea = calculatePolygonArea(boxCoordinates)
                     if (abs(intersectionArea) / abs(boxArea) > 0.0) {
                         downloadAble = false
@@ -556,7 +580,7 @@ class MapActivity : AppCompatActivity() {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
                 overlayView.setBackgroundResource(R.drawable.red_border)
-                if (inBbox){
+                if (inBbox) {
                     date.text = "בחר תיחום שאינו חותך בול קיים"
                 } else if (spaceMb > maxMb && downloadAble) {
                     date.text = "תיחום גדול מנפח מקסימלי להורדה"
@@ -579,29 +603,35 @@ class MapActivity : AppCompatActivity() {
         return unionPolygon
     }
 
-    private fun calculateMB(formattedNum : String,  resolution: BigDecimal): Int {
+    private fun calculateMB(formattedNum: String, resolution: BigDecimal): Int {
         var mb = 0
-        mb = if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
-            (formattedNum.toDouble() * 9.5).toInt()
-        } else if (resolution.toDouble() == 2.6822E-6) {
-            (formattedNum.toDouble() * 4.5).toInt()
-        } else if (resolution.toDouble() == 5.36441E-6) {
-            (formattedNum.toDouble() * 2.5).toInt()
-        } else {
-            (formattedNum.toDouble() * 65.9 - 54.4).toInt()
-        }
+        mb =
+            if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
+                (formattedNum.toDouble() * 9.5).toInt()
+            } else if (resolution.toDouble() == 2.6822E-6) {
+                (formattedNum.toDouble() * 4.5).toInt()
+            } else if (resolution.toDouble() == 5.36441E-6) {
+                (formattedNum.toDouble() * 2.5).toInt()
+            } else {
+                (formattedNum.toDouble() * 65.9 - 54.4).toInt()
+            }
 
         return mb
     }
 
-    private fun detectPolygon(map: DiscoveryItem, points:  List<Position>, polygonBoxEsri: com.arcgismaps.geometry.Polygon, boxCoordinates: MutableList<Position>) {
+    private fun detectPolygon(
+        map: DiscoveryItem,
+        points: List<Position>,
+        polygonBoxEsri: com.arcgismaps.geometry.Polygon,
+        boxCoordinates: MutableList<Position>,
+    ) {
         val polygonPoints = points.map { Point(it.longitude, it.latitude) }
 
         val polygonEsri = com.arcgismaps.geometry.Polygon(polygonPoints)
 
         val intersection = GeometryEngine.intersectionOrNull(polygonEsri, polygonBoxEsri)
         if (intersection != null) {
-            val intersectionArea =  GeometryEngine.area(intersection)
+            val intersectionArea = GeometryEngine.area(intersection)
             val boxArea = calculatePolygonArea(boxCoordinates)
             val firstOffsetDateTime = map.imagingTimeBeginUTC
             val sdf = DateTimeFormatter.ofPattern("dd-MM-yyyy")
@@ -610,7 +640,14 @@ class MapActivity : AppCompatActivity() {
             val secondDate = sdf.format(secondOffsetDateTime)
 
             if (abs(intersectionArea) / abs(boxArea) > 0.0) {
-                val polyObject = PolyObject(map.ingestionDate, abs(intersectionArea), firstDate, secondDate, map.maxResolutionDeg, intersection)
+                val polyObject = PolyObject(
+                    map.ingestionDate,
+                    abs(intersectionArea),
+                    firstDate,
+                    secondDate,
+                    map.maxResolutionDeg,
+                    intersection
+                )
                 allPolygon.add(polyObject)
             }
         }
@@ -634,7 +671,10 @@ class MapActivity : AppCompatActivity() {
         return radius * c
     }
 
-    private fun intersectionOrNullNasa(polygon1: List<Position>, polygon2: List<Position>): List<Position>? {
+    private fun intersectionOrNullNasa(
+        polygon1: List<Position>,
+        polygon2: List<Position>,
+    ): List<Position>? {
         for (point in polygon1) {
             if (pointInPolygon(point, polygon2)) {
                 return polygon1
@@ -694,8 +734,16 @@ class MapActivity : AppCompatActivity() {
         return FourScreenPoints(pLeftTop, pRightBottom, pRightTop, pLeftBottom)
     }
 
+    private fun saveLastPosition() {
+        val gson = Gson()
+        val jsonString = gson.toJson(wwd.navigator)
+        sharedPreferencesEditor?.putString("last_navigator", jsonString)?.apply()
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        saveLastPosition()
+        Log.e(TAG, "onBackPressed: ${sharedPreferences?.getString("last_navigator", "No data")}")
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
@@ -708,7 +756,7 @@ class MapActivity : AppCompatActivity() {
         wwd.requestRedraw()
     }
 
-    open inner class PickNavigateController (val context: AppCompatActivity) :
+    open inner class PickNavigateController(val context: AppCompatActivity) :
         BasicWorldWindowController() {
 
         override fun handleRotate(recognizer: GestureRecognizer?) {

@@ -35,39 +35,13 @@
     </FrameLayout>
 
 
-    <Button
-        android:id="@+id/back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="350dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginBottom="5dp"
-        android:text="בחר תיחום"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/mapView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/overlayView" />
-
-    <Button
-        android:id="@+id/deliver"
-        android:layout_width="144dp"
-        android:layout_height="49dp"
-        android:layout_marginStart="170dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginBottom="5dp"
-        android:text="הורדה"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/blackBack"
-        app:layout_constraintTop_toBottomOf="@+id/overlayView" />
 
     <ImageButton
         android:id="@+id/arrow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="22dp"
         android:background="@drawable/arrow"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -79,138 +53,163 @@
         android:layout_marginStart="15dp"
         android:layout_marginTop="5dp"
         android:background="@drawable/simplemap"
-        app:layout_constraintStart_toStartOf="@+id/backFrame"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/arrow"
         tools:visibility="gone" />
 
-    <Switch
-        android:id="@+id/control"
-        android:layout_width="wrap_content"
+
+    <!--    <Button-->
+    <!--        android:id="@+id/close"-->
+    <!--        android:layout_width="144dp"-->
+    <!--        android:layout_height="49dp"-->
+    <!--        android:layout_marginTop="100dp"-->
+    <!--        android:layout_marginEnd="180dp"-->
+    <!--        android:layout_marginBottom="5dp"-->
+    <!--        android:text="סגירה"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/mapView"-->
+    <!--        app:layout_constraintEnd_toEndOf="@+id/blackBack"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/overlayView" />-->
+
+    <!--    <FrameLayout-->
+    <!--        android:id="@+id/blackBack"-->
+    <!--        android:layout_width="415dp"-->
+    <!--        android:layout_height="110dp"-->
+    <!--        android:layout_marginTop="100dp"-->
+    <!--        android:background="#000000"-->
+    <!--        android:visibility="invisible"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/overlayView">-->
+
+    <!--    </FrameLayout>-->
+
+<!--    <FrameLayout-->
+<!--        android:id="@+id/backFrame"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:background="@color/zxing_transparent"-->
+<!--        android:visibility="invisible"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/overlayView"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/mapView">-->
+
+<!--    </FrameLayout>-->
+
+    <!--    <FrameLayout-->
+    <!--        android:id="@+id/blackLabel"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:background="#80000000"-->
+    <!--        android:visibility="invisible"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/overlayView">-->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="15dp"
-        android:text=" שליטה"
-        app:layout_constraintEnd_toEndOf="@+id/backFrame"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/overlayView"
+        android:layout_marginBottom="92dp">
+
+        <TextView
+            android:id="@+id/dateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/kmShow" />
+
+        <TextView
+            android:id="@+id/showMb"
+            android:layout_width="175dp"
+            android:layout_height="21dp"
+            android:layout_marginTop="5dp"
+            android:paddingRight="100px"
+            android:text="נפח משוער : מחשב נפח"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/kmShow"
+            android:layout_width="225dp"
+            android:layout_height="23dp"
+            android:layout_marginTop="5dp"
+            android:paddingRight="100px"
+            android:text="שטח נבחר : מחשב שטח"
+            android:textAlignment="viewEnd"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    </FrameLayout>-->
+
+<!--    <FrameLayout-->
+<!--        android:id="@+id/backFrame3"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:background="@color/zxing_transparent"-->
+<!--        android:visibility="invisible"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/overlayView"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/overlayView"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/overlayView">-->
+
+<!--    </FrameLayout>-->
+
+<!--    <FrameLayout-->
+<!--        android:id="@+id/backFrame4"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:background="@color/zxing_transparent"-->
+<!--        android:visibility="invisible"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/overlayView"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/overlayView"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/overlayView">-->
+
+<!--    </FrameLayout>-->
 
     <Button
-        android:id="@+id/close"
-        android:layout_width="144dp"
-        android:layout_height="49dp"
+        android:id="@+id/deliver"
+        android:layout_width="103dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="170dp"
         android:layout_marginTop="100dp"
-        android:layout_marginEnd="180dp"
+        android:layout_marginRight="50dp"
         android:layout_marginBottom="5dp"
-        android:text="סגירה"
+        android:background="@drawable/rounded_grey"
+        android:text="הורדה"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/overlayView" />
+    <!--        app:layout_constraintStart_toStartOf="@+id/blackBack"-->
+
+    <Switch
+        android:id="@+id/control"
+        android:layout_width="103dp"
+        android:layout_height="52dp"
+        android:layout_marginLeft="-50dp"
+        android:layout_marginTop="90dp"
+        android:background="@drawable/rounded_grey"
+        android:text=" שליטה"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
-        app:layout_constraintEnd_toEndOf="@+id/blackBack"
+        app:layout_constraintEnd_toStartOf="@+id/deliver"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/overlayView" />
 
-    <FrameLayout
-        android:id="@+id/blackBack"
-        android:layout_width="415dp"
-        android:layout_height="110dp"
-        android:layout_marginTop="100dp"
-        android:background="#000000"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/overlayView">
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/backFrame"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#80000000"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/overlayView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/mapView">
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/blackLabel"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#80000000"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/overlayView">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/dateText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/kmShow" />
-
-            <TextView
-                android:id="@+id/showMb"
-                android:layout_width="175dp"
-                android:layout_height="21dp"
-                android:layout_marginTop="5dp"
-                android:paddingRight="100px"
-                android:text="נפח משוער : מחשב נפח"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/kmShow"
-                android:layout_width="225dp"
-                android:layout_height="23dp"
-                android:layout_marginTop="5dp"
-                android:paddingRight="100px"
-                android:text="שטח נבחר : מחשב שטח"
-                android:textAlignment="viewEnd"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/backFrame3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#80000000"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/overlayView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/overlayView"
-        app:layout_constraintTop_toTopOf="@+id/overlayView">
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/backFrame4"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#80000000"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/overlayView"
-        app:layout_constraintEnd_toStartOf="@+id/overlayView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/overlayView">
-
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -289,8 +289,8 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
-                holder.textFileName.text = "ההורדה נעצרה"
-                holder.textStatus.text = "נעצר: ההורדה תמשיך מנקודת העצירה"
+                holder.textFileName.text = "ההורדה בהשהייה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
