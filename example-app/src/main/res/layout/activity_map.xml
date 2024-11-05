@@ -116,7 +116,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/overlayView"
-        android:layout_marginBottom="92dp">
+        android:layout_marginBottom="150dp">
 
         <TextView
             android:id="@+id/dateText"
@@ -124,6 +124,7 @@
             android:layout_height="wrap_content"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/kmShow" />
@@ -133,10 +134,10 @@
             android:layout_width="175dp"
             android:layout_height="21dp"
             android:layout_marginTop="5dp"
+            android:textSize="15sp"
             android:paddingRight="100px"
             android:text="נפח משוער : מחשב נפח"
             android:textColor="#FFFFFF"
-            android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -149,7 +150,7 @@
             android:text="שטח נבחר : מחשב שטח"
             android:textAlignment="viewEnd"
             android:textColor="#FFFFFF"
-            android:textSize="12sp"
+            android:textSize="15sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -192,7 +193,7 @@
         android:layout_marginRight="50dp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/rounded_grey"
-        android:text="הורדה"
+        android:text="הורד"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/overlayView" />

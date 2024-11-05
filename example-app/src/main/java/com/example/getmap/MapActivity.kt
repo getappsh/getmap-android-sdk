@@ -91,23 +91,26 @@ class MapActivity : AppCompatActivity() {
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
-        val lastNavigator = sharedPreferences?.getString("last_navigator","no data")
-        if (lastNavigator != null){
+        val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
+        if (lastNavigator != null) {
             val gson = Gson()
             val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
             wwd.navigator = newNavigator
-        }else{
+            wwd.postDelayed({
+                simulateTouch(wwd.x, wwd.y) // Coordonnées x et y pour le toucher simulé
+            }, 50)
+        } else {
 
-        val lookAt = LookAt().set(
-            31.31,
-            35.10,
-            0.0,
-            WorldWind.ABSOLUTE,
-            630000.0,
-            0.0,
-            0.0,
-            0.0
-        )
+            val lookAt = LookAt().set(
+                31.31,
+                35.10,
+                0.0,
+                WorldWind.ABSOLUTE,
+                630000.0,
+                0.0,
+                0.0,
+                0.0
+            )
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
         }
         val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
@@ -513,8 +516,10 @@ class MapActivity : AppCompatActivity() {
                     showBm.text = "נפח משוער :${spaceMb} מ\"ב"
                     if (polygon.end == polygon.start) {
                         date.text = "צולם : ${polygon.end}"
+                        date.textSize = 15F
                     } else {
                         date.text = "צולם : ${polygon.end} - ${polygon.start}"
+                        date.textSize = 15F
                     }
                     found = true
                     downloadAble = true
@@ -582,10 +587,13 @@ class MapActivity : AppCompatActivity() {
                 overlayView.setBackgroundResource(R.drawable.red_border)
                 if (inBbox) {
                     date.text = "בחר תיחום שאינו חותך בול קיים"
+                    date.textSize = 15F
                 } else if (spaceMb > maxMb && downloadAble) {
                     date.text = "תיחום גדול מנפח מקסימלי להורדה"
+                    date.textSize = 15F
                 } else {
                     date.text = "אין תוצר עדכני באזור זה"
+                    date.textSize = 15F
                     showKm.text = "שטח משוער :אין נתון"
                     showBm.text = "נפח משוער :אין נתון"
                 }
@@ -732,6 +740,34 @@ class MapActivity : AppCompatActivity() {
         val pLeftBottom = wwd.pick(100f, 550f).terrainPickedObject().terrainPosition
 
         return FourScreenPoints(pLeftTop, pRightBottom, pRightTop, pLeftBottom)
+    }
+
+
+    private fun simulateTouch(x: Float, y: Float) {
+
+        val downEvent = MotionEvent.obtain(
+            System.currentTimeMillis(),
+            System.currentTimeMillis(),
+            MotionEvent.ACTION_DOWN,
+            x,
+            y,
+            0
+        )
+        wwd.dispatchTouchEvent(downEvent)
+
+        val upEvent = MotionEvent.obtain(
+            System.currentTimeMillis(),
+            System.currentTimeMillis(),
+            MotionEvent.ACTION_UP,
+            x,
+            y,
+            0
+        )
+        wwd.dispatchTouchEvent(upEvent)
+
+        // Free the events for memory leaks
+        downEvent.recycle()
+        upEvent.recycle()
     }
 
     private fun saveLastPosition() {
