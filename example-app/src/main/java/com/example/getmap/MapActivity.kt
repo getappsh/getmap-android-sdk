@@ -106,11 +106,11 @@ class MapActivity : AppCompatActivity() {
         } else {
 
             val lookAt = LookAt().set(
-                31.31,
-                35.10,
+                31.75,
+                34.85,
                 0.0,
                 WorldWind.ABSOLUTE,
-                530000.0,
+                300000.0,
                 0.0,
                 0.0,
                 0.0
@@ -189,24 +189,32 @@ class MapActivity : AppCompatActivity() {
         mapSwitch.visibility = View.GONE
 
         val controlSwitch = findViewById<Switch>(R.id.control)
+        val controlText = findViewById<TextView>(R.id.controlText)
+        controlText.setOnClickListener {
+            controlSwitch.isChecked = !controlSwitch.isChecked
+            controlSwitch(controlSwitch.isChecked)
+        }
         controlSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                geoPackageName = service.config.controlMapPath.toString()
-                addGeoPkg()
-            } else {
-                // Optionally remove the BlueMarble layer or handle switch off action
-                val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
-                if (blueMarbleLayer == -1) {
-                    return@setOnCheckedChangeListener
-                } else {
-                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
-                    wwd.requestRedraw()
-                }
-            }
+            controlSwitch(isChecked)
         }
 
-
         drawPolygons()
+    }
+
+    private fun controlSwitch(isChecked:Boolean){
+        if (isChecked) {
+            geoPackageName = service.config.controlMapPath.toString()
+            addGeoPkg()
+        } else {
+            // Optionally remove the BlueMarble layer or handle switch off action
+            val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
+            if (blueMarbleLayer == -1) {
+                return
+            } else {
+                wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
+                wwd.requestRedraw()
+            }
+        }
     }
 
     private fun addGeoPkg() {
@@ -783,7 +791,7 @@ class MapActivity : AppCompatActivity() {
         if (isFromDownload) {
             lookAt.range += 1000
         }
-        jsonStringLookat =  gson.toJson(lookAt)
+        jsonStringLookat = gson.toJson(lookAt)
         sharedPreferencesEditor?.putString("LookAt", jsonStringLookat)?.apply()
 
         val jsonString = gson.toJson(wwd.navigator)

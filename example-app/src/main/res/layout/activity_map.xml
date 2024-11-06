@@ -55,6 +55,7 @@
         android:layout_marginBottom="5dp"
         android:background="@drawable/rounded_grey"
         android:text="הורד"
+        android:textSize="16.5sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/overlayView" />
@@ -68,6 +69,7 @@
         android:layout_marginBottom="5dp"
         android:background="@drawable/rounded_grey"
         android:text="סגירה"
+        android:textSize="16.5sp"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="@+id/blackBack"
         app:layout_constraintStart_toStartOf="parent"
@@ -192,17 +194,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Switch
-        android:id="@+id/control"
-        android:layout_width="100dp"
-        android:layout_height="49dp"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="38dp"
+        android:layout_marginRight="12dp"
         android:layout_marginLeft="190dp"
-        android:layout_marginTop="45dp"
-        android:background="@drawable/rounded_grey"
-        android:text=" שליטה"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/arrow"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Switch
+            android:id="@+id/control"
+            android:layout_width="wrap_content"
+            android:layout_height="49dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="-5dp"/>
+
+        <TextView
+            android:id="@+id/controlText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16.5sp"
+            android:layout_marginRight="20dp"
+            android:text="שליטה"
+            android:textColor="@color/white"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp" /> <!-- Optional spacing between Switch and Text -->
+
+    </LinearLayout>
+
+
 
     <!--        app:layout_constraintStart_toStartOf="@+id/blackBack"-->
 
