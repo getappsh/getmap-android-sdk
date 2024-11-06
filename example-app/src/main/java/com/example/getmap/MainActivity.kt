@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.internal.notifyAll
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
@@ -83,6 +84,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     private var imeiEven = ""
+
     companion object {
         var count = 0
     }
@@ -131,7 +133,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             StrictMode.setThreadPolicy(policy)
 
             sdkAirWatchSdkManager.startRetrying()
-            var serialNumber: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "serialNumber").toString()
+            var serialNumber: String? =
+                getSharedPreferences("wit_player_shared_preferences", 0).getString(
+                    "serialNumber",
+                    "serialNumber"
+                ).toString()
             Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
 
             val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
@@ -140,7 +146,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 try {
                     imeiEven = sdkAirWatchSdkManager.imei
                     imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
-                } catch (e : Exception) {
+                } catch (e: Exception) {
                     Log.d("Error", "Error getting Imei")
                     Log.d("Error", e.toString())
                 }
@@ -276,7 +282,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -320,7 +327,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Log.i(TAG, "scanQRButton Clicked")
             try {
                 Pref.getInstance(this).checkDeviceIdAvailability()
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                TODO show missing imei dialog
             }
             CoroutineScope(Dispatchers.Main).launch {
@@ -333,7 +340,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     barcodeLauncher.launch(ScanOptions())
                     TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -350,7 +358,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             finish()
         }
 
-        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+        registerReceiver(
+            SystemTestReceiver,
+            IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
+        )
 
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
         deleteFail.visibility = View.INVISIBLE
@@ -486,7 +497,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    discoveryDialogPicker(products)
 
                 }
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //            TODO show missing imei dialog
             } catch (e: Exception) {
                 // Handle any exceptions here
@@ -503,6 +514,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
     }
+
     private fun formatBytes(bytes: Long): String {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         var size = bytes.toDouble()
@@ -661,12 +673,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
         popUp.mapId = id
         popUp.type = "cancelled"
-        popUp.textM = "האם לעצור את ההורדה ?"
+        popUp.textM = "האם להשהות את ההורדה ?"
         popUp.tracker = tracker
+        popUp.recyclerView = recyclerView
         if (count == 0) {
             count += 1
             popUp.show(supportFragmentManager, "cancelled")
         }
+            recyclerView.adapter?.notifyDataSetChanged()
 //        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
 //        GlobalScope.launch(Dispatchers.IO) {
 //            mapServiceManager.service.cancelDownload(id)
@@ -693,9 +707,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             try {
                 val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
-                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
-                    val region = jsonText.region[0]
-                    val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val region = jsonText.region[0]
+                val name = region + "-" + map?.fileName?.substringAfterLast('_')
+                    ?.substringBefore('Z') + "Z"
                 runOnUiThread {
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
@@ -705,10 +721,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
-                val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
+                val name = region + "-" + map?.fileName?.substringAfterLast('_')
+                    ?.substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                    .event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
                     .with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
@@ -721,7 +741,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             try {
                 mapServiceManager.service.downloadUpdatedMap(id)
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
             }
         }
@@ -875,7 +895,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
-                }catch(e: MissingIMEIException){
+                } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
                 } catch (e: Exception) {
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
