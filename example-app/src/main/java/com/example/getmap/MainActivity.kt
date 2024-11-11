@@ -52,6 +52,7 @@ import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     private var imeiEven = ""
+
     companion object {
         var count = 0
     }
@@ -130,7 +132,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             StrictMode.setThreadPolicy(policy)
 
             sdkAirWatchSdkManager.startRetrying()
-            var serialNumber: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "serialNumber").toString()
+            var serialNumber: String? =
+                getSharedPreferences("wit_player_shared_preferences", 0).getString(
+                    "serialNumber",
+                    "serialNumber"
+                ).toString()
             Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
 
             val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
@@ -139,7 +145,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 try {
                     imeiEven = sdkAirWatchSdkManager.imei
                     imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
-                } catch (e : Exception) {
+                } catch (e: Exception) {
                     Log.d("Error", "Error getting Imei")
                     Log.d("Error", e.toString())
                 }
@@ -275,7 +281,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -325,7 +332,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     barcodeLauncher.launch(ScanOptions())
                     TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -342,7 +350,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             finish()
         }
 
-        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+        registerReceiver(
+            SystemTestReceiver,
+            IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
+        )
 
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
         deleteFail.visibility = View.INVISIBLE
@@ -350,8 +361,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
+            TrackHelper.track().screen("/מחיקת תקולים").with(tracker)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
             dialogBuilder.setPositiveButton("כן") { _, _ ->
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
+                    .with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     mapServiceManager.service.getDownloadedMaps().forEach { map ->
                         if (map.statusMsg == "נכשל") {
@@ -654,7 +669,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + "-" +
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
             } else {
@@ -668,9 +683,24 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onResume(id: String) {
-        TrackHelper.track()
-            .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
-            .with(tracker)
+        GlobalScope.launch(Dispatchers.IO) {
+
+            val map = mapServiceManager.service.getDownloadedMap(id)
+            if (map?.deliveryState == MapDeliveryState.ERROR) {
+                TrackHelper.track()
+//                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
+                    .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
+                    .with(tracker)
+            } else {
+            val endName = map?.getJson()?.getJSONArray("region")?.get(0).toString() +
+                    map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
+                    .event("מיפוי ענן", "ניהול בקשות").name("חידוש הורדה")
+                    .with(tracker)
+
+            }
+        }
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.resumeDownload(id)
         }
@@ -723,9 +753,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             try {
                 val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
-                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
-                    val region = jsonText.region[0]
-                    val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val region = jsonText.region[0]
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                 runOnUiThread {
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
@@ -735,10 +767,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
-                val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                    .event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
                     .with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }

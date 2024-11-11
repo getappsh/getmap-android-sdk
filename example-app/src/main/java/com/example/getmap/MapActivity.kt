@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
+import com.example.getmap.matomo.MatomoTracker
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -55,6 +56,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.matomo.sdk.Tracker
+import org.matomo.sdk.extra.TrackHelper
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
@@ -80,7 +83,8 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
-
+        val tracker: Tracker?
+        tracker = MatomoTracker.getTracker(this)
 
         sharedPreferences = baseContext.getSharedPreferences("navigator", Context.MODE_PRIVATE)
         sharedPreferencesEditor = sharedPreferences?.edit()
@@ -131,6 +135,20 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
+                val pLeftTop = getFourScreenPoints(wwd).leftTop
+                val pRightBottom = getFourScreenPoints(wwd).rightBottom
+                val pRightTop = getFourScreenPoints(wwd).rightTop
+                val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+                val latlonpLeftTop = pLeftTop.latitude.toString() + " " + pLeftTop.longitude.toString()
+                val latlonpLeftBottom = pLeftBottom.latitude.toString() + " " + pLeftBottom.longitude.toString()
+                val latlonpRightTop = pRightTop.latitude.toString() + " " + pRightTop.longitude.toString()
+                val latlonpRightBottom = pRightBottom.latitude.toString() + " " + pRightBottom.longitude.toString()
+                val generalLatLon =
+                    "$latlonpLeftTop $latlonpRightTop $latlonpRightBottom $latlonpLeftBottom"
+                TrackHelper.track()
+                    .dimension(service.config.matomoDimensionId.toInt(), generalLatLon)
+                    .event("מיפוי ענן", "ניהול בקשות").name("בקשה להורדת בול")
+                    .with(tracker)
                 saveLastPosition(true)
                 val blueBorderDrawableId = R.drawable.blue_border
                 if (overlayView.background.constantState?.equals(
@@ -192,20 +210,27 @@ class MapActivity : AppCompatActivity() {
         val controlText = findViewById<TextView>(R.id.controlText)
         controlText.setOnClickListener {
             controlSwitch.isChecked = !controlSwitch.isChecked
-            controlSwitch(controlSwitch.isChecked)
         }
         controlSwitch.setOnCheckedChangeListener { _, isChecked ->
-            controlSwitch(isChecked)
+            controlSwitch(isChecked, tracker)
         }
 
         drawPolygons()
     }
 
-    private fun controlSwitch(isChecked:Boolean){
+    private fun controlSwitch(isChecked:Boolean, tracker: Tracker){
         if (isChecked) {
+            TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
+                .name("הצגת מפת שליטה")
+                .with(tracker)
             geoPackageName = service.config.controlMapPath.toString()
             addGeoPkg()
         } else {
+
+            TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
+                .name("הסתרת מפת שליטה")
+                .with(tracker)
+
             // Optionally remove the BlueMarble layer or handle switch off action
             val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
             if (blueMarbleLayer == -1) {

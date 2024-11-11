@@ -228,15 +228,13 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime =
                     localDateTime.minus(Duration.ofSeconds(1))
-                val name = region + "-" + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                val coordinates = downloadData.footprint
+                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 if (downloadData.downloadDone!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
                     TrackHelper.track()
                         .dimension(manager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
-
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.VISIBLE
@@ -258,7 +256,8 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה : ${downloadData.statusDescr} בבול : $name").with(tracker)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -289,6 +288,8 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
                 holder.textFileName.text = "ההורדה בהשהייה"
                 holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE

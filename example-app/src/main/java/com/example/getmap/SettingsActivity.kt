@@ -74,10 +74,21 @@ class SettingsActivity : AppCompatActivity() {
         applyServerConfig.isEnabled = false
         applyServerConfig.isChecked = service.config.applyServerConfig
         applyServerConfig.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "שינוי הגדרות").name("הדלקת הגדרות שרת")
+                    .with(tracker)
+            }else{
+                TrackHelper.track()
+                    .event("מיפוי ענן", "שינוי הגדרות").name("כיבוי הגדרות שרת")
+                    .with(tracker)
+            }
             service.config.applyServerConfig = isChecked
         }
 
         testButton.setOnClickListener {
+            TrackHelper.track().screen("בדיקת תקינות")
+                .with(tracker)
             val intent = Intent(this,SystemTestActivity::class.java)
             startActivity(intent)
         }
@@ -109,7 +120,7 @@ class SettingsActivity : AppCompatActivity() {
                     hasChanged.forEach { e ->
                         TrackHelper.track()
                             .event("מיפוי ענן", "שינוי הגדרות")
-                            .name(" נתונים השתנו ב${e.key}")
+                            .name("${e.key} = ${e.value}")
                             .with(tracker)
                     }
                 }
@@ -141,7 +152,7 @@ class SettingsActivity : AppCompatActivity() {
         val refreshButton = findViewById<ImageButton>(R.id.refresh_button_conf)
         refreshButton.setOnClickListener {
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
-                .name("רענון הגדרות")
+                .name("רענון")
                 .with(tracker)
             rotateInfinitely(refreshButton)
             refreshButton.isEnabled = false
