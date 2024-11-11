@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import com.example.getmap.matomo.MatomoTracker
 import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.SystemTest
@@ -12,8 +13,13 @@ import com.ngsoft.getapp.sdk.exceptions.VpnClosedException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.matomo.sdk.Tracker
+import org.matomo.sdk.extra.TrackHelper
 
 class SystemTestActivity : AppCompatActivity() {
+
+
+    private lateinit var tracker: Tracker;
 
     private lateinit var testDiscoveryIcon: ImageView
     private lateinit var testDiscoveryName: TextView
@@ -43,6 +49,8 @@ class SystemTestActivity : AppCompatActivity() {
             BuildConfig.PASSWORD,
             16,
             null)
+
+        tracker = MatomoTracker.getTracker(this)
 
         val systemTest = SystemTest.getInstance(this, cfg)
 
@@ -89,6 +97,27 @@ class SystemTestActivity : AppCompatActivity() {
         updateTestResult(testDownloadIcon, testDownloadName, testReport[SystemTest.TEST_DOWNLOAD])
         updateTestResult(testFileMoveIcon, testFileMoveName, testReport[SystemTest.TEST_FILE_MOVE])
         updateTestResult(testInventoryUpdatesIcon, testInventoryUpdatesName, testReport[SystemTest.TEST_INVENTORY_UPDATES])
+
+        if (testReport[SystemTest.TEST_DISCOVERY]?.success == false){
+//            בחירת תחום failed
+//            TrackHelper.track().event("some event").with(tracker);
+
+        }
+        if (testReport[SystemTest.TEST_CONFIG]?.success == false){
+//            קבלת קונפיגורציה failed
+        }
+        if (testReport[SystemTest.TEST_IMPORT]?.success == false){
+//            הפקת מפה failed
+        }
+        if (testReport[SystemTest.TEST_DOWNLOAD]?.success == false){
+//            הורדת מפה failed
+        }
+        if (testReport[SystemTest.TEST_FILE_MOVE]?.success == false){
+//            העברת קבצים failed
+        }
+        if (testReport[SystemTest.TEST_INVENTORY_UPDATES]?.success == false){
+//            סטטוס עדכנוית מפות failed
+        }
     }
 
     private fun updateTestResult(iconImageView: ImageView, testNameTextView: TextView, testResult: SystemTest.TestResults?) {
