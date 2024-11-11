@@ -176,7 +176,7 @@ class DownloadListAdapter(
         } else {
             val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
             val stopDate = downloadData.downloadStop
-            val startDate = downloadData.downloadStart
+            val startDate = downloadData.reqDate
             if (downloadData.statusMsg == "בהורדה" || downloadData.statusMsg == "בקשה בהפקה" || downloadData.statusMsg == "בקשה נשלחה") {
                 val a = sdf.format(startDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
@@ -401,7 +401,7 @@ class DownloadListAdapter(
 
     override fun getItemCount(): Int {
         val sortList = asyncListDiffer.currentList.sortedByDescending {
-            it.downloadStart ?: OffsetDateTime.MIN
+            it.reqDate
         }
         return sortList.size
     }
@@ -412,22 +412,19 @@ class DownloadListAdapter(
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun deliveryDate(manager: MapServiceManager, downloadData: MapData, holder: ViewHolder) {
+//        TODO Way is needed to get reqDate from db, downloadData already has it?
         CoroutineScope(Dispatchers.IO).launch {
-            manager.service.getDownloadedMaps().forEach { i ->
+            val text: String
+            val map = downloadData.id?.let { manager.service.getDownloadedMap(it) }
+            if (map == null){
+                text = "תאריך בקשה: לא ידוע"
+            }else{
                 val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                if (i.id == downloadData.id) {
-                    val firstOffsetDateTime = downloadData.downloadStart
-                    if (firstOffsetDateTime != null) {
-                        val a = sdf.format(firstOffsetDateTime)
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך בקשה: ${a}"
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך בקשה: לא ידוע"
-                        }
-                    }
-                }
+                val strDate = sdf.format(map.reqDate);
+                text = "תאריך בקשה: ${strDate}"
+            }
+            withContext(Dispatchers.Main) {
+                holder.demandDate.text = text
             }
         }
     }

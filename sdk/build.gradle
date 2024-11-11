@@ -27,6 +27,7 @@ android {
         buildConfigField "String", "PASSWORD", "\""+getPropertyFromFile("PASSWORD")+"\""
         buildConfigField "String", "BASE_URL", "\""+getPropertyFromFile("BASE_URL")+"\""
         buildConfigField "boolean", "USE_MAP_CACHE", ""+getPropertyFromFile("USE_MAP_CACHE")+""
+        buildConfigField "String", "DEPLOY_ENV", "\"${findProperty('deployEnv') ?: 'pub'}\""
 
         ksp {
             arg('room.schemaLocation', "$projectDir/schemas")

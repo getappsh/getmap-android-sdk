@@ -29,6 +29,7 @@ import com.arcgismaps.geometry.Point
 import com.example.getmap.matomo.MatomoTracker
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.GetMapService
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -285,8 +286,13 @@ class MapActivity : AppCompatActivity() {
                 "${pLeftTop.longitude},${pLeftTop.latitude},${pRightTop.longitude},${pRightTop.latitude},${pRightBottom.longitude},${pRightBottom.latitude},${pLeftBottom.longitude},${pLeftBottom.latitude},${pLeftTop.longitude},${pLeftTop.latitude}",
                 false
             )
-            val id = service.downloadMap(props)
-            Log.d(TAG, "onDelivery: after download map have been called, id: $id")
+            try{
+
+                val id = service.downloadMap(props)
+                Log.d(TAG, "onDelivery: after download map have been called, id: $id")
+            }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+            }
         }
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)

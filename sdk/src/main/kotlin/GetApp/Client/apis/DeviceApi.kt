@@ -21,6 +21,7 @@ import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeviceContentResDto
 import GetApp.Client.models.DeviceDto
+import GetApp.Client.models.DeviceIMEI
 import GetApp.Client.models.DeviceMapDto
 import GetApp.Client.models.DeviceRegisterDto
 
@@ -112,6 +113,77 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/device/info/installed/{deviceId}".replace("{"+"deviceId"+"}", encodeURIComponent(deviceId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Get Device IMEI
+     * This service message allows receiving device IMEI by providing serial-number
+     * @param serialNumber 
+     * @return DeviceIMEI
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun deviceControllerGetDeviceIMEI(serialNumber: kotlin.String) : DeviceIMEI {
+        val localVarResponse = deviceControllerGetDeviceIMEIWithHttpInfo(serialNumber = serialNumber)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as DeviceIMEI
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Get Device IMEI
+     * This service message allows receiving device IMEI by providing serial-number
+     * @param serialNumber 
+     * @return ApiResponse<DeviceIMEI?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun deviceControllerGetDeviceIMEIWithHttpInfo(serialNumber: kotlin.String) : ApiResponse<DeviceIMEI?> {
+        val localVariableConfig = deviceControllerGetDeviceIMEIRequestConfig(serialNumber = serialNumber)
+
+        return request<Unit, DeviceIMEI>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deviceControllerGetDeviceIMEI
+     *
+     * @param serialNumber 
+     * @return RequestConfig
+     */
+    fun deviceControllerGetDeviceIMEIRequestConfig(serialNumber: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/device/imei/{serialNumber}".replace("{"+"serialNumber"+"}", encodeURIComponent(serialNumber.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

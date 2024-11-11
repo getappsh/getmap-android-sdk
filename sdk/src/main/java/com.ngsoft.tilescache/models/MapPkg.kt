@@ -10,6 +10,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.tilescache.converters.MapDeliveryStateConverter
 import com.ngsoft.tilescache.converters.TimeStampConverter
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 data class DownloadMetadata(
@@ -70,5 +71,9 @@ data class MapPkg (
 ){
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
+
+//    @ColumnInfo(defaultValue = "strftime('%s', 'now')")
+    @TypeConverters(TimeStampConverter::class)
+    var reqDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
 }
 

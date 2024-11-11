@@ -59,6 +59,7 @@ class MatomoTracker private constructor(): ComponentCallbacks2{
             tracker.offlineCacheSize = 10 * 1024 * 1024 // 10 mb
             tracker.offlineCacheAge = 86400000 * 3 // 3 days
 //            tracker.setDispatchGzipped(true)
+            tracker.userId = pref.deviceId
 
             Log.d(TAG, "Matomo dispatchInterval: ${dispatchInterval},timeout: ${tracker.dispatchTimeout}, sessionTimeout: ${tracker.sessionTimeout}")
 

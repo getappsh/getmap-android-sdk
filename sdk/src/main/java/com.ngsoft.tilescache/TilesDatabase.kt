@@ -15,7 +15,7 @@ import com.ngsoft.tilescache.models.MapPkg
 import com.ngsoft.tilescache.models.TilePkg
 
 @Database(
-    version = 10,
+    version = 11,
     entities = [TilePkg::class, MapPkg::class],
 //    autoMigrations = [
 //        AutoMigration(from = 3, to = 4),
@@ -39,7 +39,7 @@ abstract class TilesDatabase : RoomDatabase() {
                     instance =  Room.databaseBuilder(ctx, TilesDatabase::class.java, "tiles-DB")
                         //no migration support currently. 4 migration see:
                         //https://developer.android.com/training/data-storage/room/migrating-db-versions
-                        .addMigrations(MIGRATION_4_5, MIGRATION_8_9)
+                        .addMigrations(MIGRATION_4_5, MIGRATION_8_9, MIGRATION_10_11)
                         .fallbackToDestructiveMigration()
                         .build()
                     INSTANCE = instance
@@ -58,6 +58,67 @@ abstract class TilesDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE MapPkg RENAME COLUMN statusMessage TO statusMsg");
                 database.execSQL("ALTER TABLE MapPkg RENAME COLUMN errorContent TO statusDescr");
 
+            }
+        }
+
+        private val MIGRATION_10_11 = object : Migration(10, 11){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+            CREATE TABLE MapPkg_temp (
+                pId TEXT NOT NULL,
+                bBox TEXT NOT NULL,
+                footprint TEXT,
+                flowState TEXT NOT NULL,
+                reqId TEXT,
+                JDID INTEGER,
+                MDID INTEGER,
+                state TEXT NOT NULL,
+                statusMsg TEXT NOT NULL,
+                fileName TEXT,
+                jsonName TEXT,
+                url TEXT,
+                path TEXT,
+                downloadProgress INTEGER NOT NULL,
+                statusDescr TEXT,
+                cancelDownload INTEGER NOT NULL,
+                downloadStart INTEGER,
+                downloadStop INTEGER,
+                downloadDone INTEGER,
+                isUpdated INTEGER NOT NULL DEFAULT 1,
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                validationAttempt INTEGER NOT NULL,
+                connectionAttempt INTEGER NOT NULL DEFAULT 0,
+                mapAttempt INTEGER NOT NULL DEFAULT 0,
+                mapDone INTEGER NOT NULL DEFAULT 0,
+                jsonAttempt INTEGER NOT NULL DEFAULT 0,
+                jsonDone INTEGER NOT NULL DEFAULT 0,
+                reqDate INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
+            )
+        """.trimIndent())
+
+                // Step 2: Copy data from the original table to the temporary table
+                database.execSQL("""
+            INSERT INTO MapPkg_temp (
+                pId, bBox, footprint, flowState, reqId, JDID, MDID, state, statusMsg,
+                fileName, jsonName, url, path, downloadProgress, statusDescr,
+                cancelDownload, downloadStart, downloadStop, downloadDone,
+                isUpdated, id, validationAttempt, connectionAttempt, mapAttempt,
+                mapDone, jsonAttempt, jsonDone, reqDate
+            )
+            SELECT
+                pId, bBox, footprint, flowState, reqId, JDID, MDID, state, statusMsg,
+                fileName, jsonName, url, path, downloadProgress, statusDescr,
+                cancelDownload, downloadStart, downloadStop, downloadDone,
+                isUpdated, id, validationAttempt, connectionAttempt, mapAttempt,
+                mapDone, jsonAttempt, jsonDone,
+                COALESCE(downloadStart, downloadStop, downloadDone, strftime('%s', 'now'))
+            FROM MapPkg
+        """.trimIndent())
+                // Step 3: Drop the original table
+                database.execSQL("DROP TABLE MapPkg")
+
+                // Step 4: Rename the temporary table to the original table name
+                database.execSQL("ALTER TABLE MapPkg_temp RENAME TO MapPkg")
             }
         }
     }

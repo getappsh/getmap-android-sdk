@@ -2,6 +2,8 @@ package com.ngsoft.getapp.sdk
 
 import GetApp.Client.models.NewBugReportDto
 import android.content.Context
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
+import com.ngsoft.getapp.sdk.exceptions.VpnClosedException
 import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
@@ -11,6 +13,7 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import fr.bipi.treessence.file.FileLoggerTree
 import timber.log.Timber
+import java.io.IOException
 import java.io.Serializable
 import java.util.concurrent.TimeUnit
 import java.util.logging.FileHandler
@@ -148,7 +151,19 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
         try {
             service.getDiscoveryCatalog(MapProperties("system-test", "1.1.1.1", false))
             testReport[TEST_DISCOVERY]?.success = true
+
+        }catch (io: IOException) {
+            Timber.e(io)
+            testReport[TEST_DISCOVERY]?.success = false
+            testReport[TEST_DISCOVERY]?.message = io.message.toString()
+            if (io.message.toString().lowercase().startsWith("unable to resolve host")) {
+                tearDown()
+                throw VpnClosedException()
+
+            }
+
         }catch (e: Exception){
+            Timber.e(e)
             testReport[TEST_DISCOVERY]?.success = false
             testReport[TEST_DISCOVERY]?.message = e.message.toString()
         }
@@ -205,8 +220,13 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
         mapRepo.getByBBox(props.boundingBox).forEach {
             service.deleteMap(it.id.toString())
         }
-
-        val id = service.downloadMap(props);
+        var id: String? = null;
+        try {
+            id = service.downloadMap(props);
+        }catch (e: MissingIMEIException){
+            Timber.e(e)
+            testReport[TEST_IMPORT]?.message = e.message.toString()
+        }
         if (id == null){
             testReport[TEST_IMPORT]?.success = false
             testReport[TEST_DOWNLOAD] = TestResults("הורדת מפות", TEST_DOWNLOAD, false)
