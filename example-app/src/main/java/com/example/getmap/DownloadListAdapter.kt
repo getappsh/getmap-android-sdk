@@ -271,6 +271,9 @@ class DownloadListAdapter(
             }
 
             CANCEL -> {
+                //Perhaps thisg
+//                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+//                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"

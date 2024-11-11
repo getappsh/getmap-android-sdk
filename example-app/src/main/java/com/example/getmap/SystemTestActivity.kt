@@ -100,23 +100,39 @@ class SystemTestActivity : AppCompatActivity() {
 
         if (testReport[SystemTest.TEST_DISCOVERY]?.success == false){
 //            בחירת תחום failed
-//            TrackHelper.track().event("some event").with(tracker);
-
+            TrackHelper.track()
+                .event("מיפוי ענן", "ניהול שגיאות").name("בחירת תיחום נכשל")
+                .with(tracker)
         }
         if (testReport[SystemTest.TEST_CONFIG]?.success == false){
 //            קבלת קונפיגורציה failed
+            TrackHelper.track()
+                .event("מיפוי ענן", "ניהול שגיאות").name("קבלת קונפיגורציה נכשל")
+                .with(tracker)
         }
         if (testReport[SystemTest.TEST_IMPORT]?.success == false){
 //            הפקת מפה failed
+            TrackHelper.track()
+                .event("מיפוי ענן", "ניהול שגיאות").name("הפקת מפה נכשל")
+                .with(tracker)
         }
         if (testReport[SystemTest.TEST_DOWNLOAD]?.success == false){
 //            הורדת מפה failed
+            TrackHelper.track()
+                .event("מיפוי ענן", "ניהול שגיאות").name("הורדת מפה נכשל")
+                .with(tracker)
         }
         if (testReport[SystemTest.TEST_FILE_MOVE]?.success == false){
 //            העברת קבצים failed
+            TrackHelper.track()
+                .event("מיפוי ענן", "ניהול שגיאות").name("העברת קבצים נכשל")
+                .with(tracker)
         }
         if (testReport[SystemTest.TEST_INVENTORY_UPDATES]?.success == false){
 //            סטטוס עדכנוית מפות failed
+            TrackHelper.track()
+                .event("מיפוי ענן", "ניהול שגיאות").name("סטטוס עדכנוית מפות נכשל")
+                .with(tracker)
         }
     }
 

@@ -139,8 +139,6 @@ class PopUp : DialogFragment() {
                 }
                 count = 0
             } else if (type == "cancelled") {
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות")
-                    .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
                 }
