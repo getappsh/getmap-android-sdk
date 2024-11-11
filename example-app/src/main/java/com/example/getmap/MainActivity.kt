@@ -385,15 +385,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         pdfView.visibility = View.INVISIBLE
         val pdFile = findViewById<ImageButton>(R.id.pdfFile)
         pdFile.setOnClickListener {
+            TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
             pdfView.fromAsset("strategy.pdf").load()
-
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (pdfView.visibility == View.VISIBLE) {
                     pdfView.visibility = View.INVISIBLE
+                    TrackHelper.track().screen("/מסך ראשי").with(tracker)
                 }
             }
         })
