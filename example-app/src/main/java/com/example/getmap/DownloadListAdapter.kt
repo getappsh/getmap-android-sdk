@@ -181,7 +181,7 @@ class DownloadListAdapter(
                 val a = sdf.format(startDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
             }
-            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה") {
+            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה" || downloadData.statusMsg == "מושהה") {
                 val a = sdf.format(stopDate)
                 holder.demandDate.text = "תאריך עצירה: ${a}"
             }
@@ -256,8 +256,7 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
-                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה : ${downloadData.statusDescr} בבול : $name").with(tracker)
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה : ${downloadData.statusDescr}").with(tracker)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -271,16 +270,18 @@ class DownloadListAdapter(
             }
 
             CANCEL -> {
-                //Perhaps thisg
-//                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-//                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
+                //Cancel = Pause for the moment, in the next version cancel will change to a real cancel.{
+//                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+//                holder.textFileName.text = "ההורדה בוטלה"}
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
-                holder.textFileName.text = "ההורדה בוטלה"
+                holder.textFileName.text = "ההורדה בהשהייה"
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
