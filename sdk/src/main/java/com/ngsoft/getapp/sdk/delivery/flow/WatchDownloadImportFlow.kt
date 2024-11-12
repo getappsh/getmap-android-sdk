@@ -225,6 +225,8 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         json.put("requestedBBox", mapPkg.bBox)
         json.put("reqId", mapPkg.reqId)
 
+        json.remove("layerPolygonParts")
+
         JsonUtils.writeJson(download.file, json)
     }
     private fun extractFootprint(download: Download): String?{
