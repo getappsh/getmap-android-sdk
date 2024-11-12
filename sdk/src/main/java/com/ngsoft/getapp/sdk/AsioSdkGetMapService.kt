@@ -271,6 +271,11 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         MapRepo.onInventoryUpdatesListener = listener
     }
 
+    override fun setOnDownloadErrorListener(listener: (String) -> Unit) {
+        Timber.i("setOnDownloadErrorListener")
+        MapRepo.onDownloadErrorListener = listener
+    }
+
     @Suppress("DEPRECATION")  // Deprecated for third party Services.
     fun <T> Context.isServiceRunning(service: Class<T>): Boolean {
         return (getSystemService(Service.ACTIVITY_SERVICE) as ActivityManager)
