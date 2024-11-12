@@ -1,6 +1,7 @@
 package com.ngsoft.getapp.sdk.models
 
 import com.ngsoft.getapp.sdk.utils.JsonUtils
+import com.ngsoft.tilescache.models.DeliveryFlowState
 import org.json.JSONObject
 import java.nio.file.Paths
 import java.time.OffsetDateTime
@@ -21,6 +22,7 @@ class MapData(
     var downloadStop: OffsetDateTime?,
     var downloadDone: OffsetDateTime?,
     val reqDate: OffsetDateTime,
+    var flowState: DeliveryFlowState,
     ){
     fun getJson(): JSONObject?{
         return try {

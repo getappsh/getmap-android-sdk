@@ -106,6 +106,11 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
+    override fun setOnDownloadErrorListener(listener: (String) -> Unit) {
+        TODO("Not implemented in DefaultGetMapService")
+    }
+
+
     override fun generateQrCode(id: String, width: Int, height: Int): Bitmap {
         TODO("Not implemented in DefaultGetMapService")
     }
