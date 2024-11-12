@@ -109,6 +109,11 @@ internal class MapRepo(ctx: Context) {
         jsonDone: Boolean? = null,
         downloadDone: LocalDateTime? = null,
     ) {
+        var map: MapPkg? = null;
+
+        if (state == MapDeliveryState.ERROR){
+             map = this.getById(id)
+        }
         this.dao.updateMapFields(
             id,
             reqId=reqId,
@@ -132,6 +137,10 @@ internal class MapRepo(ctx: Context) {
             downloadDone=downloadDone
         )
         invoke(id)
+        if (state == MapDeliveryState.ERROR && map?.state != MapDeliveryState.ERROR){
+            Timber.i("New download error, id: $id")
+            onDownloadErrorListener?.invoke(id)
+        }
     }
 //    TODO potential issue with this calls, they are not in the same transaction
     private fun updateInternal(
@@ -309,7 +318,8 @@ internal class MapRepo(ctx: Context) {
             downloadStart = map.downloadStart?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadStop = map.downloadStop?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadDone = map.downloadDone?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
-            reqDate = OffsetDateTime.ofInstant(map.reqDate.toInstant(ZoneOffset.UTC), localZone)
+            reqDate = OffsetDateTime.ofInstant(map.reqDate.toInstant(ZoneOffset.UTC), localZone),
+            flowState = map.flowState,
         )
     }
 
@@ -320,6 +330,7 @@ internal class MapRepo(ctx: Context) {
     }
     companion object {
         var onInventoryUpdatesListener: ((List<String>) -> Unit)? = null
+        var onDownloadErrorListener: ((id: String) -> Unit)? = null
 
 //        private val customOrder = listOf(MapDeliveryState.START, MapDeliveryState.DOWNLOAD, MapDeliveryState.CONTINUE)
 //
