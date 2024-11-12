@@ -761,14 +761,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         dialog.show()
     }
 
-
-    private fun showDialog(msg: String) {
-        val builder = AlertDialog.Builder(this)
-        builder.setMessage(msg)
-        val dialog = builder.create()
-        dialog.show()
-    }
-
     private fun showLoadingDialog(title: String, id: String? = null) {
 
 //        var percentages = findViewById<TextView>(R.id.Percentages)
@@ -838,16 +830,5 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             }
         }
-    }
-
-    fun getTracker(): Tracker {
-        if (tracker == null) {
-            tracker = TrackerBuilder.createDefault(
-                "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php", 1
-            ).build(
-                Matomo.getInstance(this)
-            )
-        }
-        return tracker!!
     }
 }

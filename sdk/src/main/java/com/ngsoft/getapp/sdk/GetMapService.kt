@@ -120,6 +120,13 @@ interface GetMapService {
      */
     fun setOnInventoryUpdatesListener(listener: (List<String>) -> Unit)
 
+
+    /**
+     * Set listener to get notified on download error
+     */
+    fun setOnDownloadErrorListener(listener: (String) -> Unit)
+
+
     /**
      * Generate QR code from map json file.
      * @param id Map id
