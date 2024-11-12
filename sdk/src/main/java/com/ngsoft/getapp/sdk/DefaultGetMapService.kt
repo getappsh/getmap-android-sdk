@@ -79,8 +79,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         cache = TilesCache(appCtx)
 
 
-        if(configuration.imei != null){
-            pref.deviceId = configuration.imei
+        if(configuration.serialNumber != null){
+            pref.serialNumber = configuration.serialNumber
         }
         pref.username = configuration.user
         pref.password = configuration.password
@@ -178,7 +178,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
                 ),
                 PhysicalDiscoveryDto(PhysicalDiscoveryDto.OSEnum.android,
                     "00-B0-D0-63-C2-26","129.2.3.4",
-                    pref.deviceId, pref.generateDeviceId(), "Yes",
+                    pref.deviceId, pref.serialNumber, "Yes",
                     mapFileManager.getAvailableSpaceByPolicy().toString())
             ),
 

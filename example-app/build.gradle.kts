@@ -16,8 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 15
-        versionName = "2.1.5"
+        versionCode = 17
+        versionName = "2.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -35,6 +35,8 @@ android {
         buildConfigField("String", "AW_API", "\"${getPropertyFromFile("AW_API")}\"")
         buildConfigField("String", "AIRWATCH_TENANT", "\"${getPropertyFromFile("AIRWATCH_TENANT")}\"")
         buildConfigField("String", "BASE_URL", "\"${getPropertyFromFile("BASE_URL")}\"")
+        buildConfigField("String", "DEPLOY_ENV", "\"${findProperty("deployEnv") ?: "pub"}\"")
+
     }
 
     buildTypes {

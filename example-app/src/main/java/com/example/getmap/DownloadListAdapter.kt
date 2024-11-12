@@ -176,12 +176,12 @@ class DownloadListAdapter(
         } else {
             val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
             val stopDate = downloadData.downloadStop
-            val startDate = downloadData.downloadStart
+            val startDate = downloadData.reqDate
             if (downloadData.statusMsg == "בהורדה" || downloadData.statusMsg == "בקשה בהפקה" || downloadData.statusMsg == "בקשה נשלחה") {
                 val a = sdf.format(startDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
             }
-            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה") {
+            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה" || downloadData.statusMsg == "מושהה") {
                 val a = sdf.format(stopDate)
                 holder.demandDate.text = "תאריך עצירה: ${a}"
             }
@@ -228,15 +228,13 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime =
                     localDateTime.minus(Duration.ofSeconds(1))
-                val name = region + "-" + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                val coordinates = downloadData.footprint
+                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 if (downloadData.downloadDone!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
                     TrackHelper.track()
                         .dimension(manager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
-
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.VISIBLE
@@ -258,7 +256,7 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה : ${downloadData.statusDescr}").with(tracker)
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -272,13 +270,18 @@ class DownloadListAdapter(
             }
 
             CANCEL -> {
+                //Cancel = Pause for the moment, in the next version cancel will change to a real cancel.{
+//                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+//                holder.textFileName.text = "ההורדה בוטלה"}
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
-                holder.textFileName.text = "ההורדה בוטלה"
+                holder.textFileName.text = "ההורדה בהשהייה"
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
@@ -289,8 +292,10 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
-                holder.textFileName.text = "ההורדה נעצרה"
-                holder.textStatus.text = "נעצר: ההורדה תמשיך מנקודת העצירה"
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
+                holder.textFileName.text = "ההורדה בהשהייה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
@@ -400,7 +405,7 @@ class DownloadListAdapter(
 
     override fun getItemCount(): Int {
         val sortList = asyncListDiffer.currentList.sortedByDescending {
-            it.downloadStart ?: OffsetDateTime.MIN
+            it.reqDate
         }
         return sortList.size
     }
@@ -411,22 +416,19 @@ class DownloadListAdapter(
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun deliveryDate(manager: MapServiceManager, downloadData: MapData, holder: ViewHolder) {
+//        TODO Way is needed to get reqDate from db, downloadData already has it?
         CoroutineScope(Dispatchers.IO).launch {
-            manager.service.getDownloadedMaps().forEach { i ->
+            val text: String
+            val map = downloadData.id?.let { manager.service.getDownloadedMap(it) }
+            if (map == null){
+                text = "תאריך בקשה: לא ידוע"
+            }else{
                 val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-                if (i.id == downloadData.id) {
-                    val firstOffsetDateTime = downloadData.downloadStart
-                    if (firstOffsetDateTime != null) {
-                        val a = sdf.format(firstOffsetDateTime)
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך בקשה: ${a}"
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            holder.demandDate.text = "תאריך בקשה: לא ידוע"
-                        }
-                    }
-                }
+                val strDate = sdf.format(map.reqDate);
+                text = "תאריך בקשה: ${strDate}"
+            }
+            withContext(Dispatchers.Main) {
+                holder.demandDate.text = text
             }
         }
     }
@@ -449,11 +451,9 @@ class DownloadListAdapter(
         notifValidation?.show()
     }
 
-    fun formatDate(inputDate: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val date: Date = inputFormat.parse(inputDate)
-        return outputFormat.format(date)
+    private fun formatDate(inputDate: String): String {
+        val (year, month, days) = inputDate.split("-")
+        return "$days/$month/$year"
     }
 
     companion object {

@@ -9,11 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.RecyclerView
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +24,7 @@ import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import com.example.getmap.MainActivity.Companion.count
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.R)
 class PopUp : DialogFragment() {
@@ -32,6 +35,8 @@ class PopUp : DialogFragment() {
     lateinit var handler: (MapData) -> Unit
     var tracker: Tracker? = null
     var demand = false
+    var deleteFailFun: (() -> Unit)? = null
+    var deleteFailImage: ImageButton? = null
     lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
@@ -93,6 +98,10 @@ class PopUp : DialogFragment() {
 
                 GlobalScope.launch(Dispatchers.IO) {
                     service.deleteMap(mapId)
+                    withContext(Dispatchers.Main) {
+                        deleteFailImage?.visibility = View.INVISIBLE
+                        deleteFailFun?.invoke()
+                    }
 //                    TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
                 }
                 count = 0
@@ -102,12 +111,17 @@ class PopUp : DialogFragment() {
 
                 GlobalScope.launch(Dispatchers.IO) {
 
-                    service.getDownloadedMaps().forEach { mapData ->
-                        if (!mapData.isUpdated) {
-                            service.downloadUpdatedMap(
-                                mapData.id!!)
+                    try {
+                        service.getDownloadedMaps().forEach { mapData ->
+                            if (!mapData.isUpdated) {
+                                service.downloadUpdatedMap(mapData.id!!)
+                            }
                         }
+                    }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+
                     }
+
                     recyclerView.smoothScrollToPosition(0)
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
@@ -116,13 +130,15 @@ class PopUp : DialogFragment() {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
                 CoroutineScope(Dispatchers.IO).launch {
-                    service.downloadUpdatedMap(mapId)
-                    recyclerView.smoothScrollToPosition(0)
+                    try {
+                        service.downloadUpdatedMap(mapId)
+                        recyclerView.smoothScrollToPosition(0)
+                    }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+                    }
                 }
                 count = 0
             } else if (type == "cancelled") {
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות")
-                    .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
                 }

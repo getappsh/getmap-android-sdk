@@ -49,9 +49,11 @@ import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
+import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +84,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     private var imeiEven = ""
+
     companion object {
         var count = 0
     }
@@ -130,7 +133,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             StrictMode.setThreadPolicy(policy)
 
             sdkAirWatchSdkManager.startRetrying()
-            var serialNumber: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "serialNumber").toString()
+            var serialNumber: String? =
+                getSharedPreferences("wit_player_shared_preferences", 0).getString(
+                    "serialNumber",
+                    "serialNumber"
+                ).toString()
             Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
 
             val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
@@ -139,7 +146,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 try {
                     imeiEven = sdkAirWatchSdkManager.imei
                     imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
-                } catch (e : Exception) {
+                } catch (e: Exception) {
                     Log.d("Error", "Error getting Imei")
                     Log.d("Error", e.toString())
                 }
@@ -180,7 +187,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 .show()
         }
         tracker = MatomoTracker.getTracker(this)
-        tracker?.userId = imeiEven
+
 //        service = GetMapServiceFactory.createAsioSdkSvc(this@MainActivity, cfg)
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
@@ -275,7 +282,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -316,19 +324,26 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         scanQRButton = findViewById(R.id.scanQR)
         scanQRButton.setOnClickListener {
+            Log.i(TAG, "scanQRButton Clicked")
+            try {
+                Pref.getInstance(this).checkDeviceIdAvailability()
+            }catch (e: MissingIMEIException){
+//                TODO show missing imei dialog
+            }
             CoroutineScope(Dispatchers.Main).launch {
                 val sizeExceeded = withContext(Dispatchers.IO) {
                     MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
                 }
 
+
                 if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
                     barcodeLauncher.launch(ScanOptions())
                     TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
                 } else {
-                    Toast.makeText(
-                        applicationContext,
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                        Toast.LENGTH_LONG
+                        Snackbar.LENGTH_LONG
                     ).show()
                 }
             }
@@ -343,7 +358,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             finish()
         }
 
-        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+        registerReceiver(
+            SystemTestReceiver,
+            IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
+        )
 
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
         deleteFail.visibility = View.INVISIBLE
@@ -351,8 +369,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
+            TrackHelper.track().screen("/מחיקת תקולים").with(tracker)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
             dialogBuilder.setPositiveButton("כן") { _, _ ->
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
+                    .with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     mapServiceManager.service.getDownloadedMaps().forEach { map ->
                         if (map.statusMsg == "נכשל") {
@@ -371,15 +393,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         pdfView.visibility = View.INVISIBLE
         val pdFile = findViewById<ImageButton>(R.id.pdfFile)
         pdFile.setOnClickListener {
+            TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
             pdfView.fromAsset("strategy.pdf").load()
-
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (pdfView.visibility == View.VISIBLE) {
                     pdfView.visibility = View.INVISIBLE
+                    TrackHelper.track().screen("/מסך ראשי").with(tracker)
                 }
             }
         })
@@ -479,6 +502,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    discoveryDialogPicker(products)
 
                 }
+            }catch (e: MissingIMEIException){
+//            TODO show missing imei dialog
             } catch (e: Exception) {
                 // Handle any exceptions here
                 Log.e(TAG, "error: " + e);
@@ -494,42 +519,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
     }
-
-    private fun onDelivery(first: Point, second: Point) {
-        Log.d(TAG, "onDelivery: ");
-        GlobalScope.launch(Dispatchers.IO) {
-
-//            service.purgeCache()
-
-            val props = MapProperties(
-                "selectedProduct.id",
-//                "34.46641783,31.55079535, 34.47001187,31.55095355, 34.4700189, 31.553150863,34.46641783, 31.55318508, 34.46641783, 31.55079535",
-//                    "34.50724201341369,31.602641553384572,34.5180453565571,31.59509118055151,34.50855899068993,31.5815177494226,34.497755647546515,31.589068122255644,34.50724201341369,31.602641553384572",
-//                "34.47956403,31.52202192,34.51125354,31.54650531",
-//                "34.33390512,31.39424661,34.33937683,31.39776391",// json dose not exist on s3 for this bBox
-                "${first.y},${first.x},${second.y},${second.x}",
-
-                false
-            )
-            val id = mapServiceManager.service.downloadMap(props);
-            if (id == null) {
-                this@MainActivity.runOnUiThread {
-                    // This is where your UI code goes.
-                    Toast.makeText(
-                        applicationContext,
-                        "The map already exists, please choose another Bbox",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-//            val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-//            availableSpace.text = GetAvailableSpaceInSdCard()
-
-            Log.d(TAG, "onDelivery: after download map have been called, id: $id")
-        }
-
-    }
-
     private fun formatBytes(bytes: Long): String {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         var size = bytes.toDouble()
@@ -642,16 +631,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        dialog.show()
 //    }
 
+    @SuppressLint("LongLogTag")
     private fun onDelete(id: String) {
         Log.i("onCreate Tracker Refreshea", "${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        popUp.deleteFailImage = deleteFail
+        popUp.deleteFailFun = { showDeleteFailedBtn(deleteFail) }
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + "-" +
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
             } else {
@@ -665,9 +658,24 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onResume(id: String) {
-        TrackHelper.track()
-            .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
-            .with(tracker)
+        GlobalScope.launch(Dispatchers.IO) {
+
+            val map = mapServiceManager.service.getDownloadedMap(id)
+            if (map?.deliveryState == MapDeliveryState.ERROR) {
+                TrackHelper.track()
+//                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
+                    .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
+                    .with(tracker)
+            } else {
+            val endName = map?.getJson()?.getJSONArray("region")?.get(0).toString() +
+                    map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
+                    .event("מיפוי ענן", "ניהול בקשות").name("חידוש הורדה")
+                    .with(tracker)
+
+            }
+        }
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.resumeDownload(id)
         }
@@ -720,9 +728,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             try {
                 val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
-                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
-                    val region = jsonText.region[0]
-                    val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val region = jsonText.region[0]
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                 runOnUiThread {
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
@@ -732,10 +742,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
-                val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                    .event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
                     .with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
@@ -745,7 +759,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     private fun updateMap(id: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.downloadUpdatedMap(id)
+
+            try {
+                mapServiceManager.service.downloadUpdatedMap(id)
+            }catch (e: MissingIMEIException){
+//                    TODO show missing imei dialog
+            }
         }
     }
 
@@ -897,6 +916,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
+                }catch(e: MissingIMEIException){
+//                    TODO show missing imei dialog
                 } catch (e: Exception) {
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
 //                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
