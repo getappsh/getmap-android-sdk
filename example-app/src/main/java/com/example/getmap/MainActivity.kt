@@ -331,7 +331,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Log.i(TAG, "scanQRButton Clicked")
             try {
                 Pref.getInstance(this).checkDeviceIdAvailability()
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                TODO show missing imei dialog
             }
             CoroutineScope(Dispatchers.Main).launch {
@@ -506,7 +506,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    discoveryDialogPicker(products)
 
                 }
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //            TODO show missing imei dialog
             } catch (e: Exception) {
                 // Handle any exceptions here
@@ -523,6 +523,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
     }
+
     private fun formatBytes(bytes: Long): String {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         var size = bytes.toDouble()
@@ -671,8 +672,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
                     .with(tracker)
             } else {
-            val endName = map?.getJson()?.getJSONArray("region")?.get(0).toString() +
-                    map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val endName = map?.getJson()?.getJSONArray("region")?.get(0).toString() +
+                        map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 TrackHelper.track()
                     .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
                     .event("מיפוי ענן", "ניהול בקשות").name("חידוש הורדה")
@@ -766,7 +767,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             try {
                 mapServiceManager.service.downloadUpdatedMap(id)
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
             }
         }
@@ -912,7 +913,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
-                }catch(e: MissingIMEIException){
+                } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
                 } catch (e: Exception) {
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
@@ -933,32 +934,47 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         if (map.deliveryState != MapDeliveryState.ERROR) return
         Log.d(TAG, "OnDownloadError ${map.id} flowState is : ${map.flowState}")
 
-        when (map.flowState){
+        when (map.flowState) {
             DeliveryFlowState.START -> {
 //                נכשל בהפקה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהפקה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.IMPORT_CREATE -> {
 //            נכשל בקבלת סטטוס הפקה
-
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בקבלת סטטוס הפקה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.IMPORT_STATUS -> {
 //                נכשל בהכנת הורדה
-
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהכנת הורדה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.IMPORT_DELIVERY, DeliveryFlowState.DOWNLOAD -> {
 //               נכשל בהורדה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהורדה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.DOWNLOAD_DONE -> {
 //                נכשל בהעברת קבצים
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהעברת קבצים")
+                    .with(tracker)
             }
+
             DeliveryFlowState.MOVE_FILES -> {
 //                נכשל בבדיקת Hash
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בבדיקת Hash")
+                    .with(tracker)
             }
+
             DeliveryFlowState.DONE -> {
-//                DO NOTING HERE
+//                DO NOTHING HERE
             }
         }
-
 
 
     }
