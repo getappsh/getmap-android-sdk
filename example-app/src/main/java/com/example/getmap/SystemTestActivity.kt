@@ -89,6 +89,12 @@ class SystemTestActivity : AppCompatActivity() {
 
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        TrackHelper.track().screen("/מסך טכנאי").with(tracker)
+        super.onBackPressed()
+    }
+
 
     private fun updateTestResults(testReport: HashMap<Int, SystemTest.TestResults?>) {
         updateTestResult(testDiscoveryIcon, testDiscoveryName, testReport[SystemTest.TEST_DISCOVERY])

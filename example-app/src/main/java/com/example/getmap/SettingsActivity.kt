@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -70,6 +71,8 @@ class SettingsActivity : AppCompatActivity() {
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         val applyServerConfig = findViewById<Switch>(R.id.apply_server_config)
+        val deviceId = findViewById<TextView>(R.id.deviceId)
+        deviceId.text = "AndroidId: " + Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
         TrackHelper.track().screen("/מסך טכנאי").with(tracker)
         applyServerConfig.isEnabled = false
         applyServerConfig.isChecked = service.config.applyServerConfig
@@ -105,7 +108,6 @@ class SettingsActivity : AppCompatActivity() {
         }
         editConf.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                TrackHelper.track().screen("/מסך טכנאי").with(tracker)
                 val passwordDialog =
                     PasswordDialog(
                         this, params, nebulaParamAdapter, true, editConf,
