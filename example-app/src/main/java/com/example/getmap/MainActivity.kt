@@ -49,7 +49,9 @@ import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.tilescache.models.DeliveryFlowState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -211,6 +213,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 syncButton.visibility = View.INVISIBLE
             }
         })
+
+        mapServiceManager.service.setOnDownloadErrorListener { onDownloadError(it) }
+
         val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
 //        getTracker()
         swipeRecycler.setOnRefreshListener {
@@ -830,5 +835,40 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             }
         }
+    }
+
+    private fun onDownloadError(id: String) {
+        val map = this.mapServiceManager.service.getDownloadedMap(id) ?: return
+        if (map.deliveryState != MapDeliveryState.ERROR) return
+        Log.d(TAG, "OnDownloadError ${map.id} flowState is : ${map.flowState}")
+
+        when (map.flowState){
+            DeliveryFlowState.START -> {
+//                נכשל בהפקה
+            }
+            DeliveryFlowState.IMPORT_CREATE -> {
+//            נכשל בקבלת סטטוס הפקה
+
+            }
+            DeliveryFlowState.IMPORT_STATUS -> {
+//                נכשל בהכנת הורדה
+
+            }
+            DeliveryFlowState.IMPORT_DELIVERY, DeliveryFlowState.DOWNLOAD -> {
+//               נכשל בהורדה
+            }
+            DeliveryFlowState.DOWNLOAD_DONE -> {
+//                נכשל בהעברת קבצים
+            }
+            DeliveryFlowState.MOVE_FILES -> {
+//                נכשל בבדיקת Hash
+            }
+            DeliveryFlowState.DONE -> {
+//                DO NOTING HERE
+            }
+        }
+
+
+
     }
 }

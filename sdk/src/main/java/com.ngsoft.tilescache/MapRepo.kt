@@ -318,7 +318,8 @@ internal class MapRepo(ctx: Context) {
             downloadStart = map.downloadStart?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadStop = map.downloadStop?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
             downloadDone = map.downloadDone?.let { OffsetDateTime.ofInstant(it.toInstant(ZoneOffset.UTC), localZone)},
-            reqDate = OffsetDateTime.ofInstant(map.reqDate.toInstant(ZoneOffset.UTC), localZone)
+            reqDate = OffsetDateTime.ofInstant(map.reqDate.toInstant(ZoneOffset.UTC), localZone),
+            flowState = map.flowState,
         )
     }
 
