@@ -97,12 +97,16 @@ class MapActivity : AppCompatActivity() {
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
 
+        val lastCompass = sharedPreferences?.getString("last_compass", "0.0F")
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
         val lastLookAt = sharedPreferences?.getString("LookAt", "no data")
         if ((lastNavigator != null && lastNavigator != "no data") && (lastLookAt != null && lastLookAt != "no data")) {
             val gson = Gson()
+            val newCompass = gson.fromJson(lastCompass,Float::class.java)
             val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
             val lastLookAtObj = gson.fromJson(lastLookAt, LookAt::class.java)
+            val compass = findViewById<View>(R.id.arrow)
+            compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
             wwd.postDelayed({
@@ -840,6 +844,7 @@ class MapActivity : AppCompatActivity() {
 
         val jsonString = gson.toJson(wwd.navigator)
         sharedPreferencesEditor?.putString("last_navigator", jsonString)?.apply()
+        saveCompass()
     }
 
     @Deprecated("Deprecated in Java")
@@ -849,6 +854,14 @@ class MapActivity : AppCompatActivity() {
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun saveCompass(){
+        val compass = findViewById<View>(R.id.arrow)
+        val rotation = compass.rotation
+        val gson = Gson()
+        val rotationString = gson.toJson(rotation)
+        sharedPreferencesEditor?.putString("last_compass", rotationString)?.apply()
     }
 
     private fun showNorth() {
