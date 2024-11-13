@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     private var imeiEven = ""
+
     companion object {
         var count = 0
     }
@@ -133,7 +134,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             StrictMode.setThreadPolicy(policy)
 
             sdkAirWatchSdkManager.startRetrying()
-            var serialNumber: String? = getSharedPreferences("wit_player_shared_preferences", 0).getString("serialNumber", "serialNumber").toString()
+            var serialNumber: String? =
+                getSharedPreferences("wit_player_shared_preferences", 0).getString(
+                    "serialNumber",
+                    "serialNumber"
+                ).toString()
             Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
 
             val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
@@ -142,7 +147,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 try {
                     imeiEven = sdkAirWatchSdkManager.imei
                     imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
-                } catch (e : Exception) {
+                } catch (e: Exception) {
                     Log.d("Error", "Error getting Imei")
                     Log.d("Error", e.toString())
                 }
@@ -281,7 +286,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         ).show()
                     }
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -325,7 +331,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             Log.i(TAG, "scanQRButton Clicked")
             try {
                 Pref.getInstance(this).checkDeviceIdAvailability()
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                TODO show missing imei dialog
             }
             CoroutineScope(Dispatchers.Main).launch {
@@ -338,7 +344,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     barcodeLauncher.launch(ScanOptions())
                     TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content),
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
                         "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -355,7 +362,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             finish()
         }
 
-        registerReceiver(SystemTestReceiver, IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST))
+        registerReceiver(
+            SystemTestReceiver,
+            IntentFilter(SystemTestReceiver.ACTION_RUN_SYSTEM_TEST)
+        )
 
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
         deleteFail.visibility = View.INVISIBLE
@@ -363,8 +373,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
+            TrackHelper.track().screen("/מחיקת תקולים").with(tracker)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
             dialogBuilder.setPositiveButton("כן") { _, _ ->
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
+                    .with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     mapServiceManager.service.getDownloadedMaps().forEach { map ->
                         if (map.statusMsg == "נכשל") {
@@ -383,15 +397,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         pdfView.visibility = View.INVISIBLE
         val pdFile = findViewById<ImageButton>(R.id.pdfFile)
         pdFile.setOnClickListener {
+            TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
             pdfView.fromAsset("strategy.pdf").load()
-
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (pdfView.visibility == View.VISIBLE) {
                     pdfView.visibility = View.INVISIBLE
+                    TrackHelper.track().screen("/מסך ראשי").with(tracker)
                 }
             }
         })
@@ -491,7 +506,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    discoveryDialogPicker(products)
 
                 }
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //            TODO show missing imei dialog
             } catch (e: Exception) {
                 // Handle any exceptions here
@@ -508,6 +523,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
     }
+
     private fun formatBytes(bytes: Long): String {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         var size = bytes.toDouble()
@@ -620,16 +636,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        dialog.show()
 //    }
 
+    @SuppressLint("LongLogTag")
     private fun onDelete(id: String) {
         Log.i("onCreate Tracker Refreshea", "${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        popUp.deleteFailImage = deleteFail
+        popUp.deleteFailFun = { showDeleteFailedBtn(deleteFail) }
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + "-" +
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
             } else {
@@ -643,9 +663,24 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onResume(id: String) {
-        TrackHelper.track()
-            .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
-            .with(tracker)
+        GlobalScope.launch(Dispatchers.IO) {
+
+            val map = mapServiceManager.service.getDownloadedMap(id)
+            if (map?.deliveryState == MapDeliveryState.ERROR) {
+                TrackHelper.track()
+//                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
+                    .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
+                    .with(tracker)
+            } else {
+                val endName = map?.getJson()?.getJSONArray("region")?.get(0).toString() +
+                        map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), endName)
+                    .event("מיפוי ענן", "ניהול בקשות").name("חידוש הורדה")
+                    .with(tracker)
+
+            }
+        }
         GlobalScope.launch(Dispatchers.IO) {
             mapServiceManager.service.resumeDownload(id)
         }
@@ -698,9 +733,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             try {
                 val map = mapServiceManager.service.getDownloadedMap(id)
                 val qrCode = mapServiceManager.service.generateQrCode(id, 1000, 1000)
-                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
-                    val region = jsonText.region[0]
-                    val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val region = jsonText.region[0]
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                 runOnUiThread {
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
@@ -710,10 +747,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
-                val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                val jsonText =
+                    Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name = region + "-" + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().dimension(mapServiceManager.service.config.matomoDimensionId.toInt(),name).event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track()
+                    .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                    .event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
                     .with(tracker)
                 runOnUiThread { showErrorDialog(e.message.toString()) }
             }
@@ -726,7 +767,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
             try {
                 mapServiceManager.service.downloadUpdatedMap(id)
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
             }
         }
@@ -872,7 +913,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
-                }catch(e: MissingIMEIException){
+                } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
                 } catch (e: Exception) {
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
@@ -893,32 +934,47 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         if (map.deliveryState != MapDeliveryState.ERROR) return
         Log.d(TAG, "OnDownloadError ${map.id} flowState is : ${map.flowState}")
 
-        when (map.flowState){
+        when (map.flowState) {
             DeliveryFlowState.START -> {
 //                נכשל בהפקה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהפקה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.IMPORT_CREATE -> {
 //            נכשל בקבלת סטטוס הפקה
-
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בקבלת סטטוס הפקה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.IMPORT_STATUS -> {
 //                נכשל בהכנת הורדה
-
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהכנת הורדה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.IMPORT_DELIVERY, DeliveryFlowState.DOWNLOAD -> {
 //               נכשל בהורדה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהורדה")
+                    .with(tracker)
             }
+
             DeliveryFlowState.DOWNLOAD_DONE -> {
 //                נכשל בהעברת קבצים
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהעברת קבצים")
+                    .with(tracker)
             }
+
             DeliveryFlowState.MOVE_FILES -> {
 //                נכשל בבדיקת Hash
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בבדיקת Hash")
+                    .with(tracker)
             }
+
             DeliveryFlowState.DONE -> {
-//                DO NOTING HERE
+//                DO NOTHING HERE
             }
         }
-
 
 
     }

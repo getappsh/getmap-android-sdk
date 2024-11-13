@@ -214,7 +214,8 @@ class SystemTest private constructor(appCtx: Context,  configuration: Configurat
 
         val props = MapProperties(
             "system-test",
-            "34.46087927,31.48921097,34.47834067,31.50156335",
+//            "34.46087927,31.48921097,34.47834067,31.50156335",
+            "34.47134681,31.50300247,34.47207851,31.50348020",
             false
         )
         mapRepo.getByBBox(props.boundingBox).forEach {
