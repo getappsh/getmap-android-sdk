@@ -41,7 +41,7 @@ internal class QRManager(private val appCtx: Context) {
         Timber.d("compressAndHashJson - iv size: ${ivEncoded.length}")
         Timber.d("compressAndHashJson - encrypted size: ${encrypted.size}")
 
-        val hash = HashUtils.getCheckSumFromByteArray(checksumAlgorithm, encrypted){}
+        val hash = HashUtils.getCheckSumFromByteArray(checksumAlgorithm, encrypted, null)
 
         val encoded = Base64.encodeToString(encrypted, Base64.DEFAULT)
         val finalSize = encoded.toByteArray().size
@@ -57,6 +57,8 @@ internal class QRManager(private val appCtx: Context) {
         jsonContainer.put("data", encoded)
         jsonContainer.put("iv", ivEncoded)
         jsonContainer.put(checksumAlgorithm, hash)
+
+        Timber.d("compressAndHashJson - final size: ${jsonContainer.toString().toByteArray().size}")
 
         return jsonContainer.toString()
     }

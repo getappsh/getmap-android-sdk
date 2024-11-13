@@ -212,7 +212,12 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         json.put("reqId", reqId)
         json.put("id", jsonFile.getString("id"))
         json.put("ingestionDate", jsonFile.getString("ingestionDate"))
-        json.put("footprint",  FootprintUtils.toString(jsonFile.getJSONObject("footprint")))
+
+        val footprint = FootprintUtils.toString(jsonFile.getJSONObject("footprint"))
+        Timber.d("footprint size : ${footprint.length}")
+        if (footprint.length < 430){ // about 23 points
+            json.put("footprint", footprint)
+        }
 
         return qrManager.generateQrCode(2, json.toString(), width, height)
     }
