@@ -24,7 +24,7 @@ internal class QRManager(private val appCtx: Context) {
     private val checksumAlgorithm = "sha256"
     private val maxBytesSize = 2953
 
-    private fun compressAndHashJson(jsonString: String): String{
+    private fun compressAndHashJson(version: Int, jsonString: String): String{
         Timber.i("compressAndHashJson")
         Timber.d("compressAndHashJson - Original size: ${jsonString.toByteArray().size}")
 
@@ -53,6 +53,7 @@ internal class QRManager(private val appCtx: Context) {
         }
 
         val jsonContainer = JSONObject()
+        jsonContainer.put("version", version);
         jsonContainer.put("data", encoded)
         jsonContainer.put("iv", ivEncoded)
         jsonContainer.put(checksumAlgorithm, hash)
@@ -60,16 +61,16 @@ internal class QRManager(private val appCtx: Context) {
         return jsonContainer.toString()
     }
 
-    fun generateQrCode(jsonString: String, width: Int, height: Int): Bitmap{
+    fun generateQrCode(version: Int, jsonString: String, width: Int, height: Int): Bitmap{
         Timber.i("generateQrCode")
-        val compressed = compressAndHashJson(jsonString)
+        val compressed = compressAndHashJson(version, jsonString)
 
         val barcodeEncoder = BarcodeEncoder()
         val bitmap = barcodeEncoder.encodeBitmap(compressed, BarcodeFormat.QR_CODE, width, height)
         return bitmap
     }
 
-    private fun decompressAndValidateJson(jsonString: String): String{
+    private fun decompressAndValidateJson(jsonString: String): Pair<Int, String>{
         Timber.i("decompressAndValidateJson")
 
         val jsonContainer: JSONObject
@@ -79,6 +80,7 @@ internal class QRManager(private val appCtx: Context) {
             Timber.e("decompressAndValidateJson - failed to Convert to JSONObject, error: ${e.message.toString()}", )
             throw Exception(appCtx.getString(R.string.error_qr_failed_to_convert_to_json))
         }
+        val version = jsonContainer.optInt("version", 1)
         val data = jsonContainer.getString("data")
         Timber.v("decompressAndValidateJson - data: $data")
 
@@ -100,7 +102,7 @@ internal class QRManager(private val appCtx: Context) {
         val iv = Base64.decode(ivEncoded, Base64.DEFAULT)
         val decrypted = EncryptionUtils.decrypt(decoded, iv)
         try {
-            return CompressionUtils.decompress(decrypted)
+            return Pair(version, CompressionUtils.decompress(decrypted))
         } catch (io: IOException) {
             Timber.e("decompressAndValidateJson - Failed to decompress the json: ${io.message.toString()}",)
             throw io
@@ -108,7 +110,7 @@ internal class QRManager(private val appCtx: Context) {
     }
 
 
-    fun processQrCodeData(data: String): String{
+    fun processQrCodeData(data: String): Pair<Int, String>{
         Timber.i("scannedCode")
         return decompressAndValidateJson(data)
     }

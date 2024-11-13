@@ -203,25 +203,37 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             throw Exception(errorMsg)
         }
         val file = File(mapPkg.path, mapPkg.jsonName!!)
-        val json = JsonUtils.readJson(file.path)
+        val jsonFile = JsonUtils.readJson(file.path)
 
-        return qrManager.generateQrCode(json.toString(), width, height)
+        val json = JSONObject()
+
+        val reqId = mapPkg.reqId ?: jsonFile.getString("reqId")
+        json.put("requestedBBox", mapPkg.bBox)
+        json.put("reqId", reqId)
+        json.put("id", jsonFile.getString("id"))
+        json.put("ingestionDate", jsonFile.getString("ingestionDate"))
+        json.put("footprint",  FootprintUtils.toString(jsonFile.getJSONObject("footprint")))
+
+        return qrManager.generateQrCode(2, json.toString(), width, height)
     }
 
     @RequiresIMEI
     override fun processQrCodeData(data: String): String = requireIMEI{
         Timber.i("processQrCodeData")
 
-        val jsonString = qrManager.processQrCodeData(data)
+        val (version, jsonString) = qrManager.processQrCodeData(data)
         val json = JSONObject(jsonString)
 
-        val url = json.getString("downloadUrl")
         val bBox = json.getString("requestedBBox")
         val reqId = json.getString("reqId")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
 
-        val footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
+        val footprint = if (version == 1){
+            FootprintUtils.toString(json.getJSONObject("footprint"))
+        }else {
+            json.optString("footprint", bBox)
+        }
 
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         this.mapRepo.getByBBox(bBox, footprint).forEach {
@@ -234,15 +246,8 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
         }
 
-
-        Timber.d("processQrCodeData - download url: $url, reqId: $reqId")
-        var jsonName = FileUtils.changeFileExtensionToJson(FileUtils.getFileNameFromUri(url))
-        jsonName = FileUtils.writeFile(config.downloadPath, jsonName, jsonString)
-        Timber.d("processQrCodeData - fileName: $jsonName")
-
-        val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, jsonName = jsonName, url = url,
-            metadata = DownloadMetadata(jsonDone = true), state = MapDeliveryState.CONTINUE,
-            flowState = DeliveryFlowState.IMPORT_DELIVERY, statusMsg = appCtx.getString(R.string.delivery_status_continue))
+        val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, state = MapDeliveryState.CONTINUE,
+            flowState = DeliveryFlowState.IMPORT_STATUS, statusMsg = appCtx.getString(R.string.delivery_status_continue))
 
 
         val id = this.mapRepo.save(mapPkg)
