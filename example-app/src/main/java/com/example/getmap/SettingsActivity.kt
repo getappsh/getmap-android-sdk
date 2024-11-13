@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -70,14 +71,27 @@ class SettingsActivity : AppCompatActivity() {
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
         val applyServerConfig = findViewById<Switch>(R.id.apply_server_config)
+        val deviceId = findViewById<TextView>(R.id.deviceId)
+        deviceId.text = "AndroidId: " + Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
         TrackHelper.track().screen("/מסך טכנאי").with(tracker)
         applyServerConfig.isEnabled = false
         applyServerConfig.isChecked = service.config.applyServerConfig
         applyServerConfig.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "שינוי הגדרות").name("הדלקת הגדרות שרת")
+                    .with(tracker)
+            }else{
+                TrackHelper.track()
+                    .event("מיפוי ענן", "שינוי הגדרות").name("כיבוי הגדרות שרת")
+                    .with(tracker)
+            }
             service.config.applyServerConfig = isChecked
         }
 
         testButton.setOnClickListener {
+            TrackHelper.track().screen("בדיקת תקינות")
+                .with(tracker)
             val intent = Intent(this,SystemTestActivity::class.java)
             startActivity(intent)
         }
@@ -94,7 +108,6 @@ class SettingsActivity : AppCompatActivity() {
         }
         editConf.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                TrackHelper.track().screen("/מסך טכנאי").with(tracker)
                 val passwordDialog =
                     PasswordDialog(
                         this, params, nebulaParamAdapter, true, editConf,
@@ -109,7 +122,7 @@ class SettingsActivity : AppCompatActivity() {
                     hasChanged.forEach { e ->
                         TrackHelper.track()
                             .event("מיפוי ענן", "שינוי הגדרות")
-                            .name(" נתונים השתנו ב${e.key}")
+                            .name("${e.key} = ${e.value}")
                             .with(tracker)
                     }
                 }
@@ -141,7 +154,7 @@ class SettingsActivity : AppCompatActivity() {
         val refreshButton = findViewById<ImageButton>(R.id.refresh_button_conf)
         refreshButton.setOnClickListener {
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
-                .name("רענון הגדרות")
+                .name("רענון")
                 .with(tracker)
             rotateInfinitely(refreshButton)
             refreshButton.isEnabled = false

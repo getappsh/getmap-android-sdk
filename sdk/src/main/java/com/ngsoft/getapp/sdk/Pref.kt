@@ -228,10 +228,11 @@ class Pref private constructor(context: Context) {
         val pubEnv = BuildConfig.DEPLOY_ENV == "pub"
 
         if (serialNumber.isEmpty()) {
-            if (!pubEnv) {
-                Timber.w("Missing DeviceID (IMEI)")
-                throw MissingIMEIException()
-            }
+//            Cancel this validation, until we make sure we have permission to read the SerialNumber
+//            if (!pubEnv) {
+//                Timber.w("Missing DeviceID (IMEI)")
+//                throw MissingIMEIException()
+//            }
         }
         Timber.d("DeviceID: $deviceId")
     }

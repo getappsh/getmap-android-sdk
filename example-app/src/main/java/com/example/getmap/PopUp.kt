@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -22,6 +23,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import com.example.getmap.MainActivity.Companion.count
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.R)
 class PopUp : DialogFragment() {
@@ -32,6 +35,8 @@ class PopUp : DialogFragment() {
     lateinit var handler: (MapData) -> Unit
     var tracker: Tracker? = null
     var demand = false
+    var deleteFailFun: (() -> Unit)? = null
+    var deleteFailImage: ImageButton? = null
     lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
@@ -51,6 +56,19 @@ class PopUp : DialogFragment() {
         val buttonCancel = view.findViewById<Button>(R.id.buttonCancel)
         val textView = view.findViewById<TextView>(R.id.textViewMessage)
         textView.text = textM
+
+        buttonCancel.setOnClickListener {
+            if (type == "delete") {
+
+                Log.i("bull name", bullName)
+                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+                    .event("מיפוי ענן", "ניהול בולים")
+                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
+            }
+
+            dismiss()
+        }
+
         buttonDelete.setOnClickListener {
             if (type == "delete") {
                 Log.i("bull name", bullName)
@@ -80,8 +98,13 @@ class PopUp : DialogFragment() {
 
                 GlobalScope.launch(Dispatchers.IO) {
                     service.deleteMap(mapId)
+                    withContext(Dispatchers.Main) {
+                        deleteFailImage?.visibility = View.INVISIBLE
+                        deleteFailFun?.invoke()
+                    }
 //                    TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
                 }
+                count = 0
             } else if (type == "update") {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
                     .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
@@ -102,6 +125,7 @@ class PopUp : DialogFragment() {
                     recyclerView.smoothScrollToPosition(0)
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                 }
+                count = 0
             } else if (type == "updateOne") {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בולים")
                     .name("עדכון בול").with(tracker)
@@ -113,17 +137,18 @@ class PopUp : DialogFragment() {
 //                    TODO show missing imei dialog
                     }
                 }
+                count = 0
             } else if (type == "cancelled") {
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בקשות")
-                    .name("עצירה").with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     service.cancelDownload(mapId)
                 }
+                count = 0
             }
             dismiss()
         }
 
         buttonCancel.setOnClickListener {
+            count = 0
             dismiss()
         }
     }

@@ -181,7 +181,7 @@ class DownloadListAdapter(
                 val a = sdf.format(startDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
             }
-            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה") {
+            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה" || downloadData.statusMsg == "מושהה") {
                 val a = sdf.format(stopDate)
                 holder.demandDate.text = "תאריך עצירה: ${a}"
             }
@@ -203,10 +203,9 @@ class DownloadListAdapter(
                 if (downloadData.downloadStart!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
-                    TrackHelper.track().dimension(
-                        manager.service.config.matomoSiteId.toInt(),
-                        downloadData.footprint
-                    ).event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
+                    TrackHelper.track()
+                        .dimension(manager.service.config.matomoDimensionId.toInt(), downloadData.footprint)
+                        .event("מיפוי ענן", "ניהול בקשות").name(" הורדת בול")
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.GONE
@@ -236,7 +235,6 @@ class DownloadListAdapter(
                     TrackHelper.track()
                         .dimension(manager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
-
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.VISIBLE
@@ -272,13 +270,18 @@ class DownloadListAdapter(
             }
 
             CANCEL -> {
+                //Cancel = Pause for the moment, in the next version cancel will change to a real cancel.{
+//                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+//                holder.textFileName.text = "ההורדה בוטלה"}
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
-                holder.textFileName.text = "ההורדה בוטלה"
+                holder.textFileName.text = "ההורדה בהשהייה"
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
@@ -289,8 +292,10 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
-                holder.textFileName.text = "ההורדה נעצרה"
-                holder.textStatus.text = "נעצר: ההורדה תמשיך מנקודת העצירה"
+                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
+                holder.textFileName.text = "ההורדה בהשהייה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
@@ -446,11 +451,9 @@ class DownloadListAdapter(
         notifValidation?.show()
     }
 
-    fun formatDate(inputDate: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val date: Date = inputFormat.parse(inputDate)
-        return outputFormat.format(date)
+    private fun formatDate(inputDate: String): String {
+        val (year, month, days) = inputDate.split("-")
+        return "$days/$month/$year"
     }
 
     companion object {

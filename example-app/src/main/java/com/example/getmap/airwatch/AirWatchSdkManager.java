@@ -4,11 +4,16 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.airwatch.sdk.AirWatchSDKException;
 import com.airwatch.sdk.SDKManager;
+import com.arcgismaps.portal.PortalItemType;
 import com.example.getmap.BuildConfig;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -77,46 +82,56 @@ public class AirWatchSdkManager {
         String organizationGroup = sharedPreferences.getString(ORGANIZATION_GROUP, "");
 
         if (!serialNumber.isEmpty() && !organizationGroup.isEmpty()) {
-            Log.d("Airwatch - saveSerialNumberAndOrganizationGroup", "Serial number and organization group are already saved.");
             return;
         }
-
         SharedPreferences.Editor editor = sharedPreferences.edit();
-
         try {
             serialNumber = sdkManager.getDeviceSerialId();
-
-            String userName = BuildConfig.AW_USER_NAME;
-            String password = BuildConfig.AW_PASSWORD;
-            String credentials = userName + ":" + password;
-            String encodedCredential = Base64.getEncoder().encodeToString(credentials.getBytes());
-            String url = BuildConfig.AW_API;
-
-            OkHttpClient client = new OkHttpClient();
-
-            Request request = new Request.Builder()
-                    .url(url + "/searchby-Serialnumber?id=" + serialNumber)
-                    .header("Content-Type", "application/json")
-                    .header("aw-tenant-code", BuildConfig.AIRWATCH_TENANT)
-                    .header("Authorization", "Basic " + encodedCredential)
-                    .build();
-
-            String airWatchData = null;
-            try (Response response = client.newCall(request).execute()) {
-                airWatchData = response.body() != null ? response.body().string() : null;
-                // Process the retrieved data here if needed
-            } catch (IOException e) {
-                Log.e("Airwatch", "Error making network request", e);
-            }
-
-            editor.putString(SERIAL_NUMBER, airWatchData);
-            editor.putString(ORGANIZATION_GROUP, organizationGroup);
+            editor.putString(SERIAL_NUMBER, serialNumber);
             editor.apply();
-
             new utils().saveOrganizationGroupInSharedPreferences(context, serialNumber);
-
-        } catch (AirWatchSDKException e) {
-            Log.e("Airwatch", "Failed to get serial number from SDK", e);
+        } catch (Exception e) {
+            Toast.makeText(context, "Serial Number" + e, Toast.LENGTH_LONG).show();
         }
+    }
+
+    public String getImei() {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(REACT_NATIVE_SHARED_PREFS, MODE_PRIVATE);
+        String serialNumber = sharedPreferences.getString(SERIAL_NUMBER, "");
+
+        String userName = "getmap";
+        String password = "260824!harelush";
+        String credentials = userName + ":" + password;
+        String encodedCredential = "";
+        String imei = "";
+        encodedCredential = Base64.getEncoder().encodeToString(credentials.getBytes());
+        String url = "https://wsconsole.evendigitals.com/API/mdm/devices";
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url + "/?searchby=Serialnumber&id=" + serialNumber)
+                .header("Content-Type", "application/json")
+                .header("aw-tenant-code", "Q3FQ9DDGTsNtSYFhY074KNVxUvT6VKWjf/rtcx06OT8=")
+                .header("Authorization", "Basic " + encodedCredential)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                assert response.body() != null;
+                String airWatchData = response.body().string();
+                JSONObject jsonObject = new JSONObject(airWatchData);
+                imei = jsonObject.getString("Imei");
+                Log.d("Imei", imei);
+            } else {
+                Log.d("Error", "imei failed");
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Imei" + e, Toast.LENGTH_LONG).show();
+            Log.d("Error", "crushed");
+            Log.d("Error", e.toString());
+            e.printStackTrace();
+        }
+
+        return imei;
     }
 }
