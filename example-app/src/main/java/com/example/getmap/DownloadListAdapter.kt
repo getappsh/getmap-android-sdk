@@ -273,8 +273,8 @@ class DownloadListAdapter(
                 //Cancel = Pause for the moment, in the next version cancel will change to a real cancel.{
 //                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
 //                holder.textFileName.text = "ההורדה בוטלה"}
-                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
+//                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
@@ -292,8 +292,8 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
-                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה: $name").with(tracker)
+//                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
                 holder.textFileName.text = "ההורדה בהשהייה"
                 holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE

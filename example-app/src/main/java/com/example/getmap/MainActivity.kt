@@ -680,13 +680,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
                         .with(tracker)
                 } else {
-                    val endName = map?.getJson()?.getJSONArray("region")?.get(0).toString() +
-                            map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                     TrackHelper.track()
-                        .dimension(
-                            mapServiceManager.service.config.matomoDimensionId.toInt(),
-                            endName
-                        )
                         .event("מיפוי ענן", "ניהול בקשות").name("חידוש הורדה")
                         .with(tracker)
                 }
