@@ -717,7 +717,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.tracker = tracker
                 popUp.recyclerView = recyclerView
 
-                if (count == 0) {
+                if (count == 0 && map?.deliveryState != MapDeliveryState.ERROR) {
                     count += 1
                     popUp.show(supportFragmentManager, "cancelled")
                 }
