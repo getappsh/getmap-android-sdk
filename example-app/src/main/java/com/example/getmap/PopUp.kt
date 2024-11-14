@@ -96,7 +96,7 @@ class PopUp : DialogFragment() {
                     }
                 }
 
-                GlobalScope.launch(Dispatchers.IO) {
+                CoroutineScope(Dispatchers.IO).launch {
                     service.deleteMap(mapId)
                     withContext(Dispatchers.Main) {
                         deleteFailImage?.visibility = View.INVISIBLE
@@ -109,7 +109,7 @@ class PopUp : DialogFragment() {
                 TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
                     .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
 
-                GlobalScope.launch(Dispatchers.IO) {
+                CoroutineScope(Dispatchers.IO).launch {
 
                     try {
                         service.getDownloadedMaps().forEach { mapData ->
@@ -139,9 +139,10 @@ class PopUp : DialogFragment() {
                 }
                 count = 0
             } else if (type == "cancelled") {
-                GlobalScope.launch(Dispatchers.IO) {
+                CoroutineScope(Dispatchers.IO).launch {
                     service.cancelDownload(mapId)
                 }
+                recyclerView.adapter?.notifyDataSetChanged()
                 count = 0
             }
             dismiss()
