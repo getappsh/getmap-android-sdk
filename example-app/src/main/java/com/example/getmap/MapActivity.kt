@@ -97,12 +97,16 @@ class MapActivity : AppCompatActivity() {
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
 
+        val lastCompass = sharedPreferences?.getString("last_compass", "0.0F")
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
         val lastLookAt = sharedPreferences?.getString("LookAt", "no data")
         if ((lastNavigator != null && lastNavigator != "no data") && (lastLookAt != null && lastLookAt != "no data")) {
             val gson = Gson()
+            val newCompass = gson.fromJson(lastCompass,Float::class.java)
             val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
             val lastLookAtObj = gson.fromJson(lastLookAt, LookAt::class.java)
+            val compass = findViewById<View>(R.id.arrow)
+            compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
             wwd.postDelayed({
@@ -140,10 +144,14 @@ class MapActivity : AppCompatActivity() {
                 val pRightBottom = getFourScreenPoints(wwd).rightBottom
                 val pRightTop = getFourScreenPoints(wwd).rightTop
                 val pLeftBottom = getFourScreenPoints(wwd).leftBottom
-                val latlonpLeftTop = pLeftTop.latitude.toString() + " " + pLeftTop.longitude.toString()
-                val latlonpLeftBottom = pLeftBottom.latitude.toString() + " " + pLeftBottom.longitude.toString()
-                val latlonpRightTop = pRightTop.latitude.toString() + " " + pRightTop.longitude.toString()
-                val latlonpRightBottom = pRightBottom.latitude.toString() + " " + pRightBottom.longitude.toString()
+                val latlonpLeftTop =
+                    pLeftTop.latitude.toString() + " " + pLeftTop.longitude.toString()
+                val latlonpLeftBottom =
+                    pLeftBottom.latitude.toString() + " " + pLeftBottom.longitude.toString()
+                val latlonpRightTop =
+                    pRightTop.latitude.toString() + " " + pRightTop.longitude.toString()
+                val latlonpRightBottom =
+                    pRightBottom.latitude.toString() + " " + pRightBottom.longitude.toString()
                 val generalLatLon =
                     "$latlonpLeftTop $latlonpRightTop $latlonpRightBottom $latlonpLeftBottom"
                 TrackHelper.track()
@@ -219,7 +227,7 @@ class MapActivity : AppCompatActivity() {
         drawPolygons()
     }
 
-    private fun controlSwitch(isChecked:Boolean, tracker: Tracker){
+    private fun controlSwitch(isChecked: Boolean, tracker: Tracker) {
         if (isChecked) {
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("הצגת מפת שליטה")
@@ -286,11 +294,11 @@ class MapActivity : AppCompatActivity() {
                 "${pLeftTop.longitude},${pLeftTop.latitude},${pRightTop.longitude},${pRightTop.latitude},${pRightBottom.longitude},${pRightBottom.latitude},${pLeftBottom.longitude},${pLeftBottom.latitude},${pLeftTop.longitude},${pLeftTop.latitude}",
                 false
             )
-            try{
+            try {
 
                 val id = service.downloadMap(props)
                 Log.d(TAG, "onDelivery: after download map have been called, id: $id")
-            }catch (e: MissingIMEIException){
+            } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
             }
         }
@@ -315,7 +323,6 @@ class MapActivity : AppCompatActivity() {
                 }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                     endName = g.statusMsg!!
-
                 }
                 if (g.statusMsg == "בהורדה" || g.statusMsg == "הסתיים" || g.statusMsg == "בקשה בהפקה" || g.statusMsg == "בקשה נשלחה") {
                     val polygon = createDownloadedPolygon(g, "green", endName).first
@@ -323,6 +330,16 @@ class MapActivity : AppCompatActivity() {
 
                     val label = createDownloadedPolygon(g, "green", endName).second
                     renderableLayer.addRenderable(label)
+                } else if (g.statusMsg == "בוטל") {
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                    val formattedDownloadStart = g.downloadStop?.format(formatter)
+                    endName = "השהייה: $formattedDownloadStart"
+                    val polygon = createDownloadedPolygon(g, "red", endName).first
+                    renderableLayer.addRenderable(polygon)
+
+                    val label = createDownloadedPolygon(g, "red", endName).second
+                    renderableLayer.addRenderable(label)
+
                 } else {
                     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     val formattedDownloadStart = g.downloadStop?.format(formatter)
@@ -827,6 +844,7 @@ class MapActivity : AppCompatActivity() {
 
         val jsonString = gson.toJson(wwd.navigator)
         sharedPreferencesEditor?.putString("last_navigator", jsonString)?.apply()
+        saveCompass()
     }
 
     @Deprecated("Deprecated in Java")
@@ -836,6 +854,14 @@ class MapActivity : AppCompatActivity() {
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun saveCompass(){
+        val compass = findViewById<View>(R.id.arrow)
+        val rotation = compass.rotation
+        val gson = Gson()
+        val rotationString = gson.toJson(rotation)
+        sharedPreferencesEditor?.putString("last_compass", rotationString)?.apply()
     }
 
     private fun showNorth() {
