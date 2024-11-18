@@ -1,0 +1,282 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 8,
+    "identityHash": "1c8e8a7a66e10b1b039f2aedf9929cb0",
+    "entities": [
+      {
+        "tableName": "TilePkg",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prodName` TEXT NOT NULL, `fileName` TEXT NOT NULL, `dateCreated` INTEGER NOT NULL, `dateUpdated` INTEGER NOT NULL, `dateCached` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `x` INTEGER NOT NULL, `y` INTEGER NOT NULL, `zoom` INTEGER NOT NULL, `left` REAL NOT NULL, `bottom` REAL NOT NULL, `right` REAL NOT NULL, `top` REAL NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "prodName",
+            "columnName": "prodName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateUpdated",
+            "columnName": "dateUpdated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCached",
+            "columnName": "dateCached",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tile.x",
+            "columnName": "x",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tile.y",
+            "columnName": "y",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tile.zoom",
+            "columnName": "zoom",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bBox.left",
+            "columnName": "left",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bBox.bottom",
+            "columnName": "bottom",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bBox.right",
+            "columnName": "right",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bBox.top",
+            "columnName": "top",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "MapPkg",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pId` TEXT NOT NULL, `bBox` TEXT NOT NULL, `footprint` TEXT, `flowState` TEXT NOT NULL, `reqId` TEXT, `JDID` INTEGER, `MDID` INTEGER, `state` TEXT NOT NULL, `statusMessage` TEXT NOT NULL, `fileName` TEXT, `jsonName` TEXT, `url` TEXT, `downloadProgress` INTEGER NOT NULL, `errorContent` TEXT, `cancelDownload` INTEGER NOT NULL, `downloadStart` INTEGER, `downloadStop` INTEGER, `downloadDone` INTEGER, `isUpdated` INTEGER NOT NULL DEFAULT 1, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `validationAttempt` INTEGER NOT NULL, `connectionAttempt` INTEGER NOT NULL DEFAULT 0, `mapAttempt` INTEGER NOT NULL DEFAULT 0, `mapDone` INTEGER NOT NULL DEFAULT 0, `jsonAttempt` INTEGER NOT NULL DEFAULT 0, `jsonDone` INTEGER NOT NULL DEFAULT 0)",
+        "fields": [
+          {
+            "fieldPath": "pId",
+            "columnName": "pId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bBox",
+            "columnName": "bBox",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "footprint",
+            "columnName": "footprint",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "flowState",
+            "columnName": "flowState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reqId",
+            "columnName": "reqId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JDID",
+            "columnName": "JDID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "MDID",
+            "columnName": "MDID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusMessage",
+            "columnName": "statusMessage",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "jsonName",
+            "columnName": "jsonName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "downloadProgress",
+            "columnName": "downloadProgress",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorContent",
+            "columnName": "errorContent",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cancelDownload",
+            "columnName": "cancelDownload",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadStart",
+            "columnName": "downloadStart",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "downloadStop",
+            "columnName": "downloadStop",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "downloadDone",
+            "columnName": "downloadDone",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isUpdated",
+            "columnName": "isUpdated",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadata.validationAttempt",
+            "columnName": "validationAttempt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadata.connectionAttempt",
+            "columnName": "connectionAttempt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "metadata.mapAttempt",
+            "columnName": "mapAttempt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "metadata.mapDone",
+            "columnName": "mapDone",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "metadata.jsonAttempt",
+            "columnName": "jsonAttempt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "metadata.jsonDone",
+            "columnName": "jsonDone",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c8e8a7a66e10b1b039f2aedf9929cb0')"
+    ]
+  }
+}
