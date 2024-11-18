@@ -684,7 +684,12 @@ class MapActivity : AppCompatActivity() {
                 (formattedNum.toDouble() * 65.9 - 54.4).toInt()
             }
 
-        return mb
+        return if (mb < 1) {
+            1
+        } else {
+            mb
+        }
+
     }
 
     private fun detectPolygon(
