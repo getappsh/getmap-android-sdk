@@ -378,7 +378,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
             TrackHelper.track().screen("/מחיקת תקולים").with(tracker)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
-            dialogBuilder.setPositiveButton("כן") { _, _ ->
+            dialogBuilder.setPositiveButton("כן") { dialog, _ ->
                 TrackHelper.track()
                     .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
                     .with(tracker)
@@ -390,10 +390,32 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     }
                 }
                 deleteFail.visibility = View.INVISIBLE
+                (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
             }
             dialogBuilder.setNegativeButton("לא", null)
+
             val popUpMessage = dialogBuilder.create()
+
+            popUpMessage.setOnShowListener {
+                popUpMessage.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    TrackHelper.track()
+                        .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
+                        .with(tracker)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                            if (map.statusMsg == "נכשל") {
+                                mapServiceManager.service.deleteMap(map.id!!)
+                            }
+                        }
+                    }
+                    deleteFail.visibility = View.INVISIBLE
+                    popUpMessage.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
+                    popUpMessage.dismiss()
+                }
+            }
+
             popUpMessage.show()
+
         }
 
         val pdfView = findViewById<PDFView>(R.id.pdfView)
