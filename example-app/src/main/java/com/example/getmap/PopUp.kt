@@ -38,7 +38,7 @@ class PopUp : DialogFragment() {
     var deleteFailFun: (() -> Unit)? = null
     var deleteFailImage: ImageButton? = null
     lateinit var recyclerView: RecyclerView
-
+    var clicked = false
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -70,86 +70,98 @@ class PopUp : DialogFragment() {
         }
 
         buttonDelete.setOnClickListener {
-            if (type == "delete") {
-                Log.i("bull name", bullName)
-                CoroutineScope(Dispatchers.IO).launch {
-                    val data = service.getDownloadedMap(mapId)
-                    if (data != null) {
-                        if (data.statusMsg != "הסתיים") {
-                            TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
-                                .event("מיפוי ענן", "ניהול בקשות")
-                                .name("מחיקת בקשה").with(tracker)
-                            return@launch
+            if (!clicked) {
+                clicked = true
 
-                        } else {
-                            TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
-                                .event("מיפוי ענן", "ניהול בולים")
-                                .name("מחיקת בול").with(tracker)
-                            return@launch
-                        }
-                    } else {
-                        Toast.makeText(
-                            this@PopUp.context,
-                            "The map does not exist",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                GlobalScope.launch(Dispatchers.IO) {
-                    service.deleteMap(mapId)
-                    withContext(Dispatchers.Main) {
-                        deleteFailImage?.visibility = View.INVISIBLE
-                        deleteFailFun?.invoke()
-                    }
-//                    TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
-                }
-                count = 0
-            } else if (type == "update") {
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
-                    .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים").with(tracker)
-
-                GlobalScope.launch(Dispatchers.IO) {
-
-                    try {
-                        service.getDownloadedMaps().forEach { mapData ->
-                            if (!mapData.isUpdated) {
-                                service.downloadUpdatedMap(mapData.id!!)
+                when (type) {
+                    "delete" -> {
+                        Log.i("bull name", bullName)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val data = service.getDownloadedMap(mapId)
+                            if (data != null) {
+                                if (data.statusMsg != "הסתיים") {
+                                    TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(),bullName)
+                                        .event("מיפוי ענן", "ניהול בקשות")
+                                        .name("מחיקת בקשה").with(tracker)
+                                } else {
+                                    TrackHelper.track()
+                                        .dimension(service.config.matomoDimensionId.toInt(),bullName)
+                                        .event("מיפוי ענן", "ניהול בולים")
+                                        .name("מחיקת בול").with(tracker)
+                                }
+                            } else {
+                                Toast.makeText(this@PopUp.context,"The map does not exist",Toast.LENGTH_SHORT).show()
                             }
                         }
-                    }catch (e: MissingIMEIException){
-//                    TODO show missing imei dialog
 
+                        CoroutineScope(Dispatchers.IO).launch {
+                            service.deleteMap(mapId)
+                            withContext(Dispatchers.Main) {
+                                deleteFailImage?.visibility = View.INVISIBLE
+                                deleteFailFun?.invoke()
+                            }
+                        }
+                        count = 0
+                        clicked = false
                     }
 
-                    recyclerView.smoothScrollToPosition(0)
-//                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
-                }
-                count = 0
-            } else if (type == "updateOne") {
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName).event("מיפוי ענן", "ניהול בולים")
-                    .name("עדכון בול").with(tracker)
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        service.downloadUpdatedMap(mapId)
-                        recyclerView.smoothScrollToPosition(0)
-                    }catch (e: MissingIMEIException){
-//                    TODO show missing imei dialog
+                    "update" -> {
+                        TrackHelper.track()
+                            .dimension(service.config.matomoDimensionId.toInt(),"כלל הבולים שהורדו")
+                            .event("מיפוי ענן", "ניהול בולים").name("עדכון כלל הבולים")
+                            .with(tracker)
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                service.getDownloadedMaps().forEach { mapData ->
+                                    if (!mapData.isUpdated) {
+                                        service.downloadUpdatedMap(mapData.id!!)
+                                    }
+                                }
+                            } catch (e: MissingIMEIException) {
+                                // TODO show missing imei dialog
+                            }
+
+                            recyclerView.smoothScrollToPosition(0)
+                        }
+                        count = 0
+                        clicked = false
+                    }
+
+                    "updateOne" -> {
+                        TrackHelper.track()
+                            .dimension(service.config.matomoDimensionId.toInt(), bullName)
+                            .event("מיפוי ענן", "ניהול בולים")
+                            .name("עדכון בול").with(tracker)
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                service.downloadUpdatedMap(mapId)
+                                recyclerView.smoothScrollToPosition(0)
+                            } catch (e: MissingIMEIException) {
+                                // TODO show missing imei dialog
+                            }
+                        }
+                        count = 0
+                        clicked = false
+                    }
+
+                    "cancelled" -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            service.cancelDownload(mapId)
+                        }
+                        recyclerView.adapter?.notifyDataSetChanged()
+                        count = 0
+                        clicked = false
                     }
                 }
-                count = 0
-            } else if (type == "cancelled") {
-                GlobalScope.launch(Dispatchers.IO) {
-                    service.cancelDownload(mapId)
-                }
-                count = 0
+                dismiss()
             }
-            dismiss()
-        }
 
-        buttonCancel.setOnClickListener {
-            count = 0
-            dismiss()
+            buttonCancel.setOnClickListener {
+                count = 0
+                dismiss()
+            }
         }
     }
 

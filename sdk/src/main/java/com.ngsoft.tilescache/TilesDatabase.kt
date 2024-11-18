@@ -17,14 +17,14 @@ import com.ngsoft.tilescache.models.TilePkg
 @Database(
     version = 11,
     entities = [TilePkg::class, MapPkg::class],
-//    autoMigrations = [
-//        AutoMigration(from = 3, to = 4),
-//        AutoMigration(from = 5, to = 6),
-//        AutoMigration(from = 6, to = 7),
-//        AutoMigration(from = 7, to = 8),
-//        AutoMigration(from = 9, to = 10),
-//    ]
-    //, exportSchema = false
+    autoMigrations = [
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8),
+        AutoMigration(from = 9, to = 10),
+    ]
+    , exportSchema = true
 )
 @TypeConverters(TimeStampConverter::class)
 abstract class TilesDatabase : RoomDatabase() {
