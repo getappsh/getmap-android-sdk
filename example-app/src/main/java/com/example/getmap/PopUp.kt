@@ -160,6 +160,7 @@ class PopUp : DialogFragment() {
 
             buttonCancel.setOnClickListener {
                 count = 0
+                clicked = false
                 dismiss()
             }
         }
