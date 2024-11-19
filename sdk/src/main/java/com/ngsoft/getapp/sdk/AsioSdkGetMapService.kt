@@ -58,7 +58,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         return super.getDiscoveryCatalog(inputProperties)
     }
 
-        override fun getDownloadedMap(id: String): MapData? {
+    override fun getDownloadedMap(id: String): MapData? {
         Timber.i("getDownloadedMap - map id: $id")
         return this.mapRepo.getDownloadData(id)
     }
@@ -139,7 +139,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             false
         }
     }
-    override fun synchronizeMapData(){
+    override suspend fun synchronizeMapData(){
         Timber.i("synchronizeMapData")
         mapFileManager.synchronizeMapData()
     }

@@ -17,6 +17,8 @@ import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
 import com.tonyodev.fetch2.Fetch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
@@ -35,6 +37,8 @@ class MapFileManager(private val appCtx: Context) {
     val config: GetMapService.GeneralConfig = ServiceConfig.getInstance(appCtx)
     private val mapRepo = MapRepo(appCtx)
     private val fetch: Fetch by lazy { Fetch.Impl.getDefaultInstance() }
+
+    private val syncMapDataMutex = Mutex()
 
     private val storageManager = appCtx.getSystemService(STORAGE_SERVICE) as StorageManager
 
@@ -394,12 +398,16 @@ class MapFileManager(private val appCtx: Context) {
     }
 
 
-    internal fun synchronizeMapData(){
+    internal suspend fun synchronizeMapData(){
         Timber.d("synchronizeMapData")
-        syncDatabase ()
-        syncStorage()
+        syncMapDataMutex.withLock {
+            Timber.d("synchronizeMapData - started")
+            syncDatabase()
+            syncStorage()
+            Timber.d("synchronizeMapData - ended")
+        }
     }
-    private fun syncDatabase (){
+   private fun syncDatabase (){
         Timber.i("syncDatabase")
         val mapsData = this.mapRepo.getAll().filter { it.state == MapDeliveryState.DONE ||
                 it.state == MapDeliveryState.ERROR || it.state == MapDeliveryState.CANCEL ||

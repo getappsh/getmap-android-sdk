@@ -158,7 +158,7 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         TODO("Not implemented in DefaultGetMapService")
     }
 
-    override fun synchronizeMapData() {
+    override suspend fun synchronizeMapData() {
         TODO("Not implemented in DefaultGetMapService")
     }
 

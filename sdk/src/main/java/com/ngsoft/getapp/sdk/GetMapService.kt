@@ -92,7 +92,7 @@ interface GetMapService {
     /**
      * Synchronize Map data by reading the files from storage, and syncing them against the DB
      */
-    fun synchronizeMapData()
+    suspend fun synchronizeMapData()
 
     /**
      * Purge cache registry (cached tile files remains intact)

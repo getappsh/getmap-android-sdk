@@ -16,6 +16,7 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
         this.mapRepo.update(
             id = id,
             statusMsg = app.getString(R.string.delivery_status_in_verification),
+            state = MapDeliveryState.DOWNLOAD,
             downloadProgress = 0, statusDescr = ""
         )
 
