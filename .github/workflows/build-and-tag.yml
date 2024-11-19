@@ -57,6 +57,13 @@ jobs:
           echo "New full version name: $FULL_VERSION_NAME"
           echo "New version code: $NEW_VERSION_CODE"
 
+      - name: Download debug keystore
+        env:
+          KEYSTORE_SECRET: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p ~/.android
+          echo "$KEYSTORE_SECRET" | base64 --decode > ~/.android/debug.keystore
+
       - name: Build the app
         run: ./gradlew :example-app:assembleDebug
 
