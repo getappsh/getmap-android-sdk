@@ -53,7 +53,9 @@ import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
 import com.ngsoft.getapp.sdk.models.MapData
+import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
+import com.ngsoft.tilescache.models.DeliveryFlowState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -84,6 +86,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     private var imeiEven = ""
+    var isResume = false
+    var isCancel = false
 
     companion object {
         var count = 0
@@ -236,6 +240,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 syncButton.visibility = View.INVISIBLE
             }
         })
+
+        mapServiceManager.service.setOnDownloadErrorListener { onDownloadError(it) }
+
         val swipeRecycler = findViewById<SwipeRefreshLayout>(R.id.refreshRecycler)
 //        getTracker()
         swipeRecycler.setOnRefreshListener {
@@ -252,6 +259,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             showDeleteFailedBtn(deleteFail)
 
             swipeRecycler.isRefreshing = false
+            recyclerView.adapter?.notifyDataSetChanged()
         }
 
         val discovery = findViewById<Button>(R.id.discovery)
@@ -369,8 +377,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
+            TrackHelper.track().screen("/מחיקת תקולים").with(tracker)
             dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
-            dialogBuilder.setPositiveButton("כן") { _, _ ->
+            dialogBuilder.setPositiveButton("כן") { dialog, _ ->
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
+                    .with(tracker)
                 GlobalScope.launch(Dispatchers.IO) {
                     mapServiceManager.service.getDownloadedMaps().forEach { map ->
                         if (map.statusMsg == "נכשל") {
@@ -379,25 +391,48 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     }
                 }
                 deleteFail.visibility = View.INVISIBLE
+                (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
             }
             dialogBuilder.setNegativeButton("לא", null)
+
             val popUpMessage = dialogBuilder.create()
+
+            popUpMessage.setOnShowListener {
+                popUpMessage.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    TrackHelper.track()
+                        .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
+                        .with(tracker)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        mapServiceManager.service.getDownloadedMaps().forEach { map ->
+                            if (map.statusMsg == "נכשל") {
+                                mapServiceManager.service.deleteMap(map.id!!)
+                            }
+                        }
+                    }
+                    deleteFail.visibility = View.INVISIBLE
+                    popUpMessage.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
+                    popUpMessage.dismiss()
+                }
+            }
+
             popUpMessage.show()
+
         }
 
         val pdfView = findViewById<PDFView>(R.id.pdfView)
         pdfView.visibility = View.INVISIBLE
         val pdFile = findViewById<ImageButton>(R.id.pdfFile)
         pdFile.setOnClickListener {
+            TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
             pdfView.fromAsset("strategy.pdf").load()
-
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (pdfView.visibility == View.VISIBLE) {
                     pdfView.visibility = View.INVISIBLE
+                    TrackHelper.track().screen("/מסך ראשי").with(tracker)
                 }
             }
         })
@@ -627,16 +662,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        dialog.show()
 //    }
 
+    @SuppressLint("LongLogTag")
     private fun onDelete(id: String) {
         Log.i("onCreate Tracker Refreshea", "${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
+        val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
+        popUp.deleteFailImage = deleteFail
+        popUp.deleteFailFun = { showDeleteFailedBtn(deleteFail) }
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + "-" +
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
             } else {
@@ -650,25 +689,63 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun onResume(id: String) {
-        TrackHelper.track()
-            .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
-            .with(tracker)
-        GlobalScope.launch(Dispatchers.IO) {
-            mapServiceManager.service.resumeDownload(id)
+        if (isResume) {
+            Toast.makeText(baseContext, "הפעולה מתבצעת...", Toast.LENGTH_LONG).show()
+            return
         }
+        isResume = true
 
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val map = mapServiceManager.service.getDownloadedMap(id)
+                if (map?.deliveryState == MapDeliveryState.ERROR) {
+                    TrackHelper.track()
+                        .event("מיפוי ענן", "ניהול בקשות").name("אתחל")
+                        .with(tracker)
+                } else {
+                    TrackHelper.track()
+                        .event("מיפוי ענן", "ניהול בקשות").name("חידוש הורדה")
+                        .with(tracker)
+                }
+
+                // Reprise du téléchargement après le suivi
+                mapServiceManager.service.resumeDownload(id)
+            } finally {
+                isResume = false
+            }
+        }
     }
 
     private fun onCancel(id: String) {
-        TrackHelper.track().screen("/עצירת בקשה").with(tracker)
-        GlobalScope.launch(Dispatchers.IO) {
-            val map = mapServiceManager.service.getDownloadedMap(id)
-            if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
-                        map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+        if (isCancel) {
+            Toast.makeText(baseContext, "הפעולה מתבצעת...", Toast.LENGTH_LONG).show()
+            return
+        }
+        isCancel = true
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                TrackHelper.track().screen("/עצירת בקשה").with(tracker)
+                val map = mapServiceManager.service.getDownloadedMap(id)
+                val endName = if (map?.fileName != null) {
+                    map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                            map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                } else {
+                    ""
+                }
                 popUp.bullName = endName
-            } else {
-                popUp.bullName = ""
+                popUp.mapId = id
+                popUp.type = "cancelled"
+                popUp.textM = "האם לעצור את ההורדה ?"
+                popUp.tracker = tracker
+                popUp.recyclerView = recyclerView
+
+                if (count == 0 && map?.deliveryState != MapDeliveryState.ERROR) {
+                    count += 1
+                    popUp.show(supportFragmentManager, "cancelled")
+                }
+            } finally {
+                isCancel = false
             }
         }
         popUp.mapId = id
@@ -710,8 +787,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 val jsonText =
                     Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name = region + "-" + map?.fileName?.substringAfterLast('_')
-                    ?.substringBefore('Z') + "Z"
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                 runOnUiThread {
                     TrackHelper.track()
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
@@ -724,8 +801,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 val jsonText =
                     Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name = region + "-" + map?.fileName?.substringAfterLast('_')
-                    ?.substringBefore('Z') + "Z"
+                val name =
+                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                 TrackHelper.track()
                     .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
                     .event("מיפוי ענן", "ניהול שגיאות").name("תקלה ביצירת qr")
@@ -812,14 +889,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         builder.setPositiveButton("OK") { dialog, _ ->
             dialog.dismiss()
         }
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-
-    private fun showDialog(msg: String) {
-        val builder = AlertDialog.Builder(this)
-        builder.setMessage(msg)
         val dialog = builder.create()
         dialog.show()
     }
@@ -911,14 +980,57 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
     }
 
-    fun getTracker(): Tracker {
-        if (tracker == null) {
-            tracker = TrackerBuilder.createDefault(
-                "https://matomo-matomo.apps.okd4-stage-getapp.getappstage.link/matomo.php", 1
-            ).build(
-                Matomo.getInstance(this)
-            )
+    private fun onDownloadError(id: String) {
+        val map = this.mapServiceManager.service.getDownloadedMap(id) ?: return
+        if (map.deliveryState != MapDeliveryState.ERROR) return
+        Log.d(TAG, "OnDownloadError ${map.id} flowState is : ${map.flowState}")
+
+        when (map.flowState) {
+            DeliveryFlowState.START -> {
+//                נכשל בהפקה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהפקה")
+                    .with(tracker)
+            }
+
+            DeliveryFlowState.IMPORT_CREATE -> {
+//            נכשל בקבלת סטטוס הפקה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                    .name("בקשה נכשלה בקבלת סטטוס הפקה")
+                    .with(tracker)
+            }
+
+            DeliveryFlowState.IMPORT_STATUS -> {
+//                נכשל בהכנת הורדה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                    .name("בקשה נכשלה בהכנת הורדה")
+                    .with(tracker)
+            }
+
+            DeliveryFlowState.IMPORT_DELIVERY, DeliveryFlowState.DOWNLOAD -> {
+//               נכשל בהורדה
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("בקשה נכשלה בהורדה")
+                    .with(tracker)
+            }
+
+            DeliveryFlowState.DOWNLOAD_DONE -> {
+//                נכשל בהעברת קבצים
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                    .name("בקשה נכשלה בהעברת קבצים")
+                    .with(tracker)
+            }
+
+            DeliveryFlowState.MOVE_FILES -> {
+//                נכשל בבדיקת Hash
+                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                    .name("בקשה נכשלה בבדיקת Hash")
+                    .with(tracker)
+            }
+
+            DeliveryFlowState.DONE -> {
+//                DO NOTHING HERE
+            }
         }
-        return tracker!!
+
+
     }
 }

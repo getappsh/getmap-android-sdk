@@ -16,9 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 14
-        versionName = "2.1.4"
-
+        versionCode = 20
+        versionName = "2.2.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -39,7 +38,21 @@ android {
 
     }
 
+    signingConfigs {
+        getByName("debug") {
+            val homeDir = System.getenv("USERPROFILE") ?: System.getenv("HOME")
+            storeFile = file("$homeDir/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(

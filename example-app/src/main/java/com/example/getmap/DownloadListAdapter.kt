@@ -172,7 +172,7 @@ class DownloadListAdapter(
                 val a = sdf.format(startDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
             }
-            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה") {
+            if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה" || downloadData.statusMsg == "מושהה") {
                 val a = sdf.format(stopDate)
                 holder.demandDate.text = "תאריך בקשה: ${a}"
             }
@@ -219,15 +219,13 @@ class DownloadListAdapter(
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime =
                     localDateTime.minus(Duration.ofSeconds(1))
-                val name = region + "-" + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-                val coordinates = downloadData.footprint
+                val name = region + downloadData.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 if (downloadData.downloadDone!!.toLocalDateTime()
                         .isAfter(oneSecondBeforeLocalDateTime)
                 ) {
                     TrackHelper.track()
                         .dimension(manager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "ניהול בקשות").name("בול הורד בהצלחה")
-
                         .with(tracker)
                 }
                 holder.sizeLayout.visibility = View.VISIBLE
@@ -263,13 +261,18 @@ class DownloadListAdapter(
             }
 
             CANCEL -> {
+                //Cancel = Pause for the moment, in the next version cancel will change to a real cancel.{
+//                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
+//                holder.textFileName.text = "ההורדה בוטלה"}
+//                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text ="ההורדה תמשיך מנקודת ההשהיה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
-                holder.textFileName.text = "ההורדה בהשהיה"
+                holder.textFileName.text = "ההורדה בהשהייה"
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
@@ -280,8 +283,10 @@ class DownloadListAdapter(
             }
 
             PAUSE -> {
-                holder.textFileName.text = "ההורדה נעצרה"
-                holder.textStatus.text = "נעצר: ההורדה תמשיך מנקודת העצירה"
+//                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
+                holder.textFileName.text = "ההורדה בהשהייה"
+                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
                 holder.textStatus.visibility = View.VISIBLE
