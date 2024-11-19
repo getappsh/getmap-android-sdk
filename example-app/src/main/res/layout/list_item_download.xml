@@ -145,7 +145,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_margin="5dp"
-            android:background="@drawable/square"
+            android:background="@drawable/pause"
             android:textAppearance="@style/TextAppearance.AppCompat.Display2"
             android:textSize="10sp"
             app:layout_constraintBottom_toBottomOf="@+id/progressBar"

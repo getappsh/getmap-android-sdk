@@ -4,13 +4,10 @@ package com.example.getmap
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.RotateDrawable
-import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
-import android.net.Network
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
@@ -23,11 +20,9 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.ColorRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -37,18 +32,15 @@ import com.ngsoft.getapp.sdk.models.MapData
 import com.ngsoft.getapp.sdk.models.MapDeliveryState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import java.io.File
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
-import java.util.Locale
 import java.time.Duration
 
 
@@ -58,7 +50,6 @@ class DownloadListAdapter(
     private val context: Context,
 ) :
     RecyclerView.Adapter<DownloadListAdapter.ViewHolder>() {
-
 
     private var notifValidation: Toast? = null
     var availableUpdate: Boolean = false
@@ -183,7 +174,7 @@ class DownloadListAdapter(
             }
             if (stopDate != null && downloadData.statusMsg == "בוטל" || downloadData.statusMsg == "ההורדה נכשלה" || downloadData.statusMsg == "מושהה") {
                 val a = sdf.format(stopDate)
-                holder.demandDate.text = "תאריך עצירה: ${a}"
+                holder.demandDate.text = "תאריך בקשה: ${a}"
             }
         }
 
@@ -216,7 +207,7 @@ class DownloadListAdapter(
                 holder.textFileName.visibility = View.INVISIBLE
                 holder.dates.visibility = View.INVISIBLE
                 holder.btnCancelResume.visibility = View.INVISIBLE
-                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
+                holder.btnCancelResume.setBackgroundResource(R.drawable.pause)
                 holder.btnQRCode.visibility = View.GONE
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
@@ -246,7 +237,7 @@ class DownloadListAdapter(
                 holder.btnCancelResume.visibility = View.GONE
                 holder.progressBar.progress = 0
                 triggerSpaceSignal()
-                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
+                holder.btnCancelResume.setBackgroundResource(R.drawable.pause)
                 holder.btnQRCode.visibility = View.VISIBLE
                 holder.size.visibility = View.VISIBLE
                 holder.product.visibility = View.VISIBLE
@@ -309,7 +300,7 @@ class DownloadListAdapter(
             CONTINUE -> {
                 holder.btnDelete.visibility = View.GONE
                 holder.percentage.visibility = View.VISIBLE
-                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
+                holder.btnCancelResume.setBackgroundResource(R.drawable.pause)
                 holder.btnQRCode.visibility = View.GONE
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
@@ -324,7 +315,7 @@ class DownloadListAdapter(
                 holder.textFileName.visibility = View.GONE
                 holder.dates.visibility = View.GONE
                 holder.btnCancelResume.visibility = View.VISIBLE
-                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
+                holder.btnCancelResume.setBackgroundResource(R.drawable.pause)
                 holder.btnQRCode.visibility = View.GONE
                 holder.size.visibility = View.GONE
                 holder.product.visibility = View.GONE
@@ -334,7 +325,7 @@ class DownloadListAdapter(
 
             DELETED -> {
                 holder.btnDelete.visibility = View.VISIBLE
-                holder.btnCancelResume.setBackgroundResource(R.drawable.square)
+                holder.btnCancelResume.setBackgroundResource(R.drawable.pause)
                 holder.btnQRCode.visibility = View.GONE
             }
         }
@@ -343,7 +334,7 @@ class DownloadListAdapter(
         holder.btnCancelResume.setOnClickListener {
             if ((it as Button).background.constantState?.equals(
                     ContextCompat.getDrawable(
-                        (it as Button).context,
+                        (it).context,
                         R.drawable.play
                     )?.constantState
                 ) == true
