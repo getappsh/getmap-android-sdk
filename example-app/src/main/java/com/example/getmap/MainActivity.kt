@@ -63,6 +63,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.internal.notifyAll
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
@@ -747,6 +748,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 isCancel = false
             }
         }
+        popUp.mapId = id
+        popUp.type = "cancelled"
+        popUp.textM = "האם להשהות את ההורדה ?"
+        popUp.tracker = tracker
+        popUp.recyclerView = recyclerView
+        if (count == 0) {
+            count += 1
+            popUp.show(supportFragmentManager, "cancelled")
+        }
+            recyclerView.adapter?.notifyDataSetChanged()
+//        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
+//        GlobalScope.launch(Dispatchers.IO) {
+//            mapServiceManager.service.cancelDownload(id)
+//        }
     }
 
     // Function that will update the AvailableSpace
