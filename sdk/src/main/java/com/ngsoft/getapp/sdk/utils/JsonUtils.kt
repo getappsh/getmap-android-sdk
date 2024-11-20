@@ -19,4 +19,9 @@ internal object JsonUtils {
         val jsonObject = readJson(jsonPath);
         return jsonObject.getString(key)
     }
+
+    fun JSONObject.getStringOrNull(key: String): String?{
+        return if(this.has(key) && !this.isNull(key)) this.getString(key) else null
+
+    }
 }
