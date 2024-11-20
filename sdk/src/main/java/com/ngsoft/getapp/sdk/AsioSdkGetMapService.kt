@@ -17,9 +17,9 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.qr.QRManager
 import com.ngsoft.getapp.sdk.utils.DateHelper
-import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
+import com.ngsoft.getapp.sdk.utils.JsonUtils.getStringOrNull
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.DownloadMetadata
@@ -207,13 +207,14 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val json = JSONObject()
 
-        val reqId = mapPkg.reqId ?: jsonFile.getString("reqId")
+        val reqId = mapPkg.reqId ?: jsonFile.getStringOrNull("reqId")
+        val footprint = FootprintUtils.toString(jsonFile.getJSONObject("footprint"))
+
         json.put("requestedBBox", mapPkg.bBox)
         json.put("reqId", reqId)
         json.put("id", jsonFile.getString("id"))
         json.put("ingestionDate", jsonFile.getString("ingestionDate"))
 
-        val footprint = FootprintUtils.toString(jsonFile.getJSONObject("footprint"))
         Timber.d("footprint size : ${footprint.length}")
         if (footprint.length < 430){ // about 23 points
             json.put("footprint", footprint)
@@ -230,7 +231,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val json = JSONObject(jsonString)
 
         val bBox = json.getString("requestedBBox")
-        val reqId = json.getString("reqId")
+        val reqId = json.getStringOrNull("reqId")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
 
@@ -251,9 +252,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             }
         }
 
+        val flowState = when {
+            reqId == null -> DeliveryFlowState.START
+            !BuildConfig.USE_MAP_CACHE -> DeliveryFlowState.IMPORT_STATUS
+            else -> DeliveryFlowState.IMPORT_CREATE
+        }
         val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, state = MapDeliveryState.CONTINUE,
-            flowState = DeliveryFlowState.IMPORT_STATUS, statusMsg = appCtx.getString(R.string.delivery_status_continue))
-
+            flowState = flowState, statusMsg = appCtx.getString(R.string.delivery_status_continue))
 
         val id = this.mapRepo.save(mapPkg)
         this.mapRepo.invoke(id)
