@@ -111,6 +111,8 @@ class PopUp : DialogFragment() {
                     }
                     clicked = false
                     count = 0
+                    Thread.sleep(200)
+
                 } else if (type == "update") {
                     TrackHelper.track()
                         .dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
