@@ -81,8 +81,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private lateinit var selectedProduct: DiscoveryItem
     private var availableSpaceInMb: Double = 0.0
     private var isReplacingActivity = false
-    private val phoneNumberPermissionCode = 100
-    private var phoneNumber = ""
     private val sdkAirWatchSdkManager = AirWatchSdkManager(this)
     private var imeiEven = ""
     var isResume = false
@@ -707,7 +705,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         .with(tracker)
                 }
 
-                // Reprise du téléchargement après le suivi
                 mapServiceManager.service.resumeDownload(id)
             } finally {
                 isResume = false

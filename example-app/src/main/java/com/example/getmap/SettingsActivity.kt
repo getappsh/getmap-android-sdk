@@ -169,7 +169,7 @@ class SettingsActivity : AppCompatActivity() {
                         service.fetchConfigUpdates()
                         service.fetchInventoryUpdates()
                     } catch (e: Exception) {
-                        TrackHelper.track().dimension(instance.service.config.matomoDimensionId.toInt(), "הגדרות").event("מיפוי ענן", " ניהול בקשות")
+                        TrackHelper.track().dimension(instance.service.config.matomoDimensionId.toInt(), "הגדרות").event("מיפוי ענן", " ניהול שגיאות")
                             .name("ניסיון חיבור לשרת נכשל - תקלת רשת")
                             .with(tracker)
                         withContext(Dispatchers.Main) {
