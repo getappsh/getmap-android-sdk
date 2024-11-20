@@ -61,10 +61,10 @@ class PopUp : DialogFragment() {
         buttonCancel.setOnClickListener {
             if (type == "delete") {
 
-                Log.i("bull name", bullName)
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
-                    .event("מיפוי ענן", "ניהול בולים")
-                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
+//                Log.i("bull name", bullName)
+//                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+//                    .event("מיפוי ענן", "ניהול בולים")
+//                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
             }
 
             dismiss()
