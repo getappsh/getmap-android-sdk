@@ -61,10 +61,10 @@ class PopUp : DialogFragment() {
         buttonCancel.setOnClickListener {
             if (type == "delete") {
 
-                Log.i("bull name", bullName)
-                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
-                    .event("מיפוי ענן", "ניהול בולים")
-                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
+//                Log.i("bull name", bullName)
+//                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
+//                    .event("מיפוי ענן", "ניהול בולים")
+//                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
             }
 
             dismiss()
@@ -109,7 +109,10 @@ class PopUp : DialogFragment() {
                         }
 //                    TrackHelper.track().event("deleteButton", "delete-map").with(tracker)
                     }
+                    clicked = false
                     count = 0
+                    Thread.sleep(200)
+
                 } else if (type == "update") {
                     TrackHelper.track()
                         .dimension(service.config.matomoDimensionId.toInt(), "כלל הבולים שהורדו")
@@ -130,6 +133,7 @@ class PopUp : DialogFragment() {
                         recyclerView.smoothScrollToPosition(0)
 //                        TrackHelper.track().event("Sync-bboxs", "fetch-inventory").with(tracker)
                     }
+                    clicked = false
                     count = 0
                 } else if (type == "updateOne") {
                     TrackHelper.track()
@@ -144,23 +148,19 @@ class PopUp : DialogFragment() {
 //                    TODO show missing imei dialog
                         }
                     }
+                    clicked = false
                     count = 0
                 } else if (type == "cancelled") {
                     CoroutineScope(Dispatchers.IO).launch {
                         service.cancelDownload(mapId)
                     }
                     recyclerView.adapter?.notifyDataSetChanged()
+                    clicked = false
                     count = 0
                 }
                 dismiss()
             }
         }
-
-            buttonCancel.setOnClickListener {
-                count = 0
-                dismiss()
-            }
-
         buttonCancel.setOnClickListener {
             count = 0
             clicked = false

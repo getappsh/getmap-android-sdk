@@ -55,6 +55,7 @@ class PasswordDialog(
         builder.setOnCancelListener { editConf.isChecked = false }
 
         val dialog = builder.create()
+        TrackHelper.track().screen("/הזנת סיסמה").with(tracker)
         dialog.show()
     }
 }

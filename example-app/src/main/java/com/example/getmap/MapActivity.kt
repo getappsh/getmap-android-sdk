@@ -91,21 +91,30 @@ class MapActivity : AppCompatActivity() {
         sharedPreferencesEditor = sharedPreferences?.edit()
         val instance = MapServiceManager.getInstance()
         service = instance.service
-        addGeoPkg()
 
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
 
+        val controlSwitch = findViewById<Switch>(R.id.control)
+        val controlText = findViewById<TextView>(R.id.controlText)
         val lastCompass = sharedPreferences?.getString("last_compass", "0.0F")
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
+        val lastControlMap = sharedPreferences?.getString("last_control_map", "no data")
         val lastLookAt = sharedPreferences?.getString("LookAt", "no data")
-        if ((lastNavigator != null && lastNavigator != "no data") && (lastLookAt != null && lastLookAt != "no data")) {
+        if ((lastNavigator != null && lastNavigator != "no data") && (lastLookAt != null && lastLookAt != "no data")
+            && (lastControlMap != null && lastControlMap != "no data")
+        ) {
             val gson = Gson()
-            val newCompass = gson.fromJson(lastCompass,Float::class.java)
+            val newControlMap = gson.fromJson(lastControlMap, Boolean::class.java)
+            val newCompass = gson.fromJson(lastCompass, Float::class.java)
             val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
             val lastLookAtObj = gson.fromJson(lastLookAt, LookAt::class.java)
             val compass = findViewById<View>(R.id.arrow)
+            controlSwitch.isChecked = newControlMap
+            if (controlSwitch.isChecked) {
+                geoPackageName = service.config.controlMapPath.toString()
+            }
             compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
@@ -126,6 +135,8 @@ class MapActivity : AppCompatActivity() {
             )
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
         }
+        addGeoPkg()
+
         val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
         globeLayout.addView(wwd)
 
@@ -202,8 +213,7 @@ class MapActivity : AppCompatActivity() {
         backFrame3.visibility = View.VISIBLE
         val backFrame4 = findViewById<View>(R.id.backFrame4)
         backFrame4.visibility = View.VISIBLE
-        val frame = findViewById<FrameLayout>(R.id.overlayView)
-        frame.visibility = View.VISIBLE
+        overlayView.visibility = View.VISIBLE
 
         close.setOnClickListener {
             saveLastPosition(false)
@@ -215,8 +225,6 @@ class MapActivity : AppCompatActivity() {
         val mapSwitch = findViewById<View>(R.id.mapSwitch)
         mapSwitch.visibility = View.GONE
 
-        val controlSwitch = findViewById<Switch>(R.id.control)
-        val controlText = findViewById<TextView>(R.id.controlText)
         controlText.setOnClickListener {
             controlSwitch.isChecked = !controlSwitch.isChecked
         }
@@ -235,7 +243,8 @@ class MapActivity : AppCompatActivity() {
             geoPackageName = service.config.controlMapPath.toString()
             addGeoPkg()
         } else {
-
+            geoPackageName = ""
+            addGeoPkg()
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("הסתרת מפת שליטה")
                 .with(tracker)
@@ -850,6 +859,7 @@ class MapActivity : AppCompatActivity() {
         val jsonString = gson.toJson(wwd.navigator)
         sharedPreferencesEditor?.putString("last_navigator", jsonString)?.apply()
         saveCompass()
+        saveControlMap()
     }
 
     @Deprecated("Deprecated in Java")
@@ -861,13 +871,22 @@ class MapActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun saveCompass(){
+    private fun saveCompass() {
         val compass = findViewById<View>(R.id.arrow)
         val rotation = compass.rotation
         val gson = Gson()
         val rotationString = gson.toJson(rotation)
         sharedPreferencesEditor?.putString("last_compass", rotationString)?.apply()
     }
+
+    private fun saveControlMap() {
+        val controlMap = findViewById<Switch>(R.id.control)
+        val checked = controlMap.isChecked
+        val gson = Gson()
+        val rotationString = gson.toJson(checked)
+        sharedPreferencesEditor?.putString("last_control_map", rotationString)?.apply()
+    }
+
 
     private fun showNorth() {
         val compass = findViewById<View>(R.id.arrow)
