@@ -40,7 +40,7 @@ internal class DeliveryManager private constructor(appCtx: Context){
     fun executeDeliveryFlow(id: String){
         Timber.d("executeDeliveryFlow - for id: $id")
         val mapPkg = this.mapRepo.getById(id)
-        Timber.d("executeDeliveryFlow - id: &id Flow State: ${mapPkg?.flowState}")
+        Timber.d("executeDeliveryFlow - id: $id Flow State: ${mapPkg?.flowState}")
 
         try{
             val toContinue = when(mapPkg?.flowState){
