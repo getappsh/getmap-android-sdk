@@ -254,7 +254,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val flowState = when {
             reqId == null -> DeliveryFlowState.START
-            !BuildConfig.USE_MAP_CACHE -> DeliveryFlowState.IMPORT_STATUS
+            BuildConfig.USE_MAP_CACHE -> DeliveryFlowState.IMPORT_STATUS
             else -> DeliveryFlowState.IMPORT_CREATE
         }
         val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, state = MapDeliveryState.CONTINUE,
