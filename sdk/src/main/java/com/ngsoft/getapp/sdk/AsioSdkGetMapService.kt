@@ -230,15 +230,22 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val (version, jsonString) = qrManager.processQrCodeData(data)
         val json = JSONObject(jsonString)
 
-        val bBox = json.getString("requestedBBox")
         val reqId = json.getStringOrNull("reqId")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
 
+        var bBox = json.getStringOrNull("requestedBBox")
         val footprint = if (version == 1){
             FootprintUtils.toString(json.getJSONObject("footprint"))
         }else {
-            json.optString("footprint", bBox)
+            json.getStringOrNull("footprint") ?: bBox
+        }
+        bBox = bBox ?: footprint
+
+        if (bBox == null){
+            val errorMsg = "processQrCodeData - footprint and bBox are null"
+            Timber.e( errorMsg)
+            throw Exception(errorMsg)
         }
 
         val qrIngDate = DateHelper.parse(ingestionDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
