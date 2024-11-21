@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk.delivery.flow
 
+import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.R
 import com.ngsoft.getapp.sdk.delivery.DeliveryContext
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
@@ -58,15 +59,28 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
                 statusDescr = ""
             )
         }else{
+
             if (mapPkg.metadata.validationAttempt < 1){
                 mapFileManager.deleteMapFiles(mapPkg.fileName, mapPkg.jsonName)
-
+                val flowState = if (mapPkg.url != null){
+                    DeliveryFlowState.IMPORT_DELIVERY
+                }else if(mapPkg.reqId != null){
+                    if (BuildConfig.USE_MAP_CACHE) {
+                        DeliveryFlowState.IMPORT_STATUS
+                    }else{
+                        DeliveryFlowState.IMPORT_CREATE
+                    }
+                }else{
+                    DeliveryFlowState.START
+                }
                 this.mapRepo.update(
                     id = id,
-                    flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                    flowState = flowState,
                     validationAttempt = ++mapPkg.metadata.validationAttempt,
                     statusMsg = app.getString(R.string.delivery_status_failed_verification_try_again),
                     statusDescr = "Checksum validation Failed try downloading again",
+                    mapDone = false,
+                    jsonDone = false,
                 )
                 Timber.d("validateImport - Failed downloading again")
                 return true

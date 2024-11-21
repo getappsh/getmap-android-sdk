@@ -8,6 +8,7 @@ import android.content.Context.STORAGE_SERVICE
 import android.os.Build
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadDone
 import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadFailed
+import com.ngsoft.getapp.sdk.downloader.FetchDownloader.isDownloadPaused
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
@@ -375,8 +376,11 @@ class MapFileManager(private val appCtx: Context) {
 
         mapPkg.flowState = if (mapDone && jsonDone){
             DeliveryFlowState.DOWNLOAD_DONE
-        }else if (!fetch.isDownloadFailed(mapPkg.MDID?.toInt()) && !fetch.isDownloadFailed(mapPkg.JDID?.toInt()) &&
-            downloadJsonFile?.exists() == true && downloadMapFile?.exists() == true){
+        }else if (
+            !fetch.isDownloadFailed(mapPkg.MDID?.toInt()) && !fetch.isDownloadFailed(mapPkg.JDID?.toInt())
+            && !fetch.isDownloadPaused(mapPkg.MDID?.toInt()) && !fetch.isDownloadPaused(mapPkg.JDID?.toInt())
+            && downloadJsonFile?.exists() == true && downloadMapFile?.exists() == true) {
+
             DeliveryFlowState.DOWNLOAD
         } else if(mapPkg.url != null) {
             DeliveryFlowState.IMPORT_DELIVERY

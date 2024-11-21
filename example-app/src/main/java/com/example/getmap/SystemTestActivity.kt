@@ -48,7 +48,8 @@ class SystemTestActivity : AppCompatActivity() {
             BuildConfig.USERNAME,
             BuildConfig.PASSWORD,
             16,
-            null)
+            null
+        )
 
         tracker = MatomoTracker.getTracker(this)
 
@@ -78,7 +79,7 @@ class SystemTestActivity : AppCompatActivity() {
                         updateTestResults(testReport)
                     }
                 }
-            }catch (e: VpnClosedException){
+            } catch (e: VpnClosedException) {
 
                 runOnUiThread {
                     showVpnErrorAndCloseActivity()
@@ -97,60 +98,83 @@ class SystemTestActivity : AppCompatActivity() {
 
 
     private fun updateTestResults(testReport: HashMap<Int, SystemTest.TestResults?>) {
-        updateTestResult(testDiscoveryIcon, testDiscoveryName, testReport[SystemTest.TEST_DISCOVERY])
+        updateTestResult(
+            testDiscoveryIcon,
+            testDiscoveryName,
+            testReport[SystemTest.TEST_DISCOVERY]
+        )
         updateTestResult(testConfigIcon, testConfigName, testReport[SystemTest.TEST_CONFIG])
         updateTestResult(testImportIcon, testImportName, testReport[SystemTest.TEST_IMPORT])
         updateTestResult(testDownloadIcon, testDownloadName, testReport[SystemTest.TEST_DOWNLOAD])
         updateTestResult(testFileMoveIcon, testFileMoveName, testReport[SystemTest.TEST_FILE_MOVE])
-        updateTestResult(testInventoryUpdatesIcon, testInventoryUpdatesName, testReport[SystemTest.TEST_INVENTORY_UPDATES])
+        updateTestResult(
+            testInventoryUpdatesIcon,
+            testInventoryUpdatesName,
+            testReport[SystemTest.TEST_INVENTORY_UPDATES]
+        )
 
-        if (testReport[SystemTest.TEST_DISCOVERY]?.success == false){
+        if (testReport[SystemTest.TEST_DISCOVERY]?.success != null &&
+            testReport[SystemTest.TEST_CONFIG]?.success != null &&
+            testReport[SystemTest.TEST_IMPORT]?.success != null &&
+            testReport[SystemTest.TEST_DOWNLOAD]?.success != null &&
+            testReport[SystemTest.TEST_FILE_MOVE]?.success != null &&
+            testReport[SystemTest.TEST_INVENTORY_UPDATES]?.success != null
+        ) {
+
+            if (testReport[SystemTest.TEST_DISCOVERY]?.success == false) {
 //            בחירת תחום failed
-            TrackHelper.track()
-                .event("מיפוי ענן", "ניהול שגיאות").name("בחירת תיחום נכשל")
-                .with(tracker)
-        }
-        if (testReport[SystemTest.TEST_CONFIG]?.success == false){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול שגיאות").name("בחירת תיחום נכשל")
+                    .with(tracker)
+            }
+            if (testReport[SystemTest.TEST_CONFIG]?.success == false) {
 //            קבלת קונפיגורציה failed
-            TrackHelper.track()
-                .event("מיפוי ענן", "ניהול שגיאות").name("קבלת קונפיגורציה נכשל")
-                .with(tracker)
-        }
-        if (testReport[SystemTest.TEST_IMPORT]?.success == false){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול שגיאות").name("קבלת קונפיגורציה נכשל")
+                    .with(tracker)
+            }
+            if (testReport[SystemTest.TEST_IMPORT]?.success == false) {
 //            הפקת מפה failed
-            TrackHelper.track()
-                .event("מיפוי ענן", "ניהול שגיאות").name("הפקת מפה נכשל")
-                .with(tracker)
-        }
-        if (testReport[SystemTest.TEST_DOWNLOAD]?.success == false){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול שגיאות").name("הפקת מפה נכשל")
+                    .with(tracker)
+            }
+            if (testReport[SystemTest.TEST_DOWNLOAD]?.success == false) {
 //            הורדת מפה failed
-            TrackHelper.track()
-                .event("מיפוי ענן", "ניהול שגיאות").name("הורדת מפה נכשל")
-                .with(tracker)
-        }
-        if (testReport[SystemTest.TEST_FILE_MOVE]?.success == false){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול שגיאות").name("הורדת מפה נכשל")
+                    .with(tracker)
+            }
+            if (testReport[SystemTest.TEST_FILE_MOVE]?.success == false) {
 //            העברת קבצים failed
-            TrackHelper.track()
-                .event("מיפוי ענן", "ניהול שגיאות").name("העברת קבצים נכשל")
-                .with(tracker)
-        }
-        if (testReport[SystemTest.TEST_INVENTORY_UPDATES]?.success == false){
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול שגיאות").name("העברת קבצים נכשל")
+                    .with(tracker)
+            }
+            if (testReport[SystemTest.TEST_INVENTORY_UPDATES]?.success == false) {
 //            סטטוס עדכנוית מפות failed
-            TrackHelper.track()
-                .event("מיפוי ענן", "ניהול שגיאות").name("סטטוס עדכנוית מפות נכשל")
-                .with(tracker)
+                TrackHelper.track()
+                    .event("מיפוי ענן", "ניהול שגיאות").name("סטטוס עדכנוית מפות נכשל")
+                    .with(tracker)
+            }
         }
     }
 
-    private fun updateTestResult(iconImageView: ImageView, testNameTextView: TextView, testResult: SystemTest.TestResults?) {
+    private fun updateTestResult(
+        iconImageView: ImageView,
+        testNameTextView: TextView,
+        testResult: SystemTest.TestResults?,
+    ) {
         // Update the icon based on the test result
         when {
             testResult?.success == null -> {
                 iconImageView.setImageResource(R.drawable.ic_loading)
             }
+
             testResult.success == true -> {
                 iconImageView.setImageResource(R.drawable.ic_check)
             }
+
             else -> {
                 iconImageView.setImageResource(R.drawable.ic_cross)
             }

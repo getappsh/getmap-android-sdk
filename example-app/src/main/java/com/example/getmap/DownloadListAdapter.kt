@@ -38,10 +38,14 @@ import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import java.io.File
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.Duration
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 
 class DownloadListAdapter(
@@ -153,8 +157,8 @@ class DownloadListAdapter(
                 "תוצר: ${jsonText.id.subSequence(jsonText.id.length - 4, jsonText.id.length)}"
             deliveryDate(manager, downloadData, holder)
             holder.textFileName.text = "${region} ${endName}"
-            val startDate = jsonText.sourceDateStart.substringBefore('T')
-            val endDate = jsonText.sourceDateEnd.substringBefore('T')
+            val startDate = jsonText.sourceDateStart
+            val endDate = jsonText.sourceDateEnd
             var startDateFormatted = formatDate(startDate)
             var endDateFormatted = formatDate(endDate)
             val tsoulam = "צולם: "
@@ -268,7 +272,7 @@ class DownloadListAdapter(
                 TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
-                holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
+                holder.textStatus.text = "ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
@@ -443,8 +447,12 @@ class DownloadListAdapter(
     }
 
     private fun formatDate(inputDate: String): String {
-        val (year, month, days) = inputDate.split("-")
-        return "$days/$month/$year"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        outputFormat.timeZone = TimeZone.getDefault()
+        val date: Date = inputFormat.parse(inputDate)
+        return outputFormat.format(date)
     }
 
     companion object {

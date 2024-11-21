@@ -37,6 +37,11 @@ object FetchDownloader{
 
     }
 
+    fun Fetch.isDownloadPaused(id: Int?): Boolean {
+        val download = this.getDownloadSync(id)
+        return download?.status == Status.PAUSED
+    }
+
     fun Fetch.isDownloadDone(id: Int?): Boolean {
         val download = this.getDownloadSync(id)
         return download == null || download.status == Status.COMPLETED

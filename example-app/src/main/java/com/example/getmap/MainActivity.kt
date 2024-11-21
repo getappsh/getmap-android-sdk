@@ -133,29 +133,30 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         if (!mapServiceManager.isInit) {
             val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
             StrictMode.setThreadPolicy(policy)
-
-            sdkAirWatchSdkManager.startRetrying()
-            var serialNumber: String? =
-                getSharedPreferences("wit_player_shared_preferences", 0).getString(
-                    "serialNumber",
-                    "serialNumber"
-                ).toString()
-            Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
-
-            val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
-            imeiEven = imeiSharedPref.getString("imei_key", "").toString()
-            if (imeiEven == "") {
-                try {
-                    imeiEven = sdkAirWatchSdkManager.imei
-                    imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
-                } catch (e: Exception) {
-                    Log.d("Error", "Error getting Imei")
-                    Log.d("Error", e.toString())
-                }
-                Log.d("AIRWATCH", "The Imei from airwatch is : $imeiEven")
-            } else {
-                Log.d("AIRWATCH", "The Imei from sharedpref is : $imeiEven")
-            }
+// When the imei will work, just use this code
+//            sdkAirWatchSdkManager.startRetrying()
+//            var serialNumber: String? =
+//                getSharedPreferences("wit_player_shared_preferences", 0).getString(
+//                    "serialNumber",
+//                    "serialNumber"
+//                ).toString()
+//            Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
+//
+//            val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
+//            imeiEven = imeiSharedPref.getString("imei_key", "").toString()
+//            if (imeiEven == "") {
+//                try {
+//                    imeiEven = sdkAirWatchSdkManager.imei
+//                    imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
+//                } catch (e: Exception) {
+//                    Log.d("Error", "Error getting Imei")
+//                    Log.d("Error", e.toString())
+//                }
+//                Log.d("AIRWATCH", "The Imei from airwatch is : $imeiEven")
+//            } else {
+//                Log.d("AIRWATCH", "The Imei from sharedpref is : $imeiEven")
+//            }
+            imeiEven = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
 
             var url = Pref.getInstance(this).baseUrl
             Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")

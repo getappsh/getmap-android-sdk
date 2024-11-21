@@ -190,7 +190,7 @@ internal class ServiceConfig private constructor(private var appContext: Context
     override var controlMapPath: String = pref.controlMapPath
         set(value){
             field = value
-            pref.ortophotoMapPath = value
+            pref.controlMapPath = value
         }
 
 
