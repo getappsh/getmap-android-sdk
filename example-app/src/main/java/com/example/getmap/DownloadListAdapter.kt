@@ -251,7 +251,11 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
-                TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true){
+                    TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
+                }
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -269,7 +273,11 @@ class DownloadListAdapter(
 //                holder.textStatus.text = "בוטל: ההורדה תמשיך מנקודת העצירה"
 //                holder.textFileName.text = "ההורדה בוטלה"}
 //                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
+                }
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textStatus.text = "ההורדה תמשיך מנקודת העצירה"
@@ -288,7 +296,11 @@ class DownloadListAdapter(
 
             PAUSE -> {
 //                val name = region + downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
+                val localDateTime: LocalDateTime = LocalDateTime.now()
+                val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
+                if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true) {
+                    TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
+                }
                 holder.textFileName.text = "ההורדה בהשהייה"
                 holder.textStatus.text = "השהייה: ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
