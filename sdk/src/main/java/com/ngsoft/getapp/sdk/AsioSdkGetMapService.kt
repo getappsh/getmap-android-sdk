@@ -268,7 +268,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             flowState = flowState, statusMsg = appCtx.getString(R.string.delivery_status_continue))
 
         val id = this.mapRepo.save(mapPkg)
-        this.mapRepo.invoke(id)
 
         if (isEnoughSpace(id)){
             Timber.d("processQrCodeData - execute the auth delivery process")
