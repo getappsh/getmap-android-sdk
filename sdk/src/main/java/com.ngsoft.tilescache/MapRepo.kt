@@ -47,6 +47,7 @@ internal class MapRepo(ctx: Context) {
     }
     fun save(mapPkg: MapPkg): String{
         val id = dao.insert(mapPkg)
+        this.invoke(id.toString())
         return id.toString()
     }
     fun getAll(): List<MapPkg>{
