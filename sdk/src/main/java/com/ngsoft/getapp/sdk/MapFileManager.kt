@@ -334,14 +334,14 @@ class MapFileManager(private val appCtx: Context) {
 
             val lastModified = targetMapFile.lastModified().coerceAtLeast(targetJsonFile.lastModified())
             mapPkg.downloadDone = LocalDateTime.ofInstant(Instant.ofEpochMilli(lastModified), ZoneOffset.UTC)
-            if (mapPkg.state == MapDeliveryState.DONE) {
+//            if (mapPkg.state == MapDeliveryState.DONE) {
                 mapPkg.state = MapDeliveryState.DONE
                 mapPkg.flowState = DeliveryFlowState.DONE
 
                 mapPkg.statusMsg = appCtx.getString(R.string.delivery_status_done)
-            } else {
-                mapPkg.flowState = DeliveryFlowState.MOVE_FILES
-            }
+//            } else {
+//                mapPkg.flowState = DeliveryFlowState.MOVE_FILES
+//            }
             return mapPkg
         }
 
