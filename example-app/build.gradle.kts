@@ -16,8 +16,8 @@ android {
         applicationId = "com.example.getmap"
         minSdk = 26
         targetSdk = 33
-        versionCode = 28
-        versionName = "2.2.12"
+        versionCode = 29
+        versionName = "2.2.13"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
