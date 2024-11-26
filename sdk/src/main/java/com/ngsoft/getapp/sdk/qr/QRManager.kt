@@ -8,6 +8,7 @@ import timber.log.Timber
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.ngsoft.getapp.sdk.R
+import com.ngsoft.getapp.sdk.exceptions.QRDataTooLargeException
 
 import com.ngsoft.getapp.sdk.utils.CompressionUtils
 import com.ngsoft.getapp.sdk.utils.EncryptionUtils
@@ -49,7 +50,7 @@ internal class QRManager(private val appCtx: Context) {
 
         if ( finalSize >= maxBytesSize){
             Timber.e("compressAndHashJson - Final size: $finalSize, is Higher then required: $maxBytesSize.", )
-            throw Exception(appCtx.getString(R.string.error_qr_code_file_size_to_large, finalSize))
+            throw QRDataTooLargeException(appCtx.getString(R.string.error_qr_code_file_size_to_large, finalSize))
         }
 
         val jsonContainer = JSONObject()
