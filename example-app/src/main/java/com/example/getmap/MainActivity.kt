@@ -969,9 +969,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         .name("תקלה בקבלת בול בסריקה").with(tracker)
 
                     val map = mapServiceManager.service.getDownloadedMap(e.id);
-                    
                     val name = map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
-                    val message = "בול מפה זהה כבר קיים $name"
+                    val message = "בול שמסתיים ב- $name כבר קיים במכשיר"
 
                     runOnUiThread { showErrorDialog(message) }
 
