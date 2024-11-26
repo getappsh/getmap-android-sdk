@@ -126,6 +126,7 @@ class SettingsActivity : AppCompatActivity() {
             val gson = Gson()
             val jsonStringLookAt = gson.toJson(lookAt)
             sharedPreferencesEditor?.putString("LookAt", jsonStringLookAt)?.apply()
+            sharedPreferencesEditor?.putString("last_compass", 0F.toString())?.apply()
             Toast.makeText(baseContext,"זום המפה אופס",Toast.LENGTH_SHORT).show()
 
         }

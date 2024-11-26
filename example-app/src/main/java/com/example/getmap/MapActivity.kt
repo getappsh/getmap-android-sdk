@@ -124,6 +124,9 @@ class MapActivity : AppCompatActivity() {
             compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
+            if (newCompass == 0F){
+             wwd.navigator.heading = 0.0
+            }
             wwd.postDelayed({
                 simulateTouch(wwd.x, wwd.y)
             }, 50)
