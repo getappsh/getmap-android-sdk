@@ -378,7 +378,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         deleteFail.setOnClickListener {
             val dialogBuilder = android.app.AlertDialog.Builder(this)
             TrackHelper.track().screen("/מחיקת תקולים").with(tracker)
-            dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו בהורדה?")
+            dialogBuilder.setMessage("האם למחוק את כל ההורדות שנכשלו?")
             dialogBuilder.setPositiveButton("כן") { dialog, _ ->
                 TrackHelper.track()
                     .event("מיפוי ענן", "ניהול בקשות").name("מחיקת כלל בקשות התקולות")
