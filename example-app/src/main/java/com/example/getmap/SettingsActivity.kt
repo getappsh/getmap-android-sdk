@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -28,8 +29,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.getmap.matomo.MatomoTracker
 import com.example.getmap.models.ConfigParam.NebulaParamAdapter
 import com.example.getmap.models.ConfigParam.NebulaParam
+import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
+import gov.nasa.worldwind.WorldWind
+import gov.nasa.worldwind.geom.LookAt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +45,8 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.R)
 class SettingsActivity : AppCompatActivity() {
     private lateinit var nebulaParamAdapter: NebulaParamAdapter
+    private var sharedPreferences: SharedPreferences? = null
+    private var sharedPreferencesEditor: SharedPreferences.Editor? = null
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +60,8 @@ class SettingsActivity : AppCompatActivity() {
         var params = emptyArray<NebulaParam>()
         val tracker: Tracker?
         tracker = MatomoTracker.getTracker(this)
+        sharedPreferences = baseContext.getSharedPreferences("navigator", Context.MODE_PRIVATE)
+        sharedPreferencesEditor = sharedPreferences?.edit()
         nebulaParamAdapter = NebulaParamAdapter(params)
         val testButton = findViewById<ImageButton>(R.id.SdkTest)
         recyclerView.adapter = nebulaParamAdapter
@@ -66,6 +74,7 @@ class SettingsActivity : AppCompatActivity() {
             version.text = ""
         }
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
+        val resetMapButton = findViewById<Button>(R.id.reset_map)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
@@ -94,6 +103,23 @@ class SettingsActivity : AppCompatActivity() {
                 .with(tracker)
             val intent = Intent(this,SystemTestActivity::class.java)
             startActivity(intent)
+        }
+
+        resetMapButton.setOnClickListener {
+            val lookAt = LookAt().set(
+                31.75,
+                34.85,
+                0.0,
+                WorldWind.ABSOLUTE,
+                300000.0,
+                0.0,
+                0.0,
+                0.0
+            )
+            val gson = Gson()
+            val jsonStringLookAt = gson.toJson(lookAt)
+            sharedPreferencesEditor?.putString("LookAt", jsonStringLookAt)?.apply()
+            Toast.makeText(baseContext,"זום המפה אופס",Toast.LENGTH_SHORT).show()
         }
 
         cancelButton.setOnClickListener {
