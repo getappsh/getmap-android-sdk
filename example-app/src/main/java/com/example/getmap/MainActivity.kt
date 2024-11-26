@@ -970,8 +970,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
                     val map = mapServiceManager.service.getDownloadedMap(e.id);
 
-//                    need to have some message like בול מפה זהה כבר קיים. + the name of the map or something else
-                    val message = ""
+                    val jsonText =
+                        Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
+                    val region = jsonText.region[0]
+                    val name =
+                        region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                    val message = "בול מפה זהה כבר קיים $name"
 
                     runOnUiThread { showErrorDialog(message) }
 
