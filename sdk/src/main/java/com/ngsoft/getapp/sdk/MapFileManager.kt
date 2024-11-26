@@ -14,6 +14,7 @@ import com.ngsoft.getapp.sdk.models.MapDeliveryState
 import com.ngsoft.getapp.sdk.utils.FileUtils
 import com.ngsoft.getapp.sdk.utils.FootprintUtils
 import com.ngsoft.getapp.sdk.utils.JsonUtils
+import com.ngsoft.getapp.sdk.utils.JsonUtils.getStringOrNull
 import com.ngsoft.tilescache.MapRepo
 import com.ngsoft.tilescache.models.DeliveryFlowState
 import com.ngsoft.tilescache.models.MapPkg
@@ -476,12 +477,13 @@ class MapFileManager(private val appCtx: Context) {
             if (!this.mapRepo.doesJsonFileExist(file.name)) {
                 Timber.d("syncStorage - found json file not in the inventory, fileName: ${file.name}. insert it.")
 
-                val pId: String; val footprint: String; val url: String?;
+                val pId: String; val footprint: String; val url: String?; val reqId: String?
                 try{
                     val json = JsonUtils.readJson(file.path)
                     pId = json.getString("id")
                     footprint = FootprintUtils.toString(json.getJSONObject("footprint"))
-                    url =  if (json.has("downloadUrl")) json.getString("downloadUrl") else null
+                    url =  json.getStringOrNull("downloadUrl")
+                    reqId = json.getStringOrNull("reqId")
                 }catch (e: JSONException){
                     Timber.e("syncStorage - not valid json object: ${e.message.toString()}")
                     Timber.d("syncStorage - delete json file: ${file.name}")
@@ -492,6 +494,7 @@ class MapFileManager(private val appCtx: Context) {
 
                 val mapPkg = this.refreshMapState(MapPkg(
                     pId = pId,
+                    reqId = reqId,
                     bBox = footprint,
                     state = MapDeliveryState.ERROR,
                     flowState = DeliveryFlowState.MOVE_FILES,

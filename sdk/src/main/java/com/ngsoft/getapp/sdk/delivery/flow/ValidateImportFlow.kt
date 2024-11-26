@@ -53,7 +53,7 @@ internal class ValidateImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx
             this.findAndRemoveDuplicates(id)
             this.mapRepo.update(
                 id = id,
-                state =  MapDeliveryState.DONE,
+                state =  MapDeliveryState.DOWNLOAD,
                 flowState = DeliveryFlowState.DONE,
                 statusMsg = app.getString(R.string.delivery_status_done),
                 statusDescr = ""

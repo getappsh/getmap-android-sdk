@@ -113,11 +113,20 @@ class MapActivity : AppCompatActivity() {
             val compass = findViewById<View>(R.id.arrow)
             controlSwitch.isChecked = newControlMap
             if (controlSwitch.isChecked) {
+                geoPackageName = service.config.ortophotoMapPath.toString()
+                addGeoPkg()
                 geoPackageName = service.config.controlMapPath.toString()
+                addGeoPkg()
+            } else {
+                geoPackageName = service.config.ortophotoMapPath.toString()
+                addGeoPkg()
             }
             compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
+            if (newCompass == 0F){
+             wwd.navigator.heading = 0.0
+            }
             wwd.postDelayed({
                 simulateTouch(wwd.x, wwd.y)
             }, 50)
@@ -135,7 +144,7 @@ class MapActivity : AppCompatActivity() {
             )
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
         }
-        addGeoPkg()
+
 
         val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
         globeLayout.addView(wwd)
@@ -682,16 +691,15 @@ class MapActivity : AppCompatActivity() {
 
     private fun calculateMB(formattedNum: String, resolution: BigDecimal): Int {
         var mb = 0
+        val resolutionString = String.format("%.9f", resolution.toDouble())
         mb =
-            if (resolution.toDouble() == 1.34110450744629E-6 || resolution.toDouble() == 1.3411E-6) {
-                (formattedNum.toDouble() * 9.5).toInt()
-            } else if (resolution.toDouble() == 2.6822E-6) {
-                (formattedNum.toDouble() * 4.5).toInt()
-            } else if (resolution.toDouble() == 5.36441E-6) {
-                (formattedNum.toDouble() * 2.5).toInt()
-            } else {
-                (formattedNum.toDouble() * 65.9 - 54.4).toInt()
-            }
+        when (resolutionString) {
+            "0.000001341" -> (formattedNum.toDouble() * 9.5).toInt()
+            "0.000002682" -> (formattedNum.toDouble() * 4.5).toInt()
+            "0.000005364" -> (formattedNum.toDouble() * 2.5).toInt()
+            else -> (formattedNum.toDouble() * 65.9 - 54.4).toInt()
+        }
+
 
         return if (mb < 1) {
             1

@@ -16,6 +16,7 @@ import com.tonyodev.fetch2core.Reason
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.net.HttpURLConnection
@@ -28,6 +29,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private var toContinue = false
+    private var onChangedCalled = false
     private val latch = CountDownLatch(1)
 
     private lateinit var id: String
@@ -45,6 +47,16 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         fetch.attachFetchObserversForDownload(downloadMapId, this)
         fetch.attachFetchObserversForDownload(downloadJsonId, this)
 
+        coroutineScope.launch {
+            delay(5000L)
+            if (!onChangedCalled && downloadMapId != -1 && downloadJsonId != -1) {
+                Timber.i("watchDownloadImport - onChangedCalled: $onChangedCalled")
+                mapRepo.update(id, flowState = DeliveryFlowState.IMPORT_DELIVERY,
+                    state = MapDeliveryState.ERROR, statusMsg = app.getString(R.string.delivery_status_failed))
+                latch.countDown()
+            }
+        }
+
         latch.await()
 
         Timber.i("watchDownloadImport - toContinue: $toContinue")
@@ -57,6 +69,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
     }
 
     override fun onChanged(data: Download, reason: Reason) {
+        onChangedCalled = true
         coroutineScope.launch {
 
             Timber.i("onChanged - id: $id - reason: ${reason.name} - status: ${data.status} - file: ${data.file}")
@@ -193,7 +206,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
                 mapRepo.setFootprint(id, it)
                 mapRepo.updateAndReturn(id, jsonDone = true, jsonName = FileUtils.getFileNameFromUri(download.file))
             }
-            addUrlToJson(download)
+            addMetaDataToJson(download)
 
 
             Timber.i("downloadFile - id: $id, Map Done: ${mapPkg?.metadata?.mapDone}, Json Done: ${mapPkg?.metadata?.jsonDone}, state: ${mapPkg?.state} ")
@@ -217,7 +230,7 @@ internal class WatchDownloadImportFlow(dlvCtx: DeliveryContext) : DeliveryFlow(d
         latch.countDown()
     }
 
-    private fun addUrlToJson(download: Download){
+    private fun addMetaDataToJson(download: Download){
         Timber.d("addUrlToJson - append download url to json")
         val mapPkg = mapRepo.getById(id) ?: return
         val json = JsonUtils.readJson(download.file)
