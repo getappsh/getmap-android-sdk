@@ -104,8 +104,15 @@ class SettingsActivity : AppCompatActivity() {
             val intent = Intent(this,SystemTestActivity::class.java)
             startActivity(intent)
         }
-
+        var lastClickTime = 0L
         resetMapButton.setOnClickListener {
+            val currentTime = System.currentTimeMillis()
+
+            if (currentTime - lastClickTime < 2000) {
+                return@setOnClickListener
+            }
+            lastClickTime = currentTime
+
             val lookAt = LookAt().set(
                 31.75,
                 34.85,
@@ -120,6 +127,7 @@ class SettingsActivity : AppCompatActivity() {
             val jsonStringLookAt = gson.toJson(lookAt)
             sharedPreferencesEditor?.putString("LookAt", jsonStringLookAt)?.apply()
             Toast.makeText(baseContext,"זום המפה אופס",Toast.LENGTH_SHORT).show()
+
         }
 
         cancelButton.setOnClickListener {
