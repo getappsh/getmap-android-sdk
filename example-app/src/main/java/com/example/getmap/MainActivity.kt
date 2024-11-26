@@ -320,7 +320,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 .with(tracker)
             popUp.recyclerView = recyclerView
             popUp.type = "update"
-            popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
+            popUp.textM = "האם לעדכן את כל המפות?"
             popUp.tracker = tracker
             if (count == 0) {
                 count += 1
@@ -837,18 +837,19 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     GlobalScope.launch(Dispatchers.IO) {
                         val map = mapServiceManager.service.getDownloadedMap(id)
                         if (map!!.fileName != null) {
-                            val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                            val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + " " +
                                     map.fileName!!.substringAfterLast('_')
                                         .substringBefore('Z') + "Z"
                             popUp.bullName = endName
+                            popUp.textM = "האם לעדכן את ${endName}?"
                         } else {
                             popUp.bullName = ""
+                            popUp.textM = "האם לבצע עדכון מפה ?"
                         }
                     }
                     popUp.mapId = id
                     popUp.type = "updateOne"
                     popUp.recyclerView = recyclerView
-                    popUp.textM = "האם לבצע עדכון מפה ?"
                     if (count == 0) {
                         count += 1
                         popUp.show(supportFragmentManager, "updateOne")

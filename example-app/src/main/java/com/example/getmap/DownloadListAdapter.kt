@@ -251,11 +251,14 @@ class DownloadListAdapter(
             }
 
             ERROR -> {
+                val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                 val localDateTime: LocalDateTime = LocalDateTime.now()
                 val oneSecondBeforeLocalDateTime: LocalDateTime = localDateTime.minus(Duration.ofSeconds(1))
                 if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true){
                     TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 }
+                holder.demandDate.visibility = View.VISIBLE
+                holder.demandDate.text = "תאריך בקשה: ${sdf.format(downloadData.reqDate)}"
                 holder.textFileName.text = "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
@@ -265,6 +268,11 @@ class DownloadListAdapter(
                 holder.btnQRCode.visibility = View.GONE
                 holder.sizeLayout.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
+                if (downloadData.statusDescr != null && downloadData.statusDescr != "") {
+                    holder.textStatus.text = "נכשל - ${downloadData.statusDescr}"
+                } else {
+                    holder.textStatus.text = "נכשל"
+                }
                 updateProgressBarColor(holder.progressBar, R.color.red, R.color.light_red)
             }
 
