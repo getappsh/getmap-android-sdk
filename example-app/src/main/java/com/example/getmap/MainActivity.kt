@@ -284,7 +284,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     } else {
                         Toast.makeText(
                             applicationContext,
-                            "יש כבר מספר הורדות מקסימלי",
+                            "המתן לסיום הורדות קודמות",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -665,7 +665,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun onDelete(id: String) {
         Log.i("onCreate Tracker Refreshea", "${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
-        popUp.textM = "האם אתה בטוח שאתה רוצה למחוק את הבול הזו?"
         popUp.mapId = id
         popUp.type = "delete"
         val deleteFail = findViewById<ImageButton>(R.id.deleteFail)
@@ -674,11 +673,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
+                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + " " +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
+                popUp.textM = "האם למחוק את $endName?"
             } else {
                 popUp.bullName = ""
+                popUp.textM = "האם למחוק את הבול הזו?"
             }
         }
         if (count == 0) {
@@ -734,7 +735,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.bullName = endName
                 popUp.mapId = id
                 popUp.type = "cancelled"
-                popUp.textM = "האם לעצור את ההורדה ?"
+                popUp.textM = "האם להשהות את ההורדה ?"
                 popUp.tracker = tracker
                 popUp.recyclerView = recyclerView
 
@@ -746,15 +747,15 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 isCancel = false
             }
         }
-        popUp.mapId = id
-        popUp.type = "cancelled"
-        popUp.textM = "האם להשהות את ההורדה ?"
-        popUp.tracker = tracker
-        popUp.recyclerView = recyclerView
-        if (count == 0) {
-            count += 1
-            popUp.show(supportFragmentManager, "cancelled")
-        }
+//        popUp.mapId = id
+//        popUp.type = "cancelled"
+//        popUp.textM = "האם להשהות את ההורדה ?"
+//        popUp.tracker = tracker
+//        popUp.recyclerView = recyclerView
+//        if (count == 0) {
+//            count += 1
+//            popUp.show(supportFragmentManager, "cancelled")
+//        }
             recyclerView.adapter?.notifyDataSetChanged()
 //        TrackHelper.track().event("cancelButton", "cancel-download-map").with(tracker)
 //        GlobalScope.launch(Dispatchers.IO) {
