@@ -180,10 +180,10 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        lastConfig.text = "lastInventory: ${dateFormat(service.config.lastConfigCheck)}"
+        lastConfig.text = "lastInventory: ${dateFormat(service.config.lastInventoryCheck)}"
         lastServerConfig.text =
             "lastServerConfig: ${dateFormat(service.config.lastServerConfigUpdate)}"
-        lastInventory.text = "lastConfig: ${dateFormat(service.config.lastInventoryCheck)}"
+        lastInventory.text = "lastConfig: ${dateFormat(service.config.lastConfigCheck)}"
 
         val refreshButton = findViewById<ImageButton>(R.id.refresh_button_conf)
         refreshButton.setOnClickListener {
