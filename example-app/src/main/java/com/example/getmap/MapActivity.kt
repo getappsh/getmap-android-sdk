@@ -113,7 +113,13 @@ class MapActivity : AppCompatActivity() {
             val compass = findViewById<View>(R.id.arrow)
             controlSwitch.isChecked = newControlMap
             if (controlSwitch.isChecked) {
+                geoPackageName = service.config.ortophotoMapPath.toString()
+                addGeoPkg()
                 geoPackageName = service.config.controlMapPath.toString()
+                addGeoPkg()
+            } else {
+                geoPackageName = service.config.ortophotoMapPath.toString()
+                addGeoPkg()
             }
             compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
@@ -135,7 +141,7 @@ class MapActivity : AppCompatActivity() {
             )
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
         }
-        addGeoPkg()
+
 
         val globeLayout = findViewById<View>(R.id.mapView) as FrameLayout
         globeLayout.addView(wwd)
