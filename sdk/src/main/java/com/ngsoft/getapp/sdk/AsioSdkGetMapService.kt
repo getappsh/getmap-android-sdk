@@ -213,6 +213,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         json.put("requestedBBox", mapPkg.bBox)
         json.put("reqId", reqId)
         json.put("id", jsonFile.getString("id"))
+        json.put("downloadUrl", mapPkg.url)
         json.put("ingestionDate", jsonFile.getString("ingestionDate"))
 
         Timber.d("footprint size : ${footprint.length}")
@@ -233,6 +234,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val reqId = json.getStringOrNull("reqId")
         val pid = json.getString("id")
         val ingestionDate = json.getString("ingestionDate")
+        val url = json.getStringOrNull("downloadUrl")
 
         var bBox = json.getStringOrNull("requestedBBox")
         val footprint = if (version == 1){
@@ -260,12 +262,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         }
 
         val flowState = when {
+            url != null -> DeliveryFlowState.IMPORT_DELIVERY
             reqId == null -> DeliveryFlowState.START
             BuildConfig.USE_MAP_CACHE -> DeliveryFlowState.IMPORT_STATUS
             else -> DeliveryFlowState.IMPORT_CREATE
         }
         val mapPkg = MapPkg(pId = pid, bBox = bBox, footprint=footprint, reqId = reqId, state = MapDeliveryState.CONTINUE,
-            flowState = flowState, statusMsg = appCtx.getString(R.string.delivery_status_continue))
+            url = url, flowState = flowState, statusMsg = appCtx.getString(R.string.delivery_status_continue))
 
         val id = this.mapRepo.save(mapPkg)
 
