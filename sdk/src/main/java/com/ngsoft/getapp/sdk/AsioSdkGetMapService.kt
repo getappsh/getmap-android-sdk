@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.annotations.RequiresIMEI
+import com.ngsoft.getapp.sdk.exceptions.QRDataTooLargeException
 import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
 import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
@@ -215,13 +216,13 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         json.put("id", jsonFile.getString("id"))
         json.put("downloadUrl", mapPkg.url)
         json.put("ingestionDate", jsonFile.getString("ingestionDate"))
-
-        Timber.d("footprint size : ${footprint.length}")
-        if (footprint.length < 430){ // about 23 points
-            json.put("footprint", footprint)
+        json.put("footprint", footprint)
+        return try {
+            qrManager.generateQrCode(2, json.toString(), width, height)
+        }catch (e: QRDataTooLargeException){
+            json.remove("footprint")
+            qrManager.generateQrCode(2, json.toString(), width, height)
         }
-
-        return qrManager.generateQrCode(2, json.toString(), width, height)
     }
 
     @RequiresIMEI
