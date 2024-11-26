@@ -51,7 +51,11 @@ internal class DeliveryManager private constructor(appCtx: Context){
                 DeliveryFlowState.DOWNLOAD -> WatchDownloadImportFlow(dlvContext).execute(id)
                 DeliveryFlowState.DOWNLOAD_DONE -> MoveImportFilesFlow(dlvContext).execute(id)
                 DeliveryFlowState.MOVE_FILES -> ValidateImportFlow(dlvContext).execute(id)
-                DeliveryFlowState.DONE -> false
+                DeliveryFlowState.DONE -> {
+                    this.mapRepo.update(id, state = MapDeliveryState.DONE, statusMsg = app.getString(R.string.delivery_status_done))
+                    sendDeliveryStatus(id)
+                    false
+                }
                 else -> false
             }
             Timber.d("executeDeliveryFlow - to continue: $toContinue")

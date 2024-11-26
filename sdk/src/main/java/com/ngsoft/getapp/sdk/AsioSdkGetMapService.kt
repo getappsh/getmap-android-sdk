@@ -172,7 +172,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                         mapPkg.state == MapDeliveryState.CANCEL||
                         mapPkg.state == MapDeliveryState.ERROR)
             ){
-                val errorMsg = "deleteMap: Unable to resume download map status is: ${mapPkg?.state}"
+                val errorMsg = "resumeDownload: Unable to resume download map status is: ${mapPkg?.state}"
                 Timber.e(errorMsg)
                 this.mapRepo.update(id, state = MapDeliveryState.ERROR, statusDescr = errorMsg)
             }
