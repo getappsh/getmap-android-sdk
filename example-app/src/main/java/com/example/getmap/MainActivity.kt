@@ -49,6 +49,7 @@ import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
+import com.ngsoft.getapp.sdk.exceptions.MapAlreadyExistsException
 import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.jobs.SystemTestReceiver
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -962,6 +963,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
+                }catch (e: MapAlreadyExistsException){
+                    TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
+                        .name("תקלה בקבלת בול בסריקה").with(tracker)
+
+                    val map = mapServiceManager.service.getDownloadedMap(e.id);
+
+//                    need to have some message like בול מפה זהה כבר קיים. + the name of the map or something else
+                    val message = ""
+
+                    runOnUiThread { showErrorDialog(message) }
+
                 } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
                 } catch (e: Exception) {

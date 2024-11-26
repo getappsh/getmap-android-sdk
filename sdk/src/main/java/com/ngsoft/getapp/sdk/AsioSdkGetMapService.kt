@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import com.ngsoft.getapp.sdk.annotations.RequiresIMEI
+import com.ngsoft.getapp.sdk.exceptions.MapAlreadyExistsException
 import com.ngsoft.getapp.sdk.exceptions.QRDataTooLargeException
 import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
 import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
@@ -258,7 +259,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             val dIngDate = DateHelper.parse(sIngDate,  DateTimeFormatter.ISO_OFFSET_DATE_TIME) ?: return@forEach
             if(dIngDate >= qrIngDate){
                 Timber.e("processQrCodeData - map with the same or grater ingestion date already exist", )
-                throw Exception(appCtx.getString(R.string.error_map_already_exists, it.id))
+                throw MapAlreadyExistsException(it.id.toString())
             }
         }
 
