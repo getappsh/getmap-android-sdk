@@ -81,7 +81,7 @@ internal class ImportStatusFlow(dlvCtx: DeliveryContext) : DeliveryFlow(dlvCtx) 
                 }
                 MapImportState.IN_PROGRESS -> {
                     Timber.w("checkImportStatus - MapImportState -> IN_PROGRESS, progress: ${stat.progress}")
-                    this.mapRepo.update(id = id, downloadProgress = stat.progress,
+                    this.mapRepo.update(id = id, downloadProgress = stat.progress, state = MapDeliveryState.DOWNLOAD,
                         statusMsg = app.getString(R.string.delivery_status_req_in_progress), statusDescr = "")
                     if (lastProgress != stat.progress){
                         timeoutTime = TimeSource.Monotonic.markNow() + config.deliveryTimeoutMins.minutes
