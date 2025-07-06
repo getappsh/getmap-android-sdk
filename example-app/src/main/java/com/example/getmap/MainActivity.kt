@@ -680,7 +680,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.textM = "האם למחוק את $endName?"
             } else {
                 popUp.bullName = ""
-                popUp.textM = "האם למחוק את הבול הזו?"
+                popUp.textM = "האם למחוק את הבול הזה?"
             }
         }
         if (count == 0) {
