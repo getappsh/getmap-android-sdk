@@ -682,6 +682,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.bullName = ""
                 popUp.textM = "האם למחוק את הבול הזה?"
             }
+
         }
         if (count == 0) {
             count += 1
