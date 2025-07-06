@@ -257,6 +257,10 @@ class DownloadListAdapter(
                     TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 }
                 holder.textFileName.text = "ההורדה נכשלה"
+                val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                holder.demandDate.text = "תאריך בקשה: ${sdf.format(downloadData.reqDate)}"
+                holder.demandDate.visibility = View.VISIBLE
+                holder.textStatus.text = downloadData.statusDescr ?: "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
