@@ -231,6 +231,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         mapServiceManager.service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
+            onSignalSpace()
             var atLeastOneUpdated = it.any {
                 it.isUpdated == false
             }
@@ -446,6 +447,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        mapServiceManager = MapServiceManager.getInstance()
 //        Log.d("a", "sa")
 //    }
+    override fun onResume() {
+        super.onResume()
+        onSignalSpace()
+    }
 
     private fun showDeleteFailedBtn(deleteFail: ImageButton) {
         GlobalScope.launch(Dispatchers.IO) {
