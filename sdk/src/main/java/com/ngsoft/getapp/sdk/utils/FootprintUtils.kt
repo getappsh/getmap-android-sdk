@@ -1,17 +1,16 @@
 package com.ngsoft.getapp.sdk.utils
 
-import android.util.Log
 import org.json.JSONObject
 
 internal object FootprintUtils {
-
+    @Throws(Exception::class)
     fun toString(footprint: JSONObject): String {
-        return try {
-            val type = footprint.getString("type")
-            val coordinatesArray = footprint.getJSONArray("coordinates")
-            val coordinatesString = StringBuilder()
+        val type = footprint.getString("type")
+        val coordinatesArray = footprint.getJSONArray("coordinates")
+        val coordinatesString = StringBuilder()
 
-            if (type == "Polygon") {
+        when (type) {
+            "Polygon" -> {
                 val ringArray = coordinatesArray.getJSONArray(0)
                 for (i in 0 until ringArray.length()) {
                     val pointArray = ringArray.getJSONArray(i)
@@ -19,7 +18,8 @@ internal object FootprintUtils {
                     val latitude = pointArray.getDouble(1)
                     coordinatesString.append("$longitude,$latitude,")
                 }
-            } else if (type == "MultiPolygon") {
+            }
+            "MultiPolygon" -> {
                 for (i in 0 until coordinatesArray.length()) {
                     val polygonArray = coordinatesArray.getJSONArray(i)
                     val ringArray = polygonArray.getJSONArray(0)
@@ -30,24 +30,16 @@ internal object FootprintUtils {
                         coordinatesString.append("$longitude,$latitude,")
                     }
                 }
-            } else {
-                Log.e("FootprintUtils", "Unknown geometry type: $type")
-                return ""
             }
-
-            if (coordinatesString.isNotEmpty()) {
-                coordinatesString.deleteCharAt(coordinatesString.length - 1)
-            }
-
-            return coordinatesString.toString()
-
-        } catch (e: Exception) {
-            Log.e("FootprintUtils", "Error parsing footprint: ${e.message}", e)
-            ""
+            else -> throw Exception("Unsupported footprint geometry type: $type")
         }
+
+        if (coordinatesString.isNotEmpty()) {
+            coordinatesString.setLength(coordinatesString.length - 1)
+        }
+
+        return coordinatesString.toString()
     }
 
-
     fun toList(footprint: String): List<Double> = footprint.split(",").map { it.toDouble() }
-
 }
