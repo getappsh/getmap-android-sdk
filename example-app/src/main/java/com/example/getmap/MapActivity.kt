@@ -125,7 +125,7 @@ class MapActivity : AppCompatActivity() {
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
             wwd.navigator = newNavigator
             if (newCompass == 0F){
-             wwd.navigator.heading = 0.0
+                wwd.navigator.heading = 0.0
             }
             wwd.postDelayed({
                 simulateTouch(wwd.x, wwd.y)
@@ -589,9 +589,11 @@ class MapActivity : AppCompatActivity() {
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
                     val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                    spaceMb = calculateMB(km, polygon.resolution)
+                    if (km.toDouble() < 100) {
+                        spaceMb = calculateMB(km, polygon.resolution)
+                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    }
                     showKm.text = "שטח משוער :${km} קמ\"ר"
-                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
                     if (polygon.end == polygon.start) {
                         date.text = "צולם : ${polygon.end}"
                         date.textSize = 15F
@@ -613,9 +615,11 @@ class MapActivity : AppCompatActivity() {
                     for (polygon in allPolygon) {
                         if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
                             val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                            spaceMb = calculateMB(km, polygon.resolution)
+                            if (km.toDouble() < 100) {
+                                spaceMb = calculateMB(km, polygon.resolution)
+                                showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                            }
                             showKm.text = "שטח משוער :${km} קמ\"ר"
-                            showBm.text = "נפח משוער :${spaceMb} מ\"ב"
                             if (polygon.end == polygon.start) {
                                 date.text = "צולם : ${polygon.end}"
                             } else {
@@ -631,9 +635,11 @@ class MapActivity : AppCompatActivity() {
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
                 val km = String.format("%.2f", abs(firstPolyObject.intersection * 10000))
-                spaceMb = calculateMB(km, firstPolyObject.resolution)
+                if (km.toDouble() < 100) {
+                    spaceMb = calculateMB(km, firstPolyObject.resolution)
+                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                }
                 showKm.text = "שטח משוער :${km} קמ\"ר"
-                showBm.text = "נפח משוער :${spaceMb} מ\"ב"
                 if (firstPolyObject.end == firstPolyObject.start) {
                     date.text = "צולם : ${firstPolyObject.end}"
                 } else {
@@ -693,12 +699,12 @@ class MapActivity : AppCompatActivity() {
         var mb = 0
         val resolutionString = String.format("%.9f", resolution.toDouble())
         mb =
-        when (resolutionString) {
-            "0.000001341" -> (formattedNum.toDouble() * 9.5).toInt()
-            "0.000002682" -> (formattedNum.toDouble() * 4.5).toInt()
-            "0.000005364" -> (formattedNum.toDouble() * 2.5).toInt()
-            else -> (formattedNum.toDouble() * 65.9 - 54.4).toInt()
-        }
+            when (resolutionString) {
+                "0.000001341" -> (formattedNum.toDouble() * 9.5).toInt()
+                "0.000002682" -> (formattedNum.toDouble() * 4.5).toInt()
+                "0.000005364" -> (formattedNum.toDouble() * 2.5).toInt()
+                else -> (formattedNum.toDouble() * 65.9 - 54.4).toInt()
+            }
 
 
         return if (mb < 1) {

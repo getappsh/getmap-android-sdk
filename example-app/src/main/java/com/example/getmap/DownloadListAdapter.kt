@@ -462,14 +462,29 @@ class DownloadListAdapter(
         notifValidation?.show()
     }
 
-    private fun formatDate(inputDate: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        outputFormat.timeZone = TimeZone.getDefault()
-        val date: Date = inputFormat.parse(inputDate)
-        return outputFormat.format(date)
+    private fun formatDate(inputDate: String?): String {
+        if (inputDate.isNullOrBlank()) {
+            return ""
+        }
+
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+                timeZone = TimeZone.getDefault()
+            }
+
+            val date: Date = inputFormat.parse(inputDate)
+                ?: return ""
+
+            outputFormat.format(date)
+        } catch (e: Exception) {
+            Log.e("DownloadListAdapter", "formatDate failed for \"$inputDate\"", e)
+            ""
+        }
     }
+
 
     companion object {
         const val RESUME_BUTTON_CLICK = 1
