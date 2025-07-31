@@ -954,6 +954,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
+
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
 //                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
 //                    val region = jsonText.region[0]
