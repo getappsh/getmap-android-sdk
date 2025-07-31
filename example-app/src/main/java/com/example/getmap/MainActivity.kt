@@ -926,6 +926,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val inflater = LayoutInflater.from(this)
         val dialogView = inflater.inflate(R.layout.dialog_qr_code, null)
 
+        val qrTitle: TextView = dialogView.findViewById(R.id.qr_title)
+        qrTitle.text = "שיתוף"
+
         val imageViewQRCode: ImageView = dialogView.findViewById(R.id.imageViewQRCode)
         imageViewQRCode.setImageBitmap(qrCodeBitmap)
 
