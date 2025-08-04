@@ -794,7 +794,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "שיתוף")
                         .name("שליחת בול בסריקה").with(tracker)
-                    showQRCodeDialog(qrCode)
+                    showQRCodeDialog(qrCode, name)
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
@@ -921,13 +921,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
 
-    private fun showQRCodeDialog(qrCodeBitmap: Bitmap) {
+    private fun showQRCodeDialog(qrCodeBitmap: Bitmap, detailMapName: String) {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
         val dialogView = inflater.inflate(R.layout.dialog_qr_code, null)
 
         val qrTitle: TextView = dialogView.findViewById(R.id.qr_title)
-        qrTitle.text = "שיתוף"
+        qrTitle.text = getString(R.string.qr_title, detailMapName)
 
         val imageViewQRCode: ImageView = dialogView.findViewById(R.id.imageViewQRCode)
         imageViewQRCode.setImageBitmap(qrCodeBitmap)
