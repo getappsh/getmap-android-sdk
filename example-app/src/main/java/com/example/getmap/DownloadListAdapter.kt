@@ -256,6 +256,7 @@ class DownloadListAdapter(
                 if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true){
                     TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 }
+                holder.textFileName.visibility = View.VISIBLE
                 holder.textFileName.text = "ההורדה נכשלה"
                 val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
                 holder.demandDate.text = "תאריך בקשה: ${sdf.format(downloadData.reqDate)}"
