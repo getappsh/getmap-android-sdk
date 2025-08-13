@@ -683,7 +683,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.bullName = ""
                 popUp.textM = getString(R.string.delete_detail_map_popup_text)
             }
-
         }
         if (count == 0) {
             count += 1
