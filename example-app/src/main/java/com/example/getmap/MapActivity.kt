@@ -80,6 +80,9 @@ class MapActivity : AppCompatActivity() {
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
 
+    private val showBm: TextView by lazy { findViewById(R.id.showMb) }
+    private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -537,9 +540,6 @@ class MapActivity : AppCompatActivity() {
             boxCoordinatesEsri.add(Point(pLeftBottom.longitude, pLeftBottom.latitude))
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
-
-            val showKm = findViewById<TextView>(R.id.kmShow)
-            val showBm = findViewById<TextView>(R.id.showMb)
             var spaceMb = 0
             val date = findViewById<TextView>(R.id.dateText)
             val maxMb = service.config.maxMapSizeInMB.toInt()
@@ -956,8 +956,6 @@ class MapActivity : AppCompatActivity() {
                 Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
                 checkBboxBeforeSent()
             } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
-                val showKm = findViewById<TextView>(R.id.kmShow)
-                val showBm = findViewById<TextView>(R.id.showMb)
                 val date = findViewById<TextView>(R.id.dateText)
                 val areaCal = getString(R.string.calculate_area_text)
                 val volumeCal = getString(R.string.calculate_volume_text)
