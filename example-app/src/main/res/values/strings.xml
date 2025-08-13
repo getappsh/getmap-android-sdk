@@ -17,4 +17,5 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="default_delete_popup_text">האם תרצה למחוק בול זה?</string>
+    <string name="delete_detail_map_popup_text">האם למחוק את ההורדה?</string>
 </resources>

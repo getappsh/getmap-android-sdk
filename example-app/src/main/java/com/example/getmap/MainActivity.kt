@@ -674,13 +674,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + " " +
+                val endName =
+//                    map.getJson()?.getJSONArray("region")?.get(0).toString() + " " +
                         map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                 popUp.bullName = endName
                 popUp.textM = "האם למחוק את $endName?"
             } else {
                 popUp.bullName = ""
-                popUp.textM = getString(R.string.default_delete_popup_text)
+                popUp.textM = getString(R.string.delete_detail_map_popup_text)
             }
         }
         if (count == 0) {
