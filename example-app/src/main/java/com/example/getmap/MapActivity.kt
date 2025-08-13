@@ -549,7 +549,7 @@ class MapActivity : AppCompatActivity() {
                 pLeftBottom
             ) / 1000)
             val formattedNum = String.format("%.2f", area)
-            showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
+            showKm.text = getString(R.string.calculate_area_with_value_text, formattedNum)
 
             allPolygon.clear()
 
@@ -591,9 +591,9 @@ class MapActivity : AppCompatActivity() {
                     val km = String.format("%.2f", abs(polygon.intersection * 10000))
                     if (km.toDouble() < 100) {
                         spaceMb = calculateMB(km, polygon.resolution)
-                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                        showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
                     }
-                    showKm.text = "שטח משוער :${km} קמ\"ר"
+                    showKm.text = getString(R.string.calculate_area_with_value_text, km)
                     if (polygon.end == polygon.start) {
                         date.text = "צולם : ${polygon.end}"
                         date.textSize = 15F
@@ -617,9 +617,9 @@ class MapActivity : AppCompatActivity() {
                             val km = String.format("%.2f", abs(polygon.intersection * 10000))
                             if (km.toDouble() < 100) {
                                 spaceMb = calculateMB(km, polygon.resolution)
-                                showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                                showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
                             }
-                            showKm.text = "שטח משוער :${km} קמ\"ר"
+                            showKm.text = getString(R.string.calculate_area_with_value_text, km)
                             if (polygon.end == polygon.start) {
                                 date.text = "צולם : ${polygon.end}"
                             } else {
@@ -637,9 +637,9 @@ class MapActivity : AppCompatActivity() {
                 val km = String.format("%.2f", abs(firstPolyObject.intersection * 10000))
                 if (km.toDouble() < 100) {
                     spaceMb = calculateMB(km, firstPolyObject.resolution)
-                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
                 }
-                showKm.text = "שטח משוער :${km} קמ\"ר"
+                showKm.text = getString(R.string.calculate_area_with_value_text, km)
                 if (firstPolyObject.end == firstPolyObject.start) {
                     date.text = "צולם : ${firstPolyObject.end}"
                 } else {
@@ -678,8 +678,9 @@ class MapActivity : AppCompatActivity() {
                 } else {
                     date.text = "אין תוצר עדכני באזור זה"
                     date.textSize = 15F
-                    showKm.text = "שטח משוער :אין נתון"
-                    showBm.text = "נפח משוער :אין נתון"
+                    val noData = getString(R.string.no_data_text)
+                    showKm.text = getString(R.string.default_calculate_area_text, noData)
+                    showBm.text = getString(R.string.calculate_volume_with_string_text, noData)
                 }
             }
         } catch (e: Exception) {
@@ -958,8 +959,10 @@ class MapActivity : AppCompatActivity() {
                 val showKm = findViewById<TextView>(R.id.kmShow)
                 val showBm = findViewById<TextView>(R.id.showMb)
                 val date = findViewById<TextView>(R.id.dateText)
-                showKm.text = "שטח משוער : מחשב שטח"
-                showBm.text = "נפח משוער : מחשב נפח"
+                val areaCal = getString(R.string.calculate_area_text)
+                val volumeCal = getString(R.string.calculate_volume_text)
+                showKm.text = getString(R.string.default_calculate_area_text, areaCal)
+                showBm.text = getString(R.string.calculate_volume_with_string_text, volumeCal)
                 date.text = ""
             }
 
