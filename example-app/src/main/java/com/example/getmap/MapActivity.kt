@@ -519,6 +519,10 @@ class MapActivity : AppCompatActivity() {
         return textAttrs
     }
 
+    fun Position.toPoint(): Point {
+        return Point(this.longitude, this.latitude)
+    }
+
     private fun checkBboxBeforeSent() {
         try {
             dMode = false
@@ -527,17 +531,14 @@ class MapActivity : AppCompatActivity() {
             val pRightTop = getFourScreenPoints(wwd).rightTop
             val pLeftBottom = getFourScreenPoints(wwd).leftBottom
 
-            val boxCoordinates = mutableListOf<Position>()
-            boxCoordinates.add(pLeftTop)
-            boxCoordinates.add(pRightTop)
-            boxCoordinates.add(pRightBottom)
-            boxCoordinates.add(pLeftBottom)
+            val boxCoordinates = mutableListOf(pLeftTop, pRightTop, pRightBottom, pLeftBottom)
 
-            val boxCoordinatesEsri = mutableListOf<Point>()
-            boxCoordinatesEsri.add(Point(pLeftTop.longitude, pLeftTop.latitude))
-            boxCoordinatesEsri.add(Point(pRightTop.longitude, pRightTop.latitude))
-            boxCoordinatesEsri.add(Point(pRightBottom.longitude, pRightBottom.latitude))
-            boxCoordinatesEsri.add(Point(pLeftBottom.longitude, pLeftBottom.latitude))
+            val boxCoordinatesEsri = mutableListOf(
+                pLeftTop.toPoint(),
+                pRightTop.toPoint(),
+                pRightBottom.toPoint(),
+                pLeftBottom.toPoint()
+            )
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
             var spaceMb = 0
@@ -549,6 +550,7 @@ class MapActivity : AppCompatActivity() {
                 pLeftBottom
             ) / 1000)
             val formattedNum = String.format("%.2f", area)
+            Log.d("Area2", formattedNum)
             showKm.text = getString(R.string.calculate_area_with_value_text, formattedNum)
 
             allPolygon.clear()
@@ -665,6 +667,7 @@ class MapActivity : AppCompatActivity() {
             }
 
             val overlayView = findViewById<FrameLayout>(R.id.overlayView)
+//            Log.d("Area", area.toString() + "+++" + service.config.maxMapAreaSqKm)
             if (spaceMb < maxMb && downloadAble) {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
