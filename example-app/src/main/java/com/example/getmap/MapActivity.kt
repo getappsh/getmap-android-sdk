@@ -82,6 +82,7 @@ class MapActivity : AppCompatActivity() {
 
     private val showBm: TextView by lazy { findViewById(R.id.showMb) }
     private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
+    private val date: TextView by lazy { findViewById(R.id.dateText) }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -159,7 +160,6 @@ class MapActivity : AppCompatActivity() {
 
         val overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
-        val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
@@ -542,7 +542,6 @@ class MapActivity : AppCompatActivity() {
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
             var spaceMb = 0
-            val date = findViewById<TextView>(R.id.dateText)
             val maxMb = service.config.maxMapSizeInMB.toInt()
             var downloadAble = false
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(
@@ -959,7 +958,6 @@ class MapActivity : AppCompatActivity() {
                 Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
                 checkBboxBeforeSent()
             } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
-                val date = findViewById<TextView>(R.id.dateText)
                 val areaCal = getString(R.string.calculate_area_text)
                 val volumeCal = getString(R.string.calculate_volume_text)
                 showKm.text = getString(R.string.default_calculate_area_text, areaCal)
