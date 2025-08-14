@@ -425,7 +425,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         pdFile.setOnClickListener {
             TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
-            pdfView.fromAsset("strategy.pdf").load()
+            pdfView.fromAsset("strategy2.pdf").load()
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
