@@ -519,8 +519,22 @@ class MapActivity : AppCompatActivity() {
         return textAttrs
     }
 
-    fun Position.toPoint(): Point {
+    private fun Position.toPoint(): Point {
         return Point(this.longitude, this.latitude)
+    }
+
+    private fun processPolygon(
+        p: DiscoveryItem,
+        polygon: List<List<List<Double>>>,
+        polygonBoxEsri: com.arcgismaps.geometry.Polygon,
+        boxCoordinates: MutableList<Position>
+    ) {
+        polygon.forEach { poly ->
+            val points: List<Position> = poly.map {
+                Position.fromDegrees(it[1], it[0], 0.0)
+            }
+            detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+        }
     }
 
     private fun checkBboxBeforeSent() {
@@ -541,15 +555,11 @@ class MapActivity : AppCompatActivity() {
             )
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
-            var spaceMb = 0
             val maxMb = service.config.maxMapSizeInMB.toInt()
+            var spaceMb = 0
             var downloadAble = false
-            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(
-                pLeftTop,
-                pLeftBottom
-            ) / 1000)
+            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
             val formattedNum = String.format("%.2f", area)
-            Log.d("Area2", formattedNum)
             showKm.text = getString(R.string.calculate_area_with_value_text, formattedNum)
 
             allPolygon.clear()
@@ -558,25 +568,16 @@ class MapActivity : AppCompatActivity() {
                 run {
                     val json = JSONObject(p.footprint)
                     val type = json.getString("type")
-                    val gson = Gson()
 
-                    if (type == "Polygon") {
-                        val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                        productPolyDTO.coordinates.forEach { it ->
-                            val points: List<Position> = it.map {
-                                Position.fromDegrees(it[1], it[0], 0.0)
-                            }
-                            detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+                    when (type) {
+                        "Polygon" -> {
+                            val productPolyDTO = Gson().fromJson(p.footprint, PolygonDTO::class.java)
+                            processPolygon(p, productPolyDTO.coordinates, polygonBoxEsri, boxCoordinates)
                         }
-                    } else if (type == "MultiPolygon") {
-                        val productMultiPolyDTO =
-                            gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                        productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
-                            polyCoordinates.forEach { coordinates ->
-                                val points: List<Position> = coordinates.map {
-                                    Position.fromDegrees(it[1], it[0], 0.0)
-                                }
-                                detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+                        "MultiPolygon" -> {
+                            val productMultiPolyDTO = Gson().fromJson(p.footprint, MultiPolygonDto::class.java)
+                            productMultiPolyDTO.coordinates.forEach { multiPoly ->
+                                processPolygon(p, multiPoly, polygonBoxEsri, boxCoordinates)
                             }
                         }
                     }
