@@ -425,7 +425,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         pdFile.setOnClickListener {
             TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
-            pdfView.fromAsset("strategy.pdf").load()
+            pdfView.fromAsset("strategy2.pdf").load()
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -794,7 +794,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "שיתוף")
                         .name("שליחת בול בסריקה").with(tracker)
-                    showQRCodeDialog(qrCode)
+                    showQRCodeDialog(qrCode, name)
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
@@ -921,10 +921,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
 
-    private fun showQRCodeDialog(qrCodeBitmap: Bitmap) {
+    private fun showQRCodeDialog(qrCodeBitmap: Bitmap, detailMapName: String) {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
         val dialogView = inflater.inflate(R.layout.dialog_qr_code, null)
+
+        val qrTitle: TextView = dialogView.findViewById(R.id.qr_title)
+        qrTitle.text = getString(R.string.qr_title, detailMapName)
 
         val imageViewQRCode: ImageView = dialogView.findViewById(R.id.imageViewQRCode)
         imageViewQRCode.setImageBitmap(qrCodeBitmap)
@@ -951,6 +954,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
+
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
 //                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
 //                    val region = jsonText.region[0]
