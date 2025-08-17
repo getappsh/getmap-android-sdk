@@ -231,6 +231,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         mapServiceManager.service.getDownloadedMapsLive().observe(this, Observer {
             Log.d(TAG, "onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
+//          TODO - Call onSignalSpace() only if a deletion actually occurred to avoid unnecessary calls
+//              the function updates the free-space status and refreshes relevant UI after Deleting a map.
+            onSignalSpace()
             var atLeastOneUpdated = it.any {
                 it.isUpdated == false
             }
@@ -446,6 +449,10 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        mapServiceManager = MapServiceManager.getInstance()
 //        Log.d("a", "sa")
 //    }
+    override fun onResume() {
+        super.onResume()
+        onSignalSpace()
+    }
 
     private fun showDeleteFailedBtn(deleteFail: ImageButton) {
         GlobalScope.launch(Dispatchers.IO) {
