@@ -622,7 +622,7 @@ class MapActivity : AppCompatActivity() {
                 if (allPolygon.size > 1) {
                     for (polygon in allPolygon) {
                         if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
-                            val km = (polygon.intersection * 10000)
+                            val km = abs(polygon.intersection * 10000)
                             if (km < maxArea) {
                                 spaceMb = calculateMB(km, polygon.resolution)
                                 showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
