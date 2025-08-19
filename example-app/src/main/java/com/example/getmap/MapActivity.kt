@@ -272,7 +272,8 @@ class MapActivity : AppCompatActivity() {
     private fun addGeoPkg() {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
-        val volume = storageList.getOrNull(1)?.directory?.absoluteFile ?: ""
+        val storage = storageList.getOrNull(1) ?: storageList.getOrNull(0)
+        val volume = storage?.directory?.absoluteFile ?: ""
         if (geoPackageName.isBlank()) {
             geoPackageName = service.config.ortophotoMapPath.toString()
         }
