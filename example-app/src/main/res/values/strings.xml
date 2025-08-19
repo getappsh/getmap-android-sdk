@@ -18,4 +18,13 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="default_delete_popup_text">האם תרצה למחוק בול זה?</string>
     <string name="qr_title">שיתוף: %1$s</string>
+
+    <string name="calculate_volume_with_num_text">נפח משוער: %1$d מ\"ב</string>
+    <string name="calculate_volume_with_string_text">נפח משוער: %1$s</string>
+    <string name="calculate_area_with_value_text">שטח משוער: %1$.2f קמ\"ר</string>
+    <string name="default_calculate_area_text">שטח משוער: %1$s</string>
+
+    <string name="calculate_volume_text">מחשב נפח</string>
+    <string name="calculate_area_text">מחשב שטח</string>
+    <string name="no_data_text">אין נתון</string>
 </resources>

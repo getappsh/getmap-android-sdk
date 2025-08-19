@@ -80,6 +80,10 @@ class MapActivity : AppCompatActivity() {
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
 
+    private val showBm: TextView by lazy { findViewById(R.id.showMb) }
+    private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
+    private val date: TextView by lazy { findViewById(R.id.dateText) }
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,7 +160,6 @@ class MapActivity : AppCompatActivity() {
 
         val overlayView = findViewById<FrameLayout>(R.id.overlayView)
         val delivery = findViewById<Button>(R.id.deliver)
-        val date = findViewById<TextView>(R.id.dateText)
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
@@ -517,6 +520,24 @@ class MapActivity : AppCompatActivity() {
         return textAttrs
     }
 
+    private fun Position.toPoint(): Point {
+        return Point(this.longitude, this.latitude)
+    }
+
+    private fun processPolygon(
+        p: DiscoveryItem,
+        polygon: List<List<List<Double>>>,
+        polygonBoxEsri: com.arcgismaps.geometry.Polygon,
+        boxCoordinates: MutableList<Position>
+    ) {
+        polygon.forEach { poly ->
+            val points: List<Position> = poly.map {
+                Position.fromDegrees(it[1], it[0], 0.0)
+            }
+            detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+        }
+    }
+
     private fun checkBboxBeforeSent() {
         try {
             dMode = false
@@ -525,32 +546,19 @@ class MapActivity : AppCompatActivity() {
             val pRightTop = getFourScreenPoints(wwd).rightTop
             val pLeftBottom = getFourScreenPoints(wwd).leftBottom
 
-            val boxCoordinates = mutableListOf<Position>()
-            boxCoordinates.add(pLeftTop)
-            boxCoordinates.add(pRightTop)
-            boxCoordinates.add(pRightBottom)
-            boxCoordinates.add(pLeftBottom)
+            val boxCoordinates = mutableListOf(pLeftTop, pRightTop, pRightBottom, pLeftBottom)
 
-            val boxCoordinatesEsri = mutableListOf<Point>()
-            boxCoordinatesEsri.add(Point(pLeftTop.longitude, pLeftTop.latitude))
-            boxCoordinatesEsri.add(Point(pRightTop.longitude, pRightTop.latitude))
-            boxCoordinatesEsri.add(Point(pRightBottom.longitude, pRightBottom.latitude))
-            boxCoordinatesEsri.add(Point(pLeftBottom.longitude, pLeftBottom.latitude))
+            val boxCoordinatesEsri = mutableListOf(
+                pLeftTop.toPoint(),
+                pRightTop.toPoint(),
+                pRightBottom.toPoint(),
+                pLeftBottom.toPoint()
+            )
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
 
-            val showKm = findViewById<TextView>(R.id.kmShow)
-            val showBm = findViewById<TextView>(R.id.showMb)
-            var spaceMb = 0
-            val date = findViewById<TextView>(R.id.dateText)
-            val maxMb = service.config.maxMapSizeInMB.toInt()
-            var downloadAble = false
-            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(
-                pLeftTop,
-                pLeftBottom
-            ) / 1000)
-            val formattedNum = String.format("%.2f", area)
-            showKm.text = "שטח משוער :${formattedNum} קמ\"ר"
+            val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
+            showKm.text = getString(R.string.calculate_area_with_value_text, area)
 
             allPolygon.clear()
 
@@ -558,43 +566,43 @@ class MapActivity : AppCompatActivity() {
                 run {
                     val json = JSONObject(p.footprint)
                     val type = json.getString("type")
-                    val gson = Gson()
 
-                    if (type == "Polygon") {
-                        val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                        productPolyDTO.coordinates.forEach { it ->
-                            val points: List<Position> = it.map {
-                                Position.fromDegrees(it[1], it[0], 0.0)
-                            }
-                            detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+                    when (type) {
+                        "Polygon" -> {
+                            val productPolyDTO = Gson().fromJson(p.footprint, PolygonDTO::class.java)
+                            processPolygon(p, productPolyDTO.coordinates, polygonBoxEsri, boxCoordinates)
                         }
-                    } else if (type == "MultiPolygon") {
-                        val productMultiPolyDTO =
-                            gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                        productMultiPolyDTO.coordinates.forEach { polyCoordinates ->
-                            polyCoordinates.forEach { coordinates ->
-                                val points: List<Position> = coordinates.map {
-                                    Position.fromDegrees(it[1], it[0], 0.0)
-                                }
-                                detectPolygon(p, points, polygonBoxEsri, boxCoordinates)
+                        "MultiPolygon" -> {
+                            val productMultiPolyDTO = Gson().fromJson(p.footprint, MultiPolygonDto::class.java)
+                            productMultiPolyDTO.coordinates.forEach { multiPoly ->
+                                processPolygon(p, multiPoly, polygonBoxEsri, boxCoordinates)
                             }
                         }
                     }
                 }
             }
+            val maxMb = service.config.maxMapSizeInMB.toInt()
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
-            var checkBetweenPolygon = true
-            allPolygon.sortByDescending(PolyObject::date)
-            var found = false
+            val maxArea = service.config.maxMapAreaSqKm.toInt()
             val boxArea = calculatePolygonArea(boxCoordinates)
+            var spaceMb = 0
+            var downloadAble = false
+            var checkBetweenPolygon = true
+            var isAreaValid = true
+            var found = false
+
+            allPolygon.sortByDescending(PolyObject::date)
+
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
-                    val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                    if (km.toDouble() < 100) {
+                    val km = abs(polygon.intersection * 10000)
+                    if (km < maxArea) {
                         spaceMb = calculateMB(km, polygon.resolution)
-                        showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                        showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
+                    } else {
+                        isAreaValid = false
                     }
-                    showKm.text = "שטח משוער :${km} קמ\"ר"
+                    showKm.text = getString(R.string.calculate_area_with_value_text, km)
                     if (polygon.end == polygon.start) {
                         date.text = "צולם : ${polygon.end}"
                         date.textSize = 15F
@@ -615,12 +623,14 @@ class MapActivity : AppCompatActivity() {
                 if (allPolygon.size > 1) {
                     for (polygon in allPolygon) {
                         if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
-                            val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                            if (km.toDouble() < 100) {
+                            val km = abs(polygon.intersection * 10000)
+                            if (km < maxArea) {
                                 spaceMb = calculateMB(km, polygon.resolution)
-                                showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                                showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
+                            } else {
+                                isAreaValid = false
                             }
-                            showKm.text = "שטח משוער :${km} קמ\"ר"
+                            showKm.text = getString(R.string.calculate_area_with_value_text, km)
                             if (polygon.end == polygon.start) {
                                 date.text = "צולם : ${polygon.end}"
                             } else {
@@ -635,12 +645,14 @@ class MapActivity : AppCompatActivity() {
             }
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
-                val km = String.format("%.2f", abs(firstPolyObject.intersection * 10000))
-                if (km.toDouble() < 100) {
+                val km =  abs(firstPolyObject.intersection * 10000)
+                if (km < maxArea) {
                     spaceMb = calculateMB(km, firstPolyObject.resolution)
-                    showBm.text = "נפח משוער :${spaceMb} מ\"ב"
+                    showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
+                } else {
+                    isAreaValid = false
                 }
-                showKm.text = "שטח משוער :${km} קמ\"ר"
+                showKm.text = getString(R.string.calculate_area_with_value_text, km)
                 if (firstPolyObject.end == firstPolyObject.start) {
                     date.text = "צולם : ${firstPolyObject.end}"
                 } else {
@@ -666,7 +678,7 @@ class MapActivity : AppCompatActivity() {
             }
 
             val overlayView = findViewById<FrameLayout>(R.id.overlayView)
-            if (spaceMb < maxMb && downloadAble) {
+            if (spaceMb < maxMb && downloadAble && isAreaValid) {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
                 overlayView.setBackgroundResource(R.drawable.red_border)
@@ -676,11 +688,15 @@ class MapActivity : AppCompatActivity() {
                 } else if (spaceMb > maxMb && downloadAble) {
                     date.text = "תיחום גדול מנפח מקסימלי להורדה"
                     date.textSize = 15F
+                } else if (!isAreaValid) {
+                    date.text = "שטח גדול מידי"
+                    date.textSize = 15F
                 } else {
                     date.text = "אין תוצר עדכני באזור זה"
                     date.textSize = 15F
-                    showKm.text = "שטח משוער :אין נתון"
-                    showBm.text = "נפח משוער :אין נתון"
+                    val noData = getString(R.string.no_data_text)
+                    showKm.text = getString(R.string.default_calculate_area_text, noData)
+                    showBm.text = getString(R.string.calculate_volume_with_string_text, noData)
                 }
             }
         } catch (e: Exception) {
@@ -696,17 +712,16 @@ class MapActivity : AppCompatActivity() {
         return unionPolygon
     }
 
-    private fun calculateMB(formattedNum: String, resolution: BigDecimal): Int {
-        var mb = 0
+    private fun calculateMB(formattedNum: Double, resolution: BigDecimal): Int {
+        var mb: Int
         val resolutionString = String.format("%.9f", resolution.toDouble())
         mb =
             when (resolutionString) {
-                "0.000001341" -> (formattedNum.toDouble() * 9.5).toInt()
-                "0.000002682" -> (formattedNum.toDouble() * 4.5).toInt()
-                "0.000005364" -> (formattedNum.toDouble() * 2.5).toInt()
-                else -> (formattedNum.toDouble() * 65.9 - 54.4).toInt()
+                "0.000001341" -> (formattedNum * 9.5).toInt()
+                "0.000002682" -> (formattedNum * 4.5).toInt()
+                "0.000005364" -> (formattedNum * 2.5).toInt()
+                else -> (formattedNum * 65.9 - 54.4).toInt()
             }
-
 
         return if (mb < 1) {
             1
@@ -956,11 +971,10 @@ class MapActivity : AppCompatActivity() {
                 Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
                 checkBboxBeforeSent()
             } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
-                val showKm = findViewById<TextView>(R.id.kmShow)
-                val showBm = findViewById<TextView>(R.id.showMb)
-                val date = findViewById<TextView>(R.id.dateText)
-                showKm.text = "שטח משוער : מחשב שטח"
-                showBm.text = "נפח משוער : מחשב נפח"
+                val areaCal = getString(R.string.calculate_area_text)
+                val volumeCal = getString(R.string.calculate_volume_text)
+                showKm.text = getString(R.string.default_calculate_area_text, areaCal)
+                showBm.text = getString(R.string.calculate_volume_with_string_text, volumeCal)
                 date.text = ""
             }
 
