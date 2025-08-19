@@ -21,7 +21,7 @@
 
     <string name="calculate_volume_with_num_text">נפח משוער: %1$d מ\"ב</string>
     <string name="calculate_volume_with_string_text">נפח משוער: %1$s</string>
-    <string name="calculate_area_with_value_text">שטח משוער: %1$s קמ\"ר</string>
+    <string name="calculate_area_with_value_text">שטח משוער: %1$.2f קמ\"ר</string>
     <string name="default_calculate_area_text">שטח משוער: %1$s</string>
 
     <string name="calculate_volume_text">מחשב נפח</string>

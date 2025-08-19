@@ -555,12 +555,9 @@ class MapActivity : AppCompatActivity() {
             )
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
-            val maxMb = service.config.maxMapSizeInMB.toInt()
-            var spaceMb = 0
-            var downloadAble = false
+
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
-            val formattedNum = String.format("%.2f", area)
-            showKm.text = getString(R.string.calculate_area_with_value_text, formattedNum)
+            showKm.text = getString(R.string.calculate_area_with_value_text, area)
 
             allPolygon.clear()
 
@@ -583,15 +580,22 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
             }
+            val maxMb = service.config.maxMapSizeInMB.toInt()
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
-            var checkBetweenPolygon = true
-            allPolygon.sortByDescending(PolyObject::date)
-            var found = false
+            val maxArea = service.config.maxMapAreaSqKm.toInt()
             val boxArea = calculatePolygonArea(boxCoordinates)
+            var spaceMb = 0
+            var downloadAble = false
+            var checkBetweenPolygon = true
+            var found = false
+
+            allPolygon.sortByDescending(PolyObject::date)
+
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
-                    val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                    if (km.toDouble() < 100) {
+                    val km = abs(polygon.intersection * 10000)
+                    Log.d("Area", "${km}  for  ${maxArea}")
+                    if (km < maxArea) {
                         spaceMb = calculateMB(km, polygon.resolution)
                         showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
                     }
@@ -616,8 +620,9 @@ class MapActivity : AppCompatActivity() {
                 if (allPolygon.size > 1) {
                     for (polygon in allPolygon) {
                         if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
-                            val km = String.format("%.2f", abs(polygon.intersection * 10000))
-                            if (km.toDouble() < 100) {
+                            val km = (polygon.intersection * 10000)
+                            Log.d("Area", "${km}  if 1  ${maxArea}")
+                            if (km < maxArea) {
                                 spaceMb = calculateMB(km, polygon.resolution)
                                 showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
                             }
@@ -636,8 +641,9 @@ class MapActivity : AppCompatActivity() {
             }
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
-                val km = String.format("%.2f", abs(firstPolyObject.intersection * 10000))
-                if (km.toDouble() < 100) {
+                val km =  abs(firstPolyObject.intersection * 10000)
+                Log.d("Area", "${km}  if 2  ${maxArea}")
+                if (km < maxArea) {
                     spaceMb = calculateMB(km, firstPolyObject.resolution)
                     showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
                 }
@@ -667,7 +673,6 @@ class MapActivity : AppCompatActivity() {
             }
 
             val overlayView = findViewById<FrameLayout>(R.id.overlayView)
-//            Log.d("Area", area.toString() + "+++" + service.config.maxMapAreaSqKm)
             if (spaceMb < maxMb && downloadAble) {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
@@ -699,17 +704,16 @@ class MapActivity : AppCompatActivity() {
         return unionPolygon
     }
 
-    private fun calculateMB(formattedNum: String, resolution: BigDecimal): Int {
-        var mb = 0
+    private fun calculateMB(formattedNum: Double, resolution: BigDecimal): Int {
+        var mb: Int
         val resolutionString = String.format("%.9f", resolution.toDouble())
         mb =
             when (resolutionString) {
-                "0.000001341" -> (formattedNum.toDouble() * 9.5).toInt()
-                "0.000002682" -> (formattedNum.toDouble() * 4.5).toInt()
-                "0.000005364" -> (formattedNum.toDouble() * 2.5).toInt()
-                else -> (formattedNum.toDouble() * 65.9 - 54.4).toInt()
+                "0.000001341" -> (formattedNum * 9.5).toInt()
+                "0.000002682" -> (formattedNum * 4.5).toInt()
+                "0.000005364" -> (formattedNum * 2.5).toInt()
+                else -> (formattedNum * 65.9 - 54.4).toInt()
             }
-
 
         return if (mb < 1) {
             1
