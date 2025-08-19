@@ -595,7 +595,6 @@ class MapActivity : AppCompatActivity() {
             for (polygon in allPolygon) {
                 if (polygon.intersection / abs(boxArea) >= interPolygon / 100) {
                     val km = abs(polygon.intersection * 10000)
-                    Log.d("Area", "${km}  for  ${maxArea}")
                     if (km < maxArea) {
                         spaceMb = calculateMB(km, polygon.resolution)
                         showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
@@ -624,7 +623,6 @@ class MapActivity : AppCompatActivity() {
                     for (polygon in allPolygon) {
                         if (polygon.intersection / allPolygonArea >= interPolygon / 100) {
                             val km = (polygon.intersection * 10000)
-                            Log.d("Area", "${km}  if 1  ${maxArea}")
                             if (km < maxArea) {
                                 spaceMb = calculateMB(km, polygon.resolution)
                                 showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
@@ -647,7 +645,6 @@ class MapActivity : AppCompatActivity() {
             if (!found && allPolygon.isNotEmpty()) {
                 val firstPolyObject = allPolygon[0]
                 val km =  abs(firstPolyObject.intersection * 10000)
-                Log.d("Area", "${km}  if 2  ${maxArea}")
                 if (km < maxArea) {
                     spaceMb = calculateMB(km, firstPolyObject.resolution)
                     showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
