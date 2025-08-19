@@ -587,6 +587,7 @@ class MapActivity : AppCompatActivity() {
             var spaceMb = 0
             var downloadAble = false
             var checkBetweenPolygon = true
+            var isAreaValid = true
             var found = false
 
             allPolygon.sortByDescending(PolyObject::date)
@@ -598,6 +599,8 @@ class MapActivity : AppCompatActivity() {
                     if (km < maxArea) {
                         spaceMb = calculateMB(km, polygon.resolution)
                         showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
+                    } else {
+                        isAreaValid = false
                     }
                     showKm.text = getString(R.string.calculate_area_with_value_text, km)
                     if (polygon.end == polygon.start) {
@@ -625,6 +628,8 @@ class MapActivity : AppCompatActivity() {
                             if (km < maxArea) {
                                 spaceMb = calculateMB(km, polygon.resolution)
                                 showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
+                            } else {
+                                isAreaValid = false
                             }
                             showKm.text = getString(R.string.calculate_area_with_value_text, km)
                             if (polygon.end == polygon.start) {
@@ -646,6 +651,8 @@ class MapActivity : AppCompatActivity() {
                 if (km < maxArea) {
                     spaceMb = calculateMB(km, firstPolyObject.resolution)
                     showBm.text = getString(R.string.calculate_volume_with_num_text, spaceMb)
+                } else {
+                    isAreaValid = false
                 }
                 showKm.text = getString(R.string.calculate_area_with_value_text, km)
                 if (firstPolyObject.end == firstPolyObject.start) {
@@ -673,7 +680,7 @@ class MapActivity : AppCompatActivity() {
             }
 
             val overlayView = findViewById<FrameLayout>(R.id.overlayView)
-            if (spaceMb < maxMb && downloadAble) {
+            if (spaceMb < maxMb && downloadAble && isAreaValid) {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
                 overlayView.setBackgroundResource(R.drawable.red_border)
@@ -682,6 +689,9 @@ class MapActivity : AppCompatActivity() {
                     date.textSize = 15F
                 } else if (spaceMb > maxMb && downloadAble) {
                     date.text = "תיחום גדול מנפח מקסימלי להורדה"
+                    date.textSize = 15F
+                } else if (!isAreaValid) {
+                    date.text = "שטח גדול מידי"
                     date.textSize = 15F
                 } else {
                     date.text = "אין תוצר עדכני באזור זה"
