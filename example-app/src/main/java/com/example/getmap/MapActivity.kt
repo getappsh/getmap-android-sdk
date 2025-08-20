@@ -243,6 +243,9 @@ class MapActivity : AppCompatActivity() {
         controlSwitch.setOnCheckedChangeListener { _, isChecked ->
             controlSwitch(isChecked, tracker)
         }
+        // Immediate call to addGeoPkg
+        geoPackageName = service.config.ortophotoMapPath.toString()
+        addGeoPkg()
 
         drawPolygons()
     }
@@ -273,6 +276,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun addGeoPkg() {
+        Log.d("MapActivity", "addGeoPkg: ")
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes
         val storage = storageList.getOrNull(1) ?: storageList.getOrNull(0)
