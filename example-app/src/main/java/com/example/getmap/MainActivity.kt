@@ -5,12 +5,10 @@ import GetApp.Client.models.MapConfigDto
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
-import android.graphics.Point
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -62,15 +60,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.internal.notifyAll
-import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
-import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import java.time.LocalDateTime
-import java.util.Base64
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -557,22 +549,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     }
 
-    private fun formatBytes(bytes: Long): String {
-        val units = arrayOf("B", "KB", "MB", "GB", "TB")
-        var size = bytes.toDouble()
-        var index = 0
-        while (size > 1024 && index < units.size - 1) {
-            size /= 1024
-            index++
-        }
-        return String.format("%.2f %s", size, units[index])
+    private fun getAvailableSpace(): String {
+        val storageHelper = StorageHelper()
+        availableSpaceInMb = storageHelper.getAvailableSpaceMb(this)
+        val (size, unit) = storageHelper.getAvailableSpaceInfo(this)
+        return getString(R.string.available_space_text, size, unit)
     }
 
-    private fun getAvailableSpace(): String {
-        val availableBytes = MapFileManager(this).getAvailableSpaceByPolicy()
-        availableSpaceInMb = availableBytes.toDouble() / (1024 * 1024)
-        return "מקום פנוי להורדה: ${formatBytes(availableBytes)}"
-    }
 //    fun GetAvailableSpaceInSdCard(): String {
 //        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
 //        val storageList = storageManager.storageVolumes;
