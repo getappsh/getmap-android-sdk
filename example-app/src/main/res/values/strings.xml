@@ -19,6 +19,8 @@
     <string name="default_delete_popup_text">האם תרצה למחוק בול זה?</string>
     <string name="qr_title">שיתוף: %1$s</string>
 
+    <string name="available_space_text">מקום פנוי להורדה: %1$.2f %2$s</string>
+
     <string name="calculate_volume_with_num_text">נפח משוער: %1$d מ\"ב</string>
     <string name="calculate_volume_with_string_text">נפח משוער: %1$s</string>
     <string name="calculate_area_with_value_text">שטח משוער: %1$.2f קמ\"ר</string>
