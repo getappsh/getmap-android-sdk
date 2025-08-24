@@ -121,7 +121,7 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
         val mp = MapProperties(mapPkg.pId, mapPkg.footprint ?: mapPkg.bBox, false)
 
         val file = File("${mapPkg.path}/${mapPkg.fileName}")
-        if (!(isEnoughSpace(id, file.length()))) {
+        if (isEnoughSpace(id, file.length())) {
             return this.downloadMap(mp)
         }else {
             throw IOException(appCtx.getString(R.string.error_not_enough_space))

@@ -26,6 +26,7 @@ import org.matomo.sdk.extra.TrackHelper
 import com.example.getmap.MainActivity.Companion.count
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 @RequiresApi(Build.VERSION_CODES.R)
 class PopUp : DialogFragment() {
@@ -128,6 +129,10 @@ class PopUp : DialogFragment() {
                         } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
 
+                        } catch(e: IOException) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
+                            }
                         }
 
                         recyclerView.smoothScrollToPosition(0)
@@ -146,6 +151,10 @@ class PopUp : DialogFragment() {
                             recyclerView.smoothScrollToPosition(0)
                         } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
+                        } catch(e: IOException) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                     clicked = false
