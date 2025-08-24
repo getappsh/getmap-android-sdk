@@ -120,13 +120,18 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
 
         val mp = MapProperties(mapPkg.pId, mapPkg.footprint ?: mapPkg.bBox, false)
 
-        return this.downloadMap(mp)
+        val file = File("${mapPkg.path}/${mapPkg.fileName}")
+        if (isEnoughSpace(id, file.length())) {
+            return this.downloadMap(mp)
+        }else {
+            return id
+        }
     }
 
 
-    private fun isEnoughSpace(id: String): Boolean{
+    private fun isEnoughSpace(id: String, size: Long? = null): Boolean{
         Timber.i("isEnoughSpace")
-        val requiredSpace = config.minAvailableSpaceMB * 1024 * 1024
+        val requiredSpace = size ?: (config.minAvailableSpaceMB * 1024 * 1024)
         return try {
             this.mapFileManager.getAndValidateStorageDirByPolicy(requiredSpace)
             true
