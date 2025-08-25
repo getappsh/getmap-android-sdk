@@ -193,6 +193,18 @@ internal class ServiceConfig private constructor(private var appContext: Context
             pref.controlMapPath = value
         }
 
+    override var ortophotoMapPattern: String = pref.ortophotoMapPattern
+        set(value) {
+            field = value
+            pref.ortophotoMapPattern = value
+        }
+
+    override var controlMapPattern: String = pref.controlMapPattern
+        set(value) {
+            field = value
+            pref.controlMapPattern = value
+        }
+
 
     override fun toString(): String {
         return "ServiceConfig(sdStoragePath='$sdStoragePath', flashStoragePath='$flashStoragePath', targetStoragePolicy=$targetStoragePolicy, downloadPath='$downloadPath', deliveryTimeoutMins=$deliveryTimeoutMins, downloadTimeoutMins=$downloadTimeoutMins, downloadRetry=$downloadRetry, maxMapSizeInMB=$maxMapSizeInMB, maxMapAreaSqKm=$maxMapAreaSqKm, maxParallelDownloads=$maxParallelDownloads, periodicInventoryIntervalMins=$periodicInventoryIntervalMins, periodicConfIntervalMins=$periodicConfIntervalMins, applyServerConfig=$applyServerConfig, matomoUrl='$matomoUrl', matomoDimensionId='$matomoDimensionId', matomoSiteId='$matomoSiteId', matomoUpdateIntervalMins=$matomoUpdateIntervalMins, minAvailableSpaceMB=$minAvailableSpaceMB, mapMinInclusionPct=$mapMinInclusionPct, lastConfigCheck=$lastConfigCheck, flashInventoryMaxSizeMB=$flashInventoryMaxSizeMB, sdInventoryMaxSizeMB=$sdInventoryMaxSizeMB, ortophotoMapPath='$ortophotoMapPath', controlMapPath='$controlMapPath, lastInventoryCheck=$lastInventoryCheck, lastServerConfigUpdate=$lastServerConfigUpdate, lastServerInventoryJob=$lastServerInventoryJob')"

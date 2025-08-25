@@ -384,5 +384,15 @@ interface GetMapService {
          * Control map path on the device
          */
         val controlMapPath: String?
+
+        /**
+         * Substring to match in ortophoto map filename
+         */
+        val ortophotoMapPattern: String?;
+
+        /**
+         * Substring to match in control map filename
+         */
+        val controlMapPattern: String?;
     }
 }

@@ -35,6 +35,8 @@ internal object ConfigClient {
         config.maxMapAreaSqKm = configDto.maxMapAreaSqKm?.toLong() ?: config.maxMapAreaSqKm
         config.ortophotoMapPath = configDto.ortophotoMapPath ?: config.ortophotoMapPath
         config.controlMapPath = configDto.controlMapPath ?: config.controlMapPath
+        config.ortophotoMapPattern = configDto.ortophotoMapPattern ?: config.ortophotoMapPattern
+        config.controlMapPattern = configDto.controlMapPattern ?: config.controlMapPattern
 
         if (!config.applyServerConfig)
             return
