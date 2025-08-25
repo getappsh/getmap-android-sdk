@@ -31,5 +31,8 @@ data class InventoryUpdatesResDto (
     @Json(name = "updates")
     val updates: kotlin.collections.Map<kotlin.String, kotlin.Boolean>
 
-)
+) {
+
+
+}
 

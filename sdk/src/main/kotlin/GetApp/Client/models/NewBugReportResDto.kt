@@ -35,5 +35,8 @@ data class NewBugReportResDto (
     @Json(name = "uploadLogsUrl")
     val uploadLogsUrl: kotlin.String
 
-)
+) {
+
+
+}
 

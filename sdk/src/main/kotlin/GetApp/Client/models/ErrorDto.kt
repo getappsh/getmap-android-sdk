@@ -41,18 +41,19 @@ data class ErrorDto (
     /**
      * `MAP.unknown`: Error code not listed in the enum <br /> `MAP.notFound`: No found the map with given id <br /> `MAP.bBoxIsInvalid`: BBox is probably invalid <br /> `MAP.bBoxNotInAnyPolygon`: The given BBox in not contains in any polygon <br /> `MAP.exportMapFailed`: Some error occurs when import map <br /> `MAP.requestInProgress`: Delivery was already requested and in processing! <br /> `MAP.areaTooLarge`: Area too large to distribute, reduce request size and try again <br /> `MAP.areaTooSmall`: Area too small to distribute, increase request size and try again . 
      *
-     * Values: unknown,notFound,bBoxIsInvalid,bBoxNotInAnyPolygon,exportMapFailed,requestInProgress,areaTooLarge,areaTooSmall
+     * Values: MAPPeriodUnknown,MAPPeriodNotFound,MAPPeriodBBoxIsInvalid,MAPPeriodBBoxNotInAnyPolygon,MAPPeriodExportMapFailed,MAPPeriodRequestInProgress,MAPPeriodAreaTooLarge,MAPPeriodAreaTooSmall
      */
     @JsonClass(generateAdapter = false)
     enum class ErrorCode(val value: kotlin.String) {
-        @Json(name = "MAP.unknown") unknown("MAP.unknown"),
-        @Json(name = "MAP.notFound") notFound("MAP.notFound"),
-        @Json(name = "MAP.bBoxIsInvalid") bBoxIsInvalid("MAP.bBoxIsInvalid"),
-        @Json(name = "MAP.bBoxNotInAnyPolygon") bBoxNotInAnyPolygon("MAP.bBoxNotInAnyPolygon"),
-        @Json(name = "MAP.exportMapFailed") exportMapFailed("MAP.exportMapFailed"),
-        @Json(name = "MAP.requestInProgress") requestInProgress("MAP.requestInProgress"),
-        @Json(name = "MAP.areaTooLarge") areaTooLarge("MAP.areaTooLarge"),
-        @Json(name = "MAP.areaTooSmall") areaTooSmall("MAP.areaTooSmall");
+        @Json(name = "MAP.unknown") MAPPeriodUnknown("MAP.unknown"),
+        @Json(name = "MAP.notFound") MAPPeriodNotFound("MAP.notFound"),
+        @Json(name = "MAP.bBoxIsInvalid") MAPPeriodBBoxIsInvalid("MAP.bBoxIsInvalid"),
+        @Json(name = "MAP.bBoxNotInAnyPolygon") MAPPeriodBBoxNotInAnyPolygon("MAP.bBoxNotInAnyPolygon"),
+        @Json(name = "MAP.exportMapFailed") MAPPeriodExportMapFailed("MAP.exportMapFailed"),
+        @Json(name = "MAP.requestInProgress") MAPPeriodRequestInProgress("MAP.requestInProgress"),
+        @Json(name = "MAP.areaTooLarge") MAPPeriodAreaTooLarge("MAP.areaTooLarge"),
+        @Json(name = "MAP.areaTooSmall") MAPPeriodAreaTooSmall("MAP.areaTooSmall");
     }
+
 }
 

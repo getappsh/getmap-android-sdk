@@ -63,5 +63,8 @@ data class DeviceDto (
     @Json(name = "operativeState")
     val operativeState: kotlin.Boolean? = null
 
-)
+) {
+
+
+}
 

@@ -63,5 +63,8 @@ data class MapMetadatatDto (
     @Json(name = "fileName")
     val fileName: kotlin.String? = null
 
-)
+) {
+
+
+}
 

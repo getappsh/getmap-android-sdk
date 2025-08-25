@@ -76,7 +76,7 @@ class Pref private constructor(context: Context) {
         set(value) = setString(FLASH_STORAGE_PATH, value)
 
     var targetStoragePolicy: MapConfigDto.TargetStoragePolicy
-        get() = getEnum(TARGET_STORAGE_POLICY, MapConfigDto.TargetStoragePolicy.sDOnly)
+        get() = getEnum(TARGET_STORAGE_POLICY, MapConfigDto.TargetStoragePolicy.SDOnly)
         set(value) = setEnum(TARGET_STORAGE_POLICY, value)
 
     var downloadPath: String

@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.ComponentDto
@@ -37,7 +37,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class OfferingApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -46,6 +46,7 @@ class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * GET /api/offering/component/{catalogId}
      * Get Offering of Component
      * This service message allows retrieval of the offering of a specific component by catalog ID.
      * @param catalogId 
@@ -77,6 +78,7 @@ class OfferingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * GET /api/offering/component/{catalogId}
      * Get Offering of Component
      * This service message allows retrieval of the offering of a specific component by catalog ID.
      * @param catalogId 

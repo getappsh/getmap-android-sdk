@@ -39,5 +39,8 @@ data class SetDevicesInGroupDto (
     @Json(name = "groups")
     val groups: kotlin.collections.List<kotlin.String>? = null
 
-)
+) {
+
+
+}
 

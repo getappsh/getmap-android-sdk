@@ -37,5 +37,8 @@ data class DiscoveryResDto (
     @Json(name = "map")
     val map: OfferingMapResDto? = null
 
-)
+) {
+
+
+}
 

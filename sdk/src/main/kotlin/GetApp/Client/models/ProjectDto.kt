@@ -55,5 +55,8 @@ data class ProjectDto (
     @Json(name = "description")
     val description: kotlin.String? = null
 
-)
+) {
+
+
+}
 

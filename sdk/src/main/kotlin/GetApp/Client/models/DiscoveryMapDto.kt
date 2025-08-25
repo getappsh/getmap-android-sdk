@@ -99,5 +99,8 @@ data class DiscoveryMapDto (
     @Json(name = "inventory")
     val inventory: kotlin.collections.List<kotlin.String>? = null
 
-)
+) {
+
+
+}
 

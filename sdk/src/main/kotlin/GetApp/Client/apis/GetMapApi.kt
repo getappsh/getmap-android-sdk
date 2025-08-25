@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.CreateImportDto
@@ -43,7 +43,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class GetMapApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -52,6 +52,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/map/import/create
      * Create Import
      * This service message allows the consumer to request the start of exporting a map stamp and tracking the packaging process.
      * @param createImportDto 
@@ -83,6 +84,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/map/import/create
      * Create Import
      * This service message allows the consumer to request the start of exporting a map stamp and tracking the packaging process.
      * @param createImportDto 
@@ -124,6 +126,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/map/export-notification
      * Export Notification
      * This service message allows Libot to notify when a map is completed or has failed.
      * @return void
@@ -153,6 +156,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/map/export-notification
      * Export Notification
      * This service message allows Libot to notify when a map is completed or has failed.
      * @return ApiResponse<Unit?>
@@ -189,6 +193,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/maps
      * Get All Maps
      * This service message allows retrieval of all requested maps.
      * @return void
@@ -218,6 +223,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/maps
      * Get All Maps
      * This service message allows retrieval of all requested maps.
      * @return ApiResponse<Unit?>
@@ -254,6 +260,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/import/status/{importRequestId}
      * Get Import Status
      * This service message allows the consumer to get status information and tracking of the packaging process.
      * @param importRequestId 
@@ -285,6 +292,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/import/status/{importRequestId}
      * Get Import Status
      * This service message allows the consumer to get status information and tracking of the packaging process.
      * @param importRequestId 
@@ -325,6 +333,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/map/inventory/updates
      * Get Inventory Updates
      * This service message gets a list of map request IDs and responds if there is new data map-product for them.
      * @param inventoryUpdatesReqDto 
@@ -356,6 +365,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/map/inventory/updates
      * Get Inventory Updates
      * This service message gets a list of map request IDs and responds if there is new data map-product for them.
      * @param inventoryUpdatesReqDto 
@@ -397,6 +407,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/map/{catalogId}
      * Get Map by Catalog ID
      * This service message allows retrieval of a map by catalog ID with all its devices.
      * @param catalogId 
@@ -427,6 +438,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/map/{catalogId}
      * Get Map by Catalog ID
      * This service message allows retrieval of a map by catalog ID with all its devices.
      * @param catalogId 
@@ -465,6 +477,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/configs/{deviceId}
      * Get Map Configurations
      * This service message returns an object of map configurations.
      * @param deviceId 
@@ -496,6 +509,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/configs/{deviceId}
      * Get Map Configurations
      * This service message returns an object of map configurations.
      * @param deviceId 
@@ -536,6 +550,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/offering
      * Get Map Offerings
      * This service message allows retrieval of all map offerings.
      * @return kotlin.collections.List<OfferingMapResDto>
@@ -566,6 +581,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/offering
      * Get Map Offerings
      * This service message allows retrieval of all map offerings.
      * @return ApiResponse<kotlin.collections.List<OfferingMapResDto>?>
@@ -604,6 +620,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * PUT /api/map/configs
      * Set Map Configurations
      * This service message sets an object of map configurations.
      * @param mapConfigDto 
@@ -634,6 +651,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * PUT /api/map/configs
      * Set Map Configurations
      * This service message sets an object of map configurations.
      * @param mapConfigDto 
@@ -673,6 +691,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/job/updates/start
      * Start Map Updates Cron Job
      * This service message starts the &#39;map updates&#39; cron job.
      * @return void
@@ -702,6 +721,7 @@ class GetMapApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/map/job/updates/start
      * Start Map Updates Cron Job
      * This service message starts the &#39;map updates&#39; cron job.
      * @return ApiResponse<Unit?>

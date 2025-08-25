@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeviceResDto
@@ -48,7 +48,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -57,6 +57,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/project/{projectId}/member
      * Add member to Project
      * 
      * @param projectId 
@@ -89,6 +90,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/project/{projectId}/member
      * Add member to Project
      * 
      * @param projectId 
@@ -132,6 +134,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/project
      * Create Project
      * 
      * @param projectDto 
@@ -163,6 +166,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/project
      * Create Project
      * 
      * @param projectDto 
@@ -204,6 +208,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/project/{projectId}/createToken
      * Create Upload token for a Project
      * 
      * @param projectId 
@@ -235,6 +240,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/project/{projectId}/createToken
      * Create Upload token for a Project
      * 
      * @param projectId 
@@ -275,6 +281,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * PUT /api/projectManagement/project/{projectId}/member/{memberId}
      * Edit member details
      * 
      * @param memberId 
@@ -308,6 +315,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * PUT /api/projectManagement/project/{projectId}/member/{memberId}
      * Edit member details
      * 
      * @param memberId 
@@ -353,6 +361,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/devices/platform/{platform}
      * Get all devices in platform
      * 
      * @param platform 
@@ -384,6 +393,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/devices/platform/{platform}
      * Get all devices in platform
      * 
      * @param platform 
@@ -424,6 +434,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/devices/catalogId/{catalogId}
      * Get all devices with catalogId
      * 
      * @param catalogId 
@@ -455,6 +466,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/devices/catalogId/{catalogId}
      * Get all devices with catalogId
      * 
      * @param catalogId 
@@ -495,6 +507,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/devices/project/{projectId}
      * Get all devices using component of the projectId
      * 
      * @param projectId 
@@ -526,6 +539,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/devices/project/{projectId}
      * Get all devices using component of the projectId
      * 
      * @param projectId 
@@ -566,6 +580,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/projectConfigOption
      * Get project&#39;s config option
      * 
      * @return ProjectConfigResDto
@@ -596,6 +611,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/projectConfigOption
      * Get project&#39;s config option
      * 
      * @return ApiResponse<ProjectConfigResDto?>
@@ -634,6 +650,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/project/{projectId}/projectReleases
      * Get project release
      * 
      * @param projectId 
@@ -665,6 +682,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/project/{projectId}/projectReleases
      * Get project release
      * 
      * @param projectId 
@@ -705,6 +723,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/project
      * Get all User&#39;s projects
      * 
      * @return MemberProjectsResDto
@@ -735,6 +754,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * GET /api/projectManagement/project
      * Get all User&#39;s projects
      * 
      * @return ApiResponse<MemberProjectsResDto?>
@@ -773,6 +793,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * DELETE /api/projectManagement/project/{projectId}/member/{memberId}
      * Remove member from Project
      * 
      * @param memberId 
@@ -804,6 +825,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * DELETE /api/projectManagement/project/{projectId}/member/{memberId}
      * Remove member from Project
      * 
      * @param memberId 
@@ -844,6 +866,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/projectConfigOption
      * Set project&#39;s config option
      * 
      * @param projectConfigDto 
@@ -875,6 +898,7 @@ class ProjectManagementApi(basePath: kotlin.String = defaultBasePath, client: Ok
     }
 
     /**
+     * POST /api/projectManagement/projectConfigOption
      * Set project&#39;s config option
      * 
      * @param projectConfigDto 

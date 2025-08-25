@@ -39,5 +39,8 @@ data class NewBugReportDto (
     @Json(name = "description")
     val description: kotlin.String? = null
 
-)
+) {
+
+
+}
 

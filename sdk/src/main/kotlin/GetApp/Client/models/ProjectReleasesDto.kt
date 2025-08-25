@@ -93,5 +93,6 @@ data class ProjectReleasesDto (
         @Json(name = "ready") ready("ready"),
         @Json(name = "error") error("error");
     }
+
 }
 

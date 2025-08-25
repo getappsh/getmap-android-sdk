@@ -37,5 +37,8 @@ data class MemberProjectsResDto (
     @Json(name = "projects")
     val projects: kotlin.collections.List<ProjectResDto>? = null
 
-)
+) {
+
+
+}
 

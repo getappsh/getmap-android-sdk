@@ -84,7 +84,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
                             val dlv = deliveryMapsStatus.find { FileUtils.getFileNameFromUri(it.first) == pkg.fileName }?.second
                             if (dlv != null){
                                 val updated = dlv.copy(
-                                    deliveryStatus = DeliveryStatusDto.DeliveryStatus.done,
+                                    deliveryStatus = DeliveryStatusDto.DeliveryStatus.Done,
                                     downloadDone = OffsetDateTime.now()
                                 )
                                 sendDeliveryStatus(updated)
@@ -112,7 +112,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
                 filteredDeliveryMapsStatus.forEach {(_, dlv)->
                     val updated = dlv.copy(
-                        deliveryStatus = DeliveryStatusDto.DeliveryStatus.error,
+                        deliveryStatus = DeliveryStatusDto.DeliveryStatus.Error,
                         downloadStop = OffsetDateTime.now()
                     )
                     sendDeliveryStatus(updated)
@@ -244,7 +244,7 @@ internal class AsioAppGetMapService (private val appCtx: Context) : DefaultGetMa
 
     private fun initDeliveryStatus(catalogId: String): DeliveryStatusDto {
         return DeliveryStatusDto(
-            deliveryStatus = DeliveryStatusDto.DeliveryStatus.start,
+            deliveryStatus = DeliveryStatusDto.DeliveryStatus.Start,
             type = DeliveryStatusDto.Type.map,
             deviceId = pref.deviceId,
             catalogId = catalogId,

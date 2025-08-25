@@ -57,5 +57,6 @@ data class UpdateUploadStatusDto (
         @Json(name = "ready") ready("ready"),
         @Json(name = "error") error("error");
     }
+
 }
 

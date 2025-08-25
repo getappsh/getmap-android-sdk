@@ -59,5 +59,6 @@ data class DiscoveryMessageDto (
         @Json(name = "get-map") getMinusMap("get-map"),
         @Json(name = "mTls") mTls("mTls");
     }
+
 }
 

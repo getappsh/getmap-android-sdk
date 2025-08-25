@@ -32,7 +32,7 @@ import com.squareup.moshi.JsonClass
 data class ProjectMemberDto (
 
     @Json(name = "role")
-    val role: ProjectMemberDto.Role = Role.member,
+    val role: ProjectMemberDto.Role = Role.projectMinusMember,
 
     @Json(name = "email")
     val email: kotlin.String? = null,
@@ -48,13 +48,14 @@ data class ProjectMemberDto (
     /**
      * 
      *
-     * Values: owner,admin,member
+     * Values: projectMinusOwner,projectMinusAdmin,projectMinusMember
      */
     @JsonClass(generateAdapter = false)
     enum class Role(val value: kotlin.String) {
-        @Json(name = "project-owner") owner("project-owner"),
-        @Json(name = "project-admin") admin("project-admin"),
-        @Json(name = "project-member") member("project-member");
+        @Json(name = "project-owner") projectMinusOwner("project-owner"),
+        @Json(name = "project-admin") projectMinusAdmin("project-admin"),
+        @Json(name = "project-member") projectMinusMember("project-member");
     }
+
 }
 

@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.ComponentDto
@@ -39,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class UploadApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,6 +48,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/upload/lastVersion/{projectId}
      * Get Last Version
      * This service message allows retrieval of the last version by project ID.
      * @param projectId 
@@ -79,6 +80,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/upload/lastVersion/{projectId}
      * Get Last Version
      * This service message allows retrieval of the last version by project ID.
      * @param projectId 
@@ -119,6 +121,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/upload/updateUploadStatus
      * Update Upload Status
      * This service message allows updating the upload status.
      * @param updateUploadStatusDto 
@@ -149,6 +152,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/upload/updateUploadStatus
      * Update Upload Status
      * This service message allows updating the upload status.
      * @param updateUploadStatusDto 
@@ -188,6 +192,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/upload/artifact
      * Upload Artifact
      * This service message allows uploading an artifact.
      * @param uploadArtifactDto 
@@ -218,6 +223,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/upload/artifact
      * Upload Artifact
      * This service message allows uploading an artifact.
      * @param uploadArtifactDto 
@@ -257,6 +263,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/upload/manifest
      * Upload Manifest
      * This service message allows uploading a manifest file and an upload token.
      * @param file 
@@ -288,6 +295,7 @@ class UploadApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/upload/manifest
      * Upload Manifest
      * This service message allows uploading a manifest file and an upload token.
      * @param file 
