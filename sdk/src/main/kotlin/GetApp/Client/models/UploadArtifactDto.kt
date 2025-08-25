@@ -67,5 +67,8 @@ data class UploadArtifactDto (
     @Json(name = "uploadToken")
     val uploadToken: kotlin.String? = null
 
-)
+) {
+
+
+}
 

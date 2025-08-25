@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.RefreshTokenDto
@@ -39,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class LoginApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,6 +48,7 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
+     * POST /api/login/refresh
      * Get Refresh Token
      * This service message allows a user to get a refresh token.
      * @param refreshTokenDto 
@@ -79,6 +80,7 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
+     * POST /api/login/refresh
      * Get Refresh Token
      * This service message allows a user to get a refresh token.
      * @param refreshTokenDto 
@@ -120,6 +122,7 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
+     * POST /api/login
      * User Login
      * This service message allows a user to log in and receive a token.
      * @param userLoginDto 
@@ -151,6 +154,7 @@ class LoginApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
     }
 
     /**
+     * POST /api/login
      * User Login
      * This service message allows a user to log in and receive a token.
      * @param userLoginDto 

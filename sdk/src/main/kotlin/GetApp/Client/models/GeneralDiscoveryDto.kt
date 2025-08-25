@@ -42,5 +42,8 @@ data class GeneralDiscoveryDto (
     @Json(name = "physicalDevice")
     val physicalDevice: PhysicalDiscoveryDto? = null
 
-)
+) {
+
+
+}
 

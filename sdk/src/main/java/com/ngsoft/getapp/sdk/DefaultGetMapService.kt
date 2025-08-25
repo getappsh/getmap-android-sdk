@@ -204,9 +204,9 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
         Timber.d("getDiscoveryCatalog -  offering results: $discoveries ")
 
         val result = mutableListOf<DiscoveryItem>()
-        if (discoveries.map?.status == OfferingMapResDto.Status.error){
-            Timber.e("getDiscoveryCatalog: get-map offering error ${discoveries.map.error?.message}")
-            throw Exception("get-map offering error ${discoveries.map.error?.message}")
+        if (discoveries.map?.status == OfferingMapResDto.Status.Error){
+            Timber.e("getDiscoveryCatalog: get-map offering error ${discoveries?.map.error?.message}")
+            throw Exception("get-map offering error ${discoveries?.map.error?.message}")
         }
 
         discoveries.map?.products?.forEach {

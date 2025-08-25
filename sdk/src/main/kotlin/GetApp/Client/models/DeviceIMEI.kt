@@ -31,5 +31,8 @@ data class DeviceIMEI (
     @Json(name = "imei")
     val imei: kotlin.String
 
-)
+) {
+
+
+}
 

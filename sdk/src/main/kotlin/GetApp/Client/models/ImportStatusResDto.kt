@@ -50,19 +50,20 @@ data class ImportStatusResDto (
     /**
      * 
      *
-     * Values: start,inProgress,done,cancel,pause,error,pending,expired,archived
+     * Values: Start,InProgress,Done,Cancel,Pause,Error,Pending,Expired,Archived
      */
     @JsonClass(generateAdapter = false)
     enum class Status(val value: kotlin.String) {
-        @Json(name = "Start") start("Start"),
-        @Json(name = "InProgress") inProgress("InProgress"),
-        @Json(name = "Done") done("Done"),
-        @Json(name = "Cancel") cancel("Cancel"),
-        @Json(name = "Pause") pause("Pause"),
-        @Json(name = "Error") error("Error"),
-        @Json(name = "Pending") pending("Pending"),
-        @Json(name = "Expired") expired("Expired"),
-        @Json(name = "Archived") archived("Archived");
+        @Json(name = "Start") Start("Start"),
+        @Json(name = "InProgress") InProgress("InProgress"),
+        @Json(name = "Done") Done("Done"),
+        @Json(name = "Cancel") Cancel("Cancel"),
+        @Json(name = "Pause") Pause("Pause"),
+        @Json(name = "Error") Error("Error"),
+        @Json(name = "Pending") Pending("Pending"),
+        @Json(name = "Expired") Expired("Expired"),
+        @Json(name = "Archived") Archived("Archived");
     }
+
 }
 

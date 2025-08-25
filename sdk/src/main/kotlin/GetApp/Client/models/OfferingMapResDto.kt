@@ -46,12 +46,13 @@ data class OfferingMapResDto (
     /**
      * 
      *
-     * Values: success,error
+     * Values: Success,Error
      */
     @JsonClass(generateAdapter = false)
     enum class Status(val value: kotlin.String) {
-        @Json(name = "Success") success("Success"),
-        @Json(name = "Error") error("Error");
+        @Json(name = "Success") Success("Success"),
+        @Json(name = "Error") Error("Error");
     }
+
 }
 

@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.BugReportDto
@@ -39,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,6 +48,7 @@ class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * GET /api/bug-report/{bugId}
      * Get Bug Report
      * This endpoint allows a user to fetch the details of a bug report using its unique identifier.
      * @param bugId 
@@ -79,6 +80,7 @@ class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * GET /api/bug-report/{bugId}
      * Get Bug Report
      * This endpoint allows a user to fetch the details of a bug report using its unique identifier.
      * @param bugId 
@@ -119,6 +121,7 @@ class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/bug-report
      * Report New Bug
      * This endpoint allows a user to report a new bug associated with a specific device.
      * @param newBugReportDto 
@@ -150,6 +153,7 @@ class DeviceBugReportApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/bug-report
      * Report New Bug
      * This endpoint allows a user to report a new bug associated with a specific device.
      * @param newBugReportDto 

@@ -43,5 +43,8 @@ data class ProjectConfigDto (
     @Json(name = "operationsSystem")
     val operationsSystem: kotlin.collections.List<kotlin.String>? = null
 
-)
+) {
+
+
+}
 

@@ -55,5 +55,8 @@ data class MapProperties (
     @Json(name = "lastUpdateAfter")
     val lastUpdateAfter: java.math.BigDecimal? = null
 
-)
+) {
+
+
+}
 

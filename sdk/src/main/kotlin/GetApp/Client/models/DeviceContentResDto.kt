@@ -37,5 +37,8 @@ data class DeviceContentResDto (
     @Json(name = "components")
     val components: kotlin.collections.List<ComponentDto>
 
-)
+) {
+
+
+}
 

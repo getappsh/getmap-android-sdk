@@ -56,13 +56,14 @@ data class MemberResDto (
     /**
      * 
      *
-     * Values: owner,admin,member
+     * Values: projectMinusOwner,projectMinusAdmin,projectMinusMember
      */
     @JsonClass(generateAdapter = false)
     enum class Role(val value: kotlin.String) {
-        @Json(name = "project-owner") owner("project-owner"),
-        @Json(name = "project-admin") admin("project-admin"),
-        @Json(name = "project-member") member("project-member");
+        @Json(name = "project-owner") projectMinusOwner("project-owner"),
+        @Json(name = "project-admin") projectMinusAdmin("project-admin"),
+        @Json(name = "project-member") projectMinusMember("project-member");
     }
+
 }
 

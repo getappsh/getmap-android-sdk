@@ -35,5 +35,8 @@ data class OfferingResponseDto (
     @Json(name = "platform")
     val platform: kotlin.Any? = null
 
-)
+) {
+
+
+}
 

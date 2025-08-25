@@ -80,5 +80,8 @@ data class MapDto (
     @Json(name = "product")
     val product: MapProductResDto? = null
 
-)
+) {
+
+
+}
 

@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeviceContentResDto
@@ -41,7 +41,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeviceApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -50,6 +50,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/info/installed/{deviceId}
      * Get Installed Device Content
      * This service message allows receiving information about the installations carried out on the device using GetApp services. This message is sent by the device during the initialization phase to check compatibility between the existing installations on this device.
      * @param deviceId 
@@ -81,6 +82,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/info/installed/{deviceId}
      * Get Installed Device Content
      * This service message allows receiving information about the installations carried out on the device using GetApp services. This message is sent by the device during the initialization phase to check compatibility between the existing installations on this device.
      * @param deviceId 
@@ -121,6 +123,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/imei/{serialNumber}
      * Get Device IMEI
      * This service message allows receiving device IMEI by providing serial-number
      * @param serialNumber 
@@ -152,6 +155,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/imei/{serialNumber}
      * Get Device IMEI
      * This service message allows receiving device IMEI by providing serial-number
      * @param serialNumber 
@@ -192,6 +196,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/{deviceId}/maps
      * Get Device Maps
      * This service message allows retrieval of all registered maps on the given device.
      * @param deviceId 
@@ -223,6 +228,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/{deviceId}/maps
      * Get Device Maps
      * This service message allows retrieval of all registered maps on the given device.
      * @param deviceId 
@@ -263,6 +269,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/devices
      * Get Registered Devices
      * This service message allows retrieval of all registered devices.
      * @return DeviceDto
@@ -293,6 +300,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * GET /api/device/devices
      * Get Registered Devices
      * This service message allows retrieval of all registered devices.
      * @return ApiResponse<DeviceDto?>
@@ -331,6 +339,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/device/register
      * Register Device
      * This service message allows the device registration process for GetApp services.
      * @param deviceRegisterDto 
@@ -361,6 +370,7 @@ class DeviceApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/device/register
      * Register Device
      * This service message allows the device registration process for GetApp services.
      * @param deviceRegisterDto 

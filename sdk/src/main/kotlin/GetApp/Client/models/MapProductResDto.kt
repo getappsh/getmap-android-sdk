@@ -83,5 +83,8 @@ data class MapProductResDto (
     @Json(name = "ingestionDate")
     val ingestionDate: java.time.OffsetDateTime? = null
 
-)
+) {
+
+
+}
 

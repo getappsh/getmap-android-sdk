@@ -80,18 +80,18 @@ data class DeliveryStatusDto (
     /**
      * 
      *
-     * Values: start,done,error,cancelled,pause,`continue`,download,deleted
+     * Values: Start,Done,Error,Cancelled,Pause,Continue,Download,Deleted
      */
     @JsonClass(generateAdapter = false)
     enum class DeliveryStatus(val value: kotlin.String) {
-        @Json(name = "Start") start("Start"),
-        @Json(name = "Done") done("Done"),
-        @Json(name = "Error") error("Error"),
-        @Json(name = "Cancelled") cancelled("Cancelled"),
-        @Json(name = "Pause") pause("Pause"),
-        @Json(name = "Continue") `continue`("Continue"),
-        @Json(name = "Download") download("Download"),
-        @Json(name = "Deleted") deleted("Deleted");
+        @Json(name = "Start") Start("Start"),
+        @Json(name = "Done") Done("Done"),
+        @Json(name = "Error") Error("Error"),
+        @Json(name = "Cancelled") Cancelled("Cancelled"),
+        @Json(name = "Pause") Pause("Pause"),
+        @Json(name = "Continue") Continue("Continue"),
+        @Json(name = "Download") Download("Download"),
+        @Json(name = "Deleted") Deleted("Deleted");
     }
     /**
      * 
@@ -104,5 +104,6 @@ data class DeliveryStatusDto (
         @Json(name = "map") map("map"),
         @Json(name = "cache") cache("cache");
     }
+
 }
 

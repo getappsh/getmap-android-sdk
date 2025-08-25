@@ -44,5 +44,8 @@ data class PlatformDto (
     @Json(name = "components")
     val components: kotlin.collections.List<ComponentDto>? = null
 
-)
+) {
+
+
+}
 

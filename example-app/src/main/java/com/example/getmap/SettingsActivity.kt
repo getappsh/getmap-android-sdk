@@ -333,10 +333,10 @@ private fun saveLocalToService(
 ) {
 
     var targetTypes: HashMap<String, MapConfigDto.TargetStoragePolicy> = hashMapOf()
-    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.sDOnly
-    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.flashThenSD
-    targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.sDThenFlash
-    targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.flashOnly
+    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.SDOnly
+    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.FlashThenSD
+    targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.SDThenFlash
+    targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.FlashOnly
 
     var notifValidation: Toast? = null
     val reg = Regex("[a-zA-Z]")

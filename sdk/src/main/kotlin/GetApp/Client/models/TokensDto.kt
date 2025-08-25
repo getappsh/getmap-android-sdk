@@ -43,5 +43,8 @@ data class TokensDto (
     @Json(name = "refreshExpireAt")
     val refreshExpireAt: java.time.OffsetDateTime? = null
 
-)
+) {
+
+
+}
 

@@ -35,5 +35,8 @@ data class DeviceRegisterDto (
     @Json(name = "userName")
     val userName: kotlin.String? = null
 
-)
+) {
+
+
+}
 

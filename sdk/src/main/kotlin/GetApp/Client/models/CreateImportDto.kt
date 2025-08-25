@@ -36,5 +36,8 @@ data class CreateImportDto (
     @Json(name = "mapProperties")
     val mapProperties: MapProperties? = null
 
-)
+) {
+
+
+}
 

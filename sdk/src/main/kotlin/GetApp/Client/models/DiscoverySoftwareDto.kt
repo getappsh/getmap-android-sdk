@@ -36,5 +36,8 @@ data class DiscoverySoftwareDto (
     @Json(name = "platform")
     val platform: PlatformDto? = null
 
-)
+) {
+
+
+}
 

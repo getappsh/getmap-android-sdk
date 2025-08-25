@@ -35,5 +35,8 @@ data class UserLoginDto (
     @Json(name = "password")
     val password: kotlin.String? = null
 
-)
+) {
+
+
+}
 

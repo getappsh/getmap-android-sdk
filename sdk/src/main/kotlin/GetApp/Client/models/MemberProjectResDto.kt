@@ -37,5 +37,8 @@ data class MemberProjectResDto (
     @Json(name = "project")
     val project: ProjectResDto? = null
 
-)
+) {
+
+
+}
 
