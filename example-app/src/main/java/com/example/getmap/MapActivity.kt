@@ -82,6 +82,7 @@ class MapActivity : AppCompatActivity() {
     private var dMode = false
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
+    private lateinit var controlSwitch: Switch
 
     private val showBm: TextView by lazy { findViewById(R.id.showMb) }
     private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
@@ -105,8 +106,10 @@ class MapActivity : AppCompatActivity() {
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
+        geoPackageName = orthophotoPackageName
+        addGeoPkg()
 
-        val controlSwitch = findViewById<Switch>(R.id.control)
+        controlSwitch = findViewById<Switch>(R.id.control)
         val controlText = findViewById<TextView>(R.id.controlText)
         val lastCompass = sharedPreferences?.getString("last_compass", "0.0F")
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
@@ -122,9 +125,6 @@ class MapActivity : AppCompatActivity() {
             val lastLookAtObj = gson.fromJson(lastLookAt, LookAt::class.java)
             val compass = findViewById<View>(R.id.arrow)
             controlSwitch.isChecked = newControlMap
-
-            geoPackageName = orthophotoPackageName
-            addGeoPkg()
             if (controlSwitch.isChecked) {
                 geoPackageName = controlPackageName
                 addGeoPkg()
@@ -139,9 +139,6 @@ class MapActivity : AppCompatActivity() {
                 simulateTouch(wwd.x, wwd.y)
             }, 50)
         } else {
-            // Immediate call to addGeoPkg
-            geoPackageName = orthophotoPackageName
-            addGeoPkg()
             val lookAt = LookAt().set(
                 31.75,
                 34.85,
@@ -254,12 +251,10 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun findLargestGpkgByKeyword(dirPath: String, keyword: String): String {
-        // מצא את תיקיית ה-volume
         val sm = getSystemService(STORAGE_SERVICE) as StorageManager
         val storage = sm.storageVolumes.getOrNull(1) ?: sm.storageVolumes.getOrNull(0)
         val volumeDir = storage?.directory?.absoluteFile ?: return ""
 
-        // הפוך נתיב יחסי למוחלט; אם קיבלת כבר קובץ – חפש ב-parent שלו
         val base = File(volumeDir, dirPath).absoluteFile
         val searchDir = when {
             base.isDirectory -> base
@@ -267,18 +262,15 @@ class MapActivity : AppCompatActivity() {
             else             -> volumeDir
         }
 
-        Log.d("GPKG", "searchDir: ${searchDir.absolutePath}, keyword='$keyword'")
-
         val files = searchDir.listFiles() ?: return ""
         val candidates = files.filter { f ->
             f.isFile &&
                     f.extension.equals("gpkg", ignoreCase = true) &&
                     !f.name.contains("-journal", ignoreCase = true) &&
                     !f.name.endsWith("-wal", ignoreCase = true) &&
-                    (keyword.isBlank() || f.name.contains(keyword, ignoreCase = true))
+                    f.name.contains(keyword, ignoreCase = true)
         }
         val largest = candidates.maxByOrNull { it.length() } ?: return ""
-        Log.d("GPKG", "largest: ${largest.absolutePath} (${largest.length()} bytes)")
         return largest.absolutePath
     }
 
@@ -308,17 +300,6 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun addGeoPkg() {
-        Log.d("MapActivity", "addGeoPkg: ")
-//        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-//        val storageList = storageManager.storageVolumes
-//        val storage = storageList.getOrNull(1) ?: storageList.getOrNull(0)
-//        val volume = storage?.directory?.absoluteFile ?: ""
-        if (geoPackageName.isBlank()) {
-            geoPackageName = findLargestGpkgByKeyword(
-                service.config.ortophotoMapPath.toString(),
-                service.config.ortophotoMapPattern.toString()
-            )
-        }
         val geoPath = geoPackageName
 
         val layerFactory = LayerFactory()
@@ -326,7 +307,7 @@ class MapActivity : AppCompatActivity() {
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
-                    if (geoPackageName.contains( service.config.ortophotoMapPattern.toString())) {
+                    if (controlSwitch.isChecked) {
                         layer!!.displayName = "BlueMarble"
                     }
                     wwd.layers.addLayer(layer)
