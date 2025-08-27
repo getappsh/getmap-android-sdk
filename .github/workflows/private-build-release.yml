@@ -85,8 +85,8 @@ jobs:
         with:
           tag_name: ${{ env.FULL_VERSION_NAME }}
           name: Release ${{ env.FULL_VERSION_NAME }}
-          draft: true
-          prerelease: false
+          draft: false
+          prerelease: true
           files: |
             ./cloud-mapping-pub*.apk
             ./cloud-mapping-even*.apk
