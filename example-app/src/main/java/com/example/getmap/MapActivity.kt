@@ -59,6 +59,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import java.io.File
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
@@ -76,9 +77,12 @@ class MapActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
     private var geoPackageName = ""
+    private var orthophotoPackageName = ""
+    private var controlPackageName = ""
     private var dMode = false
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
+    private lateinit var controlSwitch: Switch
 
     private val showBm: TextView by lazy { findViewById(R.id.showMb) }
     private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
@@ -96,11 +100,16 @@ class MapActivity : AppCompatActivity() {
         val instance = MapServiceManager.getInstance()
         service = instance.service
 
+        orthophotoPackageName = findLargestGpkgByKeyword(service.config.ortophotoMapPath.toString(),service.config.ortophotoMapPattern.toString())
+        controlPackageName =findLargestGpkgByKeyword(service.config.controlMapPath.toString(),service.config.controlMapPattern.toString())
+
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
+        geoPackageName = orthophotoPackageName
+        addGeoPkg()
 
-        val controlSwitch = findViewById<Switch>(R.id.control)
+        controlSwitch = findViewById<Switch>(R.id.control)
         val controlText = findViewById<TextView>(R.id.controlText)
         val lastCompass = sharedPreferences?.getString("last_compass", "0.0F")
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
@@ -117,12 +126,7 @@ class MapActivity : AppCompatActivity() {
             val compass = findViewById<View>(R.id.arrow)
             controlSwitch.isChecked = newControlMap
             if (controlSwitch.isChecked) {
-                geoPackageName = service.config.ortophotoMapPath.toString()
-                addGeoPkg()
-                geoPackageName = service.config.controlMapPath.toString()
-                addGeoPkg()
-            } else {
-                geoPackageName = service.config.ortophotoMapPath.toString()
+                geoPackageName = controlPackageName
                 addGeoPkg()
             }
             compass.rotation = newCompass
@@ -135,7 +139,6 @@ class MapActivity : AppCompatActivity() {
                 simulateTouch(wwd.x, wwd.y)
             }, 50)
         } else {
-
             val lookAt = LookAt().set(
                 31.75,
                 34.85,
@@ -243,11 +246,32 @@ class MapActivity : AppCompatActivity() {
         controlSwitch.setOnCheckedChangeListener { _, isChecked ->
             controlSwitch(isChecked, tracker)
         }
-        // Immediate call to addGeoPkg
-        geoPackageName = service.config.ortophotoMapPath.toString()
-        addGeoPkg()
 
         drawPolygons()
+    }
+
+    private fun findLargestGpkgByKeyword(dirPath: String, keyword: String): String {
+        val sm = getSystemService(STORAGE_SERVICE) as StorageManager
+        val storage = sm.storageVolumes.getOrNull(1) ?: sm.storageVolumes.getOrNull(0)
+        val volumeDir = storage?.directory?.absoluteFile ?: return ""
+
+        val base = File(volumeDir, dirPath).absoluteFile
+        val searchDir = when {
+            base.isDirectory -> base
+            base.isFile      -> base.parentFile ?: volumeDir
+            else             -> volumeDir
+        }
+
+        val files = searchDir.listFiles() ?: return ""
+        val candidates = files.filter { f ->
+            f.isFile &&
+                    f.extension.equals("gpkg", ignoreCase = true) &&
+                    !f.name.contains("-journal", ignoreCase = true) &&
+                    !f.name.endsWith("-wal", ignoreCase = true) &&
+                    f.name.contains(keyword, ignoreCase = true)
+        }
+        val largest = candidates.maxByOrNull { it.length() } ?: return ""
+        return largest.absolutePath
     }
 
     private fun controlSwitch(isChecked: Boolean, tracker: Tracker) {
@@ -255,10 +279,10 @@ class MapActivity : AppCompatActivity() {
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("הצגת מפת שליטה")
                 .with(tracker)
-            geoPackageName = service.config.controlMapPath.toString()
+            geoPackageName = controlPackageName
             addGeoPkg()
         } else {
-            geoPackageName = ""
+            geoPackageName = orthophotoPackageName
             addGeoPkg()
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("הסתרת מפת שליטה")
@@ -276,22 +300,14 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun addGeoPkg() {
-        Log.d("MapActivity", "addGeoPkg: ")
-        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes
-        val storage = storageList.getOrNull(1) ?: storageList.getOrNull(0)
-        val volume = storage?.directory?.absoluteFile ?: ""
-        if (geoPackageName.isBlank()) {
-            geoPackageName = service.config.ortophotoMapPath.toString()
-        }
-        val geoPath = "${volume}/$geoPackageName"
+        val geoPath = geoPackageName
 
         val layerFactory = LayerFactory()
         layerFactory.createFromGeoPackage(
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
-                    if (geoPackageName == service.config.controlMapPath.toString()) {
+                    if (controlSwitch.isChecked) {
                         layer!!.displayName = "BlueMarble"
                     }
                     wwd.layers.addLayer(layer)
