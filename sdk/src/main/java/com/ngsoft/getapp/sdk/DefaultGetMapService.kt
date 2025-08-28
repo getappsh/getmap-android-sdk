@@ -309,4 +309,8 @@ internal open class DefaultGetMapService(private val appCtx: Context) : GetMapSe
 
         return MapDeployState.DONE
     }
+
+    override fun sendBugReport(description: String?) {
+        TODO("Not yet implemented")
+    }
 }

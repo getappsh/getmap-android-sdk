@@ -8,13 +8,16 @@ import timber.log.Timber.*
 
 internal object TimberLogger {
     private var initialized = false
+    private var fileTree: FileLoggerTree? = null
 
     @Synchronized
     fun initTimber() {
         if (initialized) return
         initialized = true
 
-        val fileTree = FileLoggerTree.Builder()
+        Timber.plant(DebugTree())
+
+        fileTree = FileLoggerTree.Builder()
             .withFileName("file%g.log")
             .withDirName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/GetApp/Logs")
             .withSizeLimit(2 * 1024 * 1024)
@@ -23,9 +26,13 @@ internal object TimberLogger {
             .appendToFile(true)
             .build()
 
-        Timber.plant(DebugTree(), fileTree)
+        fileTree?.apply { Timber.plant(this) }
     }
 
+
+    fun getFileTree(): FileLoggerTree? {
+        return fileTree
+    }
 
     fun getBugReportTree(): FileLoggerTree {
         val fileTree = FileLoggerTree.Builder()

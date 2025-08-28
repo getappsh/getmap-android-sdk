@@ -1,5 +1,6 @@
 package com.ngsoft.getapp.sdk
 
+import GetApp.Client.models.NewBugReportDto
 import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
@@ -11,6 +12,7 @@ import com.ngsoft.getapp.sdk.exceptions.QRDataTooLargeException
 import com.ngsoft.getapp.sdk.helpers.client.ConfigClient
 import com.ngsoft.getapp.sdk.helpers.client.InventoryClient
 import com.ngsoft.getapp.sdk.helpers.client.MapDeliveryClient
+import com.ngsoft.getapp.sdk.helpers.logger.TimberLogger
 import com.ngsoft.getapp.sdk.jobs.DeliveryForegroundService
 import com.ngsoft.getapp.sdk.jobs.JobScheduler
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
@@ -363,5 +365,25 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
                 }
             }
         }
+    }
+
+    @Throws(IOException::class)
+    override fun sendBugReport(description: String?){
+        Timber.d("Send Bug Report")
+        val res = client.bugReportApi.bugReportControllerReportNewBug(
+            NewBugReportDto(
+                deviceId = pref.deviceId,
+                agentVersion = BuildConfig.VERSION_NAME,
+                description = description ?: "Bug report"
+            )
+        )
+        Timber.d("Report Id: ${res.bugId}")
+        val filePath = TimberLogger.getFileTree()?.getFileName(0)
+        if (filePath == null){
+            Timber.w("sendBugReport - filePath is null")
+            return
+        }
+        client.uploadFile(res.uploadLogsUrl, filePath)
+
     }
 }
