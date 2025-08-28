@@ -15,8 +15,6 @@ internal object TimberLogger {
         if (initialized) return
         initialized = true
 
-        Timber.plant(DebugTree())
-
         fileTree = FileLoggerTree.Builder()
             .withFileName("file%g.log")
             .withDirName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/GetApp/Logs")

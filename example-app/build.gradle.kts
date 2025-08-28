@@ -124,7 +124,8 @@ dependencies {
 
     implementation ("androidx.core:core-ktx:1.7.0")
     implementation ("com.github.matomo-org:matomo-sdk-android:4.1.4")
-
+    
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")

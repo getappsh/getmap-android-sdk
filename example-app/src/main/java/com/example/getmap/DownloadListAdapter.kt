@@ -10,7 +10,6 @@ import android.graphics.drawable.RotateDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -131,9 +131,7 @@ class DownloadListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val downloadData = asyncListDiffer.currentList[position]
-        Log.i(
-            "vsdnhilofherszofhezofezhioflezhfiollzefhzuofhezuofhezjofgdszuikzerf",
-            "onBindViewHolder: ${downloadData.jsonName}"
+        Timber.v("onBindViewHolder: ${downloadData.jsonName}"
         )
 
         val directory = File(
@@ -482,7 +480,7 @@ class DownloadListAdapter(
 
             outputFormat.format(date)
         } catch (e: Exception) {
-            Log.e("DownloadListAdapter", "formatDate failed for \"$inputDate\"", e)
+            Timber.tag("DownloadListAdapter").e("formatDate failed for \"$inputDate\"")
             ""
         }
     }

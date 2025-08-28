@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.storage.StorageManager
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -59,6 +58,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
@@ -311,11 +311,11 @@ class MapActivity : AppCompatActivity() {
                         layer!!.displayName = "BlueMarble"
                     }
                     wwd.layers.addLayer(layer)
-                    Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded")
+                    Timber.tag("gov.nasa.worldwind").i("GeoPackage layer creation succeeded")
                 }
 
                 override fun creationFailed(factory: LayerFactory?, layer: Layer?, ex: Throwable?) {
-                    Log.e("gov.nasa.worldwind", "GeoPackage layer creation failed", ex)
+                    Timber.tag("gov.nasa.worldwind").e("GeoPackage layer creation failed")
                     Toast.makeText(applicationContext, "בעיה בטעינת המפה", Toast.LENGTH_LONG).show()
                 }
             }
@@ -323,7 +323,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun onDelivery() {
-        Log.d(TAG, "onDelivery: ")
+        Timber.d("onDelivery: ")
 
         val pLeftTop = getFourScreenPoints(wwd).leftTop
         val pRightBottom = getFourScreenPoints(wwd).rightBottom
@@ -339,7 +339,7 @@ class MapActivity : AppCompatActivity() {
             try {
 
                 val id = service.downloadMap(props)
-                Log.d(TAG, "onDelivery: after download map have been called, id: $id")
+                Timber.d("onDelivery: after download map have been called")
             } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
             }
@@ -915,7 +915,7 @@ class MapActivity : AppCompatActivity() {
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         saveLastPosition(false)
-        Log.e(TAG, "onBackPressed: ${sharedPreferences?.getString("last_navigator", "No data")}")
+        Timber.e("onBackPressed: ${sharedPreferences?.getString("last_navigator",  "No data")}")
         val intent = Intent(this@MapActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
@@ -988,7 +988,7 @@ class MapActivity : AppCompatActivity() {
             val consumed = pickGestureDetector.onTouchEvent(event)
 
             if (!consumed && event.action == MotionEvent.ACTION_UP) {
-                Log.i("ScrollEvent", "Scroll detected: ${event.x}, ${event.y}")
+                Timber.tag("ScrollEvent").i("Scroll detected: ${event.x}, ${event.y}")
                 checkBboxBeforeSent()
             } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
                 val areaCal = getString(R.string.calculate_area_text)
