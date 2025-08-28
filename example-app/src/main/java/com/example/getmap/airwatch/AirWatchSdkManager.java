@@ -4,14 +4,9 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.airwatch.sdk.AirWatchSDKException;
 import com.airwatch.sdk.SDKManager;
-import com.arcgismaps.portal.PortalItemType;
-import com.example.getmap.BuildConfig;
 
 import org.json.JSONObject;
 
@@ -23,6 +18,7 @@ import java.util.TimerTask;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import timber.log.Timber;
 
 public class AirWatchSdkManager {
 
@@ -42,7 +38,7 @@ public class AirWatchSdkManager {
     public void startSDK() {
         new Thread(() -> {
             try {
-                Log.d("Airwatch - STARTSDK", "Starting SDK initialization");
+                Timber.tag("Airwatch - STARTSDK").d("Starting SDK initialization");
                 sdkManager = SDKManager.init(context);
 
                 if (sdkManager != null) {
@@ -50,7 +46,7 @@ public class AirWatchSdkManager {
                 }
             } catch (Exception exception) {
                 sdkManager = null;
-                Log.e("Airwatch", "Workspace ONE SDK initialization failed", exception);
+                Timber.tag("Airwatch").e("Workspace ONE SDK initialization failed");
             }
         }).start();
     }
@@ -68,7 +64,7 @@ public class AirWatchSdkManager {
         @Override
         public void run() {
             retryCount++;
-            Log.d("Airwatch - RetryTask", String.format("RetryCount: %d", retryCount));
+            Timber.tag("Airwatch - RetryTask").d(String.format("RetryCount: %d"));
             startSDK();
             if (isInitialized() || retryCount >= 3) {
                 retryTimer.cancel();
@@ -121,14 +117,14 @@ public class AirWatchSdkManager {
                 String airWatchData = response.body().string();
                 JSONObject jsonObject = new JSONObject(airWatchData);
                 imei = jsonObject.getString("Imei");
-                Log.d("Imei", imei);
+                Timber.w(imei);
             } else {
-                Log.d("Error", "imei failed");
+                Timber.w("imei failed");
             }
         } catch (Exception e) {
             Toast.makeText(context, "Imei" + e, Toast.LENGTH_LONG).show();
-            Log.d("Error", "crushed");
-            Log.d("Error", e.toString());
+            Timber.w("crushed");
+            Timber.w(e.toString());
             e.printStackTrace();
         }
 

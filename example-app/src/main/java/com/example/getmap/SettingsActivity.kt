@@ -10,7 +10,6 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -39,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import timber.log.Timber
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -167,7 +167,7 @@ class SettingsActivity : AppCompatActivity() {
                         instance.resetService()
                         instance.initService(this, saveConfiguration(params))
                     } catch (_: Exception) {
-                        Log.i("There is a BIG problem", "There is a problem with the sdk instance")
+                        Timber.tag("There is a BIG problem").i("There is a problem with the sdk instance")
                     }
                 }
                 saveLocalToService(params, service, this)
@@ -209,7 +209,7 @@ class SettingsActivity : AppCompatActivity() {
                             .with(tracker)
                         withContext(Dispatchers.Main) {
                         lastConfig.text = "lastConfig error: Network error occured"
-                        Log.e("Fetch Config", e.message.toString())
+                        Timber.tag("Fetch Config", ).e(e.message.toString())
                         lastServerConfig.text ="lastServerConfig error: Network error occured"
                         lastInventory.text ="lastInventory error: Network error occured"
                         }
