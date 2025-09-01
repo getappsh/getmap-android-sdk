@@ -76,6 +76,12 @@ class SettingsActivity : AppCompatActivity() {
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
         val resetMapButton = findViewById<Button>(R.id.reset_map)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
+        val sendBugButton = findViewById<Button>(R.id.send_bug_button)
+        sendBugButton.setOnClickListener {
+            Timber.i("לחצת על כפתור שליחת באג!")
+            service.sendBugReport()
+            Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
+        }
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
