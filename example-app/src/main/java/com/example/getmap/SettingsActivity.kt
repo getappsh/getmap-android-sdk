@@ -144,6 +144,8 @@ class SettingsActivity : AppCompatActivity() {
                 nebulaParamAdapter.setIsEditing(false, i, params[i])
             }
             cancelButton.visibility = View.INVISIBLE
+            sendBugButton.visibility = View.VISIBLE
+            resetMapButton.visibility = View.VISIBLE
             editConf.isChecked = false
             applyServerConfig.isEnabled = false
         }
@@ -152,7 +154,7 @@ class SettingsActivity : AppCompatActivity() {
                 val passwordDialog =
                     PasswordDialog(
                         this, params, nebulaParamAdapter, true, editConf,
-                        cancelButton, tracker, applyServerConfig
+                        cancelButton, resetMapButton, sendBugButton, tracker, applyServerConfig
                     )
                 passwordDialog.show()
             } else {
@@ -183,6 +185,8 @@ class SettingsActivity : AppCompatActivity() {
                     nebulaParamAdapter.setIsEditing(false, i, params[i])
                 }
                 cancelButton.visibility = View.INVISIBLE
+                sendBugButton.visibility = View.VISIBLE
+                resetMapButton.visibility = View.VISIBLE
                 applyServerConfig.isEnabled = false
             }
         }
