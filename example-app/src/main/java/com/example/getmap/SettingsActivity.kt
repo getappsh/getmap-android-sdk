@@ -76,6 +76,11 @@ class SettingsActivity : AppCompatActivity() {
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
         val resetMapButton = findViewById<Button>(R.id.reset_map)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
+        val sendBugButton = findViewById<Button>(R.id.send_bug_button)
+        sendBugButton.setOnClickListener {
+            service.sendBugReport()
+            Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
+        }
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
@@ -138,6 +143,8 @@ class SettingsActivity : AppCompatActivity() {
                 nebulaParamAdapter.setIsEditing(false, i, params[i])
             }
             cancelButton.visibility = View.INVISIBLE
+            sendBugButton.visibility = View.VISIBLE
+            resetMapButton.visibility = View.VISIBLE
             editConf.isChecked = false
             applyServerConfig.isEnabled = false
         }
@@ -146,7 +153,7 @@ class SettingsActivity : AppCompatActivity() {
                 val passwordDialog =
                     PasswordDialog(
                         this, params, nebulaParamAdapter, true, editConf,
-                        cancelButton, tracker, applyServerConfig
+                        cancelButton, resetMapButton, sendBugButton, tracker, applyServerConfig
                     )
                 passwordDialog.show()
             } else {
@@ -177,6 +184,8 @@ class SettingsActivity : AppCompatActivity() {
                     nebulaParamAdapter.setIsEditing(false, i, params[i])
                 }
                 cancelButton.visibility = View.INVISIBLE
+                sendBugButton.visibility = View.VISIBLE
+                resetMapButton.visibility = View.VISIBLE
                 applyServerConfig.isEnabled = false
             }
         }

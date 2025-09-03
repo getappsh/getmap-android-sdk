@@ -384,6 +384,6 @@ internal class AsioSdkGetMapService (private val appCtx: Context) : DefaultGetMa
             return
         }
         client.uploadFile(res.uploadLogsUrl, filePath)
-
+        Timber.d("Bug report sent")
     }
 }
