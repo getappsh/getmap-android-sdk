@@ -78,7 +78,6 @@ class SettingsActivity : AppCompatActivity() {
         val cancelButton = findViewById<Button>(R.id.cancel_button)
         val sendBugButton = findViewById<Button>(R.id.send_bug_button)
         sendBugButton.setOnClickListener {
-            Timber.i("לחצת על כפתור שליחת באג!")
             service.sendBugReport()
             Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
         }
