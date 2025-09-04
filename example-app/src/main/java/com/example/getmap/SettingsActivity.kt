@@ -36,6 +36,7 @@ import gov.nasa.worldwind.geom.LookAt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okio.IOException
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import timber.log.Timber
@@ -78,8 +79,12 @@ class SettingsActivity : AppCompatActivity() {
         val cancelButton = findViewById<Button>(R.id.cancel_button)
         val sendBugButton = findViewById<Button>(R.id.send_bug_button)
         sendBugButton.setOnClickListener {
-            service.sendBugReport()
-            Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
+            try {
+                service.sendBugReport()
+                Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
+            } catch (e: IOException) {
+                Toast.makeText(this, "אין חיבור אינטרנט - הדוח לא נשלח", Toast.LENGTH_SHORT).show()
+            }
         }
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
