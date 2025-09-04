@@ -69,6 +69,8 @@ import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
+import timber.log.Timber
+import timber.log.Timber.DebugTree
 import java.time.LocalDateTime
 import java.util.Base64
 
@@ -102,7 +104,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private lateinit var downloadListAdapter: DownloadListAdapter
 
     private val downloadStatusHandler: (MapData) -> Unit = { data ->
-        Log.d("DownloadStatusHandler", "${data.id} status is: ${data.deliveryState.name}")
+        Timber.tag("DownloadStatusHandler", ).d("${data.id} status is: ${data.deliveryState.name}")
     }
     private val startForResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -119,6 +121,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        Timber.plant(DebugTree())
 
         mapServiceManager = MapServiceManager.getInstance()
 
@@ -141,7 +144,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    "serialNumber",
 //                    "serialNumber"
 //                ).toString()
-//            Log.i("AIRWATCH SERIAL_NUMBER", serialNumber.toString())
+//            Timber.tag("AIRWATCH SERIAL_NUMBER").i(serialNumber.toString())
 //
 //            val imeiSharedPref = getSharedPreferences("imeiValue", Context.MODE_PRIVATE)
 //            imeiEven = imeiSharedPref.getString("imei_key", "").toString()
@@ -150,20 +153,20 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    imeiEven = sdkAirWatchSdkManager.imei
 //                    imeiSharedPref.edit().putString("imei_key", imeiEven).apply()
 //                } catch (e: Exception) {
-//                    Log.d("Error", "Error getting Imei")
-//                    Log.d("Error", e.toString())
+//                    Timber.tag("Error", ).d("Error getting Imei")
+//                    Timber.tag("Error", ).d(e.toString())
 //                }
-//                Log.d("AIRWATCH", "The Imei from airwatch is : $imeiEven")
+//                Timber.tag("AIRWATCH", ).d("The Imei from airwatch is : $imeiEven")
 //            } else {
-//                Log.d("AIRWATCH", "The Imei from sharedpref is : $imeiEven")
+//                Timber.tag("AIRWATCH", ).d("The Imei from sharedpref is : $imeiEven")
 //            }
             imeiEven = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
 
             var url = Pref.getInstance(this).baseUrl
-            Log.i("$TAG - AIRWATCH", "Url of AIRWATCH: $url")
+            Timber.tag("$TAG - AIRWATCH").i("Url of AIRWATCH: $url")
             if (url.isEmpty()) {
                 url = BuildConfig.BASE_URL
-                Log.d("$TAG - AIRWATCH", "URL is empty, new url is $url")
+                Timber.tag("$TAG - AIRWATCH").d("URL is empty, new url is $url")
             }
 
             val cfg = Configuration(
@@ -183,7 +186,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
         val tp = mapServiceManager.service.config.targetStoragePolicy
-        if ((tp == MapConfigDto.TargetStoragePolicy.sDOnly || tp == MapConfigDto.TargetStoragePolicy.sDThenFlash) && storageList.getOrNull(
+        if ((tp == MapConfigDto.TargetStoragePolicy.SDOnly || tp == MapConfigDto.TargetStoragePolicy.SDThenFlash) && storageList.getOrNull(
                 1
             )?.directory?.absoluteFile == null
         ) {
@@ -196,7 +199,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        service.setOnInventoryUpdatesListener {
 //            val data = it.joinToString()
 //            runOnUiThread { Toast.makeText(this, data, Toast.LENGTH_LONG).show() }
-//            Log.d(TAG, "onCreate - setOnInventoryUpdatesListener: $data")
+//            Timber.tag(TAG, ).d("onCreate - setOnInventoryUpdatesListener: $data")
 //
 //        }
 
@@ -229,8 +232,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             )
         )
         mapServiceManager.service.getDownloadedMapsLive().observe(this, Observer {
-            Log.d(TAG, "onCreate - data changed ${it.size}")
+            Timber.d("onCreate - data changed ${it.size}")
             downloadListAdapter.saveData(it)
+//          TODO - Call onSignalSpace() only if a deletion actually occurred to avoid unnecessary calls
+//              the function updates the free-space status and refreshes relevant UI after Deleting a map.
+            onSignalSpace()
             var atLeastOneUpdated = it.any {
                 it.isUpdated == false
             }
@@ -268,7 +274,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 val sizeExceeded = withContext(Dispatchers.IO) {
                     MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
                 }
-                Log.i("SIZE EXCEDEED", "$sizeExceeded")
+                Timber.tag("SIZE EXCEDEED").i("$sizeExceeded")
                 if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
                     val count = withContext(Dispatchers.IO) {
                         var count = 0
@@ -332,7 +338,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
         scanQRButton = findViewById(R.id.scanQR)
         scanQRButton.setOnClickListener {
-            Log.i(TAG, "scanQRButton Clicked")
+            Timber.i("scanQRButton Clicked")
             try {
                 Pref.getInstance(this).checkDeviceIdAvailability()
             } catch (e: MissingIMEIException) {
@@ -425,7 +431,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         pdFile.setOnClickListener {
             TrackHelper.track().screen("/מדריך למשתמש").with(tracker)
             pdfView.visibility = View.VISIBLE
-            pdfView.fromAsset("strategy.pdf").load()
+            pdfView.fromAsset("strategy2.pdf").load()
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -444,8 +450,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //            .with(tracker)
 //        tracker?.dispatch()
 //        mapServiceManager = MapServiceManager.getInstance()
-//        Log.d("a", "sa")
+//        Timber.tag("a", ).d("sa")
 //    }
+    override fun onResume() {
+        super.onResume()
+        onSignalSpace()
+    }
 
     private fun showDeleteFailedBtn(deleteFail: ImageButton) {
         GlobalScope.launch(Dispatchers.IO) {
@@ -463,7 +473,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     override fun onDestroy() {
         if (!isReplacingActivity) {
             tracker?.dispatch()
-            Log.d("getmap", "matomo send when on destroy")
+            Timber.tag("getmap", ).d("matomo send when on destroy")
         }
         super.onDestroy()
     }
@@ -482,11 +492,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                    ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED) {
 //
 //                    val phoneNumber = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)  ?: "אין למכשיר מספר טלפון"
-//                    Log.i("PhoneNumber", "phoneNumber: $phoneNumber")
+//                    Timber.tag("PhoneNumber").i("phoneNumber: $phoneNumber")
 //                }
 //            } else {
 //                // Permissions denied
-//                Log.i("PhoneNumber", "Permissions denied")
+//                Timber.tag("PhoneNumber").i("Permissions denied")
 //            }
 //        }
 //    }
@@ -506,18 +516,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun onDiscovery() {
 
         TrackHelper.track().screen("/בחירת תיחום").with(tracker)
-        Log.d(TAG, "onDiscovery");
+        Timber.d("onDiscovery");
         showLoadingDialog("פותח את המפה")
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties("dummy product", "1,2,3,4", false)
             try {
 
                 val products = mapServiceManager.service.getDiscoveryCatalog(props)
-                Log.d(TAG, "discovery products: " + products);
+                Timber.d("discovery products: " + products);
                 products.forEach { product ->
-                    Log.d(
-                        "products1",
-                        "Id : ${product.id} And Coordinates : ${product.footprint}"
+                    Timber.tag("products1",
+                        ).d("Id : ${product.id} And Coordinates : ${product.footprint}"
                     )
                 }
                 launch(Dispatchers.Main) {
@@ -536,11 +545,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //            TODO show missing imei dialog
             } catch (e: Exception) {
                 // Handle any exceptions here
-                Log.e(TAG, "error: " + e);
+                Timber.e("error: " + e);
                 launch(Dispatchers.Main) {
                     dismissLoadingDialog()
                     Toast.makeText(applicationContext, e.message, Toast.LENGTH_SHORT).show()
-                    Log.i("hghfhffhg", e.message!!)
+                    Timber.i(e.message!!)
                 }
                 TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("תקלה בבחירת תיחום")
                     .with(tracker)
@@ -637,7 +646,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //    }
 
 //    private fun discoveryDialogPicker(products: List<DiscoveryItem>) {
-//        Log.d(TAG, "dialogPicker")
+//        Timber.tag(TAG, ).d("dialogPicker")
 //        val builder = AlertDialog.Builder(this)
 //        builder.setTitle("Choose product")
 //
@@ -645,7 +654,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //        val checkedItem = -1
 //        builder.setSingleChoiceItems(productsStrings, checkedItem) { dialog, which ->
 //            selectedProduct = products[which]
-//            Log.d(TAG, "dialogPicker: selected item " + selectedProduct.productName)
+//            Timber.tag(TAG, ).d("dialogPicker: selected item " + selectedProduct.productName)
 //
 ////            selectedProductView.text = ("Selected Product:\n" + selectedProduct.productName)
 //            deliveryButton.isEnabled = true
@@ -664,7 +673,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     @SuppressLint("LongLogTag")
     private fun onDelete(id: String) {
-        Log.i("onCreate Tracker Refreshea", "${tracker}")
+        Timber.tag("onCreate Tracker Refreshea").i("${tracker}")
         TrackHelper.track().screen("/מחיקה").with(tracker)
         popUp.mapId = id
         popUp.type = "delete"
@@ -680,7 +689,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.textM = "האם למחוק את $endName?"
             } else {
                 popUp.bullName = ""
-                popUp.textM = "האם למחוק את הבול הזו?"
+                popUp.textM = getString(R.string.default_delete_popup_text)
             }
         }
         if (count == 0) {
@@ -794,7 +803,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                         .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
                         .event("מיפוי ענן", "שיתוף")
                         .name("שליחת בול בסריקה").with(tracker)
-                    showQRCodeDialog(qrCode)
+                    showQRCodeDialog(qrCode, name)
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
@@ -899,7 +908,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 ////        var percentages= R.id.Percentages
 //
 ////        percentages = i
-//        Log.i("PROGRESSBAR", "showLoadingDialog: ")
+//        Timber.tag("PROGRESSBAR").i("showLoadingDialog: ")
         progressDialog = ProgressDialog(this)
         progressDialog?.setTitle(title)
         progressDialog?.setMessage("מפה בטעינה...") // Set the message to be displayed
@@ -921,10 +930,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
 
-    private fun showQRCodeDialog(qrCodeBitmap: Bitmap) {
+    private fun showQRCodeDialog(qrCodeBitmap: Bitmap, detailMapName: String) {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
         val dialogView = inflater.inflate(R.layout.dialog_qr_code, null)
+
+        val qrTitle: TextView = dialogView.findViewById(R.id.qr_title)
+        qrTitle.text = getString(R.string.qr_title, detailMapName)
 
         val imageViewQRCode: ImageView = dialogView.findViewById(R.id.imageViewQRCode)
         imageViewQRCode.setImageBitmap(qrCodeBitmap)
@@ -951,12 +963,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
+
 //                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
 //                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
 //                    val region = jsonText.region[0]
 //                    val name = region + "-" + map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
 //                    val coordinates = map.footprint
-//                    Log.i("mapName", name + coordinates)
+//                    Timber.tag("mapName").i(name + coordinates)
                     withContext(Dispatchers.Main) {
                         TrackHelper.track()
 //                            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
@@ -993,7 +1006,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun onDownloadError(id: String) {
         val map = this.mapServiceManager.service.getDownloadedMap(id) ?: return
         if (map.deliveryState != MapDeliveryState.ERROR) return
-        Log.d(TAG, "OnDownloadError ${map.id} flowState is : ${map.flowState}")
+        Timber.d("OnDownloadError ${map.id} flowState is : ${map.flowState}")
 
         when (map.flowState) {
             DeliveryFlowState.START -> {

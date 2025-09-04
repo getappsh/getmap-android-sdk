@@ -7,26 +7,30 @@ import fr.bipi.treessence.file.FileLoggerTree
 import timber.log.Timber.*
 
 internal object TimberLogger {
-     fun initTimber(){
-         Timber.uprootAll()
-         val maxFileSize = 1024 * 1024 * 2// 2 MB
-         val maxFiles = 5
+    private var initialized = false
+    private var fileTree: FileLoggerTree? = null
+
+    @Synchronized
+    fun initTimber() {
+        if (initialized) return
+        initialized = true
+
+        fileTree = FileLoggerTree.Builder()
+            .withFileName("file%g.log")
+            .withDirName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/GetApp/Logs")
+            .withSizeLimit(2 * 1024 * 1024)
+            .withFileLimit(5)
+            .withMinPriority(Log.WARN)
+            .appendToFile(true)
+            .build()
+
+        fileTree?.apply { Timber.plant(this) }
+    }
 
 
-         val fileTree = FileLoggerTree.Builder()
-             .withFileName("file%g.log")
-             .withDirName(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/GetApp/Logs")
-             .withSizeLimit(maxFileSize)
-             .withFileLimit(maxFiles)
-             .withMinPriority(Log.WARN)
-             .appendToFile(true)
-             .build()
-         Timber.plant(
-             DebugTree(),
-             fileTree
-         )
-     }
-
+    fun getFileTree(): FileLoggerTree? {
+        return fileTree
+    }
 
     fun getBugReportTree(): FileLoggerTree {
         val fileTree = FileLoggerTree.Builder()
@@ -40,6 +44,5 @@ internal object TimberLogger {
 
         return fileTree
     }
-
 
 }

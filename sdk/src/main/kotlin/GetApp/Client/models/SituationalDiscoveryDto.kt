@@ -52,5 +52,8 @@ data class SituationalDiscoveryDto (
     @Json(name = "location")
     val location: GeoLocationDto? = null
 
-)
+) {
+
+
+}
 

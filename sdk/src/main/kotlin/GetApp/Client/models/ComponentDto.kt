@@ -63,5 +63,8 @@ data class ComponentDto (
     @Json(name = "subComponents")
     val subComponents: kotlin.collections.List<ComponentDto>? = null
 
-)
+) {
+
+
+}
 

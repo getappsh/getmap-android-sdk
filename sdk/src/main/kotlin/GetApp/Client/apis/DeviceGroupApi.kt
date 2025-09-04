@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.CreateDevicesGroupDto
@@ -40,7 +40,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -49,6 +49,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * POST /api/group
      * Create Devices Group
      * 
      * @param createDevicesGroupDto 
@@ -80,6 +81,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * POST /api/group
      * Create Devices Group
      * 
      * @param createDevicesGroupDto 
@@ -121,6 +123,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * PUT /api/group
      * Edit Devices Group
      * 
      * @param editDevicesGroupDto 
@@ -152,6 +155,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * PUT /api/group
      * Edit Devices Group
      * 
      * @param editDevicesGroupDto 
@@ -193,6 +197,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * GET /api/group/{groupId}/devices
      * Get Devices in a group
      * 
      * @param groupId 
@@ -224,6 +229,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * GET /api/group/{groupId}/devices
      * Get Devices in a group
      * 
      * @param groupId 
@@ -264,6 +270,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * GET /api/group
      * Get Devices Groups and children groups
      * 
      * @return kotlin.collections.List<DevicesGroupDto>
@@ -294,6 +301,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * GET /api/group
      * Get Devices Groups and children groups
      * 
      * @return ApiResponse<kotlin.collections.List<DevicesGroupDto>?>
@@ -332,6 +340,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * POST /api/group/devices
      * Set Devices in a Group
      * 
      * @param setDevicesInGroupDto 
@@ -363,6 +372,7 @@ class DeviceGroupApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCl
     }
 
     /**
+     * POST /api/group/devices
      * Set Devices in a Group
      * 
      * @param setDevicesInGroupDto 

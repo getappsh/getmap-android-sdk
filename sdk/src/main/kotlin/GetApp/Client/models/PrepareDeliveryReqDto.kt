@@ -52,5 +52,6 @@ data class PrepareDeliveryReqDto (
         @Json(name = "map") map("map"),
         @Json(name = "cache") cache("cache");
     }
+
 }
 

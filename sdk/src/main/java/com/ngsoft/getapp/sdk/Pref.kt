@@ -76,7 +76,7 @@ class Pref private constructor(context: Context) {
         set(value) = setString(FLASH_STORAGE_PATH, value)
 
     var targetStoragePolicy: MapConfigDto.TargetStoragePolicy
-        get() = getEnum(TARGET_STORAGE_POLICY, MapConfigDto.TargetStoragePolicy.sDOnly)
+        get() = getEnum(TARGET_STORAGE_POLICY, MapConfigDto.TargetStoragePolicy.SDOnly)
         set(value) = setEnum(TARGET_STORAGE_POLICY, value)
 
     var downloadPath: String
@@ -159,6 +159,14 @@ class Pref private constructor(context: Context) {
     var controlMapPath: String
         get() = getString(CONTROL_MAP_PATH, "com.asio.gis/gis/maps/orthophoto/מפת שליטה.gpkg")
         set(value) = setString(CONTROL_MAP_PATH, value)
+
+    var ortophotoMapPattern: String
+        get() = getString(ORTOPHOTO_MAP_PATTERN, "אורתופוטו")
+        set(value) = setString(ORTOPHOTO_MAP_PATTERN, value)
+
+    var controlMapPattern: String
+        get() = getString(CONTROL_MAP_PATTERN, "שליטה")
+        set(value) = setString(CONTROL_MAP_PATTERN, value)
 
     private fun getString(key: String, defValue: String): String{
         return sharedPreferences.getString(key, defValue) ?: defValue
@@ -271,6 +279,8 @@ class Pref private constructor(context: Context) {
         private const val SD_MAX_INVENTORY_SIZE_IN_MB = "sdMaxInventorySizeInMB"
         private const val ORTHOPHOTO_MAP_PATH = "orthophotoMapPath"
         private const val CONTROL_MAP_PATH = "controlMapPath"
+        private const val ORTOPHOTO_MAP_PATTERN = "ortophotoMapPattern"
+        private const val CONTROL_MAP_PATTERN = "controlMapPattern"
 
         private var instance: Pref? = null
         @Synchronized

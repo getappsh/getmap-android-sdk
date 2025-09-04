@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeliveryStatusDto
@@ -39,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,6 +48,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * GET /api/delivery/preparedDelivery/{catalogId}
      * Get Prepared Delivery Status
      * Get status of prepared delivery
      * @param catalogId 
@@ -79,6 +80,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * GET /api/delivery/preparedDelivery/{catalogId}
      * Get Prepared Delivery Status
      * Get status of prepared delivery
      * @param catalogId 
@@ -119,6 +121,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * POST /api/delivery/prepareDelivery
      * Prepare Delivery
      * Prepare delivery
      * @param prepareDeliveryReqDto 
@@ -150,6 +153,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * POST /api/delivery/prepareDelivery
      * Prepare Delivery
      * Prepare delivery
      * @param prepareDeliveryReqDto 
@@ -191,6 +195,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * POST /api/delivery/updateDownloadStatus
      * Update Delivery Status
      * This service message allows the consumer to report the delivery status
      * @param deliveryStatusDto 
@@ -221,6 +226,7 @@ class DeliveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
     }
 
     /**
+     * POST /api/delivery/updateDownloadStatus
      * Update Delivery Status
      * This service message allows the consumer to report the delivery status
      * @param deliveryStatusDto 

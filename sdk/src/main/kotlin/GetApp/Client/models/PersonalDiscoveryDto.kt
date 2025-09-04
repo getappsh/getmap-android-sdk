@@ -39,5 +39,8 @@ data class PersonalDiscoveryDto (
     @Json(name = "personalNumber")
     val personalNumber: kotlin.String? = null
 
-)
+) {
+
+
+}
 

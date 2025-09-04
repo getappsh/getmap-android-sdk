@@ -45,6 +45,8 @@ import com.squareup.moshi.JsonClass
  * @param lastConfigUpdateDate 
  * @param ortophotoMapPath 
  * @param controlMapPath 
+ * @param ortophotoMapPattern Substring to match in ortophoto map filename
+ * @param controlMapPattern Substring to match in control map filename
  */
 
 
@@ -99,7 +101,7 @@ data class MapConfigDto (
     val flashStoragePath: kotlin.String? = null,
 
     @Json(name = "targetStoragePolicy")
-    val targetStoragePolicy: MapConfigDto.TargetStoragePolicy? = TargetStoragePolicy.sDOnly,
+    val targetStoragePolicy: MapConfigDto.TargetStoragePolicy? = TargetStoragePolicy.SDOnly,
 
     @Json(name = "sdInventoryMaxSizeMB")
     val sdInventoryMaxSizeMB: java.math.BigDecimal? = null,
@@ -117,21 +119,30 @@ data class MapConfigDto (
     val ortophotoMapPath: kotlin.String? = null,
 
     @Json(name = "controlMapPath")
-    val controlMapPath: kotlin.String? = null
+    val controlMapPath: kotlin.String? = null,
+
+    /* Substring to match in ortophoto map filename */
+    @Json(name = "ortophotoMapPattern")
+    val ortophotoMapPattern: kotlin.String? = null,
+
+    /* Substring to match in control map filename */
+    @Json(name = "controlMapPattern")
+    val controlMapPattern: kotlin.String? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: sDOnly,flashThenSD,sDThenFlash,flashOnly
+     * Values: SDOnly,FlashThenSD,SDThenFlash,FlashOnly
      */
     @JsonClass(generateAdapter = false)
     enum class TargetStoragePolicy(val value: kotlin.String) {
-        @Json(name = "SDOnly") sDOnly("SDOnly"),
-        @Json(name = "FlashThenSD") flashThenSD("FlashThenSD"),
-        @Json(name = "SDThenFlash") sDThenFlash("SDThenFlash"),
-        @Json(name = "FlashOnly") flashOnly("FlashOnly");
+        @Json(name = "SDOnly") SDOnly("SDOnly"),
+        @Json(name = "FlashThenSD") FlashThenSD("FlashThenSD"),
+        @Json(name = "SDThenFlash") SDThenFlash("SDThenFlash"),
+        @Json(name = "FlashOnly") FlashOnly("FlashOnly");
     }
+
 }
 

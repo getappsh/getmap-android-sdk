@@ -50,5 +50,6 @@ data class MapStateDto (
         @Json(name = "installed") installed("installed"),
         @Json(name = "uninstalled") uninstalled("uninstalled");
     }
+
 }
 

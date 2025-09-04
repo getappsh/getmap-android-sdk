@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeployStatusDto
@@ -37,7 +37,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeployApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeployApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -46,6 +46,7 @@ class DeployApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/deploy/updateDeployStatus
      * Update Deploy Status
      * This service message allows the consumer to report the deploy status. When deploy is done, the device content relevant service will notify. Another option on this service is to update delete content on the device.
      * @param deployStatusDto 
@@ -76,6 +77,7 @@ class DeployApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
     }
 
     /**
+     * POST /api/deploy/updateDeployStatus
      * Update Deploy Status
      * This service message allows the consumer to report the deploy status. When deploy is done, the device content relevant service will notify. Another option on this service is to update delete content on the device.
      * @param deployStatusDto 

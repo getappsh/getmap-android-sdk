@@ -53,5 +53,6 @@ data class PrepareDeliveryResDto (
         @Json(name = "done") done("done"),
         @Json(name = "error") error("error");
     }
+
 }
 

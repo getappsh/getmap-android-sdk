@@ -49,5 +49,6 @@ data class InventoryUpdatesReqDto (
         @Json(name = "installed") installed("installed"),
         @Json(name = "uninstalled") uninstalled("uninstalled");
     }
+
 }
 

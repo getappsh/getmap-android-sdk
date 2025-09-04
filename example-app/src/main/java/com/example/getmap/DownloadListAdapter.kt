@@ -10,7 +10,6 @@ import android.graphics.drawable.RotateDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -131,9 +131,7 @@ class DownloadListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val downloadData = asyncListDiffer.currentList[position]
-        Log.i(
-            "vsdnhilofherszofhezofezhioflezhfiollzefhzuofhezuofhezjofgdszuikzerf",
-            "onBindViewHolder: ${downloadData.jsonName}"
+        Timber.v("onBindViewHolder: ${downloadData.jsonName}"
         )
 
         val directory = File(
@@ -256,7 +254,13 @@ class DownloadListAdapter(
                 if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true){
                     TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות").name("ההורדה נכשלה").with(tracker)
                 }
+
+                holder.textFileName.visibility = View.VISIBLE
                 holder.textFileName.text = "ההורדה נכשלה"
+                val sdf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                holder.demandDate.text = "תאריך בקשה: ${sdf.format(downloadData.reqDate)}"
+                holder.demandDate.visibility = View.VISIBLE
+                holder.textStatus.text = downloadData.statusDescr ?: "ההורדה נכשלה"
                 holder.dates.visibility = View.GONE
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.percentage.visibility = View.VISIBLE
@@ -458,14 +462,29 @@ class DownloadListAdapter(
         notifValidation?.show()
     }
 
-    private fun formatDate(inputDate: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        outputFormat.timeZone = TimeZone.getDefault()
-        val date: Date = inputFormat.parse(inputDate)
-        return outputFormat.format(date)
+    private fun formatDate(inputDate: String?): String {
+        if (inputDate.isNullOrBlank()) {
+            return ""
+        }
+
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+                timeZone = TimeZone.getDefault()
+            }
+
+            val date: Date = inputFormat.parse(inputDate)
+                ?: return ""
+
+            outputFormat.format(date)
+        } catch (e: Exception) {
+            Timber.tag("DownloadListAdapter").e("formatDate failed for \"$inputDate\"")
+            ""
+        }
     }
+
 
     companion object {
         const val RESUME_BUTTON_CLICK = 1

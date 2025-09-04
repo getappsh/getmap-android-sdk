@@ -31,5 +31,8 @@ data class RefreshTokenDto (
     @Json(name = "refreshToken")
     val refreshToken: kotlin.String? = null
 
-)
+) {
+
+
+}
 

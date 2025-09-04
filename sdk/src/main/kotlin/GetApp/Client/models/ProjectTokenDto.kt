@@ -31,5 +31,8 @@ data class ProjectTokenDto (
     @Json(name = "projectToken")
     val projectToken: kotlin.String? = null
 
-)
+) {
+
+
+}
 

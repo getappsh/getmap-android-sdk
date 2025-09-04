@@ -68,5 +68,6 @@ data class PhysicalDiscoveryDto (
         @Json(name = "windows") windows("windows"),
         @Json(name = "linux") linux("linux");
     }
+
 }
 

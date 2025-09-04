@@ -55,5 +55,8 @@ data class DeviceResDto (
     @Json(name = "availableStorage")
     val availableStorage: kotlin.String? = null
 
-)
+) {
+
+
+}
 

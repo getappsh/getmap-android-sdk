@@ -16,7 +16,7 @@
 package GetApp.Client.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import GetApp.Client.models.DeviceDiscoverResDto
@@ -39,7 +39,7 @@ import GetApp.Client.infrastructure.ResponseType
 import GetApp.Client.infrastructure.Success
 import GetApp.Client.infrastructure.toMultiValue
 
-class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,6 +48,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/device/discover
      * Discover Catalog
      * This service message allows a device to post the discovery context for getting offers, software, and maps for the GetApp agent.
      * @param discoveryMessageDto 
@@ -79,6 +80,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/device/discover
      * Discover Catalog
      * This service message allows a device to post the discovery context for getting offers, software, and maps for the GetApp agent.
      * @param discoveryMessageDto 
@@ -120,6 +122,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/device/im/pull/discovery
      * IM Pull Discovery Devices
      * This service message allows an IM device to pull the discovery context of other agents.
      * @param requestBody 
@@ -151,6 +154,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/device/im/pull/discovery
      * IM Pull Discovery Devices
      * This service message allows an IM device to pull the discovery context of other agents.
      * @param requestBody 
@@ -192,6 +196,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/device/im/push/discovery
      * IM Push Discovery Devices
      * This service message allows an IM device to push the discovery context of other agents.
      * @param requestBody 
@@ -222,6 +227,7 @@ class DeviceDiscoveryApi(basePath: kotlin.String = defaultBasePath, client: OkHt
     }
 
     /**
+     * POST /api/device/im/push/discovery
      * IM Push Discovery Devices
      * This service message allows an IM device to push the discovery context of other agents.
      * @param requestBody 

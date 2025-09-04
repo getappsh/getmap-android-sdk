@@ -10,7 +10,6 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -39,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import timber.log.Timber
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -76,6 +76,11 @@ class SettingsActivity : AppCompatActivity() {
         val lastInventory = findViewById<TextView>(R.id.last_inventory)
         val resetMapButton = findViewById<Button>(R.id.reset_map)
         val cancelButton = findViewById<Button>(R.id.cancel_button)
+        val sendBugButton = findViewById<Button>(R.id.send_bug_button)
+        sendBugButton.setOnClickListener {
+            service.sendBugReport()
+            Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
+        }
         val lastConfig = findViewById<TextView>(R.id.last_config)
         val lastServerConfig = findViewById<TextView>(R.id.last_server_config)
         val editConf = findViewById<ToggleButton>(R.id.Edit_toggle)
@@ -138,6 +143,8 @@ class SettingsActivity : AppCompatActivity() {
                 nebulaParamAdapter.setIsEditing(false, i, params[i])
             }
             cancelButton.visibility = View.INVISIBLE
+            sendBugButton.visibility = View.VISIBLE
+            resetMapButton.visibility = View.VISIBLE
             editConf.isChecked = false
             applyServerConfig.isEnabled = false
         }
@@ -146,7 +153,7 @@ class SettingsActivity : AppCompatActivity() {
                 val passwordDialog =
                     PasswordDialog(
                         this, params, nebulaParamAdapter, true, editConf,
-                        cancelButton, tracker, applyServerConfig
+                        cancelButton, resetMapButton, sendBugButton, tracker, applyServerConfig
                     )
                 passwordDialog.show()
             } else {
@@ -167,7 +174,7 @@ class SettingsActivity : AppCompatActivity() {
                         instance.resetService()
                         instance.initService(this, saveConfiguration(params))
                     } catch (_: Exception) {
-                        Log.i("There is a BIG problem", "There is a problem with the sdk instance")
+                        Timber.tag("There is a BIG problem").i("There is a problem with the sdk instance")
                     }
                 }
                 saveLocalToService(params, service, this)
@@ -177,6 +184,8 @@ class SettingsActivity : AppCompatActivity() {
                     nebulaParamAdapter.setIsEditing(false, i, params[i])
                 }
                 cancelButton.visibility = View.INVISIBLE
+                sendBugButton.visibility = View.VISIBLE
+                resetMapButton.visibility = View.VISIBLE
                 applyServerConfig.isEnabled = false
             }
         }
@@ -209,7 +218,7 @@ class SettingsActivity : AppCompatActivity() {
                             .with(tracker)
                         withContext(Dispatchers.Main) {
                         lastConfig.text = "lastConfig error: Network error occured"
-                        Log.e("Fetch Config", e.message.toString())
+                        Timber.tag("Fetch Config", ).e(e.message.toString())
                         lastServerConfig.text ="lastServerConfig error: Network error occured"
                         lastInventory.text ="lastInventory error: Network error occured"
                         }
@@ -333,10 +342,10 @@ private fun saveLocalToService(
 ) {
 
     var targetTypes: HashMap<String, MapConfigDto.TargetStoragePolicy> = hashMapOf()
-    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.sDOnly
-    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.flashThenSD
-    targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.sDThenFlash
-    targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.flashOnly
+    targetTypes["SDOnly"] = MapConfigDto.TargetStoragePolicy.SDOnly
+    targetTypes["FlashThenSD"] = MapConfigDto.TargetStoragePolicy.FlashThenSD
+    targetTypes["SDThenFlash"] = MapConfigDto.TargetStoragePolicy.SDThenFlash
+    targetTypes["FlashOnly"] = MapConfigDto.TargetStoragePolicy.FlashOnly
 
     var notifValidation: Toast? = null
     val reg = Regex("[a-zA-Z]")

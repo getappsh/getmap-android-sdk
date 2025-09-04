@@ -17,6 +17,8 @@ class PasswordDialog(
     private val configParamAdapter: ConfigParam.NebulaParamAdapter, private val isChecked: Boolean,
     private var editConf: ToggleButton,
     private var cancelButton: Button,
+    private var resetMapButton: Button,
+    private val sendBugButton: Button,
     private val tracker: Tracker,
     private val applyServerConfig: Switch
 ) {
@@ -35,6 +37,8 @@ class PasswordDialog(
             val password = editTextPassword.text.toString()
             if (password == "10052") {
                 TrackHelper.track().event("מיפוי ענן","שינוי הגדרות").name("הכנסת סיסמא תקינה").with(tracker)
+                sendBugButton.visibility = View.INVISIBLE
+                resetMapButton.visibility = View.INVISIBLE
                 cancelButton.visibility = View.VISIBLE
                 applyServerConfig.isEnabled = true
                 for (i in 0..(params.size - 1)) {

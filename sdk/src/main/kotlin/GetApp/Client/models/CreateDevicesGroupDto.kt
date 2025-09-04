@@ -35,5 +35,8 @@ data class CreateDevicesGroupDto (
     @Json(name = "description")
     val description: kotlin.String? = null
 
-)
+) {
+
+
+}
 

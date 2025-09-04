@@ -3,7 +3,6 @@ package com.example.getmap
 import com.example.getmap.matomo.MatomoTracker
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,13 +18,13 @@ import com.ngsoft.getapp.sdk.exceptions.MissingIMEIException
 import com.ngsoft.getapp.sdk.models.MapData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import com.example.getmap.MainActivity.Companion.count
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import timber.log.Timber
+import java.io.IOException
 
 @RequiresApi(Build.VERSION_CODES.R)
 class PopUp : DialogFragment() {
@@ -61,7 +60,7 @@ class PopUp : DialogFragment() {
         buttonCancel.setOnClickListener {
             if (type == "delete") {
 
-//                Log.i("bull name", bullName)
+//                Timber.tag("bull name").i(bullName)
 //                TrackHelper.track().dimension(service.config.matomoDimensionId.toInt(), bullName)
 //                    .event("מיפוי ענן", "ניהול בולים")
 //                    .name("מחיקת בול - ביטול מחיקה").with(tracker)
@@ -75,7 +74,7 @@ class PopUp : DialogFragment() {
                 clicked = true
 
                 if (type == "delete") {
-                    Log.i("bull name", bullName)
+                    Timber.tag("bull name").i(bullName)
                     CoroutineScope(Dispatchers.IO).launch {
                         val data = service.getDownloadedMap(mapId)
                         if (data != null) {
@@ -128,6 +127,10 @@ class PopUp : DialogFragment() {
                         } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
 
+                        } catch(e: IOException) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
+                            }
                         }
 
                         recyclerView.smoothScrollToPosition(0)
@@ -146,6 +149,10 @@ class PopUp : DialogFragment() {
                             recyclerView.smoothScrollToPosition(0)
                         } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
+                        } catch(e: IOException) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                     clicked = false

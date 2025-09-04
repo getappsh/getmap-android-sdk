@@ -12,6 +12,7 @@ import com.ngsoft.getapp.sdk.models.MapImportDeliveryStatus
 import com.ngsoft.getapp.sdk.models.MapProperties
 import com.ngsoft.getapp.sdk.models.MapTile
 import com.ngsoft.getapp.sdk.old.DownloadProgress
+import java.io.IOException
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
@@ -236,6 +237,16 @@ interface GetMapService {
     fun setMapImportDeploy(inputImportRequestId: String?,inputState: MapDeployState?): MapDeployState?
 
 
+    /**
+     * Sends a bug report to the server.
+     *
+     * @param description The description of the bug report. Can be null.
+     * @return Unit
+     * @throws IOException when the request to server failed for some reason
+     */
+    @Throws(IOException::class)
+    fun sendBugReport(description: String? = null)
+
     interface GeneralConfig {
 
         /**
@@ -384,5 +395,15 @@ interface GetMapService {
          * Control map path on the device
          */
         val controlMapPath: String?
+
+        /**
+         * Substring to match in ortophoto map filename
+         */
+        val ortophotoMapPattern: String?;
+
+        /**
+         * Substring to match in control map filename
+         */
+        val controlMapPattern: String?;
     }
 }

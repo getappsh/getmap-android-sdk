@@ -39,5 +39,8 @@ data class GeoLocationDto (
     @Json(name = "alt")
     val alt: kotlin.String? = null
 
-)
+) {
+
+
+}
 

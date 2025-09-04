@@ -39,5 +39,8 @@ data class EditDevicesGroupDto (
     @Json(name = "description")
     val description: kotlin.String? = null
 
-)
+) {
+
+
+}
 
