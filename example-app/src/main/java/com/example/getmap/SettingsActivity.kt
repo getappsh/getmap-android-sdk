@@ -28,7 +28,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.getmap.matomo.MatomoTracker
 import com.example.getmap.models.ConfigParam.NebulaParamAdapter
 import com.example.getmap.models.ConfigParam.NebulaParam
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpException
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
