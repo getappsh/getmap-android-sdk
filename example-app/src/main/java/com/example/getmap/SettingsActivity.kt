@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.getmap.matomo.MatomoTracker
 import com.example.getmap.models.ConfigParam.NebulaParamAdapter
 import com.example.getmap.models.ConfigParam.NebulaParam
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpException
 import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.Configuration
 import com.ngsoft.getapp.sdk.GetMapService
@@ -84,6 +85,8 @@ class SettingsActivity : AppCompatActivity() {
                 Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
             } catch (e: IOException) {
                 Toast.makeText(this, "אין חיבור אינטרנט - הדוח לא נשלח", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "שגיאה לא צפויה - הדוח לא נשלח", Toast.LENGTH_SHORT).show()
             }
         }
         val lastConfig = findViewById<TextView>(R.id.last_config)
