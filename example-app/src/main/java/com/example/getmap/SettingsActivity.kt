@@ -84,6 +84,8 @@ class SettingsActivity : AppCompatActivity() {
                 Toast.makeText(this, "הדוח נשלח לשרת", Toast.LENGTH_SHORT).show()
             } catch (e: IOException) {
                 Toast.makeText(this, "אין חיבור אינטרנט - הדוח לא נשלח", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "שגיאה לא צפויה - הדוח לא נשלח", Toast.LENGTH_SHORT).show()
             }
         }
         val lastConfig = findViewById<TextView>(R.id.last_config)
