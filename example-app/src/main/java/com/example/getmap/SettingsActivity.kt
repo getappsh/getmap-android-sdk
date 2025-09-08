@@ -285,7 +285,12 @@ class SettingsActivity : AppCompatActivity() {
             NebulaParam("Flash Storage Path", service.config.flashStoragePath),
             NebulaParam("Target Storage Policy", service.config.targetStoragePolicy.value, true),
             NebulaParam("flashInventoryMaxSizeMB",service.config.flashInventoryMaxSizeMB.toString()),
-            NebulaParam("sdInventoryMaxSizeMB", service.config.sdInventoryMaxSizeMB.toString())
+            NebulaParam("sdInventoryMaxSizeMB", service.config.sdInventoryMaxSizeMB.toString()),
+            //20
+            NebulaParam("Ortophoto Map Path", service.config.ortophotoMapPath.toString()),
+            NebulaParam("Control Map Path", service.config.controlMapPath.toString()),
+            NebulaParam("Ortophoto Map Pattern", service.config.ortophotoMapPattern.toString()),
+            NebulaParam("Control Map Pattern",service.config.controlMapPattern.toString()),
 
             )
         nebulaParamAdapter.updateAll(params)
@@ -473,6 +478,32 @@ private fun saveLocalToService(
         NotifyValidity(notifValidation, context)
         params[18].value = service.config.sdInventoryMaxSizeMB.toString()
     }
+    if (params[19].value != "") {
+        service.config.ortophotoMapPath = params[19].value
+    } else {
+        NotifyValidity(notifValidation, context)
+        params[19].value = service.config.ortophotoMapPath
+    }
+    if (params[20].value != "") {
+        service.config.controlMapPath = params[20].value
+    } else {
+        NotifyValidity(notifValidation, context)
+        params[20].value = service.config.controlMapPath
+    }
+    if (params[21].value != "") {
+        service.config.ortophotoMapPattern = params[21].value
+    } else {
+        NotifyValidity(notifValidation, context)
+        params[21].value = service.config.ortophotoMapPattern
+    }
+    if (params[22].value != "") {
+        service.config.controlMapPattern = params[22].value
+    } else {
+        NotifyValidity(notifValidation, context)
+        params[22].value = service.config.controlMapPattern
+    }
+
+
 
     if (params[10].value != "")
         service.config.matomoSiteId = params[10].value
@@ -527,6 +558,18 @@ private fun hasChanged(
     if (params[18].value != "")
         if (service.config.sdInventoryMaxSizeMB != params[18].value.toLong())
             toReturn["sdInventoryMaxSizeMB"] = params[18].value
+    if (params[19].value != "")
+        if (service.config.ortophotoMapPath != params[19].value)
+            toReturn["ortophotoMapPath"] = params[19].value
+    if (params[20].value != "")
+        if (service.config.controlMapPath != params[20].value)
+            toReturn["controlMapPath"] = params[20].value
+    if (params[21].value != "")
+        if (service.config.ortophotoMapPattern != params[21].value)
+            toReturn["ortophotoMapPattern"] = params[21].value
+    if (params[22].value != "")
+        if (service.config.controlMapPattern != params[22].value)
+            toReturn["controlMapPattern"] = params[22].value
 
     return toReturn
 }
