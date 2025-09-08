@@ -1,15 +1,36 @@
 package com.example.getmap
 
+import com.google.gson.Gson
 import com.ngsoft.getapp.sdk.models.DiscoveryItem
+import org.json.JSONObject
+
+sealed class ProductShape {
+    data class Polygon(val polygonDTO: PolygonDTO) : ProductShape()
+    data class MultiPolygon(val multiPolygonDTO: MultiPolygonDto) : ProductShape()
+}
+
+data class GeoProduct (
+    val discoveryItem: DiscoveryItem,
+) {
+    val type: String = JSONObject(discoveryItem.footprint).getString("type")
+    val productShapeDTO: ProductShape = run {
+        val gson = Gson()
+        when (type) {
+            "Polygon" -> ProductShape.Polygon( gson.fromJson(discoveryItem.footprint, PolygonDTO::class.java) )
+            else -> ProductShape.MultiPolygon( gson.fromJson(discoveryItem.footprint, MultiPolygonDto::class.java) )
+        }
+    }
+}
+
 
 class DiscoveryProductsManager {
 
-    private var _products: List<DiscoveryItem> = ArrayList()
+    private var _products: List<GeoProduct> = ArrayList()
 
-    val products: List<DiscoveryItem> get() = _products
+    val products: List<GeoProduct> get() = _products
 
     fun updateProducts(products: List<DiscoveryItem>) {
-        _products = products
+        _products = products.map { p -> GeoProduct(p) }
     }
 
     companion object {
@@ -22,6 +43,4 @@ class DiscoveryProductsManager {
             return _instance!!
         }
     }
-
-
 }

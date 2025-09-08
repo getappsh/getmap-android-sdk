@@ -55,7 +55,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import timber.log.Timber
@@ -166,10 +165,8 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
-                val pLeftTop = getFourScreenPoints(wwd).leftTop
-                val pRightBottom = getFourScreenPoints(wwd).rightBottom
-                val pRightTop = getFourScreenPoints(wwd).rightTop
-                val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+                val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
+
                 val latlonpLeftTop =
                     pLeftTop.latitude.toString() + " " + pLeftTop.longitude.toString()
                 val latlonpLeftBottom =
@@ -325,10 +322,7 @@ class MapActivity : AppCompatActivity() {
     private fun onDelivery() {
         Timber.d("onDelivery: ")
 
-        val pLeftTop = getFourScreenPoints(wwd).leftTop
-        val pRightBottom = getFourScreenPoints(wwd).rightBottom
-        val pRightTop = getFourScreenPoints(wwd).rightTop
-        val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+        val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
 
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties(
@@ -398,32 +392,30 @@ class MapActivity : AppCompatActivity() {
 
         DiscoveryProductsManager.getInstance().products.forEach { p ->
             run {
-                val json = JSONObject(p.footprint)
-                val type = json.getString("type")
-
-                if (type == "Polygon") {
-                    val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                    productPolyDTO.coordinates.forEach { it ->
-                        val points: List<Position> = it.map {
-                            Position.fromDegrees(it[1], it[0], 0.0)
-                        }
-                        val polygon = Polygon(points, attrsColor("pink"))
-                        polygon.displayName = ""
-                        renderableLayer.addRenderable(polygon)
-                    }
-                } else {
-                    val productPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                    productPolyDTO.coordinates.forEach { polygonCoords ->
-                        val rings: MutableList<List<Position>> = mutableListOf()
-                        polygonCoords.forEach { ringCoords ->
-                            val points: MutableList<Position> = ringCoords.map {
+                when (p.productShapeDTO) {
+                    is ProductShape.Polygon -> {
+                        p.productShapeDTO.polygonDTO.coordinates.forEach { it ->
+                            val points: List<Position> = it.map {
                                 Position.fromDegrees(it[1], it[0], 0.0)
-                            }.toMutableList()
-                            rings.add(points)
+                            }
+                            val polygon = Polygon(points, attrsColor("pink"))
+                            polygon.displayName = ""
+                            renderableLayer.addRenderable(polygon)
                         }
-                        val polygon = Polygon(rings.flatten(), attrsColor("pink"))
-                        polygon.displayName = ""
-                        renderableLayer.addRenderable(polygon)
+                    }
+                    is ProductShape.MultiPolygon -> {
+                        p.productShapeDTO.multiPolygonDTO.coordinates.forEach { polygonCoords ->
+                            val rings: MutableList<List<Position>> = mutableListOf()
+                            polygonCoords.forEach { ringCoords ->
+                                val points: MutableList<Position> = ringCoords.map {
+                                    Position.fromDegrees(it[1], it[0], 0.0)
+                                }.toMutableList()
+                                rings.add(points)
+                            }
+                            val polygon = Polygon(rings.flatten(), attrsColor("pink"))
+                            polygon.displayName = ""
+                            renderableLayer.addRenderable(polygon)
+                        }
                     }
                 }
             }
@@ -561,10 +553,8 @@ class MapActivity : AppCompatActivity() {
     private fun checkBboxBeforeSent() {
         try {
             dMode = false
-            val pLeftTop = getFourScreenPoints(wwd).leftTop
-            val pRightBottom = getFourScreenPoints(wwd).rightBottom
-            val pRightTop = getFourScreenPoints(wwd).rightTop
-            val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+
+            val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
 
             val boxCoordinates = mutableListOf(pLeftTop, pRightTop, pRightBottom, pLeftBottom)
 
@@ -584,18 +574,13 @@ class MapActivity : AppCompatActivity() {
 
             DiscoveryProductsManager.getInstance().products.forEach { p ->
                 run {
-                    val json = JSONObject(p.footprint)
-                    val type = json.getString("type")
-
-                    when (type) {
-                        "Polygon" -> {
-                            val productPolyDTO = Gson().fromJson(p.footprint, PolygonDTO::class.java)
-                            processPolygon(p, productPolyDTO.coordinates, polygonBoxEsri, boxCoordinates)
+                     when (p.productShapeDTO) {
+                         is ProductShape.Polygon -> {
+                             processPolygon(p.discoveryItem, p.productShapeDTO.polygonDTO.coordinates, polygonBoxEsri, boxCoordinates)
                         }
-                        "MultiPolygon" -> {
-                            val productMultiPolyDTO = Gson().fromJson(p.footprint, MultiPolygonDto::class.java)
-                            productMultiPolyDTO.coordinates.forEach { multiPoly ->
-                                processPolygon(p, multiPoly, polygonBoxEsri, boxCoordinates)
+                         is ProductShape.MultiPolygon -> {
+                            p.productShapeDTO.multiPolygonDTO.coordinates.forEach { multiPoly ->
+                                processPolygon(p.discoveryItem, multiPoly, polygonBoxEsri, boxCoordinates)
                             }
                         }
                     }
@@ -724,6 +709,7 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+
     private fun unionIntersections(polygons: MutableList<PolyObject>): Geometry {
         var unionPolygon = polygons[0].geometry
         for (i in 1 until polygons.size) {
@@ -748,7 +734,6 @@ class MapActivity : AppCompatActivity() {
         } else {
             mb
         }
-
     }
 
     private fun detectPolygon(
