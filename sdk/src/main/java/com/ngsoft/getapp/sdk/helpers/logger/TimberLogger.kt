@@ -24,6 +24,7 @@ internal object TimberLogger {
             .appendToFile(true)
             .build()
 
+        Timber.plant(DebugTree())
         fileTree?.apply { Timber.plant(this) }
     }
 

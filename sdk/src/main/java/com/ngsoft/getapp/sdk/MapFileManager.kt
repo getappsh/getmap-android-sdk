@@ -84,7 +84,7 @@ class MapFileManager(private val appCtx: Context) {
 
     fun getAvailableSpaceByPolicy(): Long {
         val flashRoot: File? = getBaseStorageDir(true)
-        val sdRoot: File? = getBaseStorageDir(false) ?: flashRoot
+        val sdRoot: File? = getBaseStorageDir(false)
 
         val flashSpace = flashRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0
         val sdSpace = sdRoot?.path?.let { FileUtils.getAvailableSpace(it) } ?: 0

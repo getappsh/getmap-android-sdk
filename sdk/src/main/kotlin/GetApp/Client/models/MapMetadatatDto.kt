@@ -52,7 +52,7 @@ data class MapMetadatatDto (
     val progress: kotlin.Int? = 0,
 
     @Json(name = "size")
-    val propertySize: kotlin.Int? = 0,
+    val propertySize: kotlin.Long? = 0,
 
     @Json(name = "zoomLevel")
     val zoomLevel: kotlin.Int? = 1,

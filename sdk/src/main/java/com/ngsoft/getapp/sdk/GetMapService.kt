@@ -389,21 +389,21 @@ interface GetMapService {
         /**
          * Ortophoto map path on the device
          */
-        val ortophotoMapPath: String?
+        var ortophotoMapPath: String
 
         /**
          * Control map path on the device
          */
-        val controlMapPath: String?
+        var controlMapPath: String
 
         /**
          * Substring to match in ortophoto map filename
          */
-        val ortophotoMapPattern: String?;
+        var ortophotoMapPattern: String
 
         /**
          * Substring to match in control map filename
          */
-        val controlMapPattern: String?;
+        var controlMapPattern: String
     }
 }
