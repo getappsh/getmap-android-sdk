@@ -393,32 +393,30 @@ class MapActivity : AppCompatActivity() {
 
         DiscoveryProductsManager.getInstance().products.forEach { p ->
             run {
-                val json = JSONObject(p.footprint)
-                val type = json.getString("type")
-
-                if (type == "Polygon") {
-                    val productPolyDTO = gson.fromJson(p.footprint, PolygonDTO::class.java)
-                    productPolyDTO.coordinates.forEach { it ->
-                        val points: List<Position> = it.map {
-                            Position.fromDegrees(it[1], it[0], 0.0)
-                        }
-                        val polygon = Polygon(points, attrsColor("pink"))
-                        polygon.displayName = ""
-                        renderableLayer.addRenderable(polygon)
-                    }
-                } else {
-                    val productPolyDTO = gson.fromJson(p.footprint, MultiPolygonDto::class.java)
-                    productPolyDTO.coordinates.forEach { polygonCoords ->
-                        val rings: MutableList<List<Position>> = mutableListOf()
-                        polygonCoords.forEach { ringCoords ->
-                            val points: MutableList<Position> = ringCoords.map {
+                when (p.productShapeDTO) {
+                    is ProductShape.Polygon -> {
+                        p.productShapeDTO.polygonDTO.coordinates.forEach { it ->
+                            val points: List<Position> = it.map {
                                 Position.fromDegrees(it[1], it[0], 0.0)
-                            }.toMutableList()
-                            rings.add(points)
+                            }
+                            val polygon = Polygon(points, attrsColor("pink"))
+                            polygon.displayName = ""
+                            renderableLayer.addRenderable(polygon)
                         }
-                        val polygon = Polygon(rings.flatten(), attrsColor("pink"))
-                        polygon.displayName = ""
-                        renderableLayer.addRenderable(polygon)
+                    }
+                    is ProductShape.MultiPolygon -> {
+                        p.productShapeDTO.multiPolygonDTO.coordinates.forEach { polygonCoords ->
+                            val rings: MutableList<List<Position>> = mutableListOf()
+                            polygonCoords.forEach { ringCoords ->
+                                val points: MutableList<Position> = ringCoords.map {
+                                    Position.fromDegrees(it[1], it[0], 0.0)
+                                }.toMutableList()
+                                rings.add(points)
+                            }
+                            val polygon = Polygon(rings.flatten(), attrsColor("pink"))
+                            polygon.displayName = ""
+                            renderableLayer.addRenderable(polygon)
+                        }
                     }
                 }
             }
