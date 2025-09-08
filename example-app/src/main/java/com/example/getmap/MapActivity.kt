@@ -565,6 +565,12 @@ class MapActivity : AppCompatActivity() {
             val pRightBottom = getFourScreenPoints(wwd).rightBottom
             val pRightTop = getFourScreenPoints(wwd).rightTop
             val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+            val fourPoints = getFourScreenPoints(wwd)
+            val pLeftTop = fourPoints.leftTop
+            val pRightBottom = fourPoints.rightBottom
+            val pRightTop = fourPoints.rightTop
+            val pLeftBottom = fourPoints.leftBottom
+
 
             val boxCoordinates = mutableListOf(pLeftTop, pRightTop, pRightBottom, pLeftBottom)
 
