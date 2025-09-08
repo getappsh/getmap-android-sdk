@@ -55,7 +55,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import timber.log.Timber
@@ -557,12 +556,6 @@ class MapActivity : AppCompatActivity() {
 
             val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
 
-            Timber.i("⏱️ זמן חישוב נקודות מסך: ${System.currentTimeMillis() - t1}ms")
-            Timber.i("⏱️ נקוודות פוליגון: $pLeftTop , $pLeftBottom, $pRightTop, $pRightBottom")
-
-
-            val t2 = System.currentTimeMillis()
-
             val boxCoordinates = mutableListOf(pLeftTop, pRightTop, pRightBottom, pLeftBottom)
 
             val boxCoordinatesEsri = mutableListOf(
@@ -581,18 +574,13 @@ class MapActivity : AppCompatActivity() {
 
             DiscoveryProductsManager.getInstance().products.forEach { p ->
                 run {
-                    val json = JSONObject(p.footprint)
-                    val type = json.getString("type")
-
-                    when (type) {
-                        "Polygon" -> {
-                            val productPolyDTO = Gson().fromJson(p.footprint, PolygonDTO::class.java)
-                            processPolygon(p, productPolyDTO.coordinates, polygonBoxEsri, boxCoordinates)
+                     when (p.productShapeDTO) {
+                         is ProductShape.Polygon -> {
+                             processPolygon(p.discoveryItem, p.productShapeDTO.polygonDTO.coordinates, polygonBoxEsri, boxCoordinates)
                         }
-                        "MultiPolygon" -> {
-                            val productMultiPolyDTO = Gson().fromJson(p.footprint, MultiPolygonDto::class.java)
-                            productMultiPolyDTO.coordinates.forEach { multiPoly ->
-                                processPolygon(p, multiPoly, polygonBoxEsri, boxCoordinates)
+                         is ProductShape.MultiPolygon -> {
+                            p.productShapeDTO.multiPolygonDTO.coordinates.forEach { multiPoly ->
+                                processPolygon(p.discoveryItem, multiPoly, polygonBoxEsri, boxCoordinates)
                             }
                         }
                     }
@@ -721,6 +709,7 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+
     private fun unionIntersections(polygons: MutableList<PolyObject>): Geometry {
         var unionPolygon = polygons[0].geometry
         for (i in 1 until polygons.size) {
@@ -745,7 +734,6 @@ class MapActivity : AppCompatActivity() {
         } else {
             mb
         }
-
     }
 
     private fun detectPolygon(
