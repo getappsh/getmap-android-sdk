@@ -166,10 +166,8 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
-                val pLeftTop = getFourScreenPoints(wwd).leftTop
-                val pRightBottom = getFourScreenPoints(wwd).rightBottom
-                val pRightTop = getFourScreenPoints(wwd).rightTop
-                val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+                val (pLeftTop, pRightTop, pRightBottom, pLeftBottom) = getFourScreenPoints(wwd)
+
                 val latlonpLeftTop =
                     pLeftTop.latitude.toString() + " " + pLeftTop.longitude.toString()
                 val latlonpLeftBottom =
@@ -325,10 +323,7 @@ class MapActivity : AppCompatActivity() {
     private fun onDelivery() {
         Timber.d("onDelivery: ")
 
-        val pLeftTop = getFourScreenPoints(wwd).leftTop
-        val pRightBottom = getFourScreenPoints(wwd).rightBottom
-        val pRightTop = getFourScreenPoints(wwd).rightTop
-        val pLeftBottom = getFourScreenPoints(wwd).leftBottom
+        val (pLeftTop, pRightTop, pRightBottom, pLeftBottom) = getFourScreenPoints(wwd)
 
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties(
@@ -561,11 +556,8 @@ class MapActivity : AppCompatActivity() {
     private fun checkBboxBeforeSent() {
         try {
             dMode = false
-            val fourPoints = getFourScreenPoints(wwd)
-            val pLeftTop = fourPoints.leftTop
-            val pRightBottom = fourPoints.rightBottom
-            val pRightTop = fourPoints.rightTop
-            val pLeftBottom = fourPoints.leftBottom
+
+            val (pLeftTop, pRightTop, pRightBottom, pLeftBottom) = getFourScreenPoints(wwd)
 
             Timber.i("⏱️ זמן חישוב נקודות מסך: ${System.currentTimeMillis() - t1}ms")
             Timber.i("⏱️ נקוודות פוליגון: $pLeftTop , $pLeftBottom, $pRightTop, $pRightBottom")
