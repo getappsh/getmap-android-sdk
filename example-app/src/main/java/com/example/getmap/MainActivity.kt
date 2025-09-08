@@ -47,6 +47,7 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
+import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.exceptions.MapAlreadyExistsException
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private var imeiEven = ""
     var isResume = false
     var isCancel = false
+    private var lastAvailableSpaceMb: Double = -1.0
 
     companion object {
         var count = 0
@@ -133,6 +135,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = getAvailableSpace()
+        lastAvailableSpaceMb = availableSpaceInMb
         if (!mapServiceManager.isInit) {
             val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
             StrictMode.setThreadPolicy(policy)
@@ -572,6 +575,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     private fun getAvailableSpace(): String {
         val availableBytes = MapFileManager(this).getAvailableSpaceByPolicy()
         availableSpaceInMb = availableBytes.toDouble() / (1024 * 1024)
+        val isSdOnly = mapServiceManager.isInit &&
+                (mapServiceManager.service.config.targetStoragePolicy == MapConfigDto.TargetStoragePolicy.SDOnly)
+        if (availableBytes <= 0 && isSdOnly) {
+            return "לא זוהה כרטיס SD"
+        }
         return "מקום פנוי להורדה: ${formatBytes(availableBytes)}"
     }
 //    fun GetAvailableSpaceInSdCard(): String {
@@ -774,8 +782,16 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
     // Function that will update the AvailableSpace
     override fun onSignalSpace() {
+        val prev = lastAvailableSpaceMb
         val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
         availableSpace.text = getAvailableSpace()
+        val now = availableSpaceInMb
+        if (prev <= 0.0 && now > 0.0){
+            CoroutineScope(Dispatchers.IO).launch {
+                mapServiceManager.service.synchronizeMapData()
+            }
+        }
+        lastAvailableSpaceMb = now
     }
 
 
