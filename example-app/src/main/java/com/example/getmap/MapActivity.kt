@@ -561,16 +561,17 @@ class MapActivity : AppCompatActivity() {
     private fun checkBboxBeforeSent() {
         try {
             dMode = false
-            val pLeftTop = getFourScreenPoints(wwd).leftTop
-            val pRightBottom = getFourScreenPoints(wwd).rightBottom
-            val pRightTop = getFourScreenPoints(wwd).rightTop
-            val pLeftBottom = getFourScreenPoints(wwd).leftBottom
             val fourPoints = getFourScreenPoints(wwd)
             val pLeftTop = fourPoints.leftTop
             val pRightBottom = fourPoints.rightBottom
             val pRightTop = fourPoints.rightTop
             val pLeftBottom = fourPoints.leftBottom
 
+            Timber.i("⏱️ זמן חישוב נקודות מסך: ${System.currentTimeMillis() - t1}ms")
+            Timber.i("⏱️ נקוודות פוליגון: $pLeftTop , $pLeftBottom, $pRightTop, $pRightBottom")
+
+
+            val t2 = System.currentTimeMillis()
 
             val boxCoordinates = mutableListOf(pLeftTop, pRightTop, pRightBottom, pLeftBottom)
 
