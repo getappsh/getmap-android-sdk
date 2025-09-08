@@ -166,7 +166,7 @@ class MapActivity : AppCompatActivity() {
         delivery.visibility = View.INVISIBLE
         delivery.setOnClickListener {
             if (!dMode) {
-                val (pLeftTop, pRightTop, pRightBottom, pLeftBottom) = getFourScreenPoints(wwd)
+                val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
 
                 val latlonpLeftTop =
                     pLeftTop.latitude.toString() + " " + pLeftTop.longitude.toString()
@@ -323,7 +323,7 @@ class MapActivity : AppCompatActivity() {
     private fun onDelivery() {
         Timber.d("onDelivery: ")
 
-        val (pLeftTop, pRightTop, pRightBottom, pLeftBottom) = getFourScreenPoints(wwd)
+        val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
 
         GlobalScope.launch(Dispatchers.IO) {
             val props = MapProperties(
@@ -557,7 +557,7 @@ class MapActivity : AppCompatActivity() {
         try {
             dMode = false
 
-            val (pLeftTop, pRightTop, pRightBottom, pLeftBottom) = getFourScreenPoints(wwd)
+            val (pLeftTop, pRightBottom, pRightTop, pLeftBottom) = getFourScreenPoints(wwd)
 
             Timber.i("⏱️ זמן חישוב נקודות מסך: ${System.currentTimeMillis() - t1}ms")
             Timber.i("⏱️ נקוודות פוליגון: $pLeftTop , $pLeftBottom, $pRightTop, $pRightBottom")
