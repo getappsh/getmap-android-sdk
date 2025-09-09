@@ -811,14 +811,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 val jsonText =
                     Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
                 val region = jsonText.region[0]
-                val name =
-                    region + map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+                val name = map?.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
                 runOnUiThread {
                     TrackHelper.track()
-                        .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
+                        .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), region + name)
                         .event("מיפוי ענן", "שיתוף")
                         .name("שליחת בול בסריקה").with(tracker)
-                    showQRCodeDialog(qrCode, name)
+                    showQRCodeDialog(qrCode, "$region $name")
                 }
             } catch (e: Exception) {
                 val map = mapServiceManager.service.getDownloadedMap(id)
