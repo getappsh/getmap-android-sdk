@@ -688,7 +688,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 popUp.textM = "האם למחוק את $endName?"
             } else {
                 popUp.bullName = ""
-                popUp.textM = getString(R.string.default_delete_popup_text)
+                popUp.textM = getString(R.string.delete_popup_text_in_download)
             }
         }
         if (count == 0) {
