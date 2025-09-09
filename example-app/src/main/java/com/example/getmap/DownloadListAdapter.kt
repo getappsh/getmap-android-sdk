@@ -282,13 +282,15 @@ class DownloadListAdapter(
                 if (downloadData.downloadStop?.toLocalDateTime()?.isAfter(oneSecondBeforeLocalDateTime) == true) {
                     TrackHelper.track().event("מיפוי ענן", "ניהול בקשות").name("ההורדה בהשהייה").with(tracker)
                 }
+                val endName = downloadData.fileName?.substringAfterLast('_')?.substringBefore('Z') + "Z"
+
                 holder.dates.visibility = View.GONE
                 holder.textStatus.visibility = View.VISIBLE
                 holder.textStatus.text = "ההורדה תמשיך מנקודת העצירה"
                 holder.btnDelete.visibility = View.VISIBLE
                 holder.btnCancelResume.setBackgroundResource(R.drawable.play)
                 holder.btnQRCode.visibility = View.GONE
-                holder.textFileName.text = "ההורדה בהשהייה"
+                holder.textFileName.text = context.getString(R.string.Downloading_on_hold_text, endName)
                 holder.size.visibility = View.INVISIBLE
                 holder.product.visibility = View.INVISIBLE
                 holder.separator.visibility = View.INVISIBLE
