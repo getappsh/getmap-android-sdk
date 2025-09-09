@@ -17,6 +17,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.StrictMode
 import android.os.storage.StorageManager
+import android.os.storage.StorageVolume
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     var isResume = false
     var isCancel = false
     private var lastAvailableSpaceMb: Double = -1.0
+    private lateinit var storageList: List<StorageVolume>
 
     companion object {
         var count = 0
@@ -186,13 +188,13 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
-        val storageList = storageManager.storageVolumes;
+        storageList = storageManager.storageVolumes;
         val tp = mapServiceManager.service.config.targetStoragePolicy
         if ((tp == MapConfigDto.TargetStoragePolicy.SDOnly || tp == MapConfigDto.TargetStoragePolicy.SDThenFlash) && storageList.getOrNull(
                 1
             )?.directory?.absoluteFile == null
         ) {
-            Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_SHORT)
+            Toast.makeText(applicationContext, "Please insert a SdCard !", Toast.LENGTH_LONG)
                 .show()
         }
         tracker = MatomoTracker.getTracker(this)
@@ -577,8 +579,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         availableSpaceInMb = availableBytes.toDouble() / (1024 * 1024)
         val isSdOnly = mapServiceManager.isInit &&
                 (mapServiceManager.service.config.targetStoragePolicy == MapConfigDto.TargetStoragePolicy.SDOnly)
-        if (availableBytes <= 0 && isSdOnly) {
-            return "לא זוהה כרטיס SD"
+
+        if (storageList.getOrNull(1)?.directory?.absoluteFile == null && isSdOnly) {
+            return "לא זוהה כרטיס SD - נא לרענן כרטיס"
         }
         return "מקום פנוי להורדה: ${formatBytes(availableBytes)}"
     }
