@@ -690,8 +690,11 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         GlobalScope.launch(Dispatchers.IO) {
             val map = mapServiceManager.service.getDownloadedMap(id)
             if (map!!.fileName != null) {
-                val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() + " " +
-                        map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val region = map.getJson()?.getJSONArray("region")?.get(0)
+                val name = map.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
+                val endName = region?.let {
+                    "$region $name"
+                } ?: name
                 popUp.bullName = endName
                 popUp.textM = "האם למחוק את $endName?"
             } else {
