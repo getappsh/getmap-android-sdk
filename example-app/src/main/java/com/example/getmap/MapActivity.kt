@@ -99,8 +99,8 @@ class MapActivity : AppCompatActivity() {
         val instance = MapServiceManager.getInstance()
         service = instance.service
 
-        orthophotoPackageName = findLargestGpkgByKeyword(service.config.ortophotoMapPath.toString(),service.config.ortophotoMapPattern.toString())
-        controlPackageName =findLargestGpkgByKeyword(service.config.controlMapPath.toString(),service.config.controlMapPattern.toString())
+        orthophotoPackageName = findLargestGpkgByKeyword(service.config.ortophotoMapPath,service.config.ortophotoMapPattern)
+        controlPackageName =findLargestGpkgByKeyword(service.config.controlMapPath,service.config.controlMapPattern)
 
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
