@@ -175,7 +175,7 @@ class ConfigParam {
         private fun defineType(holder: NebulaParamViewHolder) {
 
             val valItemView = holder.itemView.findViewById<TextInputEditText>(R.id.value_nebula)
-            val stringNames = arrayOf("Matomo dimension id", "Matomo site id")
+            val stringNames = arrayOf("Ortophoto Map Path", "Control Map Path", "Ortophoto Map Pattern", "Control Map Pattern")
             val passwordNames = arrayOf("URL", "Matomo Url")
             if (passwordNames.contains(Params[holder.adapterPosition].name))
                 valItemView.inputType = TYPE_TEXT_VARIATION_PASSWORD

@@ -549,7 +549,7 @@ private fun hasChanged(
     if (params[10].value != "" && params[10].value.toInt() > 0)
         if (service.config.matomoSiteId != params[10].value)
             toReturn["matomoSiteId"] = params[10].value
-    if (params[11].value != "")
+    if (params[11].value != "" && params[11].value.toInt() > 0)
         if (service.config.matomoDimensionId != params[11].value)
             toReturn["matomoDimensionId"] = params[11].value
     if (params[17].value != "")
