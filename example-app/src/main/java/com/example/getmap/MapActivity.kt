@@ -54,7 +54,7 @@ import gov.nasa.worldwind.shape.TextAttributes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
@@ -84,6 +84,7 @@ class MapActivity : AppCompatActivity() {
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
     private lateinit var controlSwitch: Switch
+    private var bboxProcessJob: Job? = null
 
     private val showBm: TextView by lazy { findViewById(R.id.showMb) }
     private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
@@ -983,7 +984,8 @@ class MapActivity : AppCompatActivity() {
             if (!consumed) {
                 when (event.action) {
                     MotionEvent.ACTION_MOVE -> {
-                        lifecycleScope.coroutineContext.cancelChildren()
+                        bboxProcessJob?.cancel()
+
                         val areaCal = getString(R.string.calculate_area_text)
                         val volumeCal = getString(R.string.calculate_volume_text)
                         showKm.text = getString(R.string.default_calculate_area_text, areaCal)
@@ -991,7 +993,9 @@ class MapActivity : AppCompatActivity() {
                         date.text = ""
                     }
                     MotionEvent.ACTION_UP -> {
-                        lifecycleScope.launch {
+                        bboxProcessJob?.cancel()
+
+                        bboxProcessJob = lifecycleScope.launch {
                             delay(500L)
                             checkBboxBeforeSent()
                         }
