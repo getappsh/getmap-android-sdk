@@ -980,16 +980,24 @@ class MapActivity : AppCompatActivity() {
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
             val consumed = pickGestureDetector.onTouchEvent(event)
-
-            if (!consumed && event.action == MotionEvent.ACTION_UP) {
-                Timber.tag("ScrollEvent").i("Scroll detected: ${event.x}, ${event.y}")
-                checkBboxBeforeSent()
-            } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
-                val areaCal = getString(R.string.calculate_area_text)
-                val volumeCal = getString(R.string.calculate_volume_text)
-                showKm.text = getString(R.string.default_calculate_area_text, areaCal)
-                showBm.text = getString(R.string.calculate_volume_with_string_text, volumeCal)
-                date.text = ""
+            if (!consumed) {
+                when (event.action) {
+                    MotionEvent.ACTION_MOVE -> {
+                        lifecycleScope.coroutineContext.cancelChildren()
+                        val areaCal = getString(R.string.calculate_area_text)
+                        val volumeCal = getString(R.string.calculate_volume_text)
+                        showKm.text = getString(R.string.default_calculate_area_text, areaCal)
+                        showBm.text = getString(R.string.calculate_volume_with_string_text, volumeCal)
+                        date.text = ""
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        lifecycleScope.launch {
+                            delay(500L)
+                            checkBboxBeforeSent()
+                        }
+                        Timber.tag("ScrollEvent").i("Scroll detected: ${event.x}, ${event.y}")
+                    }
+                }
             }
 
             return if (!consumed) {
