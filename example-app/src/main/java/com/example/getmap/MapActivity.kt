@@ -999,10 +999,7 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
             }
-
-            return if (!consumed) {
-                super.onTouchEvent(event)
-            } else consumed
+            return consumed || super.onTouchEvent(event)
         }
     }
 }
