@@ -567,8 +567,17 @@ class MapActivity : AppCompatActivity() {
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
 
+            val maxArea = service.config.maxMapAreaSqKm.toInt()
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
             showKm.text = getString(R.string.calculate_area_with_value_text, area)
+            val overlayView = findViewById<FrameLayout>(R.id.overlayView)
+
+            if(area > maxArea * 3) {
+                overlayView.setBackgroundResource(R.drawable.red_border)
+                date.text = "שטח גדול מידי"
+                date.textSize = 15F
+                return
+            }
 
             allPolygon.clear()
 
