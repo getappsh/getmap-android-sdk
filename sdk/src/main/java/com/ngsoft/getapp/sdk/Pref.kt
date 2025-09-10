@@ -13,6 +13,7 @@ import com.ngsoft.getapp.sdk.utils.DateHelper
 import timber.log.Timber
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import androidx.core.content.edit
 
 
 class Pref private constructor(context: Context) {
@@ -162,27 +163,43 @@ class Pref private constructor(context: Context) {
 
     var ortophotoMapPattern: String
         get() = getString(ORTOPHOTO_MAP_PATTERN, "אורתופוטו")
-        set(value) = setString(ORTOPHOTO_MAP_PATTERN, value)
+        set(value) {
+            if (value.isEmpty()){
+                removeValue(ORTOPHOTO_MAP_PATTERN)
+            }else {
+                setString(ORTOPHOTO_MAP_PATTERN, value)
+            }
+
+        }
 
     var controlMapPattern: String
         get() = getString(CONTROL_MAP_PATTERN, "שליטה")
-        set(value) = setString(CONTROL_MAP_PATTERN, value)
+        set(value)  {
+            if (value.isEmpty()){
+                removeValue(CONTROL_MAP_PATTERN)
+            }else{
+                setString(CONTROL_MAP_PATTERN, value)
+            }
+        }
 
     private fun getString(key: String, defValue: String): String{
         return sharedPreferences.getString(key, defValue) ?: defValue
     }
 
     private fun setString(key: String, value: String){
-        sharedPreferences.edit().putString(key, value).apply()
+        sharedPreferences.edit { putString(key, value) }
     }
 
+    private fun removeValue(key: String){
+        sharedPreferences.edit { remove(key) }
+    }
 
     private fun getInt(key: String, defaultValue: Int): Int {
         return sharedPreferences.getInt(key, defaultValue)
     }
 
     private fun setInt(key: String, value: Int) {
-        sharedPreferences.edit().putInt(key, value).apply()
+        sharedPreferences.edit { putInt(key, value) }
     }
 
     private fun getLong(key: String, defaultValue: Long): Long {

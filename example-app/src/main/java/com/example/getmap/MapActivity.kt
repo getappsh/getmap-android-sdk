@@ -22,6 +22,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
@@ -53,6 +54,7 @@ import gov.nasa.worldwind.shape.TextAttributes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
@@ -82,6 +84,7 @@ class MapActivity : AppCompatActivity() {
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
     private lateinit var controlSwitch: Switch
+    private var bboxProcessJob: Job? = null
 
     private val showBm: TextView by lazy { findViewById(R.id.showMb) }
     private val showKm: TextView by lazy { findViewById(R.id.kmShow) }
@@ -99,8 +102,8 @@ class MapActivity : AppCompatActivity() {
         val instance = MapServiceManager.getInstance()
         service = instance.service
 
-        orthophotoPackageName = findLargestGpkgByKeyword(service.config.ortophotoMapPath.toString(),service.config.ortophotoMapPattern.toString())
-        controlPackageName =findLargestGpkgByKeyword(service.config.controlMapPath.toString(),service.config.controlMapPattern.toString())
+        orthophotoPackageName = findLargestGpkgByKeyword(service.config.ortophotoMapPath,service.config.ortophotoMapPattern)
+        controlPackageName =findLargestGpkgByKeyword(service.config.controlMapPath,service.config.controlMapPattern)
 
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
@@ -255,7 +258,7 @@ class MapActivity : AppCompatActivity() {
         val base = File(volumeDir, dirPath).absoluteFile
         val searchDir = when {
             base.isDirectory -> base
-            base.isFile      -> base.parentFile ?: volumeDir
+            !base.path.endsWith("/") -> base.parentFile ?: volumeDir
             else             -> volumeDir
         }
 
@@ -567,8 +570,17 @@ class MapActivity : AppCompatActivity() {
 
             val polygonBoxEsri = com.arcgismaps.geometry.Polygon(boxCoordinatesEsri)
 
+            val maxArea = service.config.maxMapAreaSqKm.toInt()
             val area = (calculateDistance(pLeftTop, pRightTop) / 1000) * (calculateDistance(pLeftTop, pLeftBottom) / 1000)
             showKm.text = getString(R.string.calculate_area_with_value_text, area)
+            val overlayView = findViewById<FrameLayout>(R.id.overlayView)
+
+            if(area > maxArea * 3) {
+                overlayView.setBackgroundResource(R.drawable.red_border)
+                date.text = "שטח גדול מידי"
+                date.textSize = 15F
+                return
+            }
 
             allPolygon.clear()
 
@@ -588,7 +600,6 @@ class MapActivity : AppCompatActivity() {
             }
             val maxMb = service.config.maxMapSizeInMB.toInt()
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
-            val maxArea = service.config.maxMapAreaSqKm.toInt()
             val boxArea = calculatePolygonArea(boxCoordinates)
             var spaceMb = 0
             var downloadAble = false
@@ -682,7 +693,6 @@ class MapActivity : AppCompatActivity() {
                 }
             }
 
-            val overlayView = findViewById<FrameLayout>(R.id.overlayView)
             if (spaceMb < maxMb && downloadAble && isAreaValid) {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
@@ -971,21 +981,29 @@ class MapActivity : AppCompatActivity() {
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
             val consumed = pickGestureDetector.onTouchEvent(event)
+            if (!consumed) {
+                when (event.action) {
+                    MotionEvent.ACTION_MOVE -> {
+                        bboxProcessJob?.cancel()
 
-            if (!consumed && event.action == MotionEvent.ACTION_UP) {
-                Timber.tag("ScrollEvent").i("Scroll detected: ${event.x}, ${event.y}")
-                checkBboxBeforeSent()
-            } else if (!consumed && event.action == MotionEvent.ACTION_MOVE) {
-                val areaCal = getString(R.string.calculate_area_text)
-                val volumeCal = getString(R.string.calculate_volume_text)
-                showKm.text = getString(R.string.default_calculate_area_text, areaCal)
-                showBm.text = getString(R.string.calculate_volume_with_string_text, volumeCal)
-                date.text = ""
+                        val areaCal = getString(R.string.calculate_area_text)
+                        val volumeCal = getString(R.string.calculate_volume_text)
+                        showKm.text = getString(R.string.default_calculate_area_text, areaCal)
+                        showBm.text = getString(R.string.calculate_volume_with_string_text, volumeCal)
+                        date.text = ""
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        bboxProcessJob?.cancel()
+
+                        bboxProcessJob = lifecycleScope.launch {
+                            delay(500L)
+                            checkBboxBeforeSent()
+                        }
+                        Timber.tag("ScrollEvent").i("Scroll detected: ${event.x}, ${event.y}")
+                    }
+                }
             }
-
-            return if (!consumed) {
-                super.onTouchEvent(event)
-            } else consumed
+            return consumed || super.onTouchEvent(event)
         }
     }
 }
