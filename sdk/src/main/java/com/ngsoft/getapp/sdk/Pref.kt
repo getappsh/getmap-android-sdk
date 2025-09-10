@@ -174,7 +174,7 @@ class Pref private constructor(context: Context) {
 
     var controlMapPattern: String
         get() = getString(CONTROL_MAP_PATTERN, "שליטה")
-        set(value: String)  {
+        set(value)  {
             if (value.isEmpty()){
                 removeValue(CONTROL_MAP_PATTERN)
             }else{
@@ -187,7 +187,7 @@ class Pref private constructor(context: Context) {
     }
 
     private fun setString(key: String, value: String){
-        sharedPreferences.edit().putString(key, value).apply()
+        sharedPreferences.edit { putString(key, value) }
     }
 
     private fun removeValue(key: String){
@@ -199,7 +199,7 @@ class Pref private constructor(context: Context) {
     }
 
     private fun setInt(key: String, value: Int) {
-        sharedPreferences.edit().putInt(key, value).apply()
+        sharedPreferences.edit { putInt(key, value) }
     }
 
     private fun getLong(key: String, defaultValue: Long): Long {

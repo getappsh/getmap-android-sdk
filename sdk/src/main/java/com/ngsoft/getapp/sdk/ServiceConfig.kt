@@ -195,14 +195,16 @@ internal class ServiceConfig private constructor(private var appContext: Context
 
     override var ortophotoMapPattern: String = pref.ortophotoMapPattern
         set(value) {
-            field = value
             pref.ortophotoMapPattern = value
+            field = pref.ortophotoMapPattern
+
         }
 
     override var controlMapPattern: String = pref.controlMapPattern
         set(value) {
-            field = value
             pref.controlMapPattern = value
+            field = pref.controlMapPattern
+
         }
 
 
