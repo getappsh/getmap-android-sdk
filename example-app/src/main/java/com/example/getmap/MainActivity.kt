@@ -5,12 +5,10 @@ import GetApp.Client.models.MapConfigDto
 import MapDataMetaData
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
-import android.graphics.Point
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,7 +16,6 @@ import android.os.Environment
 import android.os.StrictMode
 import android.os.storage.StorageManager
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -34,6 +31,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -47,7 +45,6 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.ngsoft.getapp.sdk.BuildConfig
 import com.ngsoft.getapp.sdk.Configuration
-import com.ngsoft.getapp.sdk.GetMapService
 import com.ngsoft.getapp.sdk.MapFileManager
 import com.ngsoft.getapp.sdk.Pref
 import com.ngsoft.getapp.sdk.exceptions.MapAlreadyExistsException
@@ -63,17 +60,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.internal.notifyAll
-import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
-import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import timber.log.Timber
-import timber.log.Timber.DebugTree
 import java.time.LocalDateTime
-import java.util.Base64
 
 @RequiresApi(Build.VERSION_CODES.R)
 class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
@@ -851,60 +841,34 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun itemViewClick(id: String) {
-        var currMap: MapData? = null
-        GlobalScope.launch(Dispatchers.IO) {
-            currMap = mapServiceManager.service.getDownloadedMap(id)!!
+        lifecycleScope.launch(Dispatchers.IO) {
+            val map = mapServiceManager.service.getDownloadedMap(id)
+            val endName = map?.let {
+                val region = it.getJson()?.getJSONArray("region")?.get(0).toString()
+                "$region ${it.fileName?.substringAfterLast('_')?.substringBefore('Z')}Z"
+            } ?: ""
             withContext(Dispatchers.Main) {
-                if (currMap?.isUpdated == false) {
-                    TrackHelper.track().dimension(
-                        mapServiceManager.service.config.matomoDimensionId.toInt(),
-                        "עדכן בול"
-                    ).screen(this@MainActivity)
-                        .with(tracker)
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val map = mapServiceManager.service.getDownloadedMap(id)
-                        if (map!!.fileName != null) {
-                            val endName = map.getJson()?.getJSONArray("region")?.get(0).toString() +
-                                    map.fileName!!.substringAfterLast('_')
-                                        .substringBefore('Z') + "Z"
-                            popUp.bullName = endName
-                        } else {
-                            popUp.bullName = ""
+                map?.let {
+                    if (!map.isUpdated) {
+                        TrackHelper.track().dimension(
+                            mapServiceManager.service.config.matomoDimensionId.toInt(),
+                            "עדכן בול"
+                        ).screen(this@MainActivity)
+                            .with(tracker)
+                        popUp.mapId = id
+                        popUp.type = "updateOne"
+                        popUp.recyclerView = recyclerView
+                        popUp.bullName = endName
+
+                        popUp.textM = getString(R.string.popup_update_detail_map_text, popUp.bullName)
+                        if (count == 0) {
+                            count += 1
+                            popUp.show(supportFragmentManager, "updateOne")
                         }
-                    }
-                    popUp.mapId = id
-                    popUp.type = "updateOne"
-                    popUp.recyclerView = recyclerView
-                    popUp.textM = "האם לבצע עדכון מפה ?"
-                    if (count == 0) {
-                        count += 1
-                        popUp.show(supportFragmentManager, "updateOne")
                     }
                 }
             }
         }
-
-//        } else {
-//
-//            GlobalScope.launch(Dispatchers.IO) {
-//                val map = mapServiceManager.service.getDownloadedMap(id)
-//                val str = map?.let {
-//                    "The id is =${it.id}, \n" +
-////                        "footprint=${it.footprint}, \n" +
-////                        "fileName=${it.fileName}, \n" +
-////                        "jsonName=${it.jsonName}, \n" +
-////                        "deliveryStatus=${it.deliveryStatus}, \n" +
-////                        "url=${it.url}, \n" +
-//                            "The status is:${it.statusMsg}, \n" +
-//                            "The download is:${it.progress}, \n" +
-////                        "errorContent=${it.errorContent}, \n" +
-//                            "The bbox is updated:${it.isUpdated}, \n "
-//                }.toString()
-//                runOnUiThread { showDialog(str) }
-//            }
-//        }
-
-
     }
 
     private fun showErrorDialog(msg: String) {

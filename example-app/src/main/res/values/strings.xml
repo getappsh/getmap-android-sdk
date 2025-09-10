@@ -28,5 +28,6 @@
     <string name="calculate_volume_text">מחשב נפח</string>
     <string name="calculate_area_text">מחשב שטח</string>
     <string name="no_data_text">אין נתון</string>
+    <string name="popup_update_detail_map_text">האם לעדכן את %1$s ?</string>
     <string name="Downloading_on_hold_text">הורדת: %1$s בהשהייה</string>
 </resources>
