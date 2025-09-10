@@ -22,6 +22,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
@@ -53,6 +54,7 @@ import gov.nasa.worldwind.shape.TextAttributes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
@@ -597,7 +599,6 @@ class MapActivity : AppCompatActivity() {
             }
             val maxMb = service.config.maxMapSizeInMB.toInt()
             val interPolygon = service.config.mapMinInclusionPct.toDouble()
-            val maxArea = service.config.maxMapAreaSqKm.toInt()
             val boxArea = calculatePolygonArea(boxCoordinates)
             var spaceMb = 0
             var downloadAble = false
@@ -691,7 +692,6 @@ class MapActivity : AppCompatActivity() {
                 }
             }
 
-            val overlayView = findViewById<FrameLayout>(R.id.overlayView)
             if (spaceMb < maxMb && downloadAble && isAreaValid) {
                 overlayView.setBackgroundResource(R.drawable.blue_border)
             } else {
