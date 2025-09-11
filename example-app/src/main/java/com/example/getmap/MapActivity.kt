@@ -77,13 +77,12 @@ class MapActivity : AppCompatActivity() {
     private val allPolygon = mutableListOf<PolyObject>()
     private val TAG = MainActivity::class.qualifiedName
     private lateinit var service: GetMapService
-    private var geoPackageName = ""
     private var orthophotoPackageName = ""
     private var controlPackageName = ""
     private var dMode = false
     private var sharedPreferences: SharedPreferences? = null
     private var sharedPreferencesEditor: SharedPreferences.Editor? = null
-    private lateinit var controlSwitch: Switch
+    private lateinit var controlSwitchView: Switch
     private var bboxProcessJob: Job? = null
 
     private val showBm: TextView by lazy { findViewById(R.id.showMb) }
@@ -103,15 +102,14 @@ class MapActivity : AppCompatActivity() {
         service = instance.service
 
         orthophotoPackageName = findLargestGpkgByKeyword(service.config.ortophotoMapPath,service.config.ortophotoMapPattern)
-        controlPackageName =findLargestGpkgByKeyword(service.config.controlMapPath,service.config.controlMapPattern)
+        controlPackageName = findLargestGpkgByKeyword(service.config.controlMapPath,service.config.controlMapPattern)
 
         wwd = WorldWindow(this)
         wwd.worldWindowController = PickNavigateController(this)
         wwd.layers.addLayer(BackgroundLayer())
-        geoPackageName = orthophotoPackageName
-        addGeoPkg()
+        addGeoPkg(orthophotoPackageName, false)
 
-        controlSwitch = findViewById<Switch>(R.id.control)
+        controlSwitchView = findViewById<Switch>(R.id.control)
         val controlText = findViewById<TextView>(R.id.controlText)
         val lastCompass = sharedPreferences?.getString("last_compass", "0.0F")
         val lastNavigator = sharedPreferences?.getString("last_navigator", "no data")
@@ -126,10 +124,9 @@ class MapActivity : AppCompatActivity() {
             val newNavigator = gson.fromJson(lastNavigator, Navigator::class.java)
             val lastLookAtObj = gson.fromJson(lastLookAt, LookAt::class.java)
             val compass = findViewById<View>(R.id.arrow)
-            controlSwitch.isChecked = newControlMap
-            if (controlSwitch.isChecked) {
-                geoPackageName = controlPackageName
-                addGeoPkg()
+            controlSwitchView.isChecked = newControlMap
+            if (controlSwitchView.isChecked) {
+                addGeoPkg(controlPackageName, true)
             }
             compass.rotation = newCompass
             newNavigator.setAsLookAt(wwd.globe, lastLookAtObj)
@@ -241,9 +238,9 @@ class MapActivity : AppCompatActivity() {
         mapSwitch.visibility = View.GONE
 
         controlText.setOnClickListener {
-            controlSwitch.isChecked = !controlSwitch.isChecked
+            controlSwitchView.isChecked = !controlSwitchView.isChecked
         }
-        controlSwitch.setOnCheckedChangeListener { _, isChecked ->
+        controlSwitchView.setOnCheckedChangeListener { _, isChecked ->
             controlSwitch(isChecked, tracker)
         }
 
@@ -279,43 +276,46 @@ class MapActivity : AppCompatActivity() {
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("הצגת מפת שליטה")
                 .with(tracker)
-            geoPackageName = controlPackageName
-            addGeoPkg()
+            addGeoPkg(controlPackageName, true)
         } else {
-            geoPackageName = orthophotoPackageName
-            addGeoPkg()
+            addGeoPkg(orthophotoPackageName, false)
             TrackHelper.track().event("מיפוי ענן", "שינוי הגדרות")
                 .name("הסתרת מפת שליטה")
                 .with(tracker)
-
             // Optionally remove the BlueMarble layer or handle switch off action
-            val blueMarbleLayer = wwd.layers.indexOfLayerNamed("BlueMarble")
-            if (blueMarbleLayer == -1) {
-                return
-            } else {
-                wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("BlueMarble"))
+            val blueMarbleLayerIndex = wwd.layers.indexOfLayerNamed("BlueMarble")
+            if (blueMarbleLayerIndex != -1) {
+                wwd.layers.removeLayer(blueMarbleLayerIndex)
                 wwd.requestRedraw()
             }
         }
     }
 
-    private fun addGeoPkg() {
-        val geoPath = geoPackageName
-
+    private fun addGeoPkg(geoPath: String, isControl: Boolean) {
         val layerFactory = LayerFactory()
         layerFactory.createFromGeoPackage(
             geoPath,
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory?, layer: Layer?) {
-                    if (controlSwitch.isChecked) {
-                        layer!!.displayName = "BlueMarble"
+                    Timber.tag("gov.nasa.worldwind").i("Number of layers: ${wwd.layers.count()}")
+                    if (isControl) {
+                        layer?.displayName = "BlueMarble"
+                        if (wwd.layers.indexOfLayerNamed("BlueMarble") == -1){
+                            Timber.tag("gov.nasa.worldwind").i("Adding BlueMarble layer")
+                            wwd.layers.addLayer(layer)
+                        }
+                    }else{
+                        layer?.displayName = "Orthophoto"
+                        if (wwd.layers.indexOfLayerNamed("Orthophoto") == -1){
+                            Timber.tag("gov.nasa.worldwind").i("Adding Orthophoto layer")
+                            wwd.layers.addLayer(layer)
+                        }
                     }
-                    wwd.layers.addLayer(layer)
                     Timber.tag("gov.nasa.worldwind").i("GeoPackage layer creation succeeded")
                 }
 
                 override fun creationFailed(factory: LayerFactory?, layer: Layer?, ex: Throwable?) {
-                    Timber.tag("gov.nasa.worldwind").e("GeoPackage layer creation failed")
+                    Timber.tag("gov.nasa.worldwind").e("GeoPackage layer creation failed, ${ex?.message}")
                     Toast.makeText(applicationContext, "בעיה בטעינת המפה", Toast.LENGTH_LONG).show()
                 }
             }
@@ -428,35 +428,35 @@ class MapActivity : AppCompatActivity() {
         wwd.requestRedraw()
     }
 
-    private fun showPopupMenu(view: View) {
-        val popup = PopupMenu(this, view)
-        val inflater: MenuInflater = popup.menuInflater
-        inflater.inflate(R.menu.popup_menu, popup.menu)
-        popup.setOnMenuItemClickListener { item: MenuItem ->
-            when (item.itemId) {
-                R.id.map_option1 -> {
-                    // Handle option 1 click
-                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
-                    wwd.requestRedraw()
-                    geoPackageName = service.config.ortophotoMapPath.toString()
-                    addGeoPkg()
-                    true
-                }
-
-                R.id.map_option2 -> {
-                    // Handle option 2 click
-                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
-                    wwd.requestRedraw()
-                    geoPackageName = service.config.controlMapPath.toString()
-                    addGeoPkg()
-                    true
-                }
-
-                else -> false
-            }
-        }
-        popup.show()
-    }
+//    private fun showPopupMenu(view: View) {
+//        val popup = PopupMenu(this, view)
+//        val inflater: MenuInflater = popup.menuInflater
+//        inflater.inflate(R.menu.popup_menu, popup.menu)
+//        popup.setOnMenuItemClickListener { item: MenuItem ->
+//            when (item.itemId) {
+//                R.id.map_option1 -> {
+//                    // Handle option 1 click
+//                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+//                    wwd.requestRedraw()
+//                    geoPackageName = service.config.ortophotoMapPath.toString()
+//                    addGeoPkg()
+//                    true
+//                }
+//
+//                R.id.map_option2 -> {
+//                    // Handle option 2 click
+//                    wwd.layers.removeLayer(wwd.layers.indexOfLayerNamed("gpkg"))
+//                    wwd.requestRedraw()
+//                    geoPackageName = service.config.controlMapPath.toString()
+//                    addGeoPkg()
+//                    true
+//                }
+//
+//                else -> false
+//            }
+//        }
+//        popup.show()
+//    }
 
     private fun createDownloadedPolygon(
         map: MapData,
@@ -925,8 +925,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun saveControlMap() {
-        val controlMap = findViewById<Switch>(R.id.control)
-        val checked = controlMap.isChecked
+        val checked = this.controlSwitchView.isChecked
         val gson = Gson()
         val rotationString = gson.toJson(checked)
         sharedPreferencesEditor?.putString("last_control_map", rotationString)?.apply()
