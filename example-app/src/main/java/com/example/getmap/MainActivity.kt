@@ -946,6 +946,7 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@MainActivity, "פרטי הבול נסרקו בהצלחה", Toast.LENGTH_LONG).show()
+                        recyclerView.smoothScrollToPosition(0)
                         TrackHelper.track()
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
