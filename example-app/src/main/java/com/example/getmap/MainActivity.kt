@@ -940,21 +940,14 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     ) { result ->
         if (result.contents == null) {
         } else {
-            Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
 
-//                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
-//                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
-//                    val region = jsonText.region[0]
-//                    val name = region + "-" + map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
-//                    val coordinates = map.footprint
-//                    Timber.tag("mapName").i(name + coordinates)
                     withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "פרטי הבול נסרקו בהצלחה", Toast.LENGTH_LONG).show()
+                        recyclerView.smoothScrollToPosition(0)
                         TrackHelper.track()
-//                            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), name)
-//                            .dimension(mapServiceManager.service.config.matomoDimensionId.toInt(), coordinates)
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
                     }
@@ -971,10 +964,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                 } catch (e: MissingIMEIException) {
 //                    TODO show missing imei dialog
                 } catch (e: Exception) {
-//                    val map = mapServiceManager.service.getDownloadedMap(mapServiceManager.service.processQrCodeData(result.contents))
-//                    val jsonText = Gson().fromJson(map?.getJson().toString(), MapDataMetaData::class.java)
-//                    val region = jsonText.region[0]
-//                    val name = region + "-" + map?.fileName!!.substringAfterLast('_').substringBefore('Z') + "Z"
                     TrackHelper.track().event("מיפוי ענן", "ניהול שגיאות")
                         .name("תקלה בקבלת בול בסריקה").with(tracker)
                     runOnUiThread { showErrorDialog(e.message.toString()) }
