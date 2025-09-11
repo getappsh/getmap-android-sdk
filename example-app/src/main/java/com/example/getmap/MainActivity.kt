@@ -123,9 +123,6 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             intent.data = uri
             startForResult.launch(intent)
         }
-        val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
-        availableSpace.text = getAvailableSpace()
-        lastAvailableSpaceMb = availableSpaceInMb
         if (!mapServiceManager.isInit) {
             val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
             StrictMode.setThreadPolicy(policy)
@@ -174,6 +171,9 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             } catch (_: Exception) {
             }
         }
+        val availableSpace = findViewById<TextView>(R.id.AvailableSpace)
+        availableSpace.text = getAvailableSpace()
+        lastAvailableSpaceMb = availableSpaceInMb
 
         val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val storageList = storageManager.storageVolumes;
@@ -267,18 +267,19 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
                     MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
                 }
                 Timber.tag("SIZE EXCEDEED").i("$sizeExceeded")
-                if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
-                    val count = withContext(Dispatchers.IO) {
-                        var count = 0
-                        mapServiceManager.service.getDownloadedMaps().forEach { m ->
-                            if (m.statusMsg == "בקשה נשלחה" || m.statusMsg == "בקשה בהפקה" || m.statusMsg == "בהורדה") {
-                                count += 1
-                            }
-                        }
-                        count
-                    }
+                val uiState = evalDiscoveryStorageUiState()
+                if (uiState != StorageUiState.OK) {
+                    showStorageMessage(uiState)
+                    return@launch
+                }
 
-                    if (count < mapServiceManager.service.config.maxParallelDownloads) {
+                if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
+                    val inProgressCount = withContext(Dispatchers.IO) {
+                        mapServiceManager.service.getDownloadedMaps().count { m ->
+                            m.statusMsg == "בקשה נשלחה" || m.statusMsg == "בקשה בהפקה" || m.statusMsg == "בהורדה"
+                        }
+                    }
+                    if (inProgressCount < mapServiceManager.service.config.maxParallelDownloads) {
                         this@MainActivity.onDiscovery()
                     } else {
                         Toast.makeText(
@@ -321,11 +322,17 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
             popUp.type = "update"
             popUp.textM = "האם אתה בטוח שאתה רוצה לעדכן את כל המפות?"
             popUp.tracker = tracker
+            CoroutineScope(Dispatchers.Main).launch {
+                val uiState = evalUpdateAllStorageUiState()
+                if (uiState != StorageUiState.OK) {
+                    showStorageMessage(uiState)
+                    return@launch
+                }
             if (count == 0) {
                 count += 1
                 popUp.show(supportFragmentManager, "update")
+                }
             }
-
         }
 
         scanQRButton = findViewById(R.id.scanQR)
@@ -337,21 +344,8 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
 //                TODO show missing imei dialog
             }
             CoroutineScope(Dispatchers.Main).launch {
-                val sizeExceeded = withContext(Dispatchers.IO) {
-                    MapFileManager(this@MainActivity).isInventorySizeExceedingPolicy()
-                }
-
-
-                if (availableSpaceInMb > mapServiceManager.service.config.minAvailableSpaceMB && !sizeExceeded) {
                     barcodeLauncher.launch(ScanOptions())
                     TrackHelper.track().screen("/קבלת בול בסריקה").with(tracker)
-                } else {
-                    Snackbar.make(
-                        findViewById(android.R.id.content),
-                        "ניצלת את מכסת האחסון המקסימלית לבולים במכשיר, מחק בולים קיימים כדי להמשיך",
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
             }
         }
 
@@ -563,15 +557,22 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun getAvailableSpace(): String {
-        val availableBytes = MapFileManager(this).getAvailableSpaceByPolicy()
-        availableSpaceInMb = availableBytes.toDouble() / (1024 * 1024)
-        val isSdOnly = mapServiceManager.isInit &&
-                (mapServiceManager.service.config.targetStoragePolicy == MapConfigDto.TargetStoragePolicy.SDOnly)
-        if (availableBytes <= 0 && isSdOnly) {
-            return "לא זוהה כרטיס SD"
+        val needsSd = runCatching {
+            mapServiceManager.service.config.targetStoragePolicy == MapConfigDto.TargetStoragePolicy.SDOnly
+        }.getOrDefault(false)
+
+        if (needsSd && !hasRequiredSdCard()) {
+            return "לא זוהה כרטיס SD - נסה לרענן"
         }
-        return "מקום פנוי להורדה: ${formatBytes(availableBytes)}"
+
+        val grossBytes = MapFileManager(this).getAvailableSpaceByPolicy() // Long
+        val minBytes  = (mapServiceManager.service.config.minAvailableSpaceMB * 1024 * 1024).toLong()
+        val netBytes  = (grossBytes - minBytes).coerceAtLeast(0)
+
+        availableSpaceInMb = netBytes.toDouble() / (1024 * 1024)
+        return "מקום פנוי להורדה: ${formatBytes(netBytes)}"
     }
+
 //    fun GetAvailableSpaceInSdCard(): String {
 //        val storageManager: StorageManager = getSystemService(STORAGE_SERVICE) as StorageManager
 //        val storageList = storageManager.storageVolumes;
@@ -841,35 +842,39 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     }
 
     private fun itemViewClick(id: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val map = mapServiceManager.service.getDownloadedMap(id)
+        lifecycleScope.launch(Dispatchers.Main) {
+            val uiState = evalUpdateAllStorageUiState()
+            if (uiState != StorageUiState.OK) {
+                showStorageMessage(uiState)
+                return@launch
+            }
+
+            val map = withContext(Dispatchers.IO) { mapServiceManager.service.getDownloadedMap(id) }
             val endName = map?.let {
                 val region = it.getJson()?.getJSONArray("region")?.get(0).toString()
                 "$region ${it.fileName?.substringAfterLast('_')?.substringBefore('Z')}Z"
             } ?: ""
-            withContext(Dispatchers.Main) {
-                map?.let {
-                    if (!map.isUpdated) {
-                        TrackHelper.track().dimension(
-                            mapServiceManager.service.config.matomoDimensionId.toInt(),
-                            "עדכן בול"
-                        ).screen(this@MainActivity)
-                            .with(tracker)
-                        popUp.mapId = id
-                        popUp.type = "updateOne"
-                        popUp.recyclerView = recyclerView
-                        popUp.bullName = endName
 
-                        popUp.textM = getString(R.string.popup_update_detail_map_text, popUp.bullName)
-                        if (count == 0) {
-                            count += 1
-                            popUp.show(supportFragmentManager, "updateOne")
-                        }
-                    }
+            if (map?.isUpdated == false) {
+                TrackHelper.track().dimension(
+                    mapServiceManager.service.config.matomoDimensionId.toInt(),
+                    "עדכן בול"
+                ).screen(this@MainActivity).with(tracker)
+
+                popUp.mapId = id
+                popUp.type = "updateOne"
+                popUp.recyclerView = recyclerView
+                popUp.bullName = endName
+                popUp.textM = getString(R.string.popup_update_detail_map_text, popUp.bullName)
+
+                if (count == 0) {
+                    count += 1
+                    popUp.show(supportFragmentManager, "updateOne")
                 }
             }
         }
     }
+
 
     private fun showErrorDialog(msg: String) {
         val builder = AlertDialog.Builder(this)
@@ -1036,5 +1041,78 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
         }
 
 
+    }
+    // -------------------- Storage UI Policy --------------------
+    private enum class StorageUiState {
+        NO_SD,
+        NEED_TO_DELETE_STAMPS,
+        NO_FREE_SPACE,
+        OK
+    }
+
+    /**
+     * האם יש כרטיס SD פיזית/נתיב זמין למדיניות שמצריכה SD (SDOnly / SDThenFlash)
+     */
+    private fun hasRequiredSdCard(): Boolean {
+        val tp = mapServiceManager.service.config.targetStoragePolicy
+        val storageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val sdVolume = storageManager.storageVolumes.getOrNull(1)?.directory?.absoluteFile
+        val needsSd = (tp == MapConfigDto.TargetStoragePolicy.SDOnly)
+        return if (!needsSd) true else (sdVolume != null)
+    }
+
+    /**
+     * קובע מצב הודעת אחסון לפי מדיניות DISCOVERY (net space)
+     * 1) No SD: אם נדרש SDOnly/SDThenFlash ואין SD → NO_SD
+     * 2) Need to delete stamps: if availableSpaceInMb < minAvailableSpaceMB && downloaded > 0
+     * 3) No Free Space: if availableSpaceInMb < minAvailableSpaceMB && downloaded == 0
+     * 4)
+     * אחרת OK
+     */
+    private suspend fun evalDiscoveryStorageUiState(): StorageUiState = withContext(Dispatchers.IO) {
+        if (!hasRequiredSdCard()) return@withContext StorageUiState.NO_SD
+
+        val availableBytes = MapFileManager(this@MainActivity).getAvailableSpaceByPolicy()
+        val availableMb = availableBytes.toDouble() / (1024 * 1024)
+        val minMb = mapServiceManager.service.config.minAvailableSpaceMB
+        val downloadedCount = mapServiceManager.service.getDownloadedMaps().size
+
+        return@withContext when {
+            availableMb < minMb && downloadedCount > 0 -> StorageUiState.NEED_TO_DELETE_STAMPS
+            availableMb < minMb && downloadedCount == 0 -> StorageUiState.NO_FREE_SPACE
+            else -> StorageUiState.OK
+        }
+    }
+
+    /**
+     * ל־UPDATE/UPDATE ALL: כמו Discovery, אבל לפי "שטח ברוטו" (פשוט: אם <= 0 → אין מקום)
+     * - Need to delete stamps: availableSpaceInMb <= 0 && downloaded == 0
+     * - No free space: availableSpaceInMb <= 0 && downloaded > 0
+     * - אחרת OK
+     */
+    private suspend fun evalUpdateAllStorageUiState(): StorageUiState = withContext(Dispatchers.IO) {
+        if (!hasRequiredSdCard()) return@withContext StorageUiState.NO_SD
+
+        val availableBytes = MapFileManager(this@MainActivity).getAvailableSpaceByPolicy()
+        val availableMb = availableBytes.toDouble() / (1024 * 1024)
+        val downloadedCount = mapServiceManager.service.getDownloadedMaps().size
+
+        return@withContext when {
+            availableMb <= 0 && downloadedCount > 0 -> StorageUiState.NO_FREE_SPACE
+            availableMb <= 0 && downloadedCount == 0 -> StorageUiState.NEED_TO_DELETE_STAMPS
+            else -> StorageUiState.OK
+        }
+    }
+
+    /** מציג את ההודעה המתאימה לפי המצב */
+    private fun showStorageMessage(state: StorageUiState) {
+        val root = findViewById<View>(android.R.id.content)
+        val (msg, long) = when (state) {
+            StorageUiState.NO_SD -> "לא זוהה כרטיס SD - נסה לרענן" to Snackbar.LENGTH_LONG
+            StorageUiState.NO_FREE_SPACE -> "אין נפח פנוי בהתקן האחסון, פנה מקום ונסה שוב." to Snackbar.LENGTH_LONG
+            StorageUiState.NEED_TO_DELETE_STAMPS -> "יש למחוק בולים מהמכשיר כדי לפנות מקום להורדות נוספות." to Snackbar.LENGTH_LONG
+            StorageUiState.OK -> return
+        }
+        Snackbar.make(root, msg, long).show()
     }
 }
