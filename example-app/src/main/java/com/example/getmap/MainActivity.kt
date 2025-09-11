@@ -940,12 +940,12 @@ class MainActivity : AppCompatActivity(), DownloadListAdapter.SignalListener {
     ) { result ->
         if (result.contents == null) {
         } else {
-            Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     mapServiceManager.service.processQrCodeData(result.contents)
 
                     withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "פרטי הבול נסרקו בהצלחה", Toast.LENGTH_LONG).show()
                         TrackHelper.track()
                             .event("מיפוי ענן", "שיתוף")
                             .name("קבלת בול בסריקה").with(tracker)
